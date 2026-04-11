@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Award } from 'lucide-react'
+import { ArrowRight, Check } from 'lucide-react'
 import { useState } from 'react'
 import ProductCard from '@/components/ui/ProductCard'
 import SkeletonCard from '@/components/ui/SkeletonCard'
@@ -133,7 +133,7 @@ export default function Home() {
             <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} viewport={{ once: true }}
               style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
               <Stars rating={t.rating} size={14} />
-              <p style={{ fontSize: 16, color: C.text, lineHeight: 1.7, margin: '16px 0', fontStyle: 'italic', fontFamily: FONT.serif }}>"{t.text}"</p>
+              <p style={{ fontSize: 16, color: C.text, lineHeight: 1.7, margin: '16px 0', fontStyle: 'italic', fontFamily: FONT.serif }}>&ldquo;{t.text}&rdquo;</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 38, height: 38, borderRadius: '50%', background: C.sagePale, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: C.forest }}>{t.name[0]}</div>
                 <div>
@@ -153,7 +153,7 @@ export default function Home() {
         <p style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>New launches, rituals, and exclusive offers — delivered to your inbox.</p>
         {subscribed ? (
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#EBF0E9', borderRadius: 10, padding: '12px 24px', color: C.forest, fontWeight: 500 }}>
-            <Check size={16} /> You're on the list! 50 points added soon.
+            <Check size={16} /> You&apos;re on the list! 50 points added soon.
           </div>
         ) : (
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', maxWidth: 400, margin: '0 auto' }}>

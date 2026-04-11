@@ -21,13 +21,13 @@ export default function App() {
   const user        = useAuthStore((s) => s.user)
   const syncWishlist = useWishlistStore((s) => s.syncFromServer)
 
-  // Bootstrap auth on mount
-  useEffect(() => { initAuth() }, [])
+  // Bootstrap auth on mount — initAuth is stable (defined outside render)
+  useEffect(() => { initAuth() }, [initAuth])
 
   // Sync wishlist when user logs in
   useEffect(() => {
     if (user?.id) syncWishlist(user.id)
-  }, [user?.id])
+  }, [user?.id, syncWishlist])
 
   return (
     <BrowserRouter>

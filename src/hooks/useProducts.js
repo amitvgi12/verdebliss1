@@ -5,7 +5,7 @@ import { PRODUCTS } from '@/constants/products'
 export function useProducts(filters = {}) {
   const [products, setProducts] = useState([])
   const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
+  const [error]                 = useState(null)
 
   useEffect(() => {
     let query = supabase.from('products').select('*')

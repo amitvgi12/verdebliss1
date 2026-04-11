@@ -110,7 +110,7 @@ export default function SearchBar() {
               </>
             )}
             {q.length > 1 && results.length === 0 && (
-              <div style={{ padding: '20px 16px', textAlign: 'center', fontSize: 13, color: C.muted }}>No results for "{q}"</div>
+              <div style={{ padding: '20px 16px', textAlign: 'center', fontSize: 13, color: C.muted }}>No results for &ldquo;{q}&rdquo;</div>
             )}
           </motion.div>
         )}

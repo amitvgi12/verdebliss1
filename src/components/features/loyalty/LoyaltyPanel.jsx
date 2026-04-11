@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { Award } from 'lucide-react'
 import { TIERS } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
 

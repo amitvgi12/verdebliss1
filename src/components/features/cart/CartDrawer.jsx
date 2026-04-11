@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Plus, Minus, ShoppingBag, Award } from 'lucide-react'
+import { X, Plus, Minus, Award } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCartStore } from '@/store/cartStore'
 import { C, FONT } from '@/constants/theme'
@@ -70,7 +70,7 @@ export default function CartDrawer() {
               <div style={{ padding: '20px 24px', borderTop: `1px solid ${C.border}` }}>
                 <div style={{ background: '#EAF0E8', borderRadius: 10, padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Award size={13} color={C.forest} />
-                  <span style={{ fontSize: 12, color: C.forest, fontWeight: 500 }}>You'll earn {pointsToEarn} loyalty points on this order</span>
+                  <span style={{ fontSize: 12, color: C.forest, fontWeight: 500 }}>You&apos;ll earn {pointsToEarn} loyalty points on this order</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span style={{ fontSize: 13, color: C.muted }}>Subtotal</span>

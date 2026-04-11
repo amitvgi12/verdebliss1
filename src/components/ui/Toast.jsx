@@ -1,20 +1,7 @@
-import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { create } from 'zustand'
 import { Check, X, Info, Award } from 'lucide-react'
+import { useToastStore } from '@/store/toastStore'
 import { C } from '@/constants/theme'
-
-// ── Toast store ───────────────────────────────────────
-let _id = 0
-export const useToastStore = create((set) => ({
-  toasts: [],
-  push: (msg, type = 'success') => {
-    const id = ++_id
-    set((s) => ({ toasts: [...s.toasts, { id, msg, type }] }))
-    setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 3200)
-  },
-  remove: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-}))
 
 const ICONS = { success: Check, error: X, info: Info, points: Award }
 const BG    = { success: C.forest, error: '#A32D2D', info: '#185FA5', points: C.gold }
