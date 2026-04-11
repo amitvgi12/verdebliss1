@@ -25,10 +25,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=dev
 
       - name: Run linter
         run: npm run lint
@@ -52,7 +51,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=dev
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
@@ -90,7 +89,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm install
+        run: npm install --include=dev
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
