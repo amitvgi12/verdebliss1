@@ -15,6 +15,9 @@ jobs:
   quality:
     name: Code Quality
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +38,9 @@ jobs:
     name: Deploy Preview
     needs: quality
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
@@ -70,6 +76,9 @@ jobs:
     name: Deploy Production
     needs: quality
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
