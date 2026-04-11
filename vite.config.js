@@ -7,4 +7,16 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor':   ['react', 'react-dom', 'react-router-dom'],
+          'motion-vendor':  ['framer-motion'],
+          'supabase-vendor':['@supabase/supabase-js'],
+          'ui-vendor':      ['lucide-react', 'zustand'],
+        },
+      },
+    },
+  },
 })
