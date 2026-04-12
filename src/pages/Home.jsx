@@ -79,20 +79,18 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Hero product image */}
+          {/* Hero product image — fills circle edge-to-edge */}
           <motion.div initial={{ opacity:0, scale:0.88 }} animate={{ opacity:1, scale:1 }} transition={{ duration:0.9, delay:0.15 }} style={{ display:'flex', justifyContent:'center', position:'relative' }}>
-            <div style={{ width:'min(360px, 90vw)', height:'min(360px, 90vw)', borderRadius:'50%', background:'rgba(125,155,118,0.1)', border:'1px solid rgba(125,155,118,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <motion.img
+            {/* overflow:hidden clips image to circle, objectFit:cover fills it completely */}
+            <motion.div animate={{ y:[0,-8,0] }} transition={{ duration:4, repeat:Infinity, ease:'easeInOut' }}
+              style={{ width:'min(360px, 90vw)', height:'min(360px, 90vw)', borderRadius:'50%', border:'2px solid rgba(125,155,118,0.35)', overflow:'hidden', boxShadow:'0 24px 64px rgba(0,0,0,0.35)', flexShrink:0 }}>
+              <img
                 src="/images/products/serum.png"
                 alt="VerdeBliss Bakuchiol Serum"
-                animate={{ y:[0,-10,0] }}
-                transition={{ duration:4, repeat:Infinity, ease:'easeInOut' }}
-                style={{ height:'80%', width:'auto', objectFit:'contain', filter:'drop-shadow(0 12px 32px rgba(0,0,0,0.3))' }}
-                onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling.style.display='block' }}
+                style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', display:'block' }}
+                onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.style.cssText += 'background:rgba(125,155,118,0.15);display:flex;align-items:center;justify-content:center;font-size:110px'; e.currentTarget.parentElement.textContent='🌿' }}
               />
-              {/* Emoji fallback if image not found */}
-              <div style={{ display:'none', fontSize:110 }}>🌿</div>
-            </div>
+            </motion.div>
 
             {/* Floating tags */}
             {[

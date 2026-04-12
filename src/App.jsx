@@ -1,33 +1,46 @@
+/**
+ * App.jsx — Root router and global layout
+ *
+ * Routes added:
+ *   /our-story     — Brand story page
+ *   /ingredients   — Full ingredient showcase
+ *   /sustainability — Environmental commitment
+ *   /press          — Media coverage & awards
+ *   /contact        — Contact form & channels
+ *
+ * Legal (Privacy, Terms, Cookies) are modals triggered from the Footer,
+ * not separate routes, so the footer never unmounts while they're open.
+ */
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 
-import Nav from '@/components/layout/Nav'
-import Footer from '@/components/layout/Footer'
+import Nav        from '@/components/layout/Nav'
+import Footer     from '@/components/layout/Footer'
 import CartDrawer from '@/components/features/cart/CartDrawer'
-import ChatBot from '@/components/features/chat/ChatBot'
+import ChatBot    from '@/components/features/chat/ChatBot'
 import { Toaster } from '@/components/ui/Toast'
 
-import Home from '@/pages/Home'
-import Products from '@/pages/Products'
+import Home          from '@/pages/Home'
+import Products      from '@/pages/Products'
 import ProductDetail from '@/pages/ProductDetail'
-import Account from '@/pages/Account'
+import Account       from '@/pages/Account'
+import OurStory      from '@/pages/company/OurStory'
+import IngredientsPage from '@/pages/company/IngredientsPage'
+import Sustainability  from '@/pages/company/Sustainability'
+import Press           from '@/pages/company/Press'
+import Contact         from '@/pages/company/Contact'
 
-import { useAuthStore } from '@/store/authStore'
+import { useAuthStore }     from '@/store/authStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 
 export default function App() {
-  const initAuth    = useAuthStore((s) => s.init)
-  const user        = useAuthStore((s) => s.user)
+  const initAuth     = useAuthStore((s) => s.init)
+  const user         = useAuthStore((s) => s.user)
   const syncWishlist = useWishlistStore((s) => s.syncFromServer)
 
-  // Bootstrap auth on mount — initAuth is stable (defined outside render)
   useEffect(() => { initAuth() }, [initAuth])
-
-  // Sync wishlist when user logs in
-  useEffect(() => {
-    if (user?.id) syncWishlist(user.id)
-  }, [user?.id, syncWishlist])
+  useEffect(() => { if (user?.id) syncWishlist(user.id) }, [user?.id, syncWishlist])
 
   return (
     <BrowserRouter>
@@ -45,10 +58,21 @@ export default function App() {
         <main>
           <AnimatePresence mode="wait">
             <Routes>
-              <Route path="/"            element={<Home />} />
-              <Route path="/products"    element={<Products />} />
+              {/* Core pages */}
+              <Route path="/"             element={<Home />} />
+              <Route path="/products"     element={<Products />} />
               <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/account"     element={<Account />} />
+              <Route path="/account"      element={<Account />} />
+
+              {/* Company pages (linked from footer & nav) */}
+              <Route path="/our-story"      element={<OurStory />} />
+              <Route path="/ingredients"    element={<IngredientsPage />} />
+              <Route path="/sustainability" element={<Sustainability />} />
+              <Route path="/press"          element={<Press />} />
+              <Route path="/contact"        element={<Contact />} />
+
+              {/* 404 fallback — redirects home */}
+              <Route path="*" element={<Home />} />
             </Routes>
           </AnimatePresence>
         </main>
