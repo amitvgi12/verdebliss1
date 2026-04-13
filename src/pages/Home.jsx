@@ -141,7 +141,7 @@ export default function Home() {
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(170px, 1fr))', gap:20 }}>
             {INGREDIENTS.map((ing, i) => (
               <motion.div key={ing.name} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} transition={{ delay: i*0.07 }} viewport={{ once:true }}>
-                <IngredientCard ingredient={ing.name} description={ing.desc}/>
+                <IngredientCard ingredient={ing.name} description={ing.desc} imageHeight={140}/>
               </motion.div>
             ))}
           </div>
