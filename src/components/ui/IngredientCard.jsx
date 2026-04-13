@@ -23,14 +23,14 @@ import { C, FONT } from '@/constants/theme'
 
 /* ── Ingredient name → image filename map ───────────────────────────── */
 const IMAGE_MAP = {
-  'Bakuchiol':   '/ingredients/bakuchiol.png',
-  'Rose Hip':    '/ingredients/rose_hip.png',
-  'Green Tea':   '/ingredients/greentealeaves.png',
-  'Turmeric':    '/ingredients/turmeric.png',
-  'Zinc Oxide':  '/ingredients/zinc.png',
-  'Acai Berry':  '/ingredients/blueberries.png',
-  'Niacinamide': '/ingredients/niacinamide.png',
-  'Shea Butter': '/ingredients/shea.png',
+  'Bakuchiol':   '/public/ingredients/bakuchiol.png',
+  'Rose Hip':    '/public/ingredients/rose_hip.png',
+  'Green Tea':   '/public/ingredients/greentealeaves.png',
+  'Turmeric':    '/public/ingredients/turmeric.png',
+  'Zinc Oxide':  '/public/ingredients/zinc.png',
+  'Acai Berry':  '/public/ingredients/blueberries.png',
+  'Niacinamide': '/public/ingredients/niacinamide.png',
+  'Shea Butter': '/public/ingredients/shea.png',
 }
 
 /* ── Background tints that match each ingredient's colour palette ────── */
