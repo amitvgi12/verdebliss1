@@ -1,5 +1,5 @@
 /**
- * api/chat.js — Vercel Serverless Edge Function
+ * api/chat.js — Vercel Serverless Edge Function 
  *
  * WHY THIS EXISTS (Security):
  *   VITE_ANTHROPIC_API_KEY in the frontend bundle is visible to anyone
