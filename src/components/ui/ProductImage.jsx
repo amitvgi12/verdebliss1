@@ -25,11 +25,24 @@ const INGREDIENT_GRADIENTS = {
   'Shea Butter':  'linear-gradient(145deg, #fff3e0 0%, #ffe0b2 60%, #ffcc80 100%)',
 }
 
+const PRODUCT_IMAGES = {
+  'Bakuchiol':   '/images/products/serum.png',
+  'Rose Hip':    '/images/products/moisturiser.png',
+  'Green Tea':   '/images/products/toner.png',
+  'Turmeric':    '/images/products/cleanser.png',
+  'Zinc Oxide':  '/images/products/spf.png',
+  'Acai Berry':  '/images/products/lip-elixir.png',
+  'Niacinamide': '/images/products/niacinamide-serum.png',
+  'Shea Butter': '/images/products/night-cream.png',
+}
+
 const DEFAULT_GRADIENT = 'linear-gradient(145deg, #EAF0E8 0%, #c8dbc6 100%)'
 
 export default function ProductImage({ product, height = 220 }) {
   /* Use per-product image_url from Supabase when available, else shared serum.png */
-  const imgSrc = product.image_url ?? '/images/products/serum.png'
+  const imgSrc = product.image_url
+    ?? PRODUCT_IMAGES[product.ingredient]
+    ?? '/images/products/serum.png'
   const bg     = INGREDIENT_GRADIENTS[product.ingredient] ?? DEFAULT_GRADIENT
 
   return (

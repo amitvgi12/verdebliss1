@@ -94,7 +94,7 @@ export default async function handler(req, res) {
 
   // Forward to Anthropic — key is server-only env var (no VITE_ prefix)
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('//generativelanguage.googleapis.com/v1beta/openai/', {
       method: 'POST',
       headers: {
         'Content-Type':      'application/json',
@@ -102,7 +102,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'gemini-2.5-flash',
         max_tokens: 300,
         system:     SYSTEM_PROMPT,
         messages,
