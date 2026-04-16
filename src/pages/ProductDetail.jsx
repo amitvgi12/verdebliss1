@@ -55,7 +55,7 @@ export default function ProductDetail() {
           {/* Visual */}
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <div style={{ background: p.bg_color, borderRadius: 24, height: 440, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 130, boxShadow: '0 4px 32px rgba(0,0,0,0.06)' }}>
-              <ProductImage product={p} height={440} display={flex} width={auto} />
+              <ProductImage product={p} height={440} width={397.5} />
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
               {p.badges?.map((b) => <Badge key={b} label={b} />)}
