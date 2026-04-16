@@ -44,7 +44,7 @@ jobs:
           cache: 'npm'                   # cache ~/.npm between runs
 
       - name: Install dependencies
-        run: npm npm install --include=dev                      # ci is faster + reproducible vs install
+        run: npm install --include=dev                      # ci is faster + reproducible vs install
 
       - name: Run ESLint
         run: npm run lint
@@ -106,7 +106,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm npm  install --include=dev
+        run: npm install --include=dev
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
@@ -157,7 +157,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --include=dev
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
