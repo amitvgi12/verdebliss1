@@ -191,6 +191,9 @@ export default function ProductDetail() {
               <div style={{ position: 'absolute', inset: 0 }}>
                 <ProductImage product={p} />
               </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+                {p.badges?.map((b) => <Badge key={b} label={b} />)}
+              </div>
             </div>
 
             {/* Trust badge pills */}
