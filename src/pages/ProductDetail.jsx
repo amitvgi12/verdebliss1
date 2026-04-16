@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Heart, ShoppingBag, Check, Award, ArrowLeft } from 'lucide-react'
 import Stars from '@/components/ui/Stars'
 import Badge from '@/components/ui/Badge'
+import ProductImage from '@/components/ui/ProductImage'
 import ProductCard from '@/components/ui/ProductCard'
 import { useProduct, useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/store/cartStore'
@@ -54,7 +55,7 @@ export default function ProductDetail() {
           {/* Visual */}
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <div style={{ background: p.bg_color, borderRadius: 24, height: 440, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 130, boxShadow: '0 4px 32px rgba(0,0,0,0.06)' }}>
-              {p.emoji}
+              <ProductImage product={p}/>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
               {p.badges?.map((b) => <Badge key={b} label={b} />)}
