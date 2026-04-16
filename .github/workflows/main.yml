@@ -86,14 +86,7 @@ jobs:
           path: coverage/                # output of vitest --coverage
           retention-days: 14
 
-      # ── Step C: Push coverage data to Codecov (optional) ────────────────
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
-        if: ${{ secrets.CODECOV_TOKEN != '' }}
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/coverage-final.json
-          fail_ci_if_error: false        # don't break the pipeline if Codecov is down
+      # ── Step C: Push coverage data to Codecov (optional)
 
 # ── Job 3: Vercel Preview (PR only) ──────────────────────────────────────────
   deploy-preview:
