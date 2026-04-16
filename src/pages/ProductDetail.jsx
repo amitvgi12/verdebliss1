@@ -50,7 +50,7 @@ const HOW_TO_USE = [
 const BENEFITS = [
   { icon: '💧', title: 'Deep Hydration', desc: 'Clinically proven moisture lock for 72 hours.' },
   { icon: '✨', title: 'Visible Radiance', desc: 'Brighter, more even-toned skin in 14 days.' },
-  { icon: '🛡️', title: 'Barrier Support', desc: 'Reinforces the skin's natural protective barrier.' },
+  { icon: '🛡️', title: 'Barrier Support', desc: 'Reinforces the skin\'s natural protective barrier.' },
 ]
 
 /* ─── Accordion ───────────────────────────────────── */
