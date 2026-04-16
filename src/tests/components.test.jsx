@@ -3,7 +3,7 @@
  * Renders Stars, Badge, and ProductImage in jsdom
  * and asserts key DOM properties.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Stars        from '@/components/ui/Stars'
 import Badge        from '@/components/ui/Badge'
