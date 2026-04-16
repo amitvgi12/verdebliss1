@@ -38,7 +38,7 @@ const PRODUCT_IMAGES = {
 
 const DEFAULT_GRADIENT = 'linear-gradient(145deg, #EAF0E8 0%, #c8dbc6 100%)'
 
-export default function ProductImage({ product, height = 220 }) {
+export default function ProductImage({ product, height }) {
   /* Use per-product image_url from Supabase when available, else shared serum.png */
   const imgSrc = product.image_url
     ?? PRODUCT_IMAGES[product.ingredient]
@@ -73,23 +73,6 @@ export default function ProductImage({ product, height = 220 }) {
         /* Slight zoom on card hover — parent sets the transform via CSS class */
         onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.06)' }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
-      />
-
-      {/* VerdeBliss logo watermark — bottom-left */}
-      <img
-        src="/images/logo.png"
-        alt="VerdeBliss"
-        aria-hidden="true"          /* decorative — screen readers skip */
-        style={{
-          position: 'absolute',
-          bottom: 8,
-          left: 8,
-          height: 32,
-          width: 'auto',
-          opacity: 0.7,
-          filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.2))',
-          pointerEvents: 'none',    /* never intercepts clicks */
-        }}
       />
     </div>
   )
