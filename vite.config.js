@@ -19,4 +19,17 @@ export default defineConfig({
       },
     },
   },
+  /* ── Vitest config (co-located with Vite so aliases are shared) ── */
+  test: {
+    globals: true,           // describe / it / expect without importing
+    environment: 'jsdom',    // simulates a browser DOM
+    setupFiles: ['./src/tests/setup.js'],
+    css: false,              // skip CSS parsing — speeds up tests
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/tests/**', 'src/main.jsx'],
+    },
+  },
 })
