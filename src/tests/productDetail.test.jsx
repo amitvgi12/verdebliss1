@@ -1,20 +1,15 @@
 /**
  * productDetail.test.jsx
  *
- * Renders ProductDetail inside a MemoryRouter so useParams works correctly.
- * Supabase is mocked via setup.js → returns { data: null, error: {...} }
- * → hooks fall back to the static PRODUCTS array.
- *
- * Note on React Router warnings:
- *   MemoryRouter from react-router-dom v6 emits console warnings about
- *   future v7 flags. These are suppressed via vi.spyOn in beforeEach.
+ * All getByText queries are now role-aware or use exact strings to avoid
+ * "Found multiple elements" when the same text appears in breadcrumbs,
+ * headings, and related-product cards simultaneously.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import ProductDetail from '@/pages/ProductDetail'
 
-/* Suppress React Router v6 → v7 migration warnings in test output */
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {})
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -32,10 +27,14 @@ function renderDetail(id = '7') {
 
 /* ── Rendering ────────────────────────────────────── */
 describe('ProductDetail — rendering', () => {
-  it('shows the product name from static fallback data', async () => {
+  it('shows the product name in the <h1>', async () => {
     renderDetail('7')
+    // Use role query — only the <h1> has role="heading", not the breadcrumb <span>
     await waitFor(
-      () => expect(screen.getByText(/Niacinamide Pore Serum/i)).toBeInTheDocument(),
+      () =>
+        expect(
+          screen.getByRole('heading', { name: /Niacinamide Pore Serum/i })
+        ).toBeInTheDocument(),
       { timeout: 4000 }
     )
   })
@@ -58,7 +57,6 @@ describe('ProductDetail — rendering', () => {
 
   it('shows the price in rupees', async () => {
     renderDetail('7')
-    // Price 2450 → rendered as "₹2,450"
     await waitFor(
       () => expect(screen.getByText(/₹2[,.]?450/)).toBeInTheDocument(),
       { timeout: 4000 }
@@ -73,10 +71,16 @@ describe('ProductDetail — rendering', () => {
     )
   })
 
-  it('shows the category label for a serum', async () => {
+  it('shows the category label "SERUM · 30ml" for a serum product', async () => {
     renderDetail('7')
+    // The category div renders the exact string "SERUM · 30ml".
+    // /serum/i is too broad — it also matches the product name and related cards.
+    // exact: false so whitespace around " · 30ml" doesn't matter.
     await waitFor(
-      () => expect(screen.getByText(/serum/i)).toBeInTheDocument(),
+      () =>
+        expect(
+          screen.getByText((content) => content.includes('SERUM') && content.includes('30ml'))
+        ).toBeInTheDocument(),
       { timeout: 4000 }
     )
   })
@@ -112,7 +116,6 @@ describe('ProductDetail — interactions', () => {
 
   it('quantity starts at 1', async () => {
     renderDetail('7')
-    // Wait for product to load then check qty display
     await screen.findByText(/add to cart/i, {}, { timeout: 4000 })
     expect(screen.getByText('1')).toBeInTheDocument()
   })
@@ -120,17 +123,14 @@ describe('ProductDetail — interactions', () => {
   it('quantity increases to 2 after clicking +', async () => {
     renderDetail('7')
     await screen.findByText(/add to cart/i, {}, { timeout: 4000 })
-    const incBtn = screen.getByLabelText(/increase/i)
-    fireEvent.click(incBtn)
+    fireEvent.click(screen.getByLabelText(/increase/i))
     await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument())
   })
 
   it('quantity stays at 1 after clicking - from initial qty', async () => {
     renderDetail('7')
     await screen.findByText(/add to cart/i, {}, { timeout: 4000 })
-    const decBtn = screen.getByLabelText(/decrease/i)
-    fireEvent.click(decBtn)
-    // Min is 1 — should still show 1
+    fireEvent.click(screen.getByLabelText(/decrease/i))
     expect(screen.getByText('1')).toBeInTheDocument()
   })
 
@@ -144,15 +144,11 @@ describe('ProductDetail — interactions', () => {
     )
   })
 
-  it('clicking Full Ingredients (already open) collapses it', async () => {
+  it('clicking Full Ingredients toggles and reopens', async () => {
     renderDetail('7')
-    // Ingredients accordion is open by default
     await screen.findByText(/full ingredients/i, {}, { timeout: 4000 })
-    // Click to close
-    fireEvent.click(screen.getByText(/full ingredients/i))
-    // Then reopen
-    fireEvent.click(screen.getByText(/full ingredients/i))
-    // Content should reappear
+    fireEvent.click(screen.getByText(/full ingredients/i)) // close
+    fireEvent.click(screen.getByText(/full ingredients/i)) // reopen
     await waitFor(
       () => expect(screen.getByText(/natural botanicals/i)).toBeInTheDocument(),
       { timeout: 2000 }
