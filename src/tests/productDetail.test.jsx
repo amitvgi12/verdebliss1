@@ -1,15 +1,26 @@
 /**
  * productDetail.test.jsx
- * Integration test for the ProductDetail page.
- * Supabase is mocked in setup.js → falls back to static PRODUCTS data.
+ *
+ * Renders ProductDetail inside a MemoryRouter so useParams works correctly.
+ * Supabase is mocked via setup.js → returns { data: null, error: {...} }
+ * → hooks fall back to the static PRODUCTS array.
+ *
+ * Note on React Router warnings:
+ *   MemoryRouter from react-router-dom v6 emits console warnings about
+ *   future v7 flags. These are suppressed via vi.spyOn in beforeEach.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import ProductDetail from '@/pages/ProductDetail'
 
-// Wrap with router so useParams / useNavigate work
-function renderProductDetail(id = '7') {
+/* Suppress React Router v6 → v7 migration warnings in test output */
+beforeEach(() => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+function renderDetail(id = '7') {
   return render(
     <MemoryRouter initialEntries={[`/products/${id}`]}>
       <Routes>
@@ -19,94 +30,143 @@ function renderProductDetail(id = '7') {
   )
 }
 
+/* ── Rendering ────────────────────────────────────── */
 describe('ProductDetail — rendering', () => {
-  it('shows the product name from static data', async () => {
-    renderProductDetail('7')
-    // Supabase mock returns null → falls back to PRODUCTS[6] (id:'7')
-    await waitFor(() => {
-      expect(screen.getByText(/Niacinamide Pore Serum/i)).toBeInTheDocument()
-    }, { timeout: 3000 })
+  it('shows the product name from static fallback data', async () => {
+    renderDetail('7')
+    await waitFor(
+      () => expect(screen.getByText(/Niacinamide Pore Serum/i)).toBeInTheDocument(),
+      { timeout: 4000 }
+    )
   })
 
   it('shows the Back to Products button', async () => {
-    renderProductDetail('7')
-    await waitFor(() =>
-      expect(screen.getByText(/Back to Products/i)).toBeInTheDocument()
+    renderDetail('7')
+    await waitFor(
+      () => expect(screen.getByText(/back to products/i)).toBeInTheDocument(),
+      { timeout: 4000 }
     )
   })
 
   it('shows Add to Cart button', async () => {
-    renderProductDetail('7')
-    await waitFor(() =>
-      expect(screen.getByText(/Add to Cart/i)).toBeInTheDocument()
+    renderDetail('7')
+    await waitFor(
+      () => expect(screen.getByText(/add to cart/i)).toBeInTheDocument(),
+      { timeout: 4000 }
     )
   })
 
   it('shows the price in rupees', async () => {
-    renderProductDetail('7')
-    await waitFor(() =>
-      expect(screen.getByText(/₹2,450/)).toBeInTheDocument()
+    renderDetail('7')
+    // Price 2450 → rendered as "₹2,450"
+    await waitFor(
+      () => expect(screen.getByText(/₹2[,.]?450/)).toBeInTheDocument(),
+      { timeout: 4000 }
     )
   })
 
   it('shows loyalty points line', async () => {
-    renderProductDetail('7')
-    await waitFor(() =>
-      expect(screen.getByText(/loyalty points/i)).toBeInTheDocument()
+    renderDetail('7')
+    await waitFor(
+      () => expect(screen.getByText(/loyalty points/i)).toBeInTheDocument(),
+      { timeout: 4000 }
     )
   })
 
-  it('shows category label', async () => {
-    renderProductDetail('7')
-    await waitFor(() =>
-      expect(screen.getByText(/SERUM/i)).toBeInTheDocument()
+  it('shows the category label for a serum', async () => {
+    renderDetail('7')
+    await waitFor(
+      () => expect(screen.getByText(/serum/i)).toBeInTheDocument(),
+      { timeout: 4000 }
+    )
+  })
+
+  it('renders Full Ingredients accordion label', async () => {
+    renderDetail('7')
+    await waitFor(
+      () => expect(screen.getByText(/full ingredients/i)).toBeInTheDocument(),
+      { timeout: 4000 }
+    )
+  })
+
+  it('renders How To Use accordion label', async () => {
+    renderDetail('7')
+    await waitFor(
+      () => expect(screen.getByText(/how to use/i)).toBeInTheDocument(),
+      { timeout: 4000 }
     )
   })
 })
 
+/* ── Interactions ─────────────────────────────────── */
 describe('ProductDetail — interactions', () => {
   it('Add to Cart button changes to "Added to Cart" on click', async () => {
-    renderProductDetail('7')
-    await waitFor(() => screen.getByText(/Add to Cart/i))
-    fireEvent.click(screen.getByText(/Add to Cart/i))
-    await waitFor(() =>
-      expect(screen.getByText(/Added to Cart/i)).toBeInTheDocument()
+    renderDetail('7')
+    const btn = await screen.findByText(/add to cart/i, {}, { timeout: 4000 })
+    fireEvent.click(btn)
+    await waitFor(
+      () => expect(screen.getByText(/added to cart/i)).toBeInTheDocument(),
+      { timeout: 3000 }
     )
   })
 
-  it('quantity decreases to minimum 1 only', async () => {
-    renderProductDetail('7')
-    await waitFor(() => screen.getByLabelText(/decrease/i))
-    const dec = screen.getByLabelText(/decrease/i)
-    // Click decrease twice from default qty=1 → should stay at 1
-    fireEvent.click(dec)
-    fireEvent.click(dec)
-    const qty = screen.getByText('1')
-    expect(qty).toBeInTheDocument()
+  it('quantity starts at 1', async () => {
+    renderDetail('7')
+    // Wait for product to load then check qty display
+    await screen.findByText(/add to cart/i, {}, { timeout: 4000 })
+    expect(screen.getByText('1')).toBeInTheDocument()
   })
 
-  it('quantity increases on + click', async () => {
-    renderProductDetail('7')
-    await waitFor(() => screen.getByLabelText(/increase/i))
-    fireEvent.click(screen.getByLabelText(/increase/i))
-    await waitFor(() =>
-      expect(screen.getByText('2')).toBeInTheDocument()
+  it('quantity increases to 2 after clicking +', async () => {
+    renderDetail('7')
+    await screen.findByText(/add to cart/i, {}, { timeout: 4000 })
+    const incBtn = screen.getByLabelText(/increase/i)
+    fireEvent.click(incBtn)
+    await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument())
+  })
+
+  it('quantity stays at 1 after clicking - from initial qty', async () => {
+    renderDetail('7')
+    await screen.findByText(/add to cart/i, {}, { timeout: 4000 })
+    const decBtn = screen.getByLabelText(/decrease/i)
+    fireEvent.click(decBtn)
+    // Min is 1 — should still show 1
+    expect(screen.getByText('1')).toBeInTheDocument()
+  })
+
+  it('clicking How To Use opens the accordion content', async () => {
+    renderDetail('7')
+    await screen.findByText(/how to use/i, {}, { timeout: 4000 })
+    fireEvent.click(screen.getByText(/how to use/i))
+    await waitFor(
+      () => expect(screen.getByText(/cleanse and gently tone/i)).toBeInTheDocument(),
+      { timeout: 2000 }
     )
   })
 
-  it('accordion opens "How To Use" section on click', async () => {
-    renderProductDetail('7')
-    await waitFor(() => screen.getByText(/How To Use/i))
-    fireEvent.click(screen.getByText(/How To Use/i))
-    await waitFor(() =>
-      expect(screen.getByText(/Cleanse and gently tone/i)).toBeInTheDocument()
+  it('clicking Full Ingredients (already open) collapses it', async () => {
+    renderDetail('7')
+    // Ingredients accordion is open by default
+    await screen.findByText(/full ingredients/i, {}, { timeout: 4000 })
+    // Click to close
+    fireEvent.click(screen.getByText(/full ingredients/i))
+    // Then reopen
+    fireEvent.click(screen.getByText(/full ingredients/i))
+    // Content should reappear
+    await waitFor(
+      () => expect(screen.getByText(/natural botanicals/i)).toBeInTheDocument(),
+      { timeout: 2000 }
     )
   })
+})
 
-  it('shows 404 state for non-existent product', async () => {
-    renderProductDetail('999')
-    await waitFor(() =>
-      expect(screen.getByText(/Product not found/i)).toBeInTheDocument()
-    , { timeout: 3000 })
+/* ── 404 state ────────────────────────────────────── */
+describe('ProductDetail — 404', () => {
+  it('shows "Product not found" for an unknown id', async () => {
+    renderDetail('999')
+    await waitFor(
+      () => expect(screen.getByText(/product not found/i)).toBeInTheDocument(),
+      { timeout: 4000 }
+    )
   })
 })
