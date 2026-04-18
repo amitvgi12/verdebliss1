@@ -30,6 +30,7 @@ const COMPANY_LINKS = [
   ['Ingredients',    '/ingredients'],
   ['Sustainability', '/sustainability'],
   ['Press',          '/press'],
+  ['Journal',        '/blog'],
 ]
 
 const SUPPORT_LINKS = [

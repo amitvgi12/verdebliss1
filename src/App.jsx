@@ -30,6 +30,8 @@ import IngredientsPage from '@/pages/company/IngredientsPage'
 import Sustainability  from '@/pages/company/Sustainability'
 import Press           from '@/pages/company/Press'
 import Contact         from '@/pages/company/Contact'
+import BlogIndex       from '@/pages/blog/BlogIndex'
+import BlogPost        from '@/pages/blog/BlogPost'
 
 import { useAuthStore }     from '@/store/authStore'
 import { useWishlistStore } from '@/store/wishlistStore'
@@ -72,6 +74,11 @@ export default function App() {
               <Route path="/contact"        element={<Contact />} />
 
               {/* 404 fallback — redirects home */}
+              {/* Blog / Journal */}
+              <Route path="/blog"        element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+
+              {/* 404 fallback */}
               <Route path="*" element={<Home />} />
             </Routes>
           </AnimatePresence>

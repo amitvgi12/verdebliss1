@@ -1,3 +1,4 @@
+import { useSEO, PAGE_SEO } from '@/hooks/useSEO'
 /**
  * Home.jsx
  *
@@ -18,6 +19,7 @@ import IngredientCard from '@/components/ui/IngredientCard'
 import Stars from '@/components/ui/Stars'
 import { useProducts } from '@/hooks/useProducts'
 import { C, FONT } from '@/constants/theme'
+import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 
 const TESTIMONIALS = [
   { name:'Priya S.', skin:'Sensitive', city:'Mumbai', rating:5, text:'My skin has never felt this calm. The Bakuchiol serum is absolutely transformative — zero irritation, maximum glow.' },
@@ -35,7 +37,10 @@ const INGREDIENTS = [
 ]
 
 export default function Home() {
+  useSEO(PAGE_SEO.)
   const navigate = useNavigate()
+  const width = useWindowWidth()
+  const isMobile = width < BP.tablet
   const { products, loading } = useProducts({ sortBy: 'Bestselling' })
   const [email, setEmail]       = useState('')
   const [subscribed, setSubscribed] = useState(false)
@@ -51,7 +56,7 @@ export default function Home() {
         <div style={{ position:'absolute', bottom:-100, left:160, width:360, height:360, borderRadius:'50%', background:'rgba(125,155,118,0.07)', zIndex:0, pointerEvents:'none' }}/>
 
         {/* Content — z-index:1 so it always sits above decorative elements */}
-        <div style={{ maxWidth:1200, margin:'0 auto', width:'100%', display:'grid', gridTemplateColumns:'1fr 1fr', gap:48, alignItems:'center', position:'relative', zIndex:1 }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', width:'100%', display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 32 : 48, alignItems:'center', position:'relative', zIndex:1 }}>
           <motion.div initial={{ opacity:0, x:-30 }} animate={{ opacity:1, x:0 }} transition={{ duration:0.9 }}>
             <div style={{ fontSize:10, color:C.sage, letterSpacing:'0.18em', marginBottom:20, fontWeight:600 }}>✦ CERTIFIED ORGANIC &nbsp;·&nbsp; CRUELTY-FREE &nbsp;·&nbsp; VEGAN ✦</div>
             <h1 style={{ fontFamily:FONT.serif, fontSize:'clamp(40px,5.5vw,76px)', color:'white', lineHeight:1.0, margin:'0 0 24px', fontWeight:400 }}>

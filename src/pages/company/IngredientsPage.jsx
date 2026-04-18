@@ -1,3 +1,4 @@
+import { useSEO, PAGE_SEO } from '@/hooks/useSEO'
 /**
  * IngredientsPage.jsx — Full ingredient showcase
  * Route: /ingredients
@@ -72,6 +73,7 @@ const PRINCIPLES = [
 ]
 
 export default function IngredientsPage() {
+  useSEO(PAGE_SEO.ingredients)
   const navigate = useNavigate()
 
   return (

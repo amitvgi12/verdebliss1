@@ -1,3 +1,4 @@
+import { useSEO, PAGE_SEO } from '@/hooks/useSEO'
 /**
  * Contact.jsx — Contact & support page
  * Route: /contact
@@ -17,6 +18,7 @@ const CHANNELS = [
 ]
 
 export default function Contact() {
+  useSEO(PAGE_SEO.contact)
   const [form, setForm]       = useState({ name: '', email: '', topic: '', message: '' })
   const [submitted, setSubmit] = useState(false)
   const [loading, setLoading]  = useState(false)

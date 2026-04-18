@@ -29,6 +29,7 @@ export default function Nav() {
     { path: '/',         label: 'Home'    },
     { path: '/products', label: 'Shop'    },
     { path: '/account',  label: 'Account' },
+    { path: '/blog',     label: 'Journal' },
   ]
 
   const isActive = (path) =>

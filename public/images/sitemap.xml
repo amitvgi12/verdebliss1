@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://verdebliss.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://verdebliss.vercel.app/products</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://verdebliss.vercel.app/our-story</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://verdebliss.vercel.app/ingredients</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://verdebliss.vercel.app/sustainability</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://verdebliss.vercel.app/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://verdebliss.vercel.app/blog/bakuchiol-vs-retinol</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://verdebliss.vercel.app/blog/skincare-routine-dry-skin</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://verdebliss.vercel.app/blog/organic-skincare-india</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://verdebliss.vercel.app/contact</loc><changefreq>yearly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://verdebliss.vercel.app/press</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+</urlset>

@@ -1,3 +1,4 @@
+import { useSEO, PAGE_SEO } from '@/hooks/useSEO'
 /**
  * OurStory.jsx — Brand story page
  * Route: /our-story
@@ -24,6 +25,7 @@ const TEAM = [
 ]
 
 export default function OurStory() {
+  useSEO(PAGE_SEO.ourStory)
   const navigate = useNavigate()
   return (
     <div style={{ background: C.bg }}>
