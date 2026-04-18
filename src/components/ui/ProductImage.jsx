@@ -20,14 +20,14 @@ const INGREDIENT_GRADIENTS = {
 }
 
 const PRODUCT_IMAGES = {
-  'Bakuchiol':   '/images/products/serum.png',
-  'Rose Hip':    '/images/products/moisturiser.png',
-  'Green Tea':   '/images/products/toner.png',
-  'Turmeric':    '/images/products/cleanser.png',
-  'Zinc Oxide':  '/images/products/spf.png',
-  'Acai Berry':  '/images/products/lip-elixir.png',
-  'Niacinamide': '/images/products/niacinamide-serum.png',
-  'Shea Butter': '/images/products/night-cream.png',
+  'Bakuchiol':   '/images/products/serum.webp',
+  'Rose Hip':    '/images/products/moisturiser.webp',
+  'Green Tea':   '/images/products/toner.webp',
+  'Turmeric':    '/images/products/cleanser.webp',
+  'Zinc Oxide':  '/images/products/spf.webp',
+  'Acai Berry':  '/images/products/lip-elixir.webp',
+  'Niacinamide': '/images/products/niacinamide-serum.webp',
+  'Shea Butter': '/images/products/night-cream.webp',
 }
 
 const DEFAULT_GRADIENT = 'linear-gradient(160deg,#eaf0e8 0%,#c8dbc6 100%)'
@@ -35,7 +35,7 @@ const DEFAULT_GRADIENT = 'linear-gradient(160deg,#eaf0e8 0%,#c8dbc6 100%)'
 export default function ProductImage({ product, style = {}, imgStyle = {} }) {
   const src = product.image_url
     ?? PRODUCT_IMAGES[product.ingredient]
-    ?? '/images/products/serum.png'
+    ?? '/images/products/serum.webp'
   const bg  = INGREDIENT_GRADIENTS[product.ingredient] ?? DEFAULT_GRADIENT
 
   return (

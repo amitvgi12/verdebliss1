@@ -1,6 +1,6 @@
 /**
  * ProductCard.jsx
- * Uses ProductImage (serum.png + logo overlay) instead of emoji placeholder.
+ * Uses ProductImage (serum.webp + logo overlay) instead of emoji placeholder.
  * Wishlist heart and Add-to-cart button preserved.
  */
 import { useState } from 'react'

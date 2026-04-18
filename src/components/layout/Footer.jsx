@@ -86,11 +86,11 @@ export default function Footer() {
               */}
               <div style={{ background: 'white', borderRadius: 10, padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}>
                 <img
-                  src="/images/logo.png"
+                  src="/images/logo.webp"
                   alt="VerdeBliss"
                   style={{ height: 34, width: 'auto', objectFit: 'contain', display: 'block' }}
                   onError={(e) => {
-                    /* If logo.png is missing, hide the white container and show text */
+                    /* If logo.webp is missing, hide the white container and show text */
                     e.currentTarget.closest('div').style.display = 'none'
                     e.currentTarget.closest('button').querySelector('span').style.display = 'flex'
                   }}

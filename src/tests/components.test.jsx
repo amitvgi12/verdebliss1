@@ -75,25 +75,25 @@ describe('ProductImage component', () => {
     expect(screen.getByAltText('Niacinamide Pore Serum')).toBeInTheDocument()
   })
 
-  it('falls back to serum.png for unknown ingredient', () => {
+  it('falls back to serum.webp for unknown ingredient', () => {
     const p = { ...baseProduct, ingredient: 'Unknown', name: 'Unknown Product' }
     const { container } = render(<ProductImage product={p} />)
     const img = container.querySelector('img')
-    expect(img.src).toContain('serum.png')
+    expect(img.src).toContain('serum.webp')
   })
 
   it('uses image_url from Supabase when provided', () => {
-    const p = { ...baseProduct, image_url: '/images/products/custom.png' }
+    const p = { ...baseProduct, image_url: '/images/products/custom.webp' }
     const { container } = render(<ProductImage product={p} />)
     const img = container.querySelector('img')
-    expect(img.src).toContain('custom.png')
+    expect(img.src).toContain('custom.webp')
   })
 
   it('renders ingredient-matched image for Turmeric', () => {
     const p = { ...baseProduct, ingredient: 'Turmeric', name: 'Cleanser' }
     const { container } = render(<ProductImage product={p} />)
     const img = container.querySelector('img')
-    expect(img.src).toContain('cleanser.png')
+    expect(img.src).toContain('cleanser.webp')
   })
 
   it('renders without crashing for a product with no ingredient', () => {
