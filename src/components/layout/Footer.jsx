@@ -35,13 +35,13 @@ const COMPANY_LINKS = [
 const SUPPORT_LINKS = [
   ['My Account', '/account'],
   ['Orders',     '/account'],
-  ['Returns',    null],
+  ['Returns & Refund', 'refund'],
   ['Contact',    '/contact'],
 ]
 
 /* Legal opens modals, not pages */
-const LEGAL_LINKS = ['privacy', 'terms', 'cookie']
-const LEGAL_LABELS = { privacy: 'Privacy Policy', terms: 'Terms of Service', cookie: 'Cookie Policy' }
+const LEGAL_LINKS = ['privacy', 'terms', 'cookie', 'refund']
+const LEGAL_LABELS = { privacy: 'Privacy Policy', terms: 'Terms of Service', cookie: 'Cookie Policy', refund: 'Returns & Refund Policy' }
 
 export default function Footer() {
   const navigate = useNavigate()

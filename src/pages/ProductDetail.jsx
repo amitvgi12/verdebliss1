@@ -1,14 +1,14 @@
 /**
- * ProductDetail.jsx — By Nature–style product page
+ * ProductDetail.jsx — Mobile-first responsive product page
  *
- * Layout:
- *   Breadcrumb → Back link
- *   [Sticky image panel | Scrollable info panel]
- *   You might also like
+ * Mobile  (<768px): single column — image full-width on top, info below
+ * Desktop (≥768px): 2-col sticky layout
  *
- * Image panel: fills 100% of its column using ProductImage.
- * Info panel:  category · name · stars · desc · key-info cards · price ·
- *              qty + add-to-cart · delivery · accordions · trust badges
+ * Issues fixed:
+ *  1. Hard-coded `gridTemplateColumns: '1fr 1fr'` caused content to bleed
+ *     off the right edge and compressed the image to ~150px on mobile.
+ *  2. `position: sticky` on the image panel caused layout issues on mobile.
+ *  3. `gap: 64` was too large for a narrow viewport.
  */
 
 import { useState } from 'react'
@@ -19,16 +19,16 @@ import {
   ChevronRight, Plus, Minus, Share2, Truck,
 } from 'lucide-react'
 import Stars from '@/components/ui/Stars'
-import Badge from '@/components/ui/Badge'
 import ProductImage from '@/components/ui/ProductImage'
 import ProductCard from '@/components/ui/ProductCard'
 import { useProduct, useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
+import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { C, FONT } from '@/constants/theme'
 
-/* ─── Per-ingredient ingredient tags ─────────────── */
+/* ─── Per-ingredient content ──────────────────────── */
 const INGREDIENT_TAGS = {
   'Bakuchiol':   ['Bakuchiol Extract', 'Jojoba Oil', 'Vitamin E', 'Hyaluronic Acid'],
   'Rose Hip':    ['Rosehip Oil', 'Ceramides', 'Niacinamide', 'Vitamin C'],
@@ -50,7 +50,7 @@ const HOW_TO_USE = [
 const BENEFITS = [
   { icon: '💧', title: 'Deep Hydration', desc: 'Clinically proven moisture lock for 72 hours.' },
   { icon: '✨', title: 'Visible Radiance', desc: 'Brighter, more even-toned skin in 14 days.' },
-  { icon: '🛡️', title: 'Barrier Support', desc: 'Reinforces the skin\'s natural protective barrier.' },
+  { icon: '🛡️', title: 'Barrier Support', desc: "Reinforces the skin's natural protective barrier." },
 ]
 
 /* ─── Accordion ───────────────────────────────────── */
@@ -93,10 +93,13 @@ function Accordion({ id, label, open, onToggle, children }) {
   )
 }
 
-/* ─── Main component ──────────────────────────────── */
+/* ─── Main ────────────────────────────────────────── */
 export default function ProductDetail() {
   const { id }     = useParams()
   const navigate   = useNavigate()
+  const width      = useWindowWidth()
+  const isMobile   = width < BP.tablet
+
   const { product: p, loading } = useProduct(id)
   const { products: all }       = useProducts({})
   const addItem    = useCartStore((s) => s.addItem)
@@ -113,16 +116,17 @@ export default function ProductDetail() {
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const toggle_ = (id) => setSection((prev) => prev === id ? '' : id)
+  const toggleAcc = (id) => setSection((prev) => (prev === id ? '' : id))
 
-  /* ─── Loading / 404 ──────────────────────────── */
+  /* ─── States ──────────────────────────────────── */
   if (loading) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted }}>
       Loading…
     </div>
   )
+
   if (!p) return (
-    <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+    <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 24px' }}>
       <div style={{ fontSize: 48 }}>🌿</div>
       <div style={{ fontFamily: FONT.serif, fontSize: 22, color: C.muted }}>Product not found</div>
       <button onClick={() => navigate('/products')}
@@ -132,72 +136,79 @@ export default function ProductDetail() {
     </div>
   )
 
-  const related   = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
-  const tags      = INGREDIENT_TAGS[p.ingredient] ?? [p.ingredient, 'Natural Botanicals', 'Aloe Vera', 'Vitamin E']
-  const mrp       = Math.round((p.price ?? 0) * 1.25)
-  const discount  = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
-  const loyalPts  = Math.floor((p.price ?? 0) / 10)
-
-  /* derive category label */
+  const related  = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
+  const tags     = INGREDIENT_TAGS[p.ingredient] ?? [p.ingredient, 'Natural Botanicals', 'Aloe Vera', 'Vitamin E']
+  const mrp      = Math.round((p.price ?? 0) * 1.25)
+  const discount = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
+  const loyalPts = Math.floor((p.price ?? 0) / 10)
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
+
+  /* ─── Responsive values ─────────────────────── */
+  const outerPad    = isMobile ? '0 16px' : '0 24px'
+  const sectionPad  = isMobile ? '20px 16px 48px' : '32px 24px 64px'
+  const gridStyle   = isMobile
+    ? { display: 'flex', flexDirection: 'column', gap: 0 }
+    : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }
 
   return (
     <div style={{ background: C.bg, minHeight: '100vh' }}>
 
-      {/* ── Breadcrumb ────────────────────────── */}
-      <div style={{ borderBottom: `1px solid ${C.border}`, background: C.bg }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 40, fontSize: 12, color: C.muted }}>
+      {/* ── Breadcrumb ───────────────────────────── */}
+      <div style={{ borderBottom: `1px solid ${C.border}`, background: C.bg, overflowX: 'hidden' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: outerPad }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, height: 40, fontSize: 12, color: C.muted, flexWrap: 'nowrap', overflow: 'hidden' }}>
             <button onClick={() => navigate('/')} style={crumbBtn}>Home</button>
-            <ChevronRight size={12} />
+            <ChevronRight size={11} style={{ flexShrink: 0 }} />
             <button onClick={() => navigate('/products')} style={crumbBtn}>Shop</button>
-            <ChevronRight size={12} />
-            <span style={{ color: C.text, fontWeight: 500 }}>{p.name}</span>
+            <ChevronRight size={11} style={{ flexShrink: 0 }} />
+            <span style={{ color: C.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+              {p.name}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* ── Main grid ─────────────────────────── */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px 64px' }}>
+      {/* ── Main content ─────────────────────────── */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: sectionPad }}>
 
         {/* Back link */}
         <button onClick={() => navigate('/products')}
-          style={{ background: 'none', border: 'none', color: C.muted, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'inherit', fontWeight: 500, marginBottom: 28, padding: 0 }}>
+          style={{ background: 'none', border: 'none', color: C.muted, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'inherit', fontWeight: 500, marginBottom: isMobile ? 16 : 28, padding: 0 }}>
           <ArrowLeft size={13} /> Back to Products
         </button>
 
-        {/* 2-col grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }}>
+        {/* ── Responsive 1-col (mobile) / 2-col (desktop) grid ── */}
+        <div style={gridStyle}>
 
-          {/* ── LEFT: full-fill image ──────────── */}
+          {/* ── Image panel ────────────────────────── */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: isMobile ? 0 : -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.45 }}
-            style={{ position: 'sticky', top: 80 }}
+            /* Sticky only on desktop — mobile stacks vertically */
+            style={isMobile ? {} : { position: 'sticky', top: 80 }}
           >
             {/*
-             * Aspect-ratio box so the image gets a defined height.
-             * ProductImage fills 100% × 100% of this box.
+             * Mobile: full-width square — no tiny corner image.
+             * Desktop: same full-width square in the left column.
              */}
             <div style={{
-              borderRadius: 24,
+              borderRadius: isMobile ? 16 : 24,
               overflow: 'hidden',
-              aspectRatio: '1 / 1',       /* square container */
+              aspectRatio: '1 / 1',
               width: '100%',
               position: 'relative',
               boxShadow: '0 8px 40px rgba(0,0,0,0.07)',
+              /* Bottom margin on mobile to space from info below */
+              marginBottom: isMobile ? 20 : 0,
             }}>
               <div style={{ position: 'absolute', inset: 0 }}>
                 <ProductImage product={p} />
               </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-                {p.badges?.map((b) => <Badge key={b} label={b} />)}
-              </div>
             </div>
 
             {/* Trust badge pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 16 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: isMobile ? 0 : 16, marginBottom: isMobile ? 20 : 0 }}>
               {(p.badges ?? []).map((b) => (
                 <span key={b} style={{
                   fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
@@ -209,11 +220,11 @@ export default function ProductDetail() {
             </div>
           </motion.div>
 
-          {/* ── RIGHT: info panel ─────────────── */}
+          {/* ── Info panel ─────────────────────────── */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: isMobile ? 0 : 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.45, delay: 0.08 }}
+            transition={{ duration: 0.45, delay: isMobile ? 0 : 0.08 }}
           >
             {/* Category */}
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', color: C.gold, marginBottom: 10 }}>
@@ -222,30 +233,29 @@ export default function ProductDetail() {
 
             {/* Name */}
             <h1 style={{
-              fontFamily: FONT.serif, fontSize: 'clamp(28px,3.5vw,42px)',
-              fontWeight: 400, color: C.text, lineHeight: 1.1,
-              marginBottom: 14, letterSpacing: '-0.01em',
+              fontFamily: FONT.serif,
+              fontSize: isMobile ? 'clamp(24px,7vw,34px)' : 'clamp(28px,3.5vw,42px)',
+              fontWeight: 400, color: C.text,
+              lineHeight: 1.15, marginBottom: 14, letterSpacing: '-0.01em',
             }}>
               {p.name}
             </h1>
 
             {/* Stars */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
               <Stars rating={p.rating} size={14} />
               <span style={{ fontSize: 13, color: C.muted }}>
                 {p.rating?.toFixed(1)} ({p.review_count} verified reviews)
               </span>
-              <span style={{ color: C.border }}>·</span>
-              <button style={{ ...linkBtn }}>Read reviews</button>
             </div>
 
             {/* Description */}
-            <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, marginBottom: 24 }}>
+            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, marginBottom: 20 }}>
               {p.description}
             </p>
 
             {/* Key info cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
               <div style={infoCard}>
                 <div style={infoLabel}>KEY INGREDIENT</div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{p.ingredient}</div>
@@ -254,30 +264,24 @@ export default function ProductDetail() {
                 <div style={infoLabel}>IDEAL FOR</div>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {(p.skin_types ?? []).map((s) => (
-                    <span key={s} style={{
-                      background: C.sagePale, color: C.forest,
-                      fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 500,
-                    }}>{s}</span>
+                    <span key={s} style={{ background: C.sagePale, color: C.forest, fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 500 }}>{s}</span>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 24 }} />
+            <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 20 }} />
 
             {/* Price */}
-            <div style={{ marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                <span style={{ fontFamily: FONT.serif, fontSize: 34, fontWeight: 600, color: C.text }}>
+            <div style={{ marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: FONT.serif, fontSize: isMobile ? 28 : 34, fontWeight: 600, color: C.text }}>
                   ₹{(p.price ?? 0).toLocaleString()}
                 </span>
-                <span style={{ fontSize: 15, color: C.light, textDecoration: 'line-through' }}>
+                <span style={{ fontSize: 14, color: C.light, textDecoration: 'line-through' }}>
                   ₹{mrp.toLocaleString()}
                 </span>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, background: C.forest, color: 'white',
-                  padding: '3px 10px', borderRadius: 99,
-                }}>
+                <span style={{ fontSize: 11, fontWeight: 700, background: C.forest, color: 'white', padding: '3px 10px', borderRadius: 99 }}>
                   {discount}% OFF
                 </span>
               </div>
@@ -286,38 +290,50 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Quantity + Add to Cart + Wishlist */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'stretch', marginBottom: 12, marginTop: 20 }}>
-              {/* Qty */}
+            {/* Qty + Add to Cart + Wishlist + Share */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'stretch', marginTop: 20, marginBottom: 12 }}>
+              {/* Qty selector */}
               <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}>
                 <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn} aria-label="Decrease">
                   <Minus size={13} />
                 </button>
-                <span style={{ width: 32, textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.text }}>{qty}</span>
+                <span style={{ width: 28, textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.text }}>{qty}</span>
                 <button onClick={() => setQty((q) => q + 1)} style={qtyBtn} aria-label="Increase">
                   <Plus size={13} />
                 </button>
               </div>
 
-              {/* Add to Cart */}
+              {/* Add to Cart — flex:1 so it fills available width */}
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleAdd}
                 style={{
-                  flex: 1, height: 52, borderRadius: 12, border: 'none', cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  background: added ? C.sage : C.forest, color: 'white',
+                  flex: 1,
+                  minWidth: 0,          /* prevent text from forcing width */
+                  height: 52,
+                  borderRadius: 12,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  whiteSpace: 'nowrap', /* "Add to Cart" stays on one line */
+                  background: added ? C.sage : C.forest,
+                  color: 'white',
                   transition: 'background 0.25s',
                 }}
               >
                 <AnimatePresence mode="wait" initial={false}>
                   {added ? (
-                    <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Check size={15} /> Added to Cart
+                    <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Check size={15} /> Added!
                     </motion.span>
                   ) : (
-                    <motion.span key="add" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <motion.span key="add" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <ShoppingBag size={15} /> Add to Cart
                     </motion.span>
                   )}
@@ -328,12 +344,8 @@ export default function ProductDetail() {
               <motion.button
                 whileTap={{ scale: 0.93 }}
                 onClick={() => toggle(p.id, user?.id)}
-                aria-label={has(p.id) ? 'Remove from wishlist' : 'Save to wishlist'}
-                style={{
-                  width: 52, height: 52, borderRadius: 12, cursor: 'pointer',
-                  border: `1px solid ${C.border}`, background: 'white', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
+                aria-label="Save to wishlist"
+                style={{ width: 52, height: 52, borderRadius: 12, cursor: 'pointer', border: `1px solid ${C.border}`, background: 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 <Heart size={18} fill={has(p.id) ? C.terra : 'none'} color={has(p.id) ? C.terra : C.muted} />
               </motion.button>
@@ -342,26 +354,22 @@ export default function ProductDetail() {
               <motion.button
                 whileTap={{ scale: 0.93 }}
                 aria-label="Share product"
-                style={{
-                  width: 52, height: 52, borderRadius: 12, cursor: 'pointer',
-                  border: `1px solid ${C.border}`, background: 'white', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
+                style={{ width: 52, height: 52, borderRadius: 12, cursor: 'pointer', border: `1px solid ${C.border}`, background: 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={() => navigator.share?.({ title: p.name, url: window.location.href })}
               >
                 <Share2 size={16} color={C.muted} />
               </motion.button>
             </div>
 
-            {/* Delivery note */}
+            {/* Delivery */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.sagePale, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: C.forest, marginBottom: 24, fontWeight: 500 }}>
               <Truck size={13} />
               Free shipping on orders above ₹499 · Ships in 2–3 business days
             </div>
 
-            {/* ── Accordions ────────────────────── */}
+            {/* Accordions */}
             <div style={{ borderTop: `1px solid ${C.border}` }}>
-              <Accordion id="ingredients" label="Full Ingredients" open={openSection === 'ingredients'} onToggle={() => toggle_('ingredients')}>
+              <Accordion id="ingredients" label="Full Ingredients" open={openSection === 'ingredients'} onToggle={() => toggleAcc('ingredients')}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 20 }}>
                   {tags.map((t) => (
                     <span key={t} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 99, background: C.sagePale, color: C.forest, fontWeight: 500 }}>{t}</span>
@@ -370,7 +378,7 @@ export default function ProductDetail() {
                 </div>
               </Accordion>
 
-              <Accordion id="how_to_use" label="How To Use" open={openSection === 'how_to_use'} onToggle={() => toggle_('how_to_use')}>
+              <Accordion id="how_to_use" label="How To Use" open={openSection === 'how_to_use'} onToggle={() => toggleAcc('how_to_use')}>
                 <ol style={{ paddingBottom: 20, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {HOW_TO_USE.map((step, i) => (
                     <li key={i} style={{ display: 'flex', gap: 12, fontSize: 13, color: C.muted, alignItems: 'flex-start' }}>
@@ -383,7 +391,7 @@ export default function ProductDetail() {
                 </ol>
               </Accordion>
 
-              <Accordion id="benefits" label="Key Benefits" open={openSection === 'benefits'} onToggle={() => toggle_('benefits')}>
+              <Accordion id="benefits" label="Key Benefits" open={openSection === 'benefits'} onToggle={() => toggleAcc('benefits')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 20 }}>
                   {BENEFITS.map((b) => (
                     <div key={b.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -400,13 +408,13 @@ export default function ProductDetail() {
           </motion.div>
         </div>
 
-        {/* ── You might also like ─────────────── */}
+        {/* ── You might also like ─────────────────── */}
         {related.length > 0 && (
-          <div style={{ marginTop: 80, borderTop: `1px solid ${C.border}`, paddingTop: 48 }}>
-            <h3 style={{ fontFamily: FONT.serif, fontSize: 30, fontWeight: 400, color: C.text, marginBottom: 28 }}>
+          <div style={{ marginTop: isMobile ? 48 : 80, borderTop: `1px solid ${C.border}`, paddingTop: isMobile ? 32 : 48 }}>
+            <h3 style={{ fontFamily: FONT.serif, fontSize: isMobile ? 24 : 30, fontWeight: 400, color: C.text, marginBottom: 24 }}>
               You might also like
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fill, minmax(200px, 1fr))', gap: isMobile ? 12 : 16 }}>
               {related.map((r) => <ProductCard key={r.id} product={r} />)}
             </div>
           </div>
@@ -416,24 +424,14 @@ export default function ProductDetail() {
   )
 }
 
-/* ─── Shared micro-styles ─────────────────────────── */
+/* ─── Micro-styles ────────────────────────────────── */
 const crumbBtn = {
   background: 'none', border: 'none', cursor: 'pointer',
   fontFamily: 'inherit', fontSize: 12, color: '#6E7D71',
-  padding: 0, fontWeight: 400,
+  padding: 0, fontWeight: 400, flexShrink: 0,
 }
-const linkBtn = {
-  background: 'none', border: 'none', cursor: 'pointer',
-  fontFamily: 'inherit', fontSize: 12, color: '#2D4A32',
-  padding: 0, textDecoration: 'underline', textUnderlineOffset: 3,
-}
-const infoCard = {
-  background: '#F2EAE0', borderRadius: 12, padding: '14px 16px',
-}
-const infoLabel = {
-  fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
-  color: '#6E7D71', marginBottom: 6, textTransform: 'uppercase',
-}
+const infoCard = { background: '#F2EAE0', borderRadius: 12, padding: '14px 16px' }
+const infoLabel = { fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#6E7D71', marginBottom: 6, textTransform: 'uppercase' }
 const qtyBtn = {
   background: 'none', border: 'none', cursor: 'pointer',
   width: 40, height: 52, display: 'flex', alignItems: 'center',
