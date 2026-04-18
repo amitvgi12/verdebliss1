@@ -5,7 +5,7 @@
  */
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Clock, Calendar } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Clock, Calendar } from 'lucide-react'
 import { useSEO } from '@/hooks/useSEO'
 import { C, FONT } from '@/constants/theme'
 
