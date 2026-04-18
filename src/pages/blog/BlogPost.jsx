@@ -21,7 +21,7 @@ const ARTICLES = {
     sections: [
       {
         heading: 'What Is Retinol — and Why Is It Famous?',
-        body: 'Retinol is a derivative of Vitamin A and one of the most clinically validated skincare ingredients ever studied. It accelerates cell turnover, stimulates collagen production, and visibly reduces fine lines, wrinkles, and hyperpigmentation. Decades of peer-reviewed research back it up.\n\nThe problem? Retinol is also one of the most irritating ingredients on the shelf. Redness, peeling, sun sensitivity, and the dreaded "retinol uglies" (the purging phase that can last weeks) keep millions of people from ever benefiting from it. Pregnant women must avoid it entirely. For Indian skin — already managing high UV exposure, humidity, and pollution — retinol's sensitivity to sunlight creates an additional layer of risk.',
+        body: 'Retinol is a derivative of Vitamin A and one of the most clinically validated skincare ingredients ever studied. It accelerates cell turnover, stimulates collagen production, and visibly reduces fine lines, wrinkles, and hyperpigmentation. Decades of peer-reviewed research back it up.\n\nThe problem? Retinol is also one of the most irritating ingredients on the shelf. Redness, peeling, sun sensitivity, and the dreaded "retinol uglies" (the purging phase that can last weeks) keep millions of people from ever benefiting from it. Pregnant women must avoid it entirely. For Indian skin — already managing high UV exposure, humidity, and pollution — retinol\'s sensitivity to sunlight creates an additional layer of risk.',
       },
       {
         heading: 'Enter Bakuchiol: The Plant-Based Game-Changer',

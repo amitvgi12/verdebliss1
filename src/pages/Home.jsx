@@ -37,7 +37,7 @@ const INGREDIENTS = [
 ]
 
 export default function Home() {
-  useSEO(PAGE_SEO.)
+  useSEO(PAGE_SEO.HOME)
   const navigate = useNavigate()
   const width = useWindowWidth()
   const isMobile = width < BP.tablet
