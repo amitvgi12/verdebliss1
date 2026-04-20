@@ -5,14 +5,14 @@
  * Vite serves /public at the site root, so the path in the browser is /ingredients/{file}.
  *
  * IMAGE FILE NAMES expected in /public/ingredients/:
- *   Bakuchiol    → bakuchiol.png
- *   Rose Hip     → rose_hip.png
- *   Green Tea    → greentealeaves.png
- *   Turmeric     → turmeric.png
- *   Zinc Oxide   → zinc.png
- *   Acai Berry   → blueberries.png
- *   Niacinamide  → niacinamide.png
- *   Shea Butter  → shea.png
+ *   Bakuchiol    → bakuchiol.webp
+ *   Rose Hip     → rose_hip.webp
+ *   Green Tea    → greentealeaves.webp
+ *   Turmeric     → turmeric.webp
+ *   Zinc Oxide   → zinc.webp
+ *   Acai Berry   → blueberries.webp
+ *   Niacinamide  → niacinamide.webp
+ *   Shea Butter  → shea.webp
  *
  * Add any new ingredient: just add its key → filename entry below.
  * If a file is missing the card shows a sage-green placeholder — never crashes.
@@ -23,14 +23,14 @@ import { C, FONT } from '@/constants/theme'
 
 /* ── Ingredient name → image filename map ───────────────────────────── */
 const IMAGE_MAP = {
-  'Bakuchiol':   '/images/ingredients/bakuchiol.png',
-  'Rose Hip':    '/images/ingredients/rose_hip.png',
-  'Green Tea':   '/images/ingredients/greentealeaves.png',
-  'Turmeric':    '/images/ingredients/turmeric.png',
-  'Zinc Oxide':  '/images/ingredients/zinc.png',
-  'Acai Berry':  '/images/ingredients/blueberries.png',
-  'Niacinamide': '/images/ingredients/niacinamide.png',
-  'Shea Butter': '/images/ingredients/shea.png',
+  'Bakuchiol':   '/images/ingredients/bakuchiol.webp',
+  'Rose Hip':    '/images/ingredients/rose_hip.webp',
+  'Green Tea':   '/images/ingredients/greentealeaves.webp',
+  'Turmeric':    '/images/ingredients/turmeric.webp',
+  'Zinc Oxide':  '/images/ingredients/zinc.webp',
+  'Acai Berry':  '/images/ingredients/blueberries.webp',
+  'Niacinamide': '/images/ingredients/niacinamide.webp',
+  'Shea Butter': '/images/ingredients/shea.webp',
 }
 
 /* ── Background tints that match each ingredient's colour palette ────── */

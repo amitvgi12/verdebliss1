@@ -7,7 +7,7 @@ import { useSEO, PAGE_SEO } from '@/hooks/useSEO'
  * FIX: decorative circles get zIndex:0, content area gets zIndex:1.
  *
  * NEW: Ingredients section with SVG IngredientCard illustrations.
- * NEW: Hero shows serum.png product image instead of emoji.
+ * NEW: Hero shows serum.webp product image instead of emoji.
  */
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -90,7 +90,7 @@ export default function Home() {
             <motion.div animate={{ y:[0,-8,0] }} transition={{ duration:4, repeat:Infinity, ease:'easeInOut' }}
               style={{ width:'min(360px, 90vw)', height:'min(360px, 90vw)', borderRadius:'50%', border:'2px solid rgba(125,155,118,0.35)', overflow:'hidden', boxShadow:'0 24px 64px rgba(0,0,0,0.35)', flexShrink:0 }}>
               <img
-                src="/images/products/serum.png"
+                src="/images/products/serum.webp"
                 alt="VerdeBliss Bakuchiol Serum"
                 style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', display:'block' }}
                 onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.style.cssText += 'background:rgba(125,155,118,0.15);display:flex;align-items:center;justify-content:center;font-size:110px'; e.currentTarget.parentElement.textContent='🌿' }}
