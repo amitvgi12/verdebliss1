@@ -330,7 +330,7 @@ export default function ProductDetail() {
                 <AnimatePresence mode="wait" initial={false}>
                   {added ? (
                     <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Check size={15} /> Added!
+                      <Check size={15} /> Added to cart!
                     </motion.span>
                   ) : (
                     <motion.span key="add" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
