@@ -50,11 +50,19 @@ export default function ChatBot() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: next }),
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
-      setMsgs([...next, { role: 'assistant', content: data.content?.[0]?.text ?? 'Let me help you find the perfect match! 🌿' }])
-    } catch {
-      setMsgs([...next, { role: 'assistant', content: "I'm having a moment — please try again! 🌿" }])
+      if (!res.ok) {
+        // Surface the real server error in development
+        console.error('[ChatBot] API error', res.status, data)
+        const msg = data?.error ?? `Server error ${res.status}`
+        setMsgs([...next, { role: 'assistant', content: `⚠️ ${msg}` }])
+      } else {
+        const text = data.content?.[0]?.text ?? 'Let me help you find the perfect match! 🌿'
+        setMsgs([...next, { role: 'assistant', content: text }])
+      }
+    } catch (err) {
+      console.error('[ChatBot] Network error', err)
+      setMsgs([...next, { role: 'assistant', content: "Couldn't reach the server — please check your connection and try again." }])
     }
     setLoading(false)
   }

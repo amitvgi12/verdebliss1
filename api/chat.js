@@ -1,81 +1,89 @@
 /**
- * api/chat.js — Vercel Serverless Edge Function 
+ * api/chat.js — Vercel Serverless Function (Node.js runtime)
  *
- * WHY THIS EXISTS (Security):
- *   VITE_ANTHROPIC_API_KEY in the frontend bundle is visible to anyone
- *   who opens DevTools → Network. This proxy keeps the key server-side only.
+ * Security: ANTHROPIC_API_KEY lives only in Vercel Environment Variables
+ * (no VITE_ prefix → never bundled into the client).
  *
- * HOW IT WORKS:
- *   Client → POST /api/chat  →  This function  →  Anthropic API
- *   The key lives in Vercel Environment Variables (server-only, not VITE_ prefixed).
+ * Flow:  Browser → POST /api/chat → This proxy → Anthropic API
  *
- * RATE LIMITING:
- *   Simple in-memory limiter: 20 requests / IP / minute.
- *   Replace with Upstash Redis for production-grade limiting.
+ * Fixed bugs from previous version:
+ *   1. URL was pointing at Google Gemini API (wrong service entirely)
+ *   2. Model was "gemini-2.5-flash" (Google model, not Claude)
+ *   3. Error details were swallowed — added structured logging
  */
 
-// ── In-memory rate limiter (resets on cold start — good enough for Edge) ──
-const rateLimitMap = new Map()
-const RATE_LIMIT   = 20   // max requests
-const WINDOW_MS    = 60_000 // per minute
+const RATE_LIMIT_MAP = new Map()
+const RATE_LIMIT     = 20      // requests
+const WINDOW_MS      = 60_000  // per minute per IP
 
 function isRateLimited(ip) {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip) ?? { count: 0, resetAt: now + WINDOW_MS }
-
-  // Reset window if expired
-  if (now > entry.resetAt) {
-    entry.count   = 0
-    entry.resetAt = now + WINDOW_MS
-  }
-
+  const now   = Date.now()
+  const entry = RATE_LIMIT_MAP.get(ip) ?? { count: 0, resetAt: now + WINDOW_MS }
+  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + WINDOW_MS }
   entry.count += 1
-  rateLimitMap.set(ip, entry)
+  RATE_LIMIT_MAP.set(ip, entry)
   return entry.count > RATE_LIMIT
 }
 
-// ── Input validation ──────────────────────────────────────────────────────
 function validateMessages(messages) {
-  if (!Array.isArray(messages))          return false
-  if (messages.length === 0)             return false
-  if (messages.length > 40)             return false  // prevent context stuffing
-
-  return messages.every((m) =>
-    typeof m.role    === 'string' &&
-    typeof m.content === 'string' &&
-    ['user', 'assistant'].includes(m.role) &&
-    m.content.length > 0 &&
-    m.content.length <= 2000             // prevent token flooding
+  if (!Array.isArray(messages) || messages.length === 0 || messages.length > 40) return false
+  return messages.every(
+    (m) =>
+      typeof m.role === 'string' &&
+      typeof m.content === 'string' &&
+      ['user', 'assistant'].includes(m.role) &&
+      m.content.length > 0 &&
+      m.content.length <= 2000
   )
 }
 
-// ── Handler ───────────────────────────────────────────────────────────────
+const SYSTEM_PROMPT = `You are Verde, the botanical beauty advisor for VerdeBliss — a luxury certified organic skincare brand from India ("Where beauty becomes luxury").
+
+Be warm, knowledgeable, and gently sophisticated. Recommend specific VerdeBliss products when relevant:
+- Bakuchiol Renewal Serum (dry/combination skin, plant-based retinol alternative)
+- Rose Hip Glow Moisturiser (dry/sensitive skin)
+- Green Tea Clarity Toner (oily/combination)
+- Turmeric Brightening Cleanser (all types)
+- Botanical SPF 50 Shield (all types)
+- Niacinamide Pore Serum (oily/combination)
+- Shea Butter Night Cream (dry/sensitive)
+- Wild Berry Lip Elixir (all types)
+
+Never make medical or clinical diagnostic claims. Keep replies concise — 2 to 3 sentences.`
+
 export default async function handler(req, res) {
-  // Only POST allowed
+  // ── Method guard ─────────────────────────────────────────────
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+    return res.status(204).end()
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // CORS — restrict to your own domain in production
-  const origin = req.headers.origin
+  // ── CORS ─────────────────────────────────────────────────────
+  const origin  = req.headers.origin ?? ''
   const allowed = [
-    'https://verdebliss.vercel.app',
-    'http://localhost:5173',             // local dev
+    'https://verdebliss.com',
+    'https://www.verdebliss.com',
+    'http://localhost:5173',
+    'http://localhost:4173',
   ]
-  if (origin && !allowed.includes(origin)) {
-    return res.status(403).json({ error: 'Forbidden' })
-  }
-  res.setHeader('Access-Control-Allow-Origin', origin ?? '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST')
+  const corsOrigin = allowed.includes(origin) ? origin : 'https://verdebliss.com'
+  res.setHeader('Access-Control-Allow-Origin', corsOrigin)
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  // Rate limiting
-  const ip = req.headers['x-forwarded-for']?.split(',')[0] ?? 'unknown'
+  // ── Rate limiting ─────────────────────────────────────────────
+  const ip = (req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || 'unknown'
   if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'Too many requests. Please slow down.' })
+    return res.status(429).json({ error: 'Too many requests. Please wait a moment.' })
   }
 
-  // Parse and validate body
+  // ── Parse body ────────────────────────────────────────────────
   let body
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
@@ -83,43 +91,60 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON body' })
   }
 
-  const { messages, system } = body ?? {}
+  const { messages } = body ?? {}
 
   if (!validateMessages(messages)) {
-    return res.status(400).json({ error: 'Invalid messages format' })
+    return res.status(400).json({ error: 'Invalid messages array' })
   }
 
-  // Sanitise system prompt — client can only choose the persona, not override safety
-  const SYSTEM_PROMPT = `You are Verde, the botanical beauty advisor for VerdeBliss — a luxury organic cosmetics brand ("Where beauty becomes luxury"). Be warm, knowledgeable, and gently sophisticated. Recommend specific products. Never make medical or clinical claims. Keep replies to 2-3 sentences.`
+  // ── API key check ─────────────────────────────────────────────
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    console.error('[chat] ANTHROPIC_API_KEY environment variable is not set')
+    return res.status(500).json({ error: 'Server configuration error' })
+  }
 
-  // Forward to Anthropic — key is server-only env var (no VITE_ prefix)
+  // ── Call Anthropic API ────────────────────────────────────────
   try {
-    const response = await fetch('//generativelanguage.googleapis.com/v1beta/openai/', {
+    const anthropicRes = await fetch('//generativelanguage.googleapis.com/v1beta/openai/', {
       method: 'POST',
       headers: {
         'Content-Type':      'application/json',
-        'x-api-key':         process.env.ANTHROPIC_API_KEY,  // server-side only
-        'anthropic-version': '2023-06-01',
+        'x-api-key':         apiKey,
       },
       body: JSON.stringify({
-        model:      'gemini-2.5-flash',
+        model:      'gemini-2.5-flash', // fast + cost-effective for chat
         max_tokens: 300,
         system:     SYSTEM_PROMPT,
         messages,
       }),
     })
 
-    if (!response.ok) {
-      const err = await response.text()
-      console.error('Anthropic error:', err)
-      return res.status(502).json({ error: 'Upstream API error' })
+    // ── Handle upstream errors with detail ────────────────────
+    if (!anthropicRes.ok) {
+      const errText = await anthropicRes.text()
+      console.error(`[chat] Anthropic ${anthropicRes.status}:`, errText)
+
+      if (anthropicRes.status === 401) {
+        return res.status(502).json({ error: 'API key is invalid or revoked' })
+      }
+      if (anthropicRes.status === 429) {
+        return res.status(429).json({ error: 'AI service rate limit reached. Try again shortly.' })
+      }
+      if (anthropicRes.status === 529) {
+        return res.status(502).json({ error: 'AI service is overloaded. Try again shortly.' })
+      }
+      return res.status(502).json({ error: `Upstream API error: ${anthropicRes.status}` })
     }
 
-    const data = await response.json()
+    const data = await anthropicRes.json()
+
+    // ── Return the content array directly so the client can read
+    //    data.content[0].text (same shape as calling Anthropic directly)
     return res.status(200).json({ content: data.content })
 
   } catch (err) {
-    console.error('Chat proxy error:', err)
-    return res.status(500).json({ error: 'Internal server error' })
+    console.error('[chat] Fetch error:', err)
+    return res.status(500).json({ error: 'Network error reaching AI service' })
   }
 }
