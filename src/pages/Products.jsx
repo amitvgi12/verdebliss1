@@ -14,7 +14,7 @@ import { CATEGORIES, SKIN_TYPES, SORT_OPTIONS } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
 
 export default function Products() {
-  useSEO(PAGE_SEO.Products)
+  useSEO(PAGE_SEO.)
   const [params, setParams] = useSearchParams()
   const category = params.get('cat')  ?? 'All'
   const skinType = params.get('skin') ?? 'All'
@@ -50,7 +50,7 @@ export default function Products() {
           {/* Sidebar */}
           <aside style={{ background: C.card, borderRadius: 16, padding: 20, border: `1px solid ${C.border}`, marginTop: 24, position: 'sticky', top: 76 }}>
             <div style={{ marginBottom: 22 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.text, letterSpacing: '0.07em', marginBottom: 12 }}>CATEGORY</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.gold, letterSpacing: '0.12em', marginBottom: 12, paddingBottom: 6, borderBottom: `1px solid ${C.gold}`, opacity: 0.8 }}>CATEGORY</div>
               {CATEGORIES.map((c) => (
                 <button key={c} onClick={() => setFilter('cat', c)} style={{ display:'block', width:'100%', textAlign:'left', border:'none', padding:'7px 10px', fontSize:13, color: category===c ? C.forest : C.muted, fontWeight: category===c ? 600 : 400, cursor:'pointer', borderLeft: category===c ? `2px solid ${C.forest}` : '2px solid transparent', borderRadius:'0 6px 6px 0', background: category===c ? C.sagePale : 'none', fontFamily:'inherit', transition:'all 0.15s' }}>
                   {c}
@@ -58,7 +58,7 @@ export default function Products() {
               ))}
             </div>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: C.text, letterSpacing: '0.07em', marginBottom: 12 }}>SKIN TYPE</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.gold, letterSpacing: '0.12em', marginBottom: 12, paddingBottom: 6, borderBottom: `1px solid ${C.gold}`, opacity: 0.8 }}>SKIN TYPE</div>
               {SKIN_TYPES.map((s) => (
                 <button key={s} onClick={() => setFilter('skin', s)} style={{ display:'block', width:'100%', textAlign:'left', border:'none', padding:'7px 10px', fontSize:13, color: skinType===s ? C.terra : C.muted, fontWeight: skinType===s ? 600 : 400, cursor:'pointer', borderLeft: skinType===s ? `2px solid ${C.terra}` : '2px solid transparent', borderRadius:'0 6px 6px 0', background: skinType===s ? C.terraPale : 'none', fontFamily:'inherit', transition:'all 0.15s' }}>
                   {s}
@@ -76,7 +76,7 @@ export default function Products() {
               <div style={{ fontSize:13, color:C.muted }}>{products.length} products</div>
               <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
                 {SORT_OPTIONS.map((s) => (
-                  <button key={s} onClick={() => setFilter('sort', s)} style={{ background: sortBy===s ? C.forest : 'white', color: sortBy===s ? 'white' : C.muted, border:`1px solid ${sortBy===s ? C.forest : C.border}`, borderRadius:8, padding:'6px 10px', fontSize:11, cursor:'pointer', fontFamily:'inherit', fontWeight:500, transition:'all 0.15s', whiteSpace:'nowrap' }}>
+                  <button key={s} onClick={() => setFilter('sort', s)} style={{ background: sortBy===s ? C.forest : C.ivory, color: sortBy===s ? 'white' : C.muted, border:`1px solid ${sortBy===s ? C.forest : C.border}`, borderRadius:8, padding:'6px 10px', fontSize:11, cursor:'pointer', fontFamily:'inherit', fontWeight:500, transition:'all 0.15s', whiteSpace:'nowrap' }}>
                     {s}
                   </button>
                 ))}

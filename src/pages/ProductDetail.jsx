@@ -281,11 +281,11 @@ export default function ProductDetail() {
                 <span style={{ fontSize: 14, color: C.light, textDecoration: 'line-through' }}>
                   ₹{mrp.toLocaleString()}
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 700, background: C.forest, color: 'white', padding: '3px 10px', borderRadius: 99 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, background: C.gold, color: 'white', padding: '3px 10px', borderRadius: 99 }}>
                   {discount}% OFF
                 </span>
               </div>
-              <div style={{ fontSize: 12, color: C.sage, display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
+              <div style={{ fontSize: 12, color: C.gold, display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
                 <Award size={12} /> Earn {loyalPts} loyalty points with this purchase
               </div>
             </div>
@@ -330,7 +330,7 @@ export default function ProductDetail() {
                 <AnimatePresence mode="wait" initial={false}>
                   {added ? (
                     <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Check size={15} /> Added to Cart
+                      <Check size={15} /> Added!
                     </motion.span>
                   ) : (
                     <motion.span key="add" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -345,7 +345,7 @@ export default function ProductDetail() {
                 whileTap={{ scale: 0.93 }}
                 onClick={() => toggle(p.id, user?.id)}
                 aria-label="Save to wishlist"
-                style={{ width: 52, height: 52, borderRadius: 12, cursor: 'pointer', border: `1px solid ${C.border}`, background: 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: 52, height: 52, borderRadius: 12, cursor: 'pointer', border: `1px solid ${C.border}`, background: C.ivory, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 <Heart size={18} fill={has(p.id) ? C.terra : 'none'} color={has(p.id) ? C.terra : C.muted} />
               </motion.button>
@@ -354,7 +354,7 @@ export default function ProductDetail() {
               <motion.button
                 whileTap={{ scale: 0.93 }}
                 aria-label="Share product"
-                style={{ width: 52, height: 52, borderRadius: 12, cursor: 'pointer', border: `1px solid ${C.border}`, background: 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: 52, height: 52, borderRadius: 12, cursor: 'pointer', border: `1px solid ${C.border}`, background: C.ivory, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={() => navigator.share?.({ title: p.name, url: window.location.href })}
               >
                 <Share2 size={16} color={C.muted} />
@@ -362,7 +362,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Delivery */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.sagePale, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: C.forest, marginBottom: 24, fontWeight: 500 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.goldPale, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: C.olive, marginBottom: 24, fontWeight: 500 }}>
               <Truck size={13} />
               Free shipping on orders above ₹499 · Ships in 2–3 business days
             </div>

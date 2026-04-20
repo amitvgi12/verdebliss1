@@ -51,7 +51,7 @@ export default function Contact() {
           <div style={{ fontSize: 10, color: C.terra, letterSpacing: '0.14em', marginBottom: 24, fontWeight: 600 }}>CONTACT CHANNELS</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {CHANNELS.map((ch) => (
-              <div key={ch.title} style={{ background: 'white', borderRadius: 14, padding: '18px 20px', border: `1px solid ${C.border}`, display: 'flex', gap: 16, alignItems: 'center' }}>
+              <div key={ch.title} style={{ background: C.ivory, borderRadius: 14, padding: '18px 20px', border: `1px solid ${C.border}`, display: 'flex', gap: 16, alignItems: 'center' }}>
                 <div style={{ fontSize: 28, flexShrink: 0 }}>{ch.icon}</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}>{ch.title}</div>
@@ -79,18 +79,18 @@ export default function Contact() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Your name *"
-                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: 'white', color: C.text }} />
+                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: C.warmWhite, color: C.text }} />
               <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="Email address *"
-                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: 'white', color: C.text }} />
+                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: C.warmWhite, color: C.text }} />
               <select value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })}
-                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: 'white', color: C.text }}>
+                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: C.warmWhite, color: C.text }}>
                 <option value="">Select topic</option>
                 {TOPICS.map((t) => <option key={t}>{t}</option>)}
               </select>
               <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
                 placeholder="Your message *" rows={5}
-                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: 'white', color: C.text, resize: 'vertical' }} />
+                style={{ padding: '12px 16px', border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', background: C.warmWhite, color: C.text, resize: 'vertical' }} />
               <motion.button whileTap={{ scale: 0.97 }} onClick={handleSubmit} disabled={loading}
                 style={{ background: loading ? C.sage : C.forest, color: 'white', border: 'none', borderRadius: 10, padding: '13px', fontSize: 15, fontWeight: 600, cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
                 {loading ? 'Sending…' : 'Send Message'}

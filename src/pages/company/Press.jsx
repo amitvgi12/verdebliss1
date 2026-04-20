@@ -54,7 +54,7 @@ export default function Press() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
           {COVERAGE.map((c, i) => (
             <motion.div key={c.title} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} viewport={{ once: true }}
-              style={{ background: 'white', borderRadius: 14, padding: '24px', border: `1px solid ${C.border}` }}>
+              style={{ background: C.ivory, borderRadius: 14, padding: '24px', border: `1px solid ${C.border}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: C.sagePale, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: C.forest, flexShrink: 0 }}>
                   {c.logo}

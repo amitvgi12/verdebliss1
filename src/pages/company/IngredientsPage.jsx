@@ -115,7 +115,7 @@ export default function IngredientsPage() {
                 only appears on the full ingredients page (not on the home page
                 mini-cards where just image + name is shown).
               */}
-              <div style={{ background: 'white', borderRadius: 16, border: `1px solid ${C.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%', transition: 'box-shadow 0.2s, transform 0.2s' }}
+              <div style={{ background: C.ivory, borderRadius: 16, border: `1px solid ${C.border}`, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%', transition: 'box-shadow 0.2s, transform 0.2s' }}
                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 10px 32px rgba(0,0,0,0.09)'; e.currentTarget.style.transform = 'translateY(-4px)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)' }}
               >
@@ -157,7 +157,7 @@ export default function IngredientsPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07 }}
                 viewport={{ once: true }}
-                style={{ background: 'white', borderRadius: 14, padding: '20px 24px', border: `1px solid ${C.border}` }}
+                style={{ background: C.ivory, borderRadius: 14, padding: '20px 24px', border: `1px solid ${C.border}` }}
               >
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#FCEBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#A32D2D', flexShrink: 0, marginTop: 1 }}>

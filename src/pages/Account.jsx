@@ -92,7 +92,7 @@ function AuthForm() {
           </div>
 
           <button onClick={signInWithGoogle}
-            style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, background: 'white', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', color: C.text, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            style={{ border: `1px solid ${C.border}`, borderRadius: 10, padding: 12, background: C.ivory, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', color: C.text, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             🌐 Continue with Google
           </button>
         </div>

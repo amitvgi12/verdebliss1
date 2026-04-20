@@ -163,7 +163,7 @@ export default function ChatBot() {
                   )}
                   <div style={{
                     fontSize: 13, lineHeight: 1.55, padding: '8px 12px', borderRadius: m.role === 'user' ? '14px 14px 3px 14px' : '14px 14px 14px 3px',
-                    background: m.role === 'user' ? C.forest : 'white',
+                    background: m.role === 'user' ? C.forest : C.ivory,
                     color: m.role === 'user' ? 'white' : C.text,
                     border: m.role === 'user' ? 'none' : `1px solid ${C.border}`,
                     maxWidth: '78%',
@@ -176,7 +176,7 @@ export default function ChatBot() {
               {loading && (
                 <div style={{ display: 'flex', gap: 8 }}>
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#EAF0E8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>🌿</div>
-                  <div style={{ display: 'flex', gap: 4, padding: '10px 12px', background: 'white', border: `1px solid ${C.border}`, borderRadius: '14px 14px 14px 3px', width: 'fit-content' }}>
+                  <div style={{ display: 'flex', gap: 4, padding: '10px 12px', background: C.ivory, border: `1px solid ${C.border}`, borderRadius: '14px 14px 14px 3px', width: 'fit-content' }}>
                     {[0, 1, 2].map((i) => (
                       <motion.div key={i} animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
                         style={{ width: 6, height: 6, borderRadius: '50%', background: C.sage }} />

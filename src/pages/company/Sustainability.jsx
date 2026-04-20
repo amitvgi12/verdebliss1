@@ -60,7 +60,7 @@ export default function Sustainability() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
           {PILLARS.map((p, i) => (
             <motion.div key={p.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} viewport={{ once: true }}
-              style={{ background: 'white', borderRadius: 16, padding: '28px', border: `1px solid ${C.border}` }}>
+              style={{ background: C.ivory, borderRadius: 16, padding: '28px', border: `1px solid ${C.border}` }}>
               <div style={{ fontSize: 36, marginBottom: 16 }}>{p.icon}</div>
               <div style={{ fontSize: 17, fontWeight: 600, color: C.text, marginBottom: 10, fontFamily: FONT.serif }}>{p.title}</div>
               <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.75 }}>{p.body}</div>

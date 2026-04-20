@@ -5,7 +5,7 @@ const BADGE_STYLES = {
 }
 
 export default function Badge({ label }) {
-  const s = BADGE_STYLES[label] ?? { bg: '#EEE', color: '#444' }
+  const s = BADGE_STYLES[label] ?? { bg: '#F2EAE0', color: '#5C7A52' }
   return (
     <span style={{
       fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 99,

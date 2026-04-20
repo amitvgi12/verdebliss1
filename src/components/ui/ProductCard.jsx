@@ -1,6 +1,6 @@
 /**
  * ProductCard.jsx
- * Uses ProductImage (serum.webp + logo overlay) instead of emoji placeholder.
+ * Uses ProductImage (serum.png + logo overlay) instead of emoji placeholder.
  * Wishlist heart and Add-to-cart button preserved.
  */
 import { useState } from 'react'
@@ -39,7 +39,7 @@ export default function ProductCard({ product: p }) {
       whileHover={{ y: -5, boxShadow: '0 12px 40px rgba(0,0,0,0.09)' }}
       transition={{ duration: 0.2 }}
       onClick={() => navigate(`/products/${p.id}`)}
-      style={{ background: C.card, borderRadius: 16, overflow: 'hidden', cursor: 'pointer', border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}
+      style={{ background: C.card, borderRadius: 16, overflow: 'hidden', cursor: 'pointer', border: `1px solid ${C.border}`, borderTop: `2px solid ${C.gold}`, display: 'flex', flexDirection: 'column' }}
     >
       {/* Product image with logo watermark */}
       <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -49,7 +49,7 @@ export default function ProductCard({ product: p }) {
         <button
           onClick={handleWish}
           aria-label={has(p.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-          style={{ position:'absolute', top:10, right:10, background:'white', border:'none', borderRadius:'50%', width:30, height:30, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.1)', zIndex:2 }}
+          style={{ position:'absolute', top:10, right:10, background:C.ivory, border:'none', borderRadius:'50%', width:30, height:30, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', boxShadow:'0 2px 8px rgba(0,0,0,0.1)', zIndex:2 }}
         >
           <Heart size={13} fill={has(p.id) ? C.terra : 'none'} color={has(p.id) ? C.terra : C.muted} />
         </button>
@@ -62,14 +62,14 @@ export default function ProductCard({ product: p }) {
 
       {/* Info */}
       <div style={{ padding:'14px 16px', flex:1, display:'flex', flexDirection:'column', gap:6 }}>
-        <div style={{ fontSize:10, color:C.muted, fontWeight:600, letterSpacing:'0.07em' }}>{p.category?.toUpperCase()}</div>
+        <div style={{ display:'inline-flex', width:'fit-content', fontSize:9, color:C.olive, fontWeight:700, letterSpacing:'0.1em', background:C.goldPale, padding:'2px 8px', borderRadius:4 }}>{p.category?.toUpperCase()}</div>
         <div style={{ fontSize:14, fontWeight:500, color:C.text, lineHeight:1.3, fontFamily:FONT.serif }}>{p.name}</div>
         <div style={{ display:'flex', alignItems:'center', gap:5 }}>
           <Stars rating={p.rating} />
           <span style={{ fontSize:11, color:C.muted }}>({p.review_count})</span>
         </div>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:'auto', paddingTop:6 }}>
-          <span style={{ fontSize:16, fontWeight:700, color:C.text }}>₹{p.price?.toLocaleString()}</span>
+          <span style={{ fontSize:16, fontWeight:700, color:C.text, fontFamily:FONT.serif }}>₹{p.price?.toLocaleString()}</span>
           <motion.button
             whileTap={{ scale: 0.93 }}
             onClick={handleAdd}

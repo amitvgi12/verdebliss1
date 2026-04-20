@@ -1,7 +1,7 @@
 /**
  * Nav.jsx — Sticky navigation bar
  * Responsive: full bar ≥768px, hamburger + icons only <768px
- * Logo: /public/images/logo.webp (logo.webp uploaded by user)
+ * Logo: /public/images/logo.png (logo.png uploaded by user)
  */
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -43,10 +43,10 @@ export default function Nav() {
       <nav style={{ background: 'rgba(250,247,242,0.96)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 100, padding: '0 16px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, height: 60 }}>
 
-          {/* Logo — /public/images/logo.webp */}
+          {/* Logo — /public/images/logo.png */}
           <button onClick={() => goTo('/')} aria-label="VerdeBliss home" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
             <img
-              src="/images/logo.webp"
+              src="/images/logo.png"
               alt="VerdeBliss"
               style={{ height: 40, width: 'auto', objectFit: 'contain' }}
               onError={(e) => {
@@ -62,7 +62,7 @@ export default function Nav() {
           {!isMobile && (
             <div style={{ display: 'flex', gap: 20, marginLeft: 8, flexShrink: 0 }}>
               {links.map(({ path, label }) => (
-                <button key={path} onClick={() => goTo(path)} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: isActive(path) ? 600 : 400, color: isActive(path) ? C.forest : C.muted, cursor: 'pointer', fontFamily: 'inherit', padding: '4px 0', borderBottom: isActive(path) ? `2px solid ${C.forest}` : '2px solid transparent', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+                <button key={path} onClick={() => goTo(path)} style={{ background: 'none', border: 'none', fontSize: 13, fontWeight: isActive(path) ? 600 : 400, color: isActive(path) ? C.forest : C.muted, cursor: 'pointer', fontFamily: 'inherit', padding: '4px 0', borderBottom: isActive(path) ? `2px solid ${C.gold}` : '2px solid transparent', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
                   {label}
                 </button>
               ))}
@@ -93,7 +93,7 @@ export default function Nav() {
               <ShoppingBag size={18} color={C.text} />
               <AnimatePresence>
                 {itemCount > 0 && (
-                  <motion.span key="badge" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} style={{ position: 'absolute', top: 3, right: 3, background: C.terra, color: 'white', borderRadius: '50%', width: 16, height: 16, fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <motion.span key="badge" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} style={{ position: 'absolute', top: 3, right: 3, background: C.gold, color: 'white', borderRadius: '50%', width: 16, height: 16, fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {itemCount}
                   </motion.span>
                 )}

@@ -7,7 +7,7 @@ import { useSEO, PAGE_SEO } from '@/hooks/useSEO'
  * FIX: decorative circles get zIndex:0, content area gets zIndex:1.
  *
  * NEW: Ingredients section with SVG IngredientCard illustrations.
- * NEW: Hero shows serum.webp product image instead of emoji.
+ * NEW: Hero shows serum.png product image instead of emoji.
  */
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -37,7 +37,7 @@ const INGREDIENTS = [
 ]
 
 export default function Home() {
-  useSEO(PAGE_SEO.HOME)
+  useSEO(PAGE_SEO.)
   const navigate = useNavigate()
   const width = useWindowWidth()
   const isMobile = width < BP.tablet
@@ -77,7 +77,7 @@ export default function Home() {
             <div style={{ display:'flex', gap:36, marginTop:52, flexWrap:'wrap' }}>
               {[['500+','Organic Ingredients'],['4.8★','Average Rating'],['50K+','Happy Customers']].map(([n,l]) => (
                 <div key={l}>
-                  <div style={{ fontSize:24, fontWeight:700, color:'white', fontFamily:FONT.serif }}>{n}</div>
+                  <div style={{ fontSize:24, fontWeight:700, color:C.gold, fontFamily:FONT.serif }}>{n}</div>
                   <div style={{ fontSize:11, color:'rgba(255,255,255,0.45)', marginTop:2 }}>{l}</div>
                 </div>
               ))}
@@ -90,7 +90,7 @@ export default function Home() {
             <motion.div animate={{ y:[0,-8,0] }} transition={{ duration:4, repeat:Infinity, ease:'easeInOut' }}
               style={{ width:'min(360px, 90vw)', height:'min(360px, 90vw)', borderRadius:'50%', border:'2px solid rgba(125,155,118,0.35)', overflow:'hidden', boxShadow:'0 24px 64px rgba(0,0,0,0.35)', flexShrink:0 }}>
               <img
-                src="/images/products/serum.webp"
+                src="/images/products/serum.png"
                 alt="VerdeBliss Bakuchiol Serum"
                 style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', display:'block' }}
                 onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.style.cssText += 'background:rgba(125,155,118,0.15);display:flex;align-items:center;justify-content:center;font-size:110px'; e.currentTarget.parentElement.textContent='🌿' }}
@@ -188,7 +188,7 @@ export default function Home() {
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:20 }}>
           {TESTIMONIALS.map((t,i) => (
             <motion.div key={i} initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }} transition={{ delay: i*0.1 }} viewport={{ once:true }}
-              style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:16, padding:28 }}>
+              style={{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`3px solid ${C.gold}`, borderRadius:16, padding:28 }}>
               <Stars rating={t.rating} size={14}/>
               <p style={{ fontSize:16, color:C.text, lineHeight:1.7, margin:'16px 0', fontStyle:'italic', fontFamily:FONT.serif }}>&ldquo;{t.text}&rdquo;</p>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
@@ -215,8 +215,8 @@ export default function Home() {
         ) : (
           <div style={{ display:'flex', gap:10, justifyContent:'center', maxWidth:400, margin:'0 auto', flexWrap:'wrap' }}>
             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com"
-              style={{ flex:1, minWidth:180, padding:'12px 18px', border:`1px solid ${C.border}`, borderRadius:10, fontSize:14, outline:'none', fontFamily:'inherit', background:'white', color:C.text }}/>
-            <button onClick={() => setSubscribed(true)} style={{ background:C.forest, color:'white', border:'none', borderRadius:10, padding:'12px 22px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+              style={{ flex:1, minWidth:180, padding:'12px 18px', border:`1px solid ${C.border}`, borderRadius:10, fontSize:14, outline:'none', fontFamily:'inherit', background:C.warmWhite, color:C.text }}/>
+            <button onClick={() => setSubscribed(true)} style={{ background:C.gold, color:'white', border:'none', borderRadius:10, padding:'12px 22px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
               Subscribe
             </button>
           </div>

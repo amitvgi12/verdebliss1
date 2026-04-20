@@ -65,9 +65,9 @@ export default function OurStory() {
                 style={{ display: 'flex', gap: 32, marginBottom: 48, position: 'relative' }}>
                 {/* Year circle */}
                 <div style={{ width: 80, flexShrink: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 4 }}>
-                  <div style={{ background: C.forest, color: 'white', borderRadius: 99, padding: '4px 12px', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', zIndex: 1 }}>{t.year}</div>
+                  <div style={{ background: C.gold, color: 'white', borderRadius: 99, padding: '4px 12px', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', zIndex: 1 }}>{t.year}</div>
                 </div>
-                <div style={{ flex: 1, background: 'white', borderRadius: 16, padding: '20px 24px', border: `1px solid ${C.border}` }}>
+                <div style={{ flex: 1, background: C.ivory, borderRadius: 16, padding: '20px 24px', border: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 8, fontFamily: FONT.serif }}>{t.title}</div>
                   <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.7 }}>{t.body}</div>
                 </div>
@@ -86,7 +86,7 @@ export default function OurStory() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
           {TEAM.map((m, i) => (
             <motion.div key={m.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} viewport={{ once: true }}
-              style={{ background: 'white', borderRadius: 16, padding: 28, border: `1px solid ${C.border}`, textAlign: 'center' }}>
+              style={{ background: C.ivory, borderRadius: 16, padding: 28, border: `1px solid ${C.border}`, textAlign: 'center' }}>
               <div style={{ width: 72, height: 72, borderRadius: '50%', background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 700, color: C.forest, margin: '0 auto 16px', fontFamily: FONT.serif }}>
                 {m.initial}
               </div>

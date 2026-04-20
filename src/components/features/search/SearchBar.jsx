@@ -76,7 +76,7 @@ export default function SearchBar() {
         {showDropdown && (
           <motion.div
             initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-            style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, background: 'white', border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.1)', overflow: 'hidden', zIndex: 200 }}
+            style={{ position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, background: '#FDFAF6', border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.1)', overflow: 'hidden', zIndex: 200 }}
           >
             {q.length === 0 && recent.length > 0 && (
               <>
@@ -84,7 +84,7 @@ export default function SearchBar() {
                 {recent.map((r) => (
                   <div key={r} onClick={() => setQ(r)} style={{ padding: '10px 16px', fontSize: 13, color: C.muted, cursor: 'pointer', borderBottom: `1px solid ${C.border}` }}
                     onMouseEnter={(e) => e.currentTarget.style.background = C.bg}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}>
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#FDFAF6'}>
                     🕐 {r}
                   </div>
                 ))}
@@ -95,9 +95,9 @@ export default function SearchBar() {
                 <div style={{ padding: '8px 16px', fontSize: 10, color: C.muted, fontWeight: 600, letterSpacing: '0.08em', borderBottom: `1px solid ${C.border}` }}>PRODUCTS</div>
                 {results.map((p, i) => (
                   <div key={p.id} onClick={() => go(p)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', borderBottom: `1px solid ${C.border}`, background: cursor === i ? C.bg : 'white' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', borderBottom: `1px solid ${C.border}`, background: cursor === i ? C.ivory : '#FDFAF6' }}
                     onMouseEnter={(e) => e.currentTarget.style.background = C.bg}
-                    onMouseLeave={(e) => e.currentTarget.style.background = cursor === i ? C.bg : 'white'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = cursor === i ? C.ivory : '#FDFAF6'}
                   >
                     <div style={{ width: 38, height: 38, borderRadius: 9, background: p.bg_color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{p.emoji}</div>
                     <div style={{ flex: 1 }}>

@@ -68,8 +68,8 @@ export default function CartDrawer() {
             {/* Footer */}
             {items.length > 0 && (
               <div style={{ padding: '20px 24px', borderTop: `1px solid ${C.border}` }}>
-                <div style={{ background: '#EAF0E8', borderRadius: 10, padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Award size={13} color={C.forest} />
+                <div style={{ background: C.goldPale, borderRadius: 10, padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Award size={13} color={C.gold} />
                   <span style={{ fontSize: 12, color: C.forest, fontWeight: 500 }}>You&apos;ll earn {pointsToEarn} loyalty points on this order</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>

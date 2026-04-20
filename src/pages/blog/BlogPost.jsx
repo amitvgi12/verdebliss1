@@ -5,7 +5,7 @@
  */
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Clock, Calendar } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar } from 'lucide-react'
 import { useSEO } from '@/hooks/useSEO'
 import { C, FONT } from '@/constants/theme'
 
@@ -17,11 +17,11 @@ const ARTICLES = {
     category: 'Ingredient Science',
     date: '12 March 2026',
     readTime: 6,
-    image: '/images/ingredients/bakuchiol.webp',
+    image: '/images/ingredients/bakuchiol.png',
     sections: [
       {
         heading: 'What Is Retinol — and Why Is It Famous?',
-        body: 'Retinol is a derivative of Vitamin A and one of the most clinically validated skincare ingredients ever studied. It accelerates cell turnover, stimulates collagen production, and visibly reduces fine lines, wrinkles, and hyperpigmentation. Decades of peer-reviewed research back it up.\n\nThe problem? Retinol is also one of the most irritating ingredients on the shelf. Redness, peeling, sun sensitivity, and the dreaded "retinol uglies" (the purging phase that can last weeks) keep millions of people from ever benefiting from it. Pregnant women must avoid it entirely. For Indian skin — already managing high UV exposure, humidity, and pollution — retinol\'s sensitivity to sunlight creates an additional layer of risk.',
+        body: 'Retinol is a derivative of Vitamin A and one of the most clinically validated skincare ingredients ever studied. It accelerates cell turnover, stimulates collagen production, and visibly reduces fine lines, wrinkles, and hyperpigmentation. Decades of peer-reviewed research back it up.\n\nThe problem? Retinol is also one of the most irritating ingredients on the shelf. Redness, peeling, sun sensitivity, and the dreaded "retinol uglies" (the purging phase that can last weeks) keep millions of people from ever benefiting from it. Pregnant women must avoid it entirely. For Indian skin — already managing high UV exposure, humidity, and pollution — retinol's sensitivity to sunlight creates an additional layer of risk.',
       },
       {
         heading: 'Enter Bakuchiol: The Plant-Based Game-Changer',
@@ -44,7 +44,7 @@ const ARTICLES = {
     category: 'Skin Routines',
     date: '4 April 2026',
     readTime: 8,
-    image: '/images/ingredients/shea.webp',
+    image: '/images/ingredients/shea.png',
     sections: [
       {
         heading: 'Understanding Dry Skin: It\'s Not Just Dehydration',
@@ -71,7 +71,7 @@ const ARTICLES = {
     category: 'Education',
     date: '18 April 2026',
     readTime: 7,
-    image: '/images/ingredients/turmeric.webp',
+    image: '/images/ingredients/turmeric.png',
     sections: [
       {
         heading: 'What Makes Indian Skin Unique',
@@ -113,7 +113,7 @@ export default function BlogPost() {
             publisher: {
               '@type': 'Organization',
               name: 'VerdeBliss',
-              logo: { '@type': 'ImageObject', url: 'https://verdebliss.vercel.app/images/logo.webp' },
+              logo: { '@type': 'ImageObject', url: 'https://verdebliss.vercel.app/images/logo.png' },
             },
             image: `https://verdebliss.vercel.app${article.image}`,
             url: `https://verdebliss.vercel.app/blog/${slug}`,
@@ -187,8 +187,8 @@ export default function BlogPost() {
         ))}
 
         {/* CTA */}
-        <div style={{ marginTop: 56, padding: 32, background: C.sagePale, borderRadius: 20, textAlign: 'center' }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: 22, color: C.forest, marginBottom: 10 }}>
+        <div style={{ marginTop: 56, padding: 32, background: C.goldPale, borderRadius: 20, textAlign: 'center' }}>
+          <div style={{ fontFamily: FONT.serif, fontSize: 22, color: C.text, marginBottom: 10 }}>
             Ready to start your organic ritual?
           </div>
           <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>
