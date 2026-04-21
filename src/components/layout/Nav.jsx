@@ -1,7 +1,7 @@
 /**
  * Nav.jsx — Sticky navigation bar
  * Responsive: full bar ≥768px, hamburger + icons only <768px
- * Logo: /public/images/logo.png (logo.png uploaded by user)
+ * Logo: /public/images/logo.webp (logo.webp uploaded by user)
  */
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -43,10 +43,10 @@ export default function Nav() {
       <nav style={{ background: 'rgba(250,247,242,0.96)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 100, padding: '0 16px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, height: 60 }}>
 
-          {/* Logo — /public/images/logo.png */}
+          {/* Logo — /public/images/logo.webp */}
           <button onClick={() => goTo('/')} aria-label="VerdeBliss home" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
             <img
-              src="/images/logo.png"
+              src="/images/logo.webp"
               alt="VerdeBliss"
               style={{ height: 40, width: 'auto', objectFit: 'contain' }}
               onError={(e) => {
