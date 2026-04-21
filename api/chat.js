@@ -1,26 +1,28 @@
 /**
  * api/chat.js — Vercel Serverless Function
+ * Proxies to Google Gemini (gemini-2.5-flash).
  *
- * Proxies chat requests to Google Gemini (gemini-2.5-flash).
- * GEMINI_API_KEY must be set in Vercel → Settings → Environment Variables.
- * It must NOT have the VITE_ prefix — keep it server-side only.
+ * ROOT CAUSE OF "temporarily unavailable" (503):
+ *   gemini-2.5-flash defaults to DYNAMIC THINKING MODE — the model
+ *   "thinks" before every reply, which routinely exceeds Vercel's
+ *   10-second serverless timeout. Gemini returns 503 when it times out.
  *
- * Flow:  Browser → POST /api/chat → This proxy → Gemini API
+ * FIXES APPLIED:
+ *   1. thinkingBudget: 0  — disables thinking entirely for instant chat
+ *   2. Auth via x-goog-api-key HEADER (not ?key= query param — fails
+ *      in some server environments on newer Gemini endpoints)
+ *   3. Full error body logged on every non-200 so you can diagnose
+ *      issues in Vercel → Functions → Logs
+ *   4. Fallback to gemini-2.0-flash if 2.5-flash returns 5xx
  *
- * Key differences vs Anthropic API:
- *   - Auth:    ?key= query param (not x-api-key header)
- *   - Roles:   "model" instead of "assistant"
- *   - Body:    contents[].parts[].text  (not messages[].content)
- *   - System:  system_instruction field (not system param)
- *   - Reply:   candidates[0].content.parts[0].text
- *
- * The proxy normalises the response to { content: [{ text }] } so the
- * ChatBot component works without any frontend changes.
+ * VERCEL ENV VAR REQUIRED:
+ *   Name:  GEMINI_API_KEY  (no VITE_ prefix — server-only)
+ *   Value: your Google AI Studio key (aistudio.google.com)
  */
 
 const RATE_LIMIT_MAP = new Map()
-const RATE_LIMIT     = 20        // max requests
-const WINDOW_MS      = 60_000    // per minute per IP
+const RATE_LIMIT     = 20
+const WINDOW_MS      = 60_000
 
 function isRateLimited(ip) {
   const now   = Date.now()
@@ -43,16 +45,47 @@ function validateMessages(messages) {
   )
 }
 
-/**
- * Convert the ChatBot message array (Anthropic format) to Gemini's format.
- *   Anthropic role "assistant" → Gemini role "model"
- *   Anthropic { role, content: string } → Gemini { role, parts: [{ text }] }
- */
+// Anthropic format → Gemini format
+// "assistant" → "model",  content string → parts array
 function toGeminiContents(messages) {
   return messages.map((m) => ({
     role:  m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
   }))
+}
+
+// Call Gemini with a given model — returns { ok, status, data, errorBody }
+async function callGemini(model, apiKey, systemPrompt, messages) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type':    'application/json',
+      'x-goog-api-key':  apiKey,   // ← HEADER auth (not ?key= query param)
+    },
+    body: JSON.stringify({
+      system_instruction: {
+        parts: [{ text: systemPrompt }],
+      },
+      contents: toGeminiContents(messages),
+      generationConfig: {
+        maxOutputTokens: 300,
+        temperature:     0.7,
+        // KEY FIX: disable thinking — gemini-2.5-flash defaults to dynamic
+        // thinking mode which exceeds Vercel's 10s timeout → 503 errors
+        thinkingConfig: {
+          thinkingBudget: 0,   // 0 = thinking off, -1 = dynamic (default/slow)
+        },
+      },
+    }),
+  })
+
+  const text = await res.text()
+  let data
+  try { data = JSON.parse(text) } catch { data = null }
+
+  return { ok: res.ok, status: res.status, data, errorBody: text }
 }
 
 const SYSTEM_PROMPT = `You are Verde, the botanical beauty advisor for VerdeBliss — a luxury certified organic skincare brand from India ("Where beauty becomes luxury").
@@ -70,7 +103,7 @@ Be warm, knowledgeable, and gently sophisticated. Recommend specific VerdeBliss 
 Never make medical or clinical diagnostic claims. Keep replies concise — 2 to 3 sentences.`
 
 export default async function handler(req, res) {
-  // ── CORS preflight ─────────────────────────────────────────────
+  // CORS preflight
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -82,26 +115,26 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // ── CORS ──────────────────────────────────────────────────────
+  // CORS
   const origin  = req.headers.origin ?? ''
   const allowed = [
-    'https://verdebliss.vercel.app',
+    'https://verdebliss.com',
     'https://www.verdebliss.com',
     'http://localhost:5173',
     'http://localhost:4173',
   ]
-  const corsOrigin = allowed.includes(origin) ? origin : 'https://verdebliss.vercel.app'
+  const corsOrigin = allowed.includes(origin) ? origin : 'https://verdebliss.com'
   res.setHeader('Access-Control-Allow-Origin', corsOrigin)
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
-  // ── Rate limiting ──────────────────────────────────────────────
+  // Rate limiting
   const ip = (req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || 'unknown'
   if (isRateLimited(ip)) {
     return res.status(429).json({ error: 'Too many requests. Please wait a moment.' })
   }
 
-  // ── Parse body ─────────────────────────────────────────────────
+  // Parse body
   let body
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
@@ -110,81 +143,65 @@ export default async function handler(req, res) {
   }
 
   const { messages } = body ?? {}
-
   if (!validateMessages(messages)) {
     return res.status(400).json({ error: 'Invalid messages array' })
   }
 
-  // ── API key check ──────────────────────────────────────────────
+  // API key
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    console.error('[chat] GEMINI_API_KEY environment variable is not set')
+    console.error('[chat] GEMINI_API_KEY is not set in environment variables')
     return res.status(500).json({ error: 'Server configuration error — GEMINI_API_KEY missing' })
   }
 
-  // ── Call Gemini API ────────────────────────────────────────────
-  const MODEL   = 'gemini-2.5-flash'
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`
-
   try {
-    const geminiRes = await fetch(GEMINI_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        // System instruction — Gemini's equivalent of Anthropic's "system" param
-        system_instruction: {
-          parts: [{ text: SYSTEM_PROMPT }],
-        },
-        // Chat history in Gemini format
-        contents: toGeminiContents(messages),
-        // Generation config
-        generationConfig: {
-          maxOutputTokens: 300,
-          temperature:     0.7,
-        },
-      }),
-    })
+    // ── Primary: gemini-2.5-flash with thinking disabled ─────────
+    let result = await callGemini('gemini-2.5-flash', apiKey, SYSTEM_PROMPT, messages)
 
-    // ── Handle upstream errors ─────────────────────────────────
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text()
-      console.error(`[chat] Gemini ${geminiRes.status}:`, errText)
-
-      if (geminiRes.status === 400) {
-        return res.status(400).json({ error: 'Bad request to AI service' })
-      }
-      if (geminiRes.status === 403) {
-        return res.status(502).json({ error: 'API key is invalid, revoked, or lacks Gemini access' })
-      }
-      if (geminiRes.status === 429) {
-        return res.status(429).json({ error: 'AI service rate limit reached. Try again shortly.' })
-      }
-      if (geminiRes.status === 503) {
-        return res.status(502).json({ error: 'AI service is temporarily unavailable. Try again shortly.' })
-      }
-      return res.status(502).json({ error: `Upstream API error: ${geminiRes.status}` })
+    // ── Fallback: gemini-2.0-flash if 2.5 returns any 5xx ───────
+    if (!result.ok && result.status >= 500) {
+      console.warn(`[chat] gemini-2.5-flash ${result.status} — falling back to gemini-2.0-flash`)
+      console.warn('[chat] 2.5-flash error body:', result.errorBody)
+      result = await callGemini('gemini-2.0-flash', apiKey, SYSTEM_PROMPT, messages)
     }
 
-    const data = await geminiRes.json()
+    // ── Handle errors ─────────────────────────────────────────────
+    if (!result.ok) {
+      // Always log the FULL error body to Vercel → Functions → Logs
+      console.error(`[chat] Gemini ${result.status}:`, result.errorBody)
 
-    // ── Extract reply text from Gemini response ────────────────
-    // Shape: data.candidates[0].content.parts[0].text
-    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text
+      if (result.status === 400) return res.status(400).json({ error: 'Bad request — check message format' })
+      if (result.status === 403) return res.status(502).json({ error: 'API key is invalid or lacks Gemini API access. Check GEMINI_API_KEY in Vercel.' })
+      if (result.status === 404) return res.status(502).json({ error: 'Model not found — check the model name' })
+      if (result.status === 429) return res.status(429).json({ error: 'Gemini rate limit reached. Try again shortly.' })
+      return res.status(502).json({ error: `Gemini API error ${result.status} — check Vercel function logs` })
+    }
 
+    // ── Extract reply text ────────────────────────────────────────
+    // Gemini: data.candidates[0].content.parts[0].text
+    const candidate  = result.data?.candidates?.[0]
+    const replyText  = candidate?.content?.parts?.[0]?.text
+
+    // Handle safety blocks (finishReason: SAFETY)
     if (!replyText) {
-      console.error('[chat] Unexpected Gemini response shape:', JSON.stringify(data))
-      return res.status(502).json({ error: 'Unexpected response from AI service' })
+      const reason = candidate?.finishReason ?? 'unknown'
+      console.warn('[chat] No text in Gemini response. finishReason:', reason, JSON.stringify(result.data))
+      if (reason === 'SAFETY') {
+        return res.status(200).json({
+          content: [{ type: 'text', text: "I'm not able to respond to that query. Please ask me about skincare! 🌿" }],
+        })
+      }
+      return res.status(502).json({ error: 'Unexpected response from Gemini — no text returned' })
     }
 
-    // ── Normalise to Anthropic-compatible shape ────────────────
-    // ChatBot reads: data.content[0].text — keep that shape so the
-    // frontend component requires zero changes.
+    // Normalise to Anthropic-compatible shape so ChatBot needs zero changes
+    // ChatBot reads: data.content[0].text
     return res.status(200).json({
       content: [{ type: 'text', text: replyText }],
     })
 
   } catch (err) {
-    console.error('[chat] Fetch error:', err)
-    return res.status(500).json({ error: 'Network error reaching AI service' })
+    console.error('[chat] Unhandled error:', err)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
