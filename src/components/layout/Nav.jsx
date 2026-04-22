@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, ShoppingBag, Menu, X, Search } from 'lucide-react'
 import SearchBar from '@/components/features/search/SearchBar'
-import { useCartStore } from '@/store/cartStore'
+import { useCartStore, selectItemCount } from '@/store/cartStore'
 import { useAuthStore } from '@/store/authStore'
 import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { C, FONT } from '@/constants/theme'
@@ -17,7 +17,7 @@ export default function Nav() {
   const navigate   = useNavigate()
   const location   = useLocation()
   const openCart   = useCartStore((s) => s.openCart)
-  const itemCount  = useCartStore((s) => s.itemCount)
+  const itemCount  = useCartStore(selectItemCount)
   const user       = useAuthStore((s) => s.user)
   const width      = useWindowWidth()
   const isMobile   = width < BP.tablet

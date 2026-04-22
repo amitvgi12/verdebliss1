@@ -30,6 +30,7 @@ import IngredientsPage from '@/pages/company/IngredientsPage'
 import Sustainability  from '@/pages/company/Sustainability'
 import Press           from '@/pages/company/Press'
 import Contact         from '@/pages/company/Contact'
+import Checkout        from '@/pages/Checkout'
 import BlogIndex       from '@/pages/blog/BlogIndex'
 import BlogPost        from '@/pages/blog/BlogPost'
 
@@ -75,6 +76,7 @@ export default function App() {
 
               {/* 404 fallback — redirects home */}
               {/* Blog / Journal */}
+              <Route path="/checkout"    element={<Checkout />} />
               <Route path="/blog"        element={<BlogIndex />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
 
