@@ -238,7 +238,7 @@ export default function ProductDetail() {
                 style={{ flex: 1, minWidth: 0, height: 52, borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, whiteSpace: 'nowrap', background: added ? C.sage : C.forest, color: 'white', transition: 'background 0.25s' }}>
                 <AnimatePresence mode="wait" initial={false}>
                   {added
-                    ? <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Check size={15} /> Added!</motion.span>
+                    ? <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Check size={15} /> Added to cart</motion.span>
                     : <motion.span key="add" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ShoppingBag size={15} /> Add to Cart</motion.span>
                   }
                 </AnimatePresence>
