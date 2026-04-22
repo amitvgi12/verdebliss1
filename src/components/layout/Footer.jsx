@@ -104,7 +104,7 @@ export default function Footer() {
             </button>
 
             <p style={{ fontSize: 13, lineHeight: 1.75, maxWidth: 240, marginBottom: 16 }}>
-              Where beauty becomes luxury. Certified organic botanicals for your most radiant skin.
+              Where nature becomes luxury. Certified organic botanicals for your most radiant skin.
             </p>
             <div style={{ fontSize: 11, color: C.sage, fontWeight: 600, marginBottom: 16 }}>📩 hello@verdebliss.in</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
