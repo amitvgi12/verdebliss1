@@ -3,21 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/images/logo.webp" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#2D4A32" />
+
+    <!-- Preload hero image — eliminates LCP delay on first load -->
+    <link rel="preload" as="image" href="/images/products/serum.webp" fetchpriority="high" />
 
     <!-- Primary SEO -->
     <title>VerdeBliss — Certified Organic Skincare India</title>
     <meta name="description" content="Premium certified organic skincare from India. Vegan, cruelty-free botanicals for every skin type. Free shipping above ₹499. Shop serums, moisturisers, SPF & more." />
     <meta name="keywords" content="organic skincare India, natural skincare, vegan skincare, cruelty-free cosmetics, bakuchiol serum, niacinamide, certified organic beauty" />
     <meta name="author" content="VerdeBliss Cosmetics Private Limited" />
-    <link rel="canonical" href="https://verdebliss.vercel.app/" />
+    <link rel="canonical" href="https://www.verdebliss.com/" />
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
     <meta property="og:type"        content="website" />
-    <meta property="og:url"         content="https://verdebliss.vercel.app/" />
+    <meta property="og:url"         content="https://www.verdebliss.com/" />
     <meta property="og:title"       content="VerdeBliss — Certified Organic Skincare India" />
     <meta property="og:description" content="Premium certified organic skincare. Vegan, cruelty-free botanicals for every skin type. Free shipping above ₹499." />
-    <meta property="og:image"       content="https://verdebliss.vercel.app/images/products/serum.webp" />
+    <meta property="og:image"       content="https://www.verdebliss.com/images/products/serum.webp" />
     <meta property="og:image:width" content="800" />
     <meta property="og:image:height" content="800" />
     <meta property="og:site_name"   content="VerdeBliss" />
@@ -28,7 +34,7 @@
     <meta name="twitter:site"        content="@verdebliss" />
     <meta name="twitter:title"       content="VerdeBliss — Certified Organic Skincare India" />
     <meta name="twitter:description" content="Premium certified organic skincare. Vegan, cruelty-free botanicals. Free shipping above ₹499." />
-    <meta name="twitter:image"       content="https://verdebliss.vercel.app/images/products/serum.webp" />
+    <meta name="twitter:image"       content="https://www.verdebliss.com/images/products/serum.webp" />
 
     <!-- JSON-LD: Organization schema -->
     <script type="application/ld+json">
@@ -37,8 +43,8 @@
       "@type": "Organization",
       "name": "VerdeBliss",
       "legalName": "VerdeBliss Cosmetics Private Limited",
-      "url": "https://verdebliss.vercel.app",
-      "logo": "https://verdebliss.vercel.app/images/logo.webp",
+      "url": "https://www.verdebliss.com",
+      "logo": "https://www.verdebliss.com/images/logo.webp",
       "description": "Certified organic skincare brand from India. Vegan, cruelty-free, dermatologist-tested formulations.",
       "foundingDate": "2019",
       "foundingLocation": "Pune, Maharashtra, India",
@@ -69,10 +75,10 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "VerdeBliss",
-      "url": "https://verdebliss.vercel.app",
+      "url": "https://www.verdebliss.com",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://verdebliss.vercel.app/products?q={search_term_string}",
+        "target": "https://www.verdebliss.com/products?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }

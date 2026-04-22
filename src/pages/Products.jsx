@@ -14,7 +14,7 @@ import { CATEGORIES, SKIN_TYPES, SORT_OPTIONS } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
 
 export default function Products() {
-  useSEO(PAGE_SEO.Products)
+  useSEO(PAGE_SEO.products)
   const [params, setParams] = useSearchParams()
   const category = params.get('cat')  ?? 'All'
   const skinType = params.get('skin') ?? 'All'
