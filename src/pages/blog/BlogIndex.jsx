@@ -16,7 +16,7 @@ const ARTICLES = [
     excerpt: 'Retinol has ruled anti-ageing for decades. But bakuchiol — the plant-based alternative — is changing everything. We break down the science, the differences, and which one wins for sensitive skin.',
     category: 'Ingredient Science',
     readTime: 6,
-    image: '/images/ingredients/bakuchiol.png',
+    image: '/images/ingredients/bakuchiol.webp',
     keywords: ['bakuchiol', 'retinol alternative', 'organic anti-ageing'],
   },
   {
@@ -25,7 +25,7 @@ const ARTICLES = [
     excerpt: 'Dry skin needs more than just a heavy cream. The right layering order, the right ingredients, and the right timing make all the difference. Here\'s the dermatologist-approved organic routine.',
     category: 'Skin Routines',
     readTime: 8,
-    image: '/images/ingredients/shea.png',
+    image: '/images/ingredients/shea.webp',
     keywords: ['dry skin routine', 'organic skincare routine', 'moisturiser for dry skin'],
   },
   {
@@ -34,7 +34,7 @@ const ARTICLES = [
     excerpt: 'Indian skin faces unique challenges — humidity, pollution, UV intensity. Discover why certified organic formulations outperform conventional alternatives and how to read ingredient labels like an expert.',
     category: 'Education',
     readTime: 7,
-    image: '/images/ingredients/turmeric.png',
+    image: '/images/ingredients/turmeric.webp',
     keywords: ['organic skincare India', 'Indian skin type', 'natural skincare benefits'],
   },
 ]

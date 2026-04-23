@@ -17,7 +17,7 @@ const ARTICLES = {
     category: 'Ingredient Science',
     date: '12 March 2026',
     readTime: 6,
-    image: '/images/ingredients/bakuchiol.png',
+    image: '/images/ingredients/bakuchiol.webp',
     sections: [
       {
         heading: 'What Is Retinol — and Why Is It Famous?',
@@ -44,7 +44,7 @@ const ARTICLES = {
     category: 'Skin Routines',
     date: '4 April 2026',
     readTime: 8,
-    image: '/images/ingredients/shea.png',
+    image: '/images/ingredients/shea.webp',
     sections: [
       {
         heading: 'Understanding Dry Skin: It\'s Not Just Dehydration',
@@ -71,7 +71,7 @@ const ARTICLES = {
     category: 'Education',
     date: '18 April 2026',
     readTime: 7,
-    image: '/images/ingredients/turmeric.png',
+    image: '/images/ingredients/turmeric.webp',
     sections: [
       {
         heading: 'What Makes Indian Skin Unique',
@@ -113,7 +113,7 @@ export default function BlogPost() {
             publisher: {
               '@type': 'Organization',
               name: 'VerdeBliss',
-              logo: { '@type': 'ImageObject', url: 'https://verdebliss.vercel.app/images/logo.png' },
+              logo: { '@type': 'ImageObject', url: 'https://verdebliss.vercel.app/images/logo.webp' },
             },
             image: `https://verdebliss.vercel.app${article.image}`,
             url: `https://verdebliss.vercel.app/blog/${slug}`,
