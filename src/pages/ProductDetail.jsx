@@ -1,9 +1,12 @@
 /**
- * ProductDetail.jsx — Mobile-first responsive product page
- * Fixes applied in this version:
- *   1. useSEO with dynamic title, description, and Product JSON-LD
- *   2. fetchpriority="high" on product image
- *   3. Mobile single-column layout
+ * ProductDetail.jsx — By Nature–style product page
+ *
+ * Audit fixes applied (Section 11):
+ *   11.2 — Full INCI ingredient list in descending concentration
+ *   11.3 — Allergen warnings + patch test notice
+ *   11.4 — Certification badges with external verification links
+ *   11.9 — Product-level FTC disclaimer
+ *   11.10 — PAO (Period After Opening) indicator
  */
 
 import { useState } from 'react'
@@ -11,7 +14,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Heart, ShoppingBag, Check, Award, ArrowLeft,
-  ChevronRight, Plus, Minus, Share2, Truck,
+  ChevronRight, Plus, Minus, Share2, Truck, AlertTriangle,
 } from 'lucide-react'
 import Stars from '@/components/ui/Stars'
 import ProductImage from '@/components/ui/ProductImage'
@@ -23,18 +26,9 @@ import { useAuthStore } from '@/store/authStore'
 import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { useSEO } from '@/hooks/useSEO'
 import { C, FONT } from '@/constants/theme'
+import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
 
-const INGREDIENT_TAGS = {
-  'Bakuchiol':   ['Bakuchiol Extract', 'Jojoba Oil', 'Vitamin E', 'Hyaluronic Acid'],
-  'Rose Hip':    ['Rosehip Oil', 'Ceramides', 'Niacinamide', 'Vitamin C'],
-  'Green Tea':   ['Green Tea Extract', 'Salicylic Acid', 'Witch Hazel', 'Aloe Vera'],
-  'Turmeric':    ['Turmeric Extract', 'Neem Leaf', 'Salicylic Acid', 'Aloe Vera'],
-  'Zinc Oxide':  ['Zinc Oxide 20%', 'Aloe Vera', 'Vitamin E', 'Shea Butter'],
-  'Acai Berry':  ['Açaí Berry', 'Shea Butter', 'Vitamin E', 'Coconut Oil'],
-  'Niacinamide': ['Niacinamide 10%', 'Zinc PCA', 'Hyaluronic Acid', 'Aloe Vera'],
-  'Shea Butter': ['Shea Butter', 'Vitamin E', 'Bakuchiol', 'Squalane'],
-}
-
+/* ── Per-ingredient INCI fallback ─────────────────────────────── */
 const HOW_TO_USE = [
   'Cleanse and gently tone your face.',
   'Apply 3–4 drops to fingertips.',
@@ -43,11 +37,37 @@ const HOW_TO_USE = [
 ]
 
 const BENEFITS = [
-  { icon: '💧', title: 'Deep Hydration', desc: 'Clinically proven moisture lock for 72 hours.' },
-  { icon: '✨', title: 'Visible Radiance', desc: 'Brighter, more even-toned skin in 14 days.' },
-  { icon: '🛡️', title: 'Barrier Support', desc: "Reinforces the skin's natural protective barrier." },
+  { icon: '💧', title: 'Deep Hydration',  desc: 'Helps support skin\'s moisture retention for visibly plumper skin.' },
+  { icon: '✨', title: 'Visible Radiance', desc: 'Skin appears brighter and more even-toned with regular use.' },
+  { icon: '🛡️', title: 'Barrier Support', desc: 'Helps reinforce the appearance of a healthy skin barrier.' },
 ]
 
+/* ── Certification data with external verification links ──────── */
+const CERTIFICATIONS = [
+  { label: 'Cruelty-Free', emoji: '🐰', url: 'https://www.leapingbunny.org/', org: 'Leaping Bunny' },
+  { label: 'Vegan',        emoji: '🌱', url: 'https://www.peta.org/living/personal-care-fashion/beauty-without-bunnies/', org: 'PETA' },
+  { label: 'Derma-Tested', emoji: '🏥', url: null, org: 'In-house Tested' },
+  { label: 'Eco Packaging', emoji: '♻️', url: null, org: 'FSC-Certified Packaging' },
+]
+
+/* ── PAO symbol ───────────────────────────────────────────────── */
+function PAOSymbol({ months }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <svg width="36" height="36" viewBox="0 0 36 36" aria-label={`Period After Opening: ${months} months`} role="img">
+        <circle cx="18" cy="18" r="16" fill="none" stroke={C.muted} strokeWidth="1.5" />
+        <text x="18" y="21" textAnchor="middle" fontSize="10" fill={C.text} fontWeight="600">{months}M</text>
+        <path d="M12 7 L12 3 L24 3 L24 7" fill="none" stroke={C.muted} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.text }}>Period After Opening</div>
+        <div style={{ fontSize: 11, color: C.muted }}>Use within {months} months of opening</div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Accordion ────────────────────────────────────────────────── */
 function Accordion({ id, label, open, onToggle, children }) {
   return (
     <div style={{ borderBottom: `1px solid ${C.border}` }}>
@@ -84,30 +104,26 @@ export default function ProductDetail() {
 
   /* ── Dynamic SEO with Product JSON-LD ─── */
   useSEO(
-    p
-      ? {
-          title: `${p.name} — VerdeBliss`,
-          description: `${p.description} Shop ${p.name} at VerdeBliss. Free shipping above ₹499.`,
-          jsonLd: {
-            '@context': 'https://schema.org',
-            '@type': 'Product',
-            name: p.name,
-            description: p.description,
-            image: `https://www.verdebliss.com/images/products/${p.ingredient?.toLowerCase().replace(' ', '-') || 'serum'}.webp`,
-            brand: { '@type': 'Brand', name: 'VerdeBliss' },
-            offers: {
-              '@type': 'Offer',
-              price: p.price,
-              priceCurrency: 'INR',
-              availability: 'https://schema.org/InStock',
-              url: `https://www.verdebliss.com/products/${id}`,
-            },
-            aggregateRating: p.rating
-              ? { '@type': 'AggregateRating', ratingValue: p.rating, reviewCount: p.review_count ?? 1 }
-              : undefined,
-          },
-        }
-      : { title: 'Product | VerdeBliss' }
+    p ? {
+      title: `${p.name} — VerdeBliss`,
+      description: `${p.description} Shop ${p.name} at VerdeBliss. Free shipping above ₹499.`,
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: p.name,
+        description: p.description,
+        image: `https://www.verdebliss.com/images/products/${p.ingredient?.toLowerCase().replace(' ', '-') || 'serum'}.webp`,
+        brand: { '@type': 'Brand', name: 'VerdeBliss' },
+        offers: {
+          '@type': 'Offer', price: p.price, priceCurrency: 'INR',
+          availability: 'https://schema.org/InStock',
+          url: `https://www.verdebliss.com/products/${id}`,
+        },
+        aggregateRating: p.rating
+          ? { '@type': 'AggregateRating', ratingValue: p.rating, reviewCount: p.review_count ?? 1 }
+          : undefined,
+      },
+    } : { title: 'Product | VerdeBliss' }
   )
 
   const handleAdd = () => {
@@ -116,36 +132,38 @@ export default function ProductDetail() {
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const toggleAcc = (id) => setSection((prev) => (prev === id ? '' : id))
+  const toggleAcc = (secId) => setSection((prev) => (prev === secId ? '' : secId))
 
   if (loading) return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted }}>
-      Loading…
-    </div>
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted }}>Loading…</div>
   )
-
   if (!p) return (
     <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 24px' }}>
       <div style={{ fontSize: 48 }}>🌿</div>
       <div style={{ fontFamily: FONT.serif, fontSize: 22, color: C.muted }}>Product not found</div>
-      <button onClick={() => navigate('/products')} style={{ background: C.forest, color: 'white', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-        Back to Shop
-      </button>
+      <button onClick={() => navigate('/products')} style={{ background: C.forest, color: 'white', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>Back to Shop</button>
     </div>
   )
 
-  const related  = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
-  const tags     = INGREDIENT_TAGS[p.ingredient] ?? [p.ingredient, 'Natural Botanicals', 'Aloe Vera', 'Vitamin E']
-  const mrp      = Math.round((p.price ?? 0) * 1.25)
-  const discount = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
-  const loyalPts = Math.floor((p.price ?? 0) / 10)
-  const catLabel = (p.category ?? 'Skincare').toUpperCase()
+  const compliance = PRODUCT_COMPLIANCE[id] ?? {}
+  const related    = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
+  const mrp        = Math.round((p.price ?? 0) * 1.25)
+  const discount   = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
+  const loyalPts   = Math.floor((p.price ?? 0) / 10)
+  const catLabel   = (p.category ?? 'Skincare').toUpperCase()
 
   const outerPad   = isMobile ? '0 16px' : '0 24px'
   const sectionPad = isMobile ? '20px 16px 48px' : '32px 24px 64px'
   const gridStyle  = isMobile
     ? { display: 'flex', flexDirection: 'column', gap: 0 }
     : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }
+
+  /* Applicable certs based on product badges */
+  const prodCerts = CERTIFICATIONS.filter((c) => {
+    if (c.label === 'Derma-Tested') return true
+    if (c.label === 'Eco Packaging') return true
+    return (p.badges ?? []).some((b) => b.toLowerCase().includes(c.label.toLowerCase().split('-')[0]))
+  })
 
   return (
     <div style={{ background: C.bg, minHeight: '100vh' }}>
@@ -169,23 +187,48 @@ export default function ProductDetail() {
         </button>
 
         <div style={gridStyle}>
-          {/* Image */}
+
+          {/* ── LEFT: image ─────────────────────────────── */}
           <motion.div initial={{ opacity: 0, x: isMobile ? 0 : -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.45 }}
             style={isMobile ? {} : { position: 'sticky', top: 80 }}>
+
             <div style={{ borderRadius: isMobile ? 16 : 24, overflow: 'hidden', aspectRatio: '1 / 1', width: '100%', position: 'relative', boxShadow: '0 8px 40px rgba(0,0,0,0.07)', marginBottom: isMobile ? 20 : 0 }}>
               <div style={{ position: 'absolute', inset: 0 }}>
                 <ProductImage product={p} />
               </div>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: isMobile ? 0 : 16, marginBottom: isMobile ? 20 : 0 }}>
-              {(p.badges ?? []).map((b) => (
-                <span key={b} style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', padding: '4px 12px', borderRadius: 99, border: `1px solid ${C.border}`, color: C.muted, textTransform: 'uppercase' }}>{b}</span>
+
+            {/* 11.10 PAO indicator below image */}
+            {compliance.pao && (
+              <div style={{ marginTop: 16, padding: '12px 16px', background: C.goldPale, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                <PAOSymbol months={compliance.pao} />
+                <p style={{ fontSize: 10, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
+                  Store in a cool, dry place away from direct sunlight. Best before date printed on packaging.
+                </p>
+              </div>
+            )}
+
+            {/* 11.4 Certification badges with external verification links */}
+            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {prodCerts.map((cert) => (
+                cert.url ? (
+                  <a key={cert.label} href={cert.url} target="_blank" rel="noopener noreferrer"
+                    title={`Verified by ${cert.org}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '5px 12px', borderRadius: 99, border: `1px solid ${C.border}`, color: C.olive, background: C.sagePale, textDecoration: 'none', textTransform: 'uppercase' }}>
+                    {cert.emoji} {cert.label} ↗
+                  </a>
+                ) : (
+                  <span key={cert.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', padding: '5px 12px', borderRadius: 99, border: `1px solid ${C.border}`, color: C.muted, textTransform: 'uppercase' }}>
+                    {cert.emoji} {cert.label}
+                  </span>
+                )
               ))}
             </div>
           </motion.div>
 
-          {/* Info */}
+          {/* ── RIGHT: info ─────────────────────────────── */}
           <motion.div initial={{ opacity: 0, x: isMobile ? 0 : 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.45, delay: isMobile ? 0 : 0.08 }}>
+
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', color: C.gold, marginBottom: 10 }}>{catLabel} · 30ml</div>
 
             <h1 style={{ fontFamily: FONT.serif, fontSize: isMobile ? 'clamp(24px,7vw,34px)' : 'clamp(28px,3.5vw,42px)', fontWeight: 400, color: C.text, lineHeight: 1.15, marginBottom: 14, letterSpacing: '-0.01em' }}>
@@ -227,18 +270,19 @@ export default function ProductDetail() {
               </div>
             </div>
 
+            {/* Qty + Add to Cart + Wishlist + Share */}
             <div style={{ display: 'flex', gap: 8, alignItems: 'stretch', marginTop: 20, marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', flexShrink: 0 }}>
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn} aria-label="Decrease"><Minus size={13} /></button>
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} style={qtyBtn} aria-label="Decrease quantity"><Minus size={13} /></button>
                 <span style={{ width: 28, textAlign: 'center', fontSize: 14, fontWeight: 600, color: C.text }}>{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)} style={qtyBtn} aria-label="Increase"><Plus size={13} /></button>
+                <button onClick={() => setQty((q) => q + 1)} style={qtyBtn} aria-label="Increase quantity"><Plus size={13} /></button>
               </div>
 
               <motion.button whileTap={{ scale: 0.97 }} onClick={handleAdd}
                 style={{ flex: 1, minWidth: 0, height: 52, borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, whiteSpace: 'nowrap', background: added ? C.sage : C.forest, color: 'white', transition: 'background 0.25s' }}>
                 <AnimatePresence mode="wait" initial={false}>
                   {added
-                    ? <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Check size={15} /> Added to cart</motion.span>
+                    ? <motion.span key="done" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Check size={15} /> Added!</motion.span>
                     : <motion.span key="add" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ShoppingBag size={15} /> Add to Cart</motion.span>
                   }
                 </AnimatePresence>
@@ -261,11 +305,66 @@ export default function ProductDetail() {
               Free shipping on orders above ₹499 · Ships in 2–3 business days
             </div>
 
+            {/* ── Accordions ─────────────────────────── */}
             <div style={{ borderTop: `1px solid ${C.border}` }}>
-              <Accordion id="ingredients" label="Full Ingredients" open={openSection === 'ingredients'} onToggle={() => toggleAcc('ingredients')}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 20 }}>
-                  {tags.map((t) => <span key={t} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 99, background: C.sagePale, color: C.forest, fontWeight: 500 }}>{t}</span>)}
-                  <span style={{ fontSize: 12, color: C.muted, alignSelf: 'center', marginLeft: 4 }}>+ natural botanicals</span>
+
+              {/* 11.2 INCI Ingredients */}
+              <Accordion id="ingredients" label="Full Ingredients (INCI)" open={openSection === 'ingredients'} onToggle={() => toggleAcc('ingredients')}>
+                <div style={{ paddingBottom: 20 }}>
+                  {compliance.inci ? (
+                    <>
+                      <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, marginBottom: 10 }}>
+                        Listed in descending order of concentration (INCI standard):
+                      </p>
+                      <p style={{ fontSize: 12, color: C.text, lineHeight: 1.8, fontStyle: 'italic', background: C.ivory, borderRadius: 8, padding: '10px 12px' }}>
+                        {compliance.inci}
+                      </p>
+                    </>
+                  ) : (
+                    <p style={{ fontSize: 12, color: C.muted }}>Full ingredient list available on product packaging.</p>
+                  )}
+                  {compliance.freeFrom && (
+                    <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                      {compliance.freeFrom.map((f) => (
+                        <span key={f} style={{ fontSize: 10, padding: '3px 9px', borderRadius: 99, background: C.sagePale, color: C.forest, fontWeight: 600 }}>✓ {f}-Free</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Accordion>
+
+              {/* 11.3 Allergen warnings */}
+              <Accordion id="allergens" label="Allergen & Safety Info" open={openSection === 'allergens'} onToggle={() => toggleAcc('allergens')}>
+                <div style={{ paddingBottom: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {compliance.allergens && (
+                    <div style={{ background: '#FFF8E7', border: '1px solid #F0D68A', borderRadius: 10, padding: '12px 14px' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#8B6914', marginBottom: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <AlertTriangle size={12} /> Allergen Information
+                      </div>
+                      <p style={{ fontSize: 12, color: '#665200', lineHeight: 1.7 }}>{compliance.allergens}</p>
+                    </div>
+                  )}
+                  {compliance.patchTest && (
+                    <div style={{ background: C.ivory, borderRadius: 10, padding: '12px 14px', border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.text, marginBottom: 4 }}>🧪 Patch Test Recommended</div>
+                      <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
+                        Apply a small amount to the inner forearm 24 hours before first full use.
+                        Discontinue use if redness, itching, or irritation occurs. Consult a dermatologist if you have reactive skin.
+                      </p>
+                    </div>
+                  )}
+                  {compliance.agingNote && (
+                    <div style={{ background: C.terraPale, borderRadius: 10, padding: '12px 14px', border: `1px solid ${C.border}` }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.terra, marginBottom: 4 }}>ℹ️ Age Guidance</div>
+                      <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>{compliance.agingNote}</p>
+                    </div>
+                  )}
+                  <div style={{ background: C.ivory, borderRadius: 10, padding: '12px 14px', border: `1px solid ${C.border}` }}>
+                    <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
+                      <strong>For external use only.</strong> Avoid contact with eyes. If contact occurs, rinse thoroughly with water.
+                      Keep out of reach of children. Store in a cool, dry place.
+                    </p>
+                  </div>
                 </div>
               </Accordion>
 
@@ -294,9 +393,19 @@ export default function ProductDetail() {
                 </div>
               </Accordion>
             </div>
+
+            {/* 11.9 FTC Disclaimer */}
+            <div style={{ marginTop: 20, padding: '12px 14px', borderTop: `1px solid ${C.border}` }}>
+              <p style={{ fontSize: 10, color: C.light, lineHeight: 1.7, fontStyle: 'italic' }}>
+                *These statements have not been evaluated by the Central Drugs Standard Control Organisation (CDSCO) or the Food and Drug Administration (FDA).
+                This product is not intended to diagnose, treat, cure, or prevent any disease. Results may vary based on individual skin type and usage.
+                Individual results are not guaranteed. For external use only. Discontinue use if irritation occurs and consult a dermatologist.
+              </p>
+            </div>
           </motion.div>
         </div>
 
+        {/* You might also like */}
         {related.length > 0 && (
           <div style={{ marginTop: isMobile ? 48 : 80, borderTop: `1px solid ${C.border}`, paddingTop: isMobile ? 32 : 48 }}>
             <h3 style={{ fontFamily: FONT.serif, fontSize: isMobile ? 24 : 30, fontWeight: 400, color: C.text, marginBottom: 24 }}>You might also like</h3>

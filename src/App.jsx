@@ -35,6 +35,7 @@ import BlogIndex       from '@/pages/blog/BlogIndex'
 import BlogPost        from '@/pages/blog/BlogPost'
 
 import { useAuthStore }     from '@/store/authStore'
+import CookieConsent from '@/components/ui/CookieConsent'
 import { useWishlistStore } from '@/store/wishlistStore'
 
 export default function App() {
@@ -58,7 +59,7 @@ export default function App() {
 
         <Nav />
 
-        <main>
+        <main id="main-content">
           <AnimatePresence mode="wait">
             <Routes>
               {/* Core pages */}
@@ -90,6 +91,7 @@ export default function App() {
         <CartDrawer />
         <ChatBot />
         <Toaster />
+        <CookieConsent />
       </div>
     </BrowserRouter>
   )

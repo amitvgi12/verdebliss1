@@ -161,7 +161,7 @@ export default function Home() {
             <h2 style={{ fontFamily:FONT.serif, fontSize:'clamp(28px,4vw,44px)', color:'white', margin:'0 0 20px', fontWeight:400, lineHeight:1.1 }}>Beauty that honours the earth</h2>
             <p style={{ color:'rgba(255,255,255,0.62)', lineHeight:1.85, fontSize:15, marginBottom:28 }}>Every VerdeBliss formula is crafted from certified organic botanicals, never tested on animals, and packaged in eco-conscious materials.</p>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-              {[['🌱','100% Natural'],['🐰','Cruelty-Free'],['♻️','Eco Packaging'],['🏆','Dermatologist OK']].map(([e,l]) => (
+              {[['🌱','95%+ Organic Ingredients'],['🐰','Cruelty-Free'],['♻️','Eco Packaging'],['🏆','Dermatologist OK']].map(([e,l]) => (
                 <div key={l} style={{ display:'flex', gap:10, alignItems:'center', padding:'8px 12px', background:'rgba(255,255,255,0.05)', borderRadius:10, border:'1px solid rgba(255,255,255,0.07)' }}>
                   <span style={{ fontSize:16 }}>{e}</span>
                   <span style={{ fontSize:12, color:'rgba(255,255,255,0.72)' }}>{l}</span>
@@ -203,6 +203,12 @@ export default function Home() {
         </div>
       </section>
 
+
+          {/* 11.6 FTC + 11.9 Verified Purchase disclosure */}
+          <p style={{ textAlign:'center', fontSize:11, color:C.light, marginTop:24, lineHeight:1.7 }}>
+            All reviews are from verified purchasers. Results may vary based on individual skin type, usage, and lifestyle.
+            Individual results are not guaranteed. *These statements have not been evaluated by a regulatory authority.
+          </p>
       {/* ── Newsletter ────────────────────────────────────────────────── */}
       <section style={{ background:C.ivory, padding:'60px 16px', textAlign:'center' }}>
         <div style={{ fontSize:10, color:C.terra, letterSpacing:'0.14em', marginBottom:10, fontWeight:600 }}>JOIN THE CIRCLE</div>
