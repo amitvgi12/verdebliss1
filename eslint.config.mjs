@@ -10,8 +10,10 @@ export default [
     },
     rules: {
       ...nextPlugin.configs['core-web-vitals'].rules,
-      'no-console': 'warn',
-      'react-hooks/exhaustive-deps': 'warn',
+      // 🔒 Hardening rules
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-undef': 'error',
     },
   },
 
