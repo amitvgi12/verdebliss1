@@ -1,16 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /account
+Disallow: /checkout
+Disallow: /api/
 
-# Allow all major crawlers explicitly
 User-agent: Googlebot
 Allow: /
 
-User-agent: Bingbot
-Allow: /
-
-# Block crawling of account/admin areas
-Disallow: /account
-Disallow: /admin
-Disallow: /api/
-
-Sitemap: https://verdebliss.vercel.app/sitemap.xml
+Sitemap: https://www.verdebliss.com/sitemap.xml

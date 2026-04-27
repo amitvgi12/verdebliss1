@@ -1,0 +1,48 @@
+/* ── Reset ───────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: #FAF7F2;
+  color: #1C221E;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Skip link (WCAG 2.4.1) ─────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 8px;
+  background: #2D4A32;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 0 0 8px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 9999;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Focus visible (6.6 — keyboard users) ───────────────────── */
+*:focus-visible {
+  outline: 2px solid #2D4A32;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── Reduced motion (WCAG 2.3.3 + 7.8) ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #FAF7F2; }
+::-webkit-scrollbar-thumb { background: #C07A5A; border-radius: 3px; }
