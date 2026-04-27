@@ -98,24 +98,80 @@ export default function BlogPostClient({ slug }) {
   const router = useRouter()
   const article   = ARTICLES[slug]
 
-  // SEO handled by generateMetadata (SSR)}
-          </motion.div>
-        ))}
+  // SEO handled by generateMetadata (SSR)
 
-        {/* CTA */}
-        <div style={{ marginTop: 56, padding: 32, background: C.goldPale, borderRadius: 20, textAlign: 'center' }}>
-          <div style={{ fontFamily: FONT.serif, fontSize: 22, color: C.text, marginBottom: 10 }}>
-            Ready to start your organic ritual?
-          </div>
-          <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>
-            Every VerdeBliss product is formulated with the ingredients discussed in this article.
-          </p>
-          <button onClick={() => router.push('/products')}
-            style={{ background: C.forest, color: 'white', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            Shop the Collection <ArrowRight size={15} />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
+if (!article) {
+  return <div>Article not found</div>
 }
+
+return (
+  <div>
+    <button onClick={() => router.back()}>
+      <ArrowLeft /> Back
+    </button>
+
+    <h1>{article.title}</h1>
+    <p>{article.description}</p>
+
+    <div>
+      {article.sections.map((section, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+        >
+          <h2>{section.heading}</h2>
+          <p style={{ whiteSpace: 'pre-line' }}>{section.body}</p>
+        </motion.div>
+      ))}
+    </div>
+
+    {/* CTA */}
+    <div
+      style={{
+        marginTop: 56,
+        padding: 32,
+        background: C.goldPale,
+        borderRadius: 20,
+        textAlign: 'center',
+      }}
+    >
+      <div
+        style={{
+          fontFamily: FONT.serif,
+          fontSize: 22,
+          color: C.text,
+          marginBottom: 10,
+        }}
+      >
+        Ready to start your organic ritual?
+      </div>
+
+      <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>
+        Every VerdeBliss product is formulated with the ingredients discussed in this article.
+      </p>
+
+      <button
+        onClick={() => router.push('/products')}
+        style={{
+          background: C.forest,
+          color: 'white',
+          border: 'none',
+          borderRadius: 10,
+          padding: '12px 28px',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: 'pointer',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        Shop the Collection <ArrowRight size={15} />
+      </button>
+    </div>
+  </div>
+)
+}
+
