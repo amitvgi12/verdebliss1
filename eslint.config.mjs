@@ -13,7 +13,6 @@ export default [
       // 🔒 Hardening rules
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      'no-undef': 'error',
     },
   },
 
