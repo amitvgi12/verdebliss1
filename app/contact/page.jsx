@@ -6,6 +6,6 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com/contact' },
 }
 
-export default function Page() {
+export default function ContactPage() {
   return <ContactClient />
 }

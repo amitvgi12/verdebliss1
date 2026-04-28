@@ -45,6 +45,6 @@ export async function generateStaticParams() {
   return Object.keys(ARTICLE_META).map((slug) => ({ slug }))
 }
 
-export default function Page({ params }) {
+export default function BlogPostPage({ params }) {
   return <BlogPostClient slug={params.slug} />
 }

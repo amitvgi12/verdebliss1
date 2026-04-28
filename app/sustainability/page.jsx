@@ -6,6 +6,6 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com/sustainability' },
 }
 
-export default function Page() {
+export default function SustainabilityPage() {
   return <SustainabilityClient />
 }

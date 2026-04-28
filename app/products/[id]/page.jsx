@@ -60,7 +60,7 @@ export async function generateStaticParams() {
   return PRODUCTS.map((p) => ({ id: p.id }))
 }
 
-export default async function Page({ params }) {
+export default async function ProductDetailPage({ params }) {
   // Fetch product server-side so the client component receives it as a prop
   // (avoids a duplicate network call on the client)
   const product = await getProductServer(params.id)

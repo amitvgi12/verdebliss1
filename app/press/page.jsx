@@ -6,6 +6,6 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com/press' },
 }
 
-export default function Page() {
+export default function PressPage() {
   return <PressClient />
 }
