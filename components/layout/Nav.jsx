@@ -6,7 +6,6 @@
  */
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, ShoppingBag, Menu, X, Search } from 'lucide-react'
 import SearchBar from '@/components/features/search/SearchBar'

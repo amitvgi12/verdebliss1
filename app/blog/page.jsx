@@ -1,4 +1,3 @@
-import { Metadata } from 'next'
 import BlogIndexClient from './BlogIndexClient'
 
 export const metadata = {
