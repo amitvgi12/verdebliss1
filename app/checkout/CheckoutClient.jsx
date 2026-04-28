@@ -85,7 +85,7 @@ const inputStyle = (err) => ({
 })
 
 export default function Checkout() {
-  const navigate     = useRouter()
+  const router       = useRouter()
   const razorReady   = useRazorpayScript()
   const items        = useCartStore((s) => s.items)
   const clearCart    = useCartStore((s) => s.clearCart)

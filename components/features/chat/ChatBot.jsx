@@ -65,7 +65,7 @@ function buildOrderSummary(orders) {
 }
 
 export default function ChatBot() {
-  const navigate   = useRouter()
+  const router     = useRouter()
   const width      = useWindowWidth()
   const isMobile   = width < BP.tablet
   const user       = useAuthStore((s) => s.user)

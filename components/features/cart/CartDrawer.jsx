@@ -12,7 +12,7 @@ import ProductImage from '@/components/ui/ProductImage'
 import { C, FONT } from '@/constants/theme'
 
 export default function CartDrawer() {
-  const navigate     = useRouter()
+  const router       = useRouter()
   const items        = useCartStore((s) => s.items)
   const isOpen       = useCartStore((s) => s.isOpen)
   const closeCart    = useCartStore((s) => s.closeCart)
