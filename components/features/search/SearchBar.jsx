@@ -41,7 +41,7 @@ export default function SearchBar() {
     saveRecent(product.name)
     setQ('')
     setFocused(false)
-    router(`/products/${product.id}`)
+    router.push(`/products/${product.id}`)
   }
 
   const handleKey = (e) => {

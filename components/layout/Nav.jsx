@@ -38,7 +38,7 @@ export default function Nav() {
     pathname === path ||
     (path === '/products' && pathname.startsWith('/products'))
 
-  const goTo = (path) => { router(path); setMenuOpen(false); setSearchOpen(false) }
+  const goTo = (path) => { router.push(path); setMenuOpen(false); setSearchOpen(false) }
 
   return (
     <>

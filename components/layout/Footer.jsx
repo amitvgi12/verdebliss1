@@ -52,7 +52,7 @@ export default function Footer() {
 
   const go = (path, label) => {
     if (path) {
-      router(path)
+      router.push(path)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       toast(`${label} — coming soon! 🌿`, 'info')
