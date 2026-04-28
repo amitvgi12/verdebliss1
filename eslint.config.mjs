@@ -26,6 +26,7 @@ export default [
         ...globals.browser,
         ...globals.es2021,
       },
+      ecmaFeatures: { jsx: true },
     },
   },
 
@@ -44,6 +45,7 @@ export default [
         ...globals.node,
         ...globals.es2021,
       },
+      ecmaFeatures: { jsx: true },
     },
   },
 
@@ -65,6 +67,7 @@ export default [
         beforeAll:  'readonly',
         afterAll:   'readonly',
       },
+      ecmaFeatures: { jsx: true },
     },
   },
 
