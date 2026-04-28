@@ -26,7 +26,11 @@ export default [
         ...globals.browser,
         ...globals.es2021,
       },
-      ecmaFeatures: { jsx: true },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true, // Move ecmaFeatures here
+        },
+      },
     },
   },
 
@@ -45,7 +49,11 @@ export default [
         ...globals.node,
         ...globals.es2021,
       },
-      ecmaFeatures: { jsx: true },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true, // Move ecmaFeatures here
+        },
+      },
     },
   },
 
@@ -67,7 +75,11 @@ export default [
         beforeAll:  'readonly',
         afterAll:   'readonly',
       },
-      ecmaFeatures: { jsx: true },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true, // Move ecmaFeatures here
+        },
+      },
     },
   },
 
