@@ -1,5 +1,6 @@
 import nextPlugin from '@next/eslint-plugin-next'
 import js from '@eslint/js'
+import reactPlugin from 'eslint-plugin-react'
 import globals from 'globals'
 
 export default [
@@ -7,8 +8,19 @@ export default [
 
   // ── Next.js core web vitals rules ────────────────────────────────
   {
-    plugins: { '@next/next': nextPlugin },
-    rules: { ...nextPlugin.configs['core-web-vitals'].rules },
+    plugins: {
+      '@next/next': nextPlugin,
+      react: reactPlugin,
+    },
+    rules: {
+      ...nextPlugin.configs['core-web-vitals'].rules,
+      'react/jsx-uses-vars': 'error',
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
   },
 
   // ── Browser globals (window, fetch, setTimeout, URLSearchParams…)
@@ -28,7 +40,7 @@ export default [
       },
       parserOptions: {
         ecmaFeatures: {
-          jsx: true, // Move ecmaFeatures here
+          jsx: true,
         },
       },
     },
@@ -51,7 +63,7 @@ export default [
       },
       parserOptions: {
         ecmaFeatures: {
-          jsx: true, // Move ecmaFeatures here
+          jsx: true,
         },
       },
     },
@@ -64,20 +76,19 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.es2021,
-        // vitest globals (enabled via vitest.config.js globals:true)
         describe: 'readonly',
-        it:       'readonly',
-        test:     'readonly',
-        expect:   'readonly',
-        vi:       'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
         beforeEach: 'readonly',
-        afterEach:  'readonly',
-        beforeAll:  'readonly',
-        afterAll:   'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
       },
       parserOptions: {
         ecmaFeatures: {
-          jsx: true, // Move ecmaFeatures here
+          jsx: true,
         },
       },
     },
