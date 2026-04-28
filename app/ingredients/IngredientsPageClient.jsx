@@ -8,7 +8,7 @@
  * the ingredient name + metadata and lets the card render the image.
  */
 import { motion } from 'framer-motion'
-import { useNavigate } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import IngredientCard from '@/components/ui/IngredientCard'
 import { C, FONT } from '@/constants/theme'
 

@@ -4,7 +4,7 @@
  * Education-led content hub. Three cornerstone SEO articles targeting
  * high-intent keywords for the Indian organic skincare market.
  */
-import { useNavigate } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowRight, Clock } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'

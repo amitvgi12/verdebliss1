@@ -14,7 +14,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Send, LogIn } from 'lucide-react'
-import { useNavigate } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { C } from '@/constants/theme'
 import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { useAuthStore } from '@/store/authStore'

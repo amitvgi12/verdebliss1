@@ -6,7 +6,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Minus, Award } from 'lucide-react'
-import { useNavigate } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
 import ProductImage from '@/components/ui/ProductImage'
 import { C, FONT } from '@/constants/theme'
