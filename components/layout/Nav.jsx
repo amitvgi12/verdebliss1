@@ -16,8 +16,8 @@ import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { C, FONT } from '@/constants/theme'
 
 export default function Nav() {
-  const navigate   = useNavigate()
-  const location   = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const openCart   = useCartStore((s) => s.openCart)
   const itemCount  = useCartStore(selectItemCount)
   const user       = useAuthStore((s) => s.user)

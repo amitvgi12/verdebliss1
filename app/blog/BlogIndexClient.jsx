@@ -68,7 +68,7 @@ export default function BlogIndexClient() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              onClick={() => navigate(`/blog/${a.slug}`)}
+              onClick={() => router.push(`/blog/${a.slug}`)}
               style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
             >
               {/* Image */}
