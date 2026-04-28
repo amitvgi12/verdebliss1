@@ -7,6 +7,6 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com/blog' },
 }
 
-export default function BlogPage() {
+export default function Page() {
   return <BlogIndexClient />
 }

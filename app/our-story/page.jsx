@@ -6,6 +6,6 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com/our-story' },
 }
 
-export default function OurStoryPage() {
+export default function Page() {
   return <OurStoryClient />
 }

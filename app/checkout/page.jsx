@@ -6,6 +6,6 @@ export const metadata = {
   robots: { index: false },
 }
 
-export default function CheckoutPage() {
+export default function Page() {
   return <CheckoutClient />
 }

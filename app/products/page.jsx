@@ -8,6 +8,6 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com/products' },
 }
 
-export default function ProductsPage() {
+export default function Page() {
   return <ProductsClient />
 }

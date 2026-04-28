@@ -6,6 +6,7 @@ export const metadata = {
   robots: { index: false },
 }
 
-export default function AccountPage() {
+export default function Page() {
   return <AccountClient />
 }
+  
