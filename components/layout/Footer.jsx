@@ -86,7 +86,7 @@ export default function Footer() {
                 PNG has a non-transparent background.
               */}
               <div style={{ background: 'white', borderRadius: 10, padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}>
-                <img
+                <Image
                   src="/images/logo.webp"
                   alt="VerdeBliss"
                   style={{ height: 34, width: 'auto', objectFit: 'contain', display: 'block' }}

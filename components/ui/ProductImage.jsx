@@ -52,7 +52,7 @@ export default function ProductImage({ product, style = {}, imgStyle = {} }) {
         ...style,
       }}
     >
-      <img
+      <Image
         src={src}
         alt={product.name}
         loading="lazy"

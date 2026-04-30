@@ -41,7 +41,7 @@ export default function Nav() {
 
           {/* Logo */}
           <button onClick={() => goTo('/')} aria-label="VerdeBliss home" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-            <img
+            <Image
               src="/images/logo.webp"
               alt="VerdeBliss"
               style={{ height: 40, width: 'auto', objectFit: 'contain' }}

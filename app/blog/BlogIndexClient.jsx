@@ -62,7 +62,7 @@ export default function BlogIndexClient() {
               style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
             >
               <div style={{ height: 200, background: C.ivory, overflow: 'hidden' }}>
-                <img src={a.image} alt={a.title}
+                <Image src={a.image} alt={a.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   onError={(e) => { e.currentTarget.style.display = 'none' }}
                 />

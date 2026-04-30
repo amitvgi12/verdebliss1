@@ -85,7 +85,7 @@ export default function IngredientCard({ ingredient, description, imageHeight = 
         }}
       >
         {src && !imgFailed ? (
-          <img
+          <Image
             src={src}
             alt={ingredient}
             loading="lazy"
