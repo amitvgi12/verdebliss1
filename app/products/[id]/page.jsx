@@ -1,6 +1,7 @@
-import { getProductServer } from '@/hooks/useProducts'
 import { PRODUCTS } from '@/constants/products'
+import { getProductServer } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
+
 
 /**
  * generateMetadata — runs SERVER-SIDE so every product page gets
@@ -57,7 +58,7 @@ export async function generateMetadata({ params }) {
  * zero JS required for Google to index them with rich snippets.
  */
 export async function generateStaticParams() {
-  return PRODUCTS.map((p) => ({ id: p.id }))
+  return PRODUCTS.map((p) => ({ id: String(p.id) }))
 }
 
 export default async function ProductDetailPage({ params }) {
