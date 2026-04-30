@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import ProductsClient from './ProductsClient'
 
 export const metadata = {
@@ -8,5 +9,9 @@ export const metadata = {
 }
 
 export default function ProductsPage() {
-  return <ProductsClient />
+  return (
+    <Suspense fallback={null}>
+      <ProductsClient />
+    </Suspense>
+  )
 }
