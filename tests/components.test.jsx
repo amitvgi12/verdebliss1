@@ -64,13 +64,13 @@ describe('ProductImage component', () => {
     image_url: null,
   }
 
-  it('renders an Image element', () => {
+  it('renders an img element', () => {
     const { container } = render(<ProductImage product={baseProduct} />)
-    const Image = container.querySelector('Image')
-    expect(Image).toBeInTheDocument()
+    const img = container.querySelector('img')
+    expect(img).toBeInTheDocument()
   })
 
-  it('Image has correct alt text', () => {
+  it('img has correct alt text', () => {
     render(<ProductImage product={baseProduct} />)
     expect(screen.getByAltText('Niacinamide Pore Serum')).toBeInTheDocument()
   })
@@ -78,22 +78,22 @@ describe('ProductImage component', () => {
   it('falls back to serum.webp for unknown ingredient', () => {
     const p = { ...baseProduct, ingredient: 'Unknown', name: 'Unknown Product' }
     const { container } = render(<ProductImage product={p} />)
-    const Image = container.querySelector('Image')
-    expect(Image.src).toContain('serum.webp')
+    const img = container.querySelector('img')
+    expect(img.src).toContain('serum.webp')
   })
 
   it('uses image_url from Supabase when provided', () => {
     const p = { ...baseProduct, image_url: '/images/products/custom.webp' }
     const { container } = render(<ProductImage product={p} />)
-    const Image = container.querySelector('Image')
-    expect(Image.src).toContain('custom.webp')
+    const img = container.querySelector('img')
+    expect(img.src).toContain('custom.webp')
   })
 
   it('renders ingredient-matched image for Turmeric', () => {
     const p = { ...baseProduct, ingredient: 'Turmeric', name: 'Cleanser' }
     const { container } = render(<ProductImage product={p} />)
-    const Image = container.querySelector('Image')
-    expect(Image.src).toContain('cleanser.webp')
+    const img = container.querySelector('img')
+    expect(img.src).toContain('cleanser.webp')
   })
 
   it('renders without crashing for a product with no ingredient', () => {
