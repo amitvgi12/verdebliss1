@@ -5,7 +5,7 @@
  * Each article is a long-form educational piece targeting organic skincare keywords.
  */
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Clock, Calendar } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
 
 /* ── Article content ──────────────────────────────── */
