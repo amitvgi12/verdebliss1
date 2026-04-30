@@ -27,3 +27,8 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useParams:      () => ({ id: '7', slug: 'bakuchiol-vs-retinol' }),
 }))
+
+vi.mock('next/image', () => ({
+  default: (props) => <img {...props} />,
+}))
+
