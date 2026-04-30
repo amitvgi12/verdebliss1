@@ -1,5 +1,4 @@
 import BlogPostClient from './BlogPostClient'
-
 const ARTICLE_META = {
   'bakuchiol-vs-retinol': {
     title: 'Bakuchiol vs Retinol: Which Is Right for Your Skin?',

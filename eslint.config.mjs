@@ -1,100 +1,65 @@
 import nextPlugin from '@next/eslint-plugin-next'
 import js from '@eslint/js'
-import reactPlugin from 'eslint-plugin-react'
 import globals from 'globals'
 
 export default [
   js.configs.recommended,
 
-  // ── Next.js core web vitals rules ────────────────────────────────
+  // ── Next.js rules ─────────────────────────────────────────────────
   {
-    plugins: {
-      '@next/next': nextPlugin,
-      react: reactPlugin,
-    },
-    rules: {
-      ...nextPlugin.configs['core-web-vitals'].rules,
-      'react/jsx-uses-vars': 'error',
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
+    plugins: { '@next/next': nextPlugin },
+    rules: { ...nextPlugin.configs['core-web-vitals'].rules },
   },
 
-  // ── Browser globals (window, fetch, setTimeout, URLSearchParams…)
-  // Applies to: client components, hooks, stores, test setup
+  // ── JSX + browser globals — all JS/JSX source files ───────────────
   {
-    files: [
-      'components/**/*.{js,jsx}',
-      'hooks/**/*.{js,jsx}',
-      'store/**/*.{js,jsx}',
-      'app/**/*.{js,jsx}',
-      'tests/**/*.{js,jsx}',
-    ],
+    files: ['**/*.{js,jsx,mjs}'],
     languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      parserOptions: {
+        ecmaFeatures: { jsx: true },  // ← enables JSX parsing everywhere
+      },
       globals: {
         ...globals.browser,
         ...globals.es2021,
       },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
     },
   },
 
-  // ── Node.js globals (process, console, module, __dirname, require)
-  // Applies to: config files, API routes, server utilities
+  // ── Node globals — config files + API routes + server libs ────────
   {
     files: [
       '*.config.{js,mjs,cjs}',
       'next.config.js',
       'vitest.config.js',
-      'lib/**/*.{js,ts}',
-      'app/api/**/*.{js,ts}',
+      'lib/**/*.js',
+      'app/api/**/*.js',
     ],
     languageOptions: {
       globals: {
         ...globals.node,
         ...globals.es2021,
       },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
     },
   },
 
-  // ── Vitest test globals (describe, it, expect, vi, beforeEach…)
+  // ── Vitest test globals ────────────────────────────────────────────
   {
-    files: ['tests/**/*.{js,jsx,ts,tsx}'],
+    files: ['tests/**/*.{js,jsx}'],
     languageOptions: {
       globals: {
         ...globals.browser,
         ...globals.es2021,
-        describe: 'readonly',
-        it: 'readonly',
-        test: 'readonly',
-        expect: 'readonly',
-        vi: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-      },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
+        describe: 'readonly', it: 'readonly', test: 'readonly',
+        expect: 'readonly', vi: 'readonly',
+        beforeEach: 'readonly', afterEach: 'readonly',
+        beforeAll: 'readonly', afterAll: 'readonly',
       },
     },
   },
 
-  // ── Ignored paths ────────────────────────────────────────────────
+  // ── Ignored paths ──────────────────────────────────────────────────
   {
     ignores: ['.next/**', 'node_modules/**', 'dist/**', 'coverage/**'],
   },

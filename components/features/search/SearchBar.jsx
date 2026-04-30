@@ -9,11 +9,11 @@ import { C } from '@/constants/theme'
 const STORAGE_KEY = 'verdebliss-recent-searches'
 
 export default function SearchBar() {
-  const router                = useRouter()
-  const [q, setQ]             = useState('')
+  const router = useRouter()
+  const [q, setQ]           = useState('')
   const [focused, setFocused] = useState(false)
   const [recent, setRecent]   = useState(() => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'))
-  const inputRef              = useRef(null)
+  const inputRef = useRef(null)
   const [cursor, setCursor]   = useState(-1)
 
   // Fuzzy match helper

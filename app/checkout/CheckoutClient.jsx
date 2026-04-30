@@ -85,7 +85,7 @@ const inputStyle = (err) => ({
 })
 
 export default function Checkout() {
-  const router       = useRouter()
+  const router = useRouter()
   const razorReady   = useRazorpayScript()
   const items        = useCartStore((s) => s.items)
   const clearCart    = useCartStore((s) => s.clearCart)
@@ -115,7 +115,7 @@ export default function Checkout() {
   /* Redirect to products if cart is empty */
   useEffect(() => {
     if (items.length === 0 && status !== 'success') router.push('/products')
-  }, [items.length, router.push('/success'), status])
+  }, [items.length, router, status])
 
   const set_ = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
