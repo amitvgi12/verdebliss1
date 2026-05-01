@@ -8,6 +8,7 @@
  * 3. Privacy Policy / Terms / Cookie Policy open LegalModal popups.
  * 4. Social links and placeholder items show toast instead of silent redirect.
  */
+import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Leaf } from 'lucide-react'

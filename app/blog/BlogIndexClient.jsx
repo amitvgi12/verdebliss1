@@ -1,5 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowRight, Clock } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'

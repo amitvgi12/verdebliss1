@@ -11,6 +11,7 @@
  *
  * Guest users see generic beauty advice + a sign-in nudge for account queries.
  */
+import Image from 'next/image'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Send, LogIn } from 'lucide-react'

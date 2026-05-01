@@ -17,7 +17,7 @@
  * Add any new ingredient: just add its key → filename entry below.
  * If a file is missing the card shows a sage-green placeholder — never crashes.
  */
-
+import Image from 'next/image'
 import { useState } from 'react'
 import { C, FONT } from '@/constants/theme'
 
