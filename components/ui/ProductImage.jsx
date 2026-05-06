@@ -8,8 +8,6 @@
  * ingredient → local image file mapping preserved.
  */
 
-import Image from 'next/image'
-
 const INGREDIENT_GRADIENTS = {
   'Bakuchiol':   'linear-gradient(160deg,#d4e8cd 0%,#b8d9af 100%)',
   'Rose Hip':    'linear-gradient(160deg,#fce8ee 0%,#f7c5d3 100%)',
@@ -54,7 +52,7 @@ export default function ProductImage({ product, style = {}, imgStyle = {} }) {
         ...style,
       }}
     >
-      <Image
+      <img
         src={src}
         alt={product.name}
         loading="lazy"

@@ -1,4 +1,3 @@
-import React from 'react'
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
@@ -28,11 +27,3 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useParams:      () => ({ id: '7', slug: 'bakuchiol-vs-retinol' }),
 }))
-
-vi.mock('next/image', () => ({
-  default: (props) => {
-    const { src, alt, ...rest } = props
-    return React.createElement('img', { src, alt, ...rest })
-  },
-}))
-

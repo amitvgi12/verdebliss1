@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { LogOut, Leaf, Check, Heart } from 'lucide-react'
+import { LogOut, Heart, Leaf, Check } from 'lucide-react'
 import LoyaltyPanel from '@/components/features/loyalty/LoyaltyPanel'
 import { useAuthStore } from '@/store/authStore'
 import { useWishlistStore } from '@/store/wishlistStore'

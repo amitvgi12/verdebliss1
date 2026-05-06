@@ -4,7 +4,7 @@
  * Route: /our-story
  */
 import { motion } from 'framer-motion'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
 

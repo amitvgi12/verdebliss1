@@ -9,8 +9,7 @@
  * NEW: Ingredients section with SVG IngredientCard illustrations.
  * NEW: Hero shows serum.webp product image instead of emoji.
  */
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowRight, Check } from 'lucide-react'
 import { useState } from 'react'
@@ -89,7 +88,7 @@ export default function Home() {
             {/* overflow:hidden clips image to circle, objectFit:cover fills it completely */}
             <motion.div animate={{ y:[0,-8,0] }} transition={{ duration:4, repeat:Infinity, ease:'easeInOut' }}
               style={{ width:'min(360px, 90vw)', height:'min(360px, 90vw)', borderRadius:'50%', border:'2px solid rgba(125,155,118,0.35)', overflow:'hidden', boxShadow:'0 24px 64px rgba(0,0,0,0.35)', flexShrink:0 }}>
-              <Image
+              <img
                 src="/images/products/serum.webp"
                 alt="VerdeBliss Bakuchiol Serum"
                 style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center', display:'block' }}

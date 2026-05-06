@@ -11,11 +11,10 @@
  *
  * Guest users see generic beauty advice + a sign-in nudge for account queries.
  */
-import Image from 'next/image'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Send, LogIn } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'next/navigation'
 import { C } from '@/constants/theme'
 import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { useAuthStore } from '@/store/authStore'
@@ -66,7 +65,7 @@ function buildOrderSummary(orders) {
 }
 
 export default function ChatBot() {
-  const router     = useRouter()
+  const navigate   = useRouter()
   const width      = useWindowWidth()
   const isMobile   = width < BP.tablet
   const user       = useAuthStore((s) => s.user)
@@ -211,7 +210,7 @@ export default function ChatBot() {
           >
             {/* Header */}
             <div style={{ background: `linear-gradient(135deg, ${C.forest}, #3D6344)`, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-              <Image src="/images/logo.webp" alt="" aria-hidden="true"
+              <img src="/images/logo.webp" alt="" aria-hidden="true"
                 style={{ height: 32, width: 32, objectFit: 'contain', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', padding: 3 }}
                 onError={(e) => { e.currentTarget.style.display = 'none' }}
               />

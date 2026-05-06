@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Metadata } from 'next'
 import ProductsClient from './ProductsClient'
 
 export const metadata = {
@@ -9,9 +9,5 @@ export const metadata = {
 }
 
 export default function ProductsPage() {
-  return (
-    <Suspense fallback={null}>
-      <ProductsClient />
-    </Suspense>
-  )
+  return <ProductsClient />
 }

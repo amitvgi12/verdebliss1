@@ -8,9 +8,8 @@
  * 3. Privacy Policy / Terms / Cookie Policy open LegalModal popups.
  * 4. Social links and placeholder items show toast instead of silent redirect.
  */
-import Image from 'next/image'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'next/navigation'
 import { Leaf } from 'lucide-react'
 import LegalModal from '@/components/ui/LegalModal'
 import { useToastStore } from '@/store/toastStore'
@@ -53,7 +52,7 @@ export default function Footer() {
 
   const go = (path, label) => {
     if (path) {
-      router.push(path)
+      navigate(path)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       toast(`${label} — coming soon! 🌿`, 'info')
@@ -87,7 +86,7 @@ export default function Footer() {
                 PNG has a non-transparent background.
               */}
               <div style={{ background: 'white', borderRadius: 10, padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}>
-                <Image
+                <img
                   src="/images/logo.webp"
                   alt="VerdeBliss"
                   style={{ height: 34, width: 'auto', objectFit: 'contain', display: 'block' }}

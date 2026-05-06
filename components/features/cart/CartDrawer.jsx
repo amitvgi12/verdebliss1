@@ -6,13 +6,13 @@
  */
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Minus, Award } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'next/navigation'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
 import ProductImage from '@/components/ui/ProductImage'
 import { C, FONT } from '@/constants/theme'
 
 export default function CartDrawer() {
-  const router       = useRouter()
+  const navigate     = useRouter()
   const items        = useCartStore((s) => s.items)
   const isOpen       = useCartStore((s) => s.isOpen)
   const closeCart    = useCartStore((s) => s.closeCart)

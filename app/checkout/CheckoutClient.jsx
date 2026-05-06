@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, Truck, ArrowLeft, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
@@ -85,7 +85,7 @@ const inputStyle = (err) => ({
 })
 
 export default function Checkout() {
-  const router = useRouter()
+  const navigate     = useRouter()
   const razorReady   = useRazorpayScript()
   const items        = useCartStore((s) => s.items)
   const clearCart    = useCartStore((s) => s.clearCart)
@@ -115,7 +115,7 @@ export default function Checkout() {
   /* Redirect to products if cart is empty */
   useEffect(() => {
     if (items.length === 0 && status !== 'success') router.push('/products')
-  }, [items.length, router, status])
+  }, [items.length, navigate, status])
 
   const set_ = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 

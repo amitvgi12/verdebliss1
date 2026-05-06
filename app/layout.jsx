@@ -1,3 +1,4 @@
+import { Metadata } from 'next'
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
 import CartDrawer from '@/components/features/cart/CartDrawer'

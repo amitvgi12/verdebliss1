@@ -1,7 +1,12 @@
 'use client'
-import Image from 'next/image'
+/**
+ * Nav.jsx — Sticky navigation bar
+ * Responsive: full bar ≥768px, hamburger + icons only <768px
+ * Logo: /public/images/logo.webp (logo.webp uploaded by user)
+ */
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, ShoppingBag, Menu, X, Search } from 'lucide-react'
 import SearchBar from '@/components/features/search/SearchBar'
@@ -11,8 +16,8 @@ import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { C, FONT } from '@/constants/theme'
 
 export default function Nav() {
-  const router     = useRouter()
-  const pathname   = usePathname()
+  const navigate   = useNavigate()
+  const location   = useLocation()
   const openCart   = useCartStore((s) => s.openCart)
   const itemCount  = useCartStore(selectItemCount)
   const user       = useAuthStore((s) => s.user)
@@ -31,18 +36,18 @@ export default function Nav() {
 
   const isActive = (path) =>
     pathname === path ||
-    (path === '/products' && pathname?.startsWith('/products'))
+    (path === '/products' && pathname.startsWith('/products'))
 
-  const goTo = (path) => { router.push(path); setMenuOpen(false); setSearchOpen(false) }
+  const goTo = (path) => { navigate(path); setMenuOpen(false); setSearchOpen(false) }
 
   return (
     <>
       <nav style={{ background: 'rgba(250,247,242,0.96)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 100, padding: '0 16px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, height: 60 }}>
 
-          {/* Logo */}
+          {/* Logo — /public/images/logo.webp */}
           <button onClick={() => goTo('/')} aria-label="VerdeBliss home" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-            <Image
+            <img
               src="/images/logo.webp"
               alt="VerdeBliss"
               style={{ height: 40, width: 'auto', objectFit: 'contain' }}
@@ -51,6 +56,7 @@ export default function Nav() {
                 e.currentTarget.nextElementSibling.style.display = 'block'
               }}
             />
+            {/* Text fallback shown only if image 404s */}
             <span style={{ display: 'none', fontSize: 16, fontWeight: 600, color: C.forest, fontFamily: FONT.serif }}>VerdeBliss</span>
           </button>
 
@@ -65,12 +71,14 @@ export default function Nav() {
             </div>
           )}
 
+          {/* Desktop search */}
           {!isMobile && (
             <div style={{ flex: 1, minWidth: 0 }}>
               <SearchBar />
             </div>
           )}
 
+          {/* Push icons right on mobile */}
           {isMobile && <div style={{ flex: 1 }} />}
 
           {/* Icon row */}
@@ -101,7 +109,7 @@ export default function Nav() {
           </div>
         </div>
 
-        {/* Mobile search */}
+        {/* Mobile search slide-down */}
         <AnimatePresence>
           {isMobile && searchOpen && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', borderTop: `1px solid ${C.border}` }}>
@@ -111,7 +119,7 @@ export default function Nav() {
         </AnimatePresence>
       </nav>
 
-      {/* Mobile menu drawer */}
+      {/* Mobile slide-out menu */}
       <AnimatePresence>
         {isMobile && menuOpen && (
           <>

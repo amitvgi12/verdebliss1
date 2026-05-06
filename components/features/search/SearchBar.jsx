@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, ArrowRight } from 'lucide-react'
 import { PRODUCTS } from '@/constants/products'
@@ -12,14 +12,7 @@ export default function SearchBar() {
   const router = useRouter()
   const [q, setQ]           = useState('')
   const [focused, setFocused] = useState(false)
-  const [recent, setRecent] = useState(() => {
-    if (typeof window === 'undefined') return []
-    try {
-      return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]')
-    } catch {
-      return []
-    }
-  })
+  const [recent, setRecent]   = useState(() => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'))
   const inputRef = useRef(null)
   const [cursor, setCursor]   = useState(-1)
 
@@ -41,20 +34,14 @@ export default function SearchBar() {
   const saveRecent = (term) => {
     const updated = [term, ...recent.filter((r) => r !== term)].slice(0, 5)
     setRecent(updated)
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-      } catch {
-        // Ignore storage errors
-      }
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
   }
 
   const go = (product) => {
     saveRecent(product.name)
     setQ('')
     setFocused(false)
-    router.push(`/products/${product.id}`)
+    navigate(`/products/${product.id}`)
   }
 
   const handleKey = (e) => {
