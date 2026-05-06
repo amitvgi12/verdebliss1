@@ -4,7 +4,7 @@
  * Education-led content hub. Three cornerstone SEO articles targeting
  * high-intent keywords for the Indian organic skincare market.
  */
-import { useNavigate } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowRight, Clock } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
@@ -68,7 +68,7 @@ export default function BlogIndexClient() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              onClick={() => navigate(`/blog/${a.slug}`)}
+              onClick={() => router.push(`/blog/${a.slug}`)}
               style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
             >
               {/* Image */}

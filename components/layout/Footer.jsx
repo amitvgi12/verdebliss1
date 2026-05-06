@@ -9,7 +9,7 @@
  * 4. Social links and placeholder items show toast instead of silent redirect.
  */
 import { useState } from 'react'
-import { useNavigate } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Leaf } from 'lucide-react'
 import LegalModal from '@/components/ui/LegalModal'
 import { useToastStore } from '@/store/toastStore'
@@ -52,7 +52,7 @@ export default function Footer() {
 
   const go = (path, label) => {
     if (path) {
-      navigate(path)
+      router.push(path)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       toast(`${label} — coming soon! 🌿`, 'info')

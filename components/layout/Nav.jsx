@@ -16,8 +16,8 @@ import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { C, FONT } from '@/constants/theme'
 
 export default function Nav() {
-  const navigate   = useNavigate()
-  const location   = useLocation()
+  const router   = useRouter()
+  const pathname = usePathname()
   const openCart   = useCartStore((s) => s.openCart)
   const itemCount  = useCartStore(selectItemCount)
   const user       = useAuthStore((s) => s.user)
@@ -38,7 +38,7 @@ export default function Nav() {
     pathname === path ||
     (path === '/products' && pathname.startsWith('/products'))
 
-  const goTo = (path) => { navigate(path); setMenuOpen(false); setSearchOpen(false) }
+  const goTo = (path) => { router.push(path); setMenuOpen(false); setSearchOpen(false) }
 
   return (
     <>

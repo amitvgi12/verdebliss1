@@ -9,7 +9,7 @@
  * NEW: Ingredients section with SVG IngredientCard illustrations.
  * NEW: Hero shows serum.webp product image instead of emoji.
  */
-import { useNavigate } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowRight, Check } from 'lucide-react'
 import { useState } from 'react'
