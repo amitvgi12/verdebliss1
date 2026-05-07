@@ -30,7 +30,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https://*.supabase.co",
-              "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://generativelanguage.googleapis.com",
+              "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com",
               'frame-src https://api.razorpay.com https://checkout.razorpay.com',
             ].join('; '),
           },

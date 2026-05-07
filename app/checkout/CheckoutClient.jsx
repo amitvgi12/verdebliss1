@@ -192,7 +192,7 @@ export default function Checkout() {
 
   /* ── Launch Razorpay ─────────────────────────────────────────────── */
   function launchRazorpay() {
-    const key = import.meta.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+    const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
     if (!key) {
       alert(
         'Razorpay is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID in your environment variables.'

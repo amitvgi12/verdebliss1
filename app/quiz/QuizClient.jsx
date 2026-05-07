@@ -15,6 +15,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, ArrowRight, ArrowLeft, Check, ShoppingBag } from 'lucide-react'
 import { PRODUCTS } from '@/constants/products'
+import { useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/store/cartStore'
 import ProductCard from '@/components/ui/ProductCard'
 import { C, FONT } from '@/constants/theme'
@@ -80,7 +81,16 @@ const QUESTIONS = [
  * Always includes: cleanser + moisturiser + SPF (universal essentials).
  * Adds targeted treatments based on concern + age + skin type.
  */
-function recommend(answers) {
+function findCatalogProduct(catalog, fallbackId) {
+  const fallback = PRODUCTS.find((p) => p.id === fallbackId)
+  return (
+    catalog.find((p) => String(p.id) === String(fallbackId)) ||
+    catalog.find((p) => fallback && p.name === fallback.name) ||
+    fallback
+  )
+}
+
+function recommend(answers, catalog = PRODUCTS) {
   const set = new Set()
 
   // Universal essentials
@@ -107,7 +117,7 @@ function recommend(answers) {
 
   // Budget cap
   let products = Array.from(set)
-    .map((id) => PRODUCTS.find((p) => p.id === id))
+    .map((id) => findCatalogProduct(catalog, id))
     .filter(Boolean)
 
   if (answers.budget === 'under_3k') {
@@ -120,6 +130,7 @@ function recommend(answers) {
 }
 
 export default function QuizClient() {
+  const { products: catalog } = useProducts({ sortBy: 'Bestselling' })
   const addItem = useCartStore((s) => s.addItem)
   const openCart = useCartStore((s) => s.openCart)
 
@@ -142,14 +153,14 @@ export default function QuizClient() {
   }
 
   function addBundleToCart() {
-    const products = recommend(answers)
+    const products = recommend(answers, catalog.length ? catalog : PRODUCTS)
     products.forEach((p) => addItem(p))
     openCart()
   }
 
   /* ── Result screen ────────────────────────────────────────── */
   if (done) {
-    const products = recommend(answers)
+    const products = recommend(answers, catalog.length ? catalog : PRODUCTS)
     const subtotal = products.reduce((s, p) => s + p.price, 0)
     const bundle = Math.round(subtotal * 0.9)
 
