@@ -26,11 +26,12 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
+              "script-src-elem 'self' 'unsafe-inline' https://checkout.razorpay.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https://*.supabase.co",
               "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://generativelanguage.googleapis.com",
-              'frame-src https://api.razorpay.com',
+              'frame-src https://api.razorpay.com https://checkout.razorpay.com',
             ].join('; '),
           },
         ],

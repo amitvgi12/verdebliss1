@@ -47,7 +47,7 @@ export default function SearchBar() {
 
   const saveRecent = (term) => {
     const updated = [term, ...recent.filter((r) => r !== term)].slice(0, 5)
-     setRecent(updated)
+    setRecent(updated)
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
@@ -96,6 +96,8 @@ export default function SearchBar() {
       >
         <Search size={13} color={C.muted} />
         <input
+          id="site-search"
+          name="search"
           ref={inputRef}
           value={q}
           onChange={(e) => setQ(e.target.value)}

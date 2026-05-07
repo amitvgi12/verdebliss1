@@ -177,7 +177,8 @@ export default function ReviewSection({ productId }) {
 
               {/* Star picker */}
               <div style={{ marginBottom: 16 }}>
-                <label
+                <div
+                  id="review-rating-label"
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
@@ -188,8 +189,12 @@ export default function ReviewSection({ productId }) {
                   }}
                 >
                   RATING
-                </label>
-                <div style={{ display: 'flex', gap: 6 }}>
+                </div>
+                <div
+                  role="group"
+                  aria-labelledby="review-rating-label"
+                  style={{ display: 'flex', gap: 6 }}
+                >
                   {[1, 2, 3, 4, 5].map((n) => (
                     <button
                       key={n}
@@ -210,6 +215,7 @@ export default function ReviewSection({ productId }) {
               {/* Title */}
               <div style={{ marginBottom: 12 }}>
                 <label
+                  htmlFor="review-title"
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
@@ -222,6 +228,8 @@ export default function ReviewSection({ productId }) {
                   REVIEW TITLE <span style={{ color: C.terra }}>*</span>
                 </label>
                 <input
+                  id="review-title"
+                  name="review_title"
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="Summarise your experience…"
@@ -245,6 +253,7 @@ export default function ReviewSection({ productId }) {
               {/* Body */}
               <div style={{ marginBottom: 16 }}>
                 <label
+                  htmlFor="review-body"
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
@@ -257,6 +266,8 @@ export default function ReviewSection({ productId }) {
                   YOUR REVIEW <span style={{ color: C.terra }}>*</span>
                 </label>
                 <textarea
+                  id="review-body"
+                  name="review_body"
                   value={form.body}
                   onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
                   placeholder="How has this worked for your skin? Include your skin type to help other customers…"

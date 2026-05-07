@@ -471,6 +471,8 @@ export default function ChatBot() {
               }}
             >
               <input
+                id="chat-message"
+                name="message"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}

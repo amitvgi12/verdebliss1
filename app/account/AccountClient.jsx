@@ -108,6 +108,8 @@ function AuthForm() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {mode === 'register' && (
             <input
+              id="account-full-name"
+              name="full_name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Full name"
@@ -124,6 +126,8 @@ function AuthForm() {
             />
           )}
           <input
+            id="account-email"
+            name="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -140,6 +144,8 @@ function AuthForm() {
             }}
           />
           <input
+            id="account-password"
+            name="password"
             type="password"
             value={pass}
             onChange={(e) => setPass(e.target.value)}
@@ -158,6 +164,8 @@ function AuthForm() {
           />
           {mode === 'register' && (
             <select
+              id="account-skin-type"
+              name="skin_type"
               value={skin}
               onChange={(e) => setSkin(e.target.value)}
               style={{

@@ -194,6 +194,8 @@ export default function ContactClient() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <input
+                id="contact-name"
+                name="name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Your name *"
@@ -209,6 +211,8 @@ export default function ContactClient() {
                 }}
               />
               <input
+                id="contact-email"
+                name="email"
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -225,6 +229,8 @@ export default function ContactClient() {
                 }}
               />
               <select
+                id="contact-topic"
+                name="topic"
                 value={form.topic}
                 onChange={(e) => setForm({ ...form, topic: e.target.value })}
                 style={{
@@ -244,6 +250,8 @@ export default function ContactClient() {
                 ))}
               </select>
               <textarea
+                id="contact-message"
+                name="message"
                 value={form.message}
                 onChange={(e) => setForm({ ...form, message: e.target.value })}
                 placeholder="Your message *"

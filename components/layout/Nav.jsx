@@ -24,8 +24,9 @@ export default function Nav() {
   const links = [
     { path: '/', label: 'Home' },
     { path: '/products', label: 'Shop' },
-    { path: '/quiz', label: 'Quiz' },
+    { path: '/quiz', label: 'Skin Quiz' },
     { path: '/blog', label: 'Journal' },
+    { path: '/faq', label: 'FAQ' },
     { path: '/account', label: 'Account' },
   ]
 

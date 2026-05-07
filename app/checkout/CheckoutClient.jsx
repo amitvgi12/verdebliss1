@@ -101,10 +101,11 @@ function Steps({ current }) {
 }
 
 /* ── Input field ───────────────────────────────────────────────────── */
-function Field({ label, required, error, children }) {
+function Field({ id, label, required, error, children }) {
   return (
     <div style={{ marginBottom: 16 }}>
       <label
+        htmlFor={id}
         style={{
           display: 'block',
           fontSize: 12,
@@ -521,8 +522,10 @@ export default function Checkout() {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
                       <div style={{ gridColumn: '1 / -1' }}>
-                        <Field label="Full Name" required error={errors.name}>
+                        <Field id="checkout-name" label="Full Name" required error={errors.name}>
                           <input
+                            id="checkout-name"
+                            name="name"
                             value={form.name}
                             onChange={set_('name')}
                             placeholder="Kavya Menon"
@@ -530,8 +533,10 @@ export default function Checkout() {
                           />
                         </Field>
                       </div>
-                      <Field label="Email" required error={errors.email}>
+                      <Field id="checkout-email" label="Email" required error={errors.email}>
                         <input
+                          id="checkout-email"
+                          name="email"
                           value={form.email}
                           onChange={set_('email')}
                           type="email"
@@ -539,8 +544,10 @@ export default function Checkout() {
                           style={inputStyle(errors.email)}
                         />
                       </Field>
-                      <Field label="Phone" required error={errors.phone}>
+                      <Field id="checkout-phone" label="Phone" required error={errors.phone}>
                         <input
+                          id="checkout-phone"
+                          name="phone"
                           value={form.phone}
                           onChange={set_('phone')}
                           type="tel"
@@ -550,8 +557,15 @@ export default function Checkout() {
                         />
                       </Field>
                       <div style={{ gridColumn: '1 / -1' }}>
-                        <Field label="Address Line 1" required error={errors.line1}>
+                        <Field
+                          id="checkout-line1"
+                          label="Address Line 1"
+                          required
+                          error={errors.line1}
+                        >
                           <input
+                            id="checkout-line1"
+                            name="address_line1"
                             value={form.line1}
                             onChange={set_('line1')}
                             placeholder="Flat / House number, Street"
@@ -560,8 +574,10 @@ export default function Checkout() {
                         </Field>
                       </div>
                       <div style={{ gridColumn: '1 / -1' }}>
-                        <Field label="Address Line 2">
+                        <Field id="checkout-line2" label="Address Line 2">
                           <input
+                            id="checkout-line2"
+                            name="address_line2"
                             value={form.line2}
                             onChange={set_('line2')}
                             placeholder="Area, Landmark (optional)"
@@ -569,24 +585,30 @@ export default function Checkout() {
                           />
                         </Field>
                       </div>
-                      <Field label="City" required error={errors.city}>
+                      <Field id="checkout-city" label="City" required error={errors.city}>
                         <input
+                          id="checkout-city"
+                          name="city"
                           value={form.city}
                           onChange={set_('city')}
                           placeholder="Pune"
                           style={inputStyle(errors.city)}
                         />
                       </Field>
-                      <Field label="State" required error={errors.state}>
+                      <Field id="checkout-state" label="State" required error={errors.state}>
                         <input
+                          id="checkout-state"
+                          name="state"
                           value={form.state}
                           onChange={set_('state')}
                           placeholder="Maharashtra"
                           style={inputStyle(errors.state)}
                         />
                       </Field>
-                      <Field label="PIN Code" required error={errors.pincode}>
+                      <Field id="checkout-pincode" label="PIN Code" required error={errors.pincode}>
                         <input
+                          id="checkout-pincode"
+                          name="postal_code"
                           value={form.pincode}
                           onChange={set_('pincode')}
                           placeholder="411014"

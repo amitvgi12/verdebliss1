@@ -35,6 +35,8 @@ const COMPANY_LINKS = [
 ]
 
 const SUPPORT_LINKS = [
+  ['Skin Quiz', '/quiz'],
+  ['FAQ', '/faq'],
   ['My Account', '/account'],
   ['Orders', '/account'],
   ['Returns & Refund', 'refund'],

@@ -207,6 +207,8 @@ export default function CookieConsent() {
                     }}
                   >
                     <input
+                      id="cookie-essential"
+                      name="cookie_essential"
                       type="checkbox"
                       checked
                       readOnly
@@ -237,6 +239,8 @@ export default function CookieConsent() {
                     }}
                   >
                     <input
+                      id="cookie-analytics"
+                      name="cookie_analytics"
                       type="checkbox"
                       checked={analytics}
                       onChange={(e) => setAnalytics(e.target.checked)}
@@ -264,6 +268,8 @@ export default function CookieConsent() {
                     }}
                   >
                     <input
+                      id="cookie-marketing"
+                      name="cookie_marketing"
                       type="checkbox"
                       checked={marketing}
                       onChange={(e) => setMarketing(e.target.checked)}

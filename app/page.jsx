@@ -188,6 +188,28 @@ export default function Home() {
               >
                 Shop the Collection <ArrowRight size={15} />
               </motion.button>
+              <motion.button
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => router.push('/quiz')}
+                style={{
+                  background: 'transparent',
+                  color: 'white',
+                  border: `1px solid rgba(255,255,255,0.28)`,
+                  borderRadius: 10,
+                  padding: '14px 24px',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontFamily: 'inherit',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                Take Skin Quiz <ArrowRight size={15} />
+              </motion.button>
             </div>
             <div style={{ display: 'flex', gap: 36, marginTop: 52, flexWrap: 'wrap' }}>
               {[
@@ -683,6 +705,9 @@ export default function Home() {
             }}
           >
             <input
+              id="newsletter-email"
+              name="email"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
