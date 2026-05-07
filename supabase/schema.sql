@@ -157,3 +157,28 @@ insert into public.products (name, description, price, category, skin_types, bad
 ('Wild Berry Lip Elixir',      'Nourishing lip treatment with acai berry and shea for pillowy softness.',       890, 'Lip Care',    array['All Types'],         array['Vegan','Organic Certified'], 'Acai Berry', '🫐', '#F0E8F5', 4.4, 58),
 ('Niacinamide Pore Serum',     'Minimise pores and control sebum with a 10% niacinamide complex.',            2450, 'Serum',       array['Oily','Combination'],array['Vegan','Cruelty-Free'],      'Niacinamide','💧', '#E8EFF5', 4.7, 142),
 ('Shea Butter Night Cream',    'Intensive overnight repair with shea butter and vitamin E for morning glow.',  2650, 'Moisturiser', array['Dry','Sensitive'],   array['Organic Certified','Cruelty-Free'], 'Shea Butter','🌙','#F5EBF0', 4.8, 76);
+
+-- ── increment_points RPC (Audit Fix 8.9) ─────────────────────────────
+-- Called from CheckoutClient.jsx after successful Razorpay payment.
+create or replace function increment_points(user_id uuid, points int)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  update public.profiles
+  set
+    points = profiles.points + increment_points.points,
+    tier   = case
+               when profiles.points + increment_points.points >= 1500 then 'Platinum Alchemist'
+               when profiles.points + increment_points.points >= 500  then 'Gold Botanist'
+               else 'Green Leaf'
+             end,
+    updated_at = now()
+  where id = increment_points.user_id;
+end;
+$$;
+
+-- Grant execute to authenticated users only
+revoke all on function increment_points(uuid, int) from public;
+grant execute on function increment_points(uuid, int) to authenticated;

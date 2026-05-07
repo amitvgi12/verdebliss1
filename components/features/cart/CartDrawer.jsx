@@ -7,6 +7,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Minus, Award } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { FREE_SHIPPING_THRESHOLD } from '@/constants/shipping'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
 import ProductImage from '@/components/ui/ProductImage'
 import { C, FONT } from '@/constants/theme'
@@ -277,12 +278,12 @@ export default function CartDrawer() {
                     ₹{total.toLocaleString()}
                   </span>
                 </div>
-                {total < 499 && (
+                {total < FREE_SHIPPING_THRESHOLD && (
                   <div style={{ fontSize: 11, color: C.terra, marginBottom: 4 }}>
                     Add ₹{(499 - total).toLocaleString()} more for free shipping
                   </div>
                 )}
-                {total >= 499 && (
+                {total >= FREE_SHIPPING_THRESHOLD && (
                   <div style={{ fontSize: 11, color: C.sage, marginBottom: 4 }}>
                     ✓ Free shipping unlocked
                   </div>

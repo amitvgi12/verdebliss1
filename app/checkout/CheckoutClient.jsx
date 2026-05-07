@@ -8,7 +8,7 @@
  *   3. On payment success  → show confirmation, clear cart, award loyalty points
  *   4. On payment failure  → show error, keep cart intact
  *
- * Razorpay key: VITE_RAZORPAY_KEY_ID (exposed to client — safe, it's a public key)
+ * Razorpay key: NEXT_PUBLIC_RAZORPAY_KEY_ID (exposed to client — safe, it's a public key)
  * The Razorpay script is loaded dynamically only on this page (not every page).
  */
 
@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, Truck, ArrowLeft, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { getShippingCost } from '@/constants/shipping'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
 import ProductImage from '@/components/ui/ProductImage'
 import { useAuthStore } from '@/store/authStore'
@@ -190,9 +191,11 @@ export default function Checkout() {
 
   /* ── Launch Razorpay ─────────────────────────────────────────────── */
   function launchRazorpay() {
-    const key = import.meta.env.VITE_RAZORPAY_KEY_ID
+    const key = import.meta.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
     if (!key) {
-      alert('Razorpay is not configured. Set VITE_RAZORPAY_KEY_ID in your environment variables.')
+      alert(
+        'Razorpay is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID in your environment variables.'
+      )
       return
     }
     if (!window.Razorpay) {
@@ -289,7 +292,7 @@ export default function Checkout() {
   }
 
   /* ── Shipping cost ───────────────────────────────────────────────── */
-  const shipping = total >= 499 ? 0 : 79
+  const shipping = getShippingCost(total)
   const grandTotal = total + shipping
 
   /* ══ SUCCESS STATE ═══════════════════════════════════════════════ */

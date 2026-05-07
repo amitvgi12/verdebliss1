@@ -95,6 +95,37 @@ export default function ProductCard({ product: p }) {
             flexWrap: 'wrap',
           }}
         >
+          {p.stock === 0 && (
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                padding: '3px 9px',
+                borderRadius: 99,
+                background: '#B91C1C',
+                color: 'white',
+                letterSpacing: '0.06em',
+              }}
+            >
+              SOLD OUT
+            </span>
+          )}
+          {p.ingredient === 'Green Tea' && (
+            <span
+              title="Contains BHA — not for under 12 / pregnancy"
+              style={{
+                fontSize: 8,
+                fontWeight: 700,
+                padding: '2px 7px',
+                borderRadius: 99,
+                background: '#B45309',
+                color: 'white',
+                letterSpacing: '0.06em',
+              }}
+            >
+              12+ ONLY
+            </span>
+          )}
           {(p.badges ?? []).slice(0, 2).map((b) => (
             <span
               key={b}
@@ -122,7 +153,7 @@ export default function ProductCard({ product: p }) {
             display: 'inline-flex',
             width: 'fit-content',
             fontSize: 9,
-            color: C.olive,
+            color: C.goldText,
             fontWeight: 700,
             letterSpacing: '0.10em',
             background: C.goldPale,
@@ -164,24 +195,25 @@ export default function ProductCard({ product: p }) {
             <span style={{ fontSize: 10, fontWeight: 700, color: C.terra }}>-{discount}%</span>
           </div>
           <button
-            aria-label={`Add ${p.name} to cart`}
+            aria-label={p.stock === 0 ? `${p.name} sold out` : `Add ${p.name} to cart`}
+            disabled={p.stock === 0}
             onClick={(e) => {
               e.stopPropagation()
-              addItem(p)
+              if (p.stock !== 0) addItem(p)
             }}
             style={{
-              background: C.forest,
+              background: p.stock === 0 ? C.light : C.forest,
               color: 'white',
               border: 'none',
               borderRadius: 8,
               padding: '6px 12px',
               fontSize: 11,
               fontWeight: 600,
-              cursor: 'pointer',
+              cursor: p.stock === 0 ? 'not-allowed' : 'pointer',
               fontFamily: 'inherit',
             }}
           >
-            Add
+            {p.stock === 0 ? 'Sold Out' : 'Add'}
           </button>
         </div>
       </div>

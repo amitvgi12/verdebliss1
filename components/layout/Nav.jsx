@@ -1,9 +1,4 @@
 'use client'
-/**
- * Nav.jsx — Sticky navigation bar
- * Responsive: full bar ≥768px, hamburger + icons only <768px
- * Logo: /public/images/logo.webp (logo.webp uploaded by user)
- */
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -29,12 +24,13 @@ export default function Nav() {
   const links = [
     { path: '/', label: 'Home' },
     { path: '/products', label: 'Shop' },
-    { path: '/account', label: 'Account' },
+    { path: '/quiz', label: 'Quiz' },
     { path: '/blog', label: 'Journal' },
+    { path: '/account', label: 'Account' },
   ]
 
   const isActive = (path) =>
-    pathname === path || (path === '/products' && pathname.startsWith('/products'))
+    pathname === path || (path === '/products' && pathname?.startsWith('/products'))
 
   const goTo = (path) => {
     router.push(path)
@@ -65,7 +61,7 @@ export default function Nav() {
             height: 60,
           }}
         >
-          {/* Logo — /public/images/logo.webp */}
+          {/* Logo */}
           <button
             onClick={() => goTo('/')}
             aria-label="VerdeBliss home"
@@ -88,7 +84,6 @@ export default function Nav() {
                 e.currentTarget.nextElementSibling.style.display = 'block'
               }}
             />
-            {/* Text fallback shown only if image 404s */}
             <span
               style={{
                 display: 'none',
@@ -129,14 +124,12 @@ export default function Nav() {
             </div>
           )}
 
-          {/* Desktop search */}
           {!isMobile && (
             <div style={{ flex: 1, minWidth: 0 }}>
               <SearchBar />
             </div>
           )}
 
-          {/* Push icons right on mobile */}
           {isMobile && <div style={{ flex: 1 }} />}
 
           {/* Icon row */}
@@ -234,7 +227,7 @@ export default function Nav() {
           </div>
         </div>
 
-        {/* Mobile search slide-down */}
+        {/* Mobile search */}
         <AnimatePresence>
           {isMobile && searchOpen && (
             <motion.div
@@ -251,7 +244,7 @@ export default function Nav() {
         </AnimatePresence>
       </nav>
 
-      {/* Mobile slide-out menu */}
+      {/* Mobile menu drawer */}
       <AnimatePresence>
         {isMobile && menuOpen && (
           <>

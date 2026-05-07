@@ -1,12 +1,11 @@
+'use client'
 /**
- * ProductImage.jsx
- * Renders the product image to FILL its parent container.
- * Parent must have explicit width + height (or a defined aspect-ratio)
- * so this absolute-fill pattern works correctly.
- *
- * ingredient → gradient background mapping preserved.
- * ingredient → local image file mapping preserved.
+ * ProductImage.jsx — CRITICAL FIX 2.2
+ * Replaced plain <img> with next/image <Image fill>
+ * Benefits: automatic WebP/AVIF, responsive sizing, lazy loading,
+ * CLS prevention, CDN delivery via Vercel Image Optimization.
  */
+import Image from 'next/image'
 
 const INGREDIENT_GRADIENTS = {
   Bakuchiol: 'linear-gradient(160deg,#d4e8cd 0%,#b8d9af 100%)',
@@ -32,40 +31,28 @@ const PRODUCT_IMAGES = {
 
 const DEFAULT_GRADIENT = 'linear-gradient(160deg,#eaf0e8 0%,#c8dbc6 100%)'
 
-export default function ProductImage({ product, style = {}, imgStyle = {} }) {
+export default function ProductImage({ product, priority = false }) {
   const src =
-    product.image_url ?? PRODUCT_IMAGES[product.ingredient] ?? '/images/products/serum.webp'
-  const bg = INGREDIENT_GRADIENTS[product.ingredient] ?? DEFAULT_GRADIENT
+    product?.image_url ?? PRODUCT_IMAGES[product?.ingredient] ?? '/images/products/serum.webp'
+  const bg = INGREDIENT_GRADIENTS[product?.ingredient] ?? DEFAULT_GRADIENT
 
   return (
-    /* Container fills 100% of whatever the parent gives it */
     <div
       style={{
         width: '100%',
         height: '100%',
         background: bg,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        position: 'relative',
         overflow: 'hidden',
-        ...style,
       }}
     >
-      <img
+      <Image
         src={src}
-        alt={product.name}
-        loading="lazy"
-        style={{
-          /* Fill the full container — contain keeps aspect ratio intact */
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          /* Generous padding so bottle doesn't touch edges */
-          padding: '10%',
-          filter: 'drop-shadow(0 12px 32px rgba(0,0,0,0.15))',
-          display: 'block',
-          ...imgStyle,
-        }}
+        alt={product?.name ?? 'VerdeBliss product'}
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        style={{ objectFit: 'contain', padding: '10%' }}
+        priority={priority}
       />
     </div>
   )

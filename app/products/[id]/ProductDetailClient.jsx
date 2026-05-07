@@ -34,6 +34,7 @@ import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
 import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
+import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
 
@@ -82,7 +83,7 @@ const CERTIFICATIONS = [
 ]
 
 /* ── PAO symbol ───────────────────────────────────────────────── */
-function PAOSymbol({ months }) {
+function PAOSymbol({ months, productId }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <svg
@@ -108,6 +109,9 @@ function PAOSymbol({ months }) {
         <div style={{ fontSize: 11, fontWeight: 600, color: C.text }}>Period After Opening</div>
         <div style={{ fontSize: 11, color: C.muted }}>Use within {months} months of opening</div>
       </div>
+
+      {/* Customer reviews */}
+      <ReviewSection productId={productId} />
     </div>
   )
 }
@@ -118,6 +122,8 @@ function Accordion({ id, label, open, onToggle, children }) {
     <div style={{ borderBottom: `1px solid ${C.border}` }}>
       <button
         onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={`accordion-${id}`}
         style={{
           width: '100%',
           display: 'flex',
@@ -353,7 +359,7 @@ export default function ProductDetailClient({ id, initialProduct }) {
                   border: `1px solid ${C.border}`,
                 }}
               >
-                <PAOSymbol months={compliance.pao} />
+                <PAOSymbol months={compliance.pao} productId={id} />
                 <p style={{ fontSize: 10, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
                   Store in a cool, dry place away from direct sunlight. Best before date printed on
                   packaging.
@@ -977,6 +983,9 @@ export default function ProductDetailClient({ id, initialProduct }) {
           </div>
         )}
       </div>
+
+      {/* Customer reviews */}
+      <ReviewSection productId={id} />
     </div>
   )
 }

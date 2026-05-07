@@ -3,7 +3,24 @@ import Footer from '@/components/layout/Footer'
 import CartDrawer from '@/components/features/cart/CartDrawer'
 import CookieConsent from '@/components/ui/CookieConsent'
 import AuthInitializer from '@/components/ui/AuthInitializer'
+import MotionProvider from '@/components/ui/MotionProvider'
 import './globals.css'
+import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  variable: '--font-serif',
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-sans',
+  display: 'swap',
+})
 
 export const metadata = {
   metadataBase: new URL('https://www.verdebliss.com'),
@@ -45,17 +62,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
       <head>
         {/* Preload hero LCP image */}
         <link rel="preload" as="image" href="/images/products/serum.webp" fetchPriority="high" />
-        {/* Preconnect to font providers */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap"
-          rel="stylesheet"
-        />
+        {/* Fonts loaded via next/font below */}
         {/* Organization JSON-LD */}
         <script
           type="application/ld+json"
@@ -110,11 +121,13 @@ export default function RootLayout({ children }) {
         </a>
         {/* Initialize auth on client */}
         <AuthInitializer />
-        <Nav />
-        <CartDrawer />
-        <main id="main-content">{children}</main>
-        <Footer />
-        <CookieConsent />
+        <MotionProvider>
+          <Nav />
+          <CartDrawer />
+          <main id="main-content">{children}</main>
+          <Footer />
+          <CookieConsent />
+        </MotionProvider>
       </body>
     </html>
   )

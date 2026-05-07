@@ -163,6 +163,10 @@ export default function SearchBar() {
                 ))}
               </>
             )}
+            {/* WCAG: aria-live announces results to screen readers */}
+            <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+              {results.length > 0 ? `${results.length} results found` : ''}
+            </div>
             {results.length > 0 && (
               <>
                 <div

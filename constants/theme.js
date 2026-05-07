@@ -43,7 +43,8 @@ export const C = {
   terraPale: '#F6EDE8',
 
   /* Gold — KEY earth tone, should appear on prices, labels, accents */
-  gold: '#BFA06A',
+  gold: '#BFA06A', // decorative / large text only
+  goldText: '#8B6914', // WCAG AA on light bg — use for labels < 18px
   goldPale: '#F5EDD8', // warm gold-tinted surface
 
   /* Ivory */
@@ -59,6 +60,6 @@ export const C = {
 }
 
 export const FONT = {
-  serif: "'Cormorant Garamond', Georgia, serif",
-  sans: "'DM Sans', system-ui, sans-serif",
+  serif: "var(--font-serif), 'Cormorant Garamond', Georgia, serif",
+  sans: "var(--font-sans), 'DM Sans', system-ui, sans-serif",
 }
