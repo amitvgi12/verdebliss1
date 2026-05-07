@@ -3,6 +3,7 @@
  * Reactive window width — used for responsive layout decisions.
  * Debounced at 150ms to avoid excessive re-renders on resize.
  */
+'use client'
 import { useState, useEffect } from 'react'
 
 export function useWindowWidth() {

@@ -7,6 +7,7 @@
  * - Accessible: role="dialog", focus trap on mount, keyboard dismissible
  * - Mobile responsive: stacks buttons vertically on narrow screens
  */
+'use client'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, X, ChevronDown } from 'lucide-react'
