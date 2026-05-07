@@ -1,4 +1,4 @@
-import { getProductServer } from '@/hooks/useProducts'
+import { getProductServer } from '@/lib/products-server'
 import { PRODUCTS } from '@/constants/products'
 import ProductDetailClient from './ProductDetailClient'
 

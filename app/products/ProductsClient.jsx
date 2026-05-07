@@ -5,7 +5,7 @@
  *            so footer links like /products?cat=Serum work correctly.
  */
 import { useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import ProductCard from '@/components/ui/ProductCard'
 import SkeletonCard from '@/components/ui/SkeletonCard'
@@ -14,21 +14,24 @@ import { CATEGORIES, SKIN_TYPES, SORT_OPTIONS } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
 
 export default function ProductsClient() {
-  const [params, setParams] = useSearchParams()
+  const params = useSearchParams()
+  const pathname = usePathname()
+  const router = useRouter()
   const category = params.get('cat') ?? 'All'
   const skinType = params.get('skin') ?? 'All'
   const sortBy = params.get('sort') ?? 'Bestselling'
 
   const setFilter = (key, value) => {
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (!value || value === 'All') next.delete(key)
-        else next.set(key, value)
-        return next
-      },
-      { replace: true }
-    )
+    const next = new URLSearchParams(params)
+    if (!value || value === 'All') next.delete(key)
+    else next.set(key, value)
+
+    const query = next.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }
+
+  const clearFilters = () => {
+    router.replace(pathname, { scroll: false })
   }
 
   const { products, loading } = useProducts({ category, skinType, sortBy })
@@ -169,7 +172,7 @@ export default function ProductsClient() {
             </div>
             {(category !== 'All' || skinType !== 'All') && (
               <button
-                onClick={() => setParams({})}
+                onClick={clearFilters}
                 style={{
                   marginTop: 16,
                   width: '100%',
@@ -252,7 +255,7 @@ export default function ProductsClient() {
                   No products match your filters
                 </div>
                 <button
-                  onClick={() => setParams({})}
+                  onClick={clearFilters}
                   style={{
                     marginTop: 16,
                     background: 'none',
