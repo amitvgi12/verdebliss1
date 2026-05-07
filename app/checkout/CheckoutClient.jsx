@@ -15,7 +15,15 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShieldCheck, Truck, ArrowLeft, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import {
+  ShieldCheck,
+  Truck,
+  ArrowLeft,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Banknote,
+} from 'lucide-react'
 import { getShippingCost } from '@/constants/shipping'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
 import ProductImage from '@/components/ui/ProductImage'
@@ -151,6 +159,7 @@ export default function Checkout() {
   const [step, setStep] = useState(0) // 0=address, 1=review, 2=paying
   const [status, setStatus] = useState(null) // null | 'success' | 'failed'
   const [paymentId, setPayId] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
@@ -171,6 +180,50 @@ export default function Checkout() {
   }, [items.length, router, status])
 
   const set_ = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  async function saveOrder(paymentRef, method, orderStatus = 'Processing') {
+    const orderData = {
+      user_id: user?.id ?? null,
+      status: orderStatus,
+      total: grandTotal,
+      points_earned: pointsToEarn,
+      items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
+      address: {
+        name: form.name,
+        line1: form.line1,
+        line2: form.line2,
+        city: form.city,
+        state: form.state,
+        pincode: form.pincode,
+        phone: form.phone,
+        email: form.email,
+        payment_method: method,
+      },
+      payment_id: paymentRef,
+    }
+
+    const { supabase } = await import('@/lib/supabase')
+    await supabase.from('orders').insert(orderData)
+
+    if (user?.id) {
+      await supabase.rpc('increment_points', { user_id: user.id, points: pointsToEarn })
+    }
+  }
+
+  async function confirmOrder(paymentRef, method, orderStatus = 'Processing') {
+    try {
+      await saveOrder(paymentRef, method, orderStatus)
+    } catch (err) {
+      console.error('[Checkout] Failed to save order:', err)
+      // Don't block success — payment/COD intent was received, order can be reconciled manually.
+    }
+
+    setPayId(paymentRef)
+    setPaymentMethod(method)
+    setStatus('success')
+    clearCart()
+    setLoading(false)
+  }
 
   /* ── Validate address step ───────────────────────────────────────── */
   function validate() {
@@ -207,7 +260,7 @@ export default function Checkout() {
     setLoading(true)
 
     /* Amount in paise (₹1 = 100 paise) */
-    const amountPaise = Math.round(total * 100)
+    const amountPaise = Math.round(grandTotal * 100)
 
     const options = {
       key,
@@ -226,6 +279,16 @@ export default function Checkout() {
       notes: {
         address: `${form.line1}, ${form.line2 ? form.line2 + ', ' : ''}${form.city}, ${form.state} - ${form.pincode}`,
         items: items.map((i) => `${i.name} ×${i.qty}`).join('; '),
+        payment_method: 'Razorpay',
+      },
+
+      method: {
+        upi: true,
+        card: true,
+        netbanking: true,
+        wallet: true,
+        emi: true,
+        paylater: true,
       },
 
       theme: {
@@ -239,41 +302,7 @@ export default function Checkout() {
       },
 
       handler: async (response) => {
-        /* Payment successful — AUDIT FIX 8.9: save order to Supabase */
-        try {
-          const orderData = {
-            user_id: user?.id ?? null,
-            status: 'Processing',
-            total: grandTotal,
-            points_earned: pointsToEarn,
-            items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
-            address: {
-              name: form.name,
-              line1: form.line1,
-              line2: form.line2,
-              city: form.city,
-              state: form.state,
-              pincode: form.pincode,
-              phone: form.phone,
-              email: form.email,
-            },
-            payment_id: response.razorpay_payment_id,
-          }
-          const { supabase } = await import('@/lib/supabase')
-          await supabase.from('orders').insert(orderData)
-
-          // Award loyalty points if logged in
-          if (user?.id) {
-            await supabase.rpc('increment_points', { user_id: user.id, points: pointsToEarn })
-          }
-        } catch (err) {
-          console.error('[Checkout] Failed to save order:', err)
-          // Don't block success — payment was received, order will reconcile via webhook
-        }
-        setPayId(response.razorpay_payment_id)
-        setStatus('success')
-        clearCart()
-        setLoading(false)
+        await confirmOrder(response.razorpay_payment_id, 'Razorpay')
       },
     }
 
@@ -290,6 +319,12 @@ export default function Checkout() {
       setLoading(false)
       alert('Could not open payment gateway. Please try again.')
     }
+  }
+
+  async function placeCodOrder() {
+    setLoading(true)
+    const codRef = `COD-${Date.now()}`
+    await confirmOrder(codRef, 'Cash on Delivery', 'COD Pending')
   }
 
   /* ── Shipping cost ───────────────────────────────────────────────── */
