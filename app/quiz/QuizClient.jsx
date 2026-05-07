@@ -12,7 +12,6 @@
  * Maps answers to VerdeBliss product set + offers 10% bundle discount.
  */
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, ArrowRight, ArrowLeft, Check, ShoppingBag } from 'lucide-react'
 import { PRODUCTS } from '@/constants/products'
@@ -121,7 +120,6 @@ function recommend(answers) {
 }
 
 export default function QuizClient() {
-  const router = useRouter()
   const addItem = useCartStore((s) => s.addItem)
   const openCart = useCartStore((s) => s.openCart)
 
