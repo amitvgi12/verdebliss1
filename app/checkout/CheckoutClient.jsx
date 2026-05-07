@@ -145,6 +145,8 @@ const inputStyle = (err) => ({
   transition: 'border-color 0.2s',
 })
 
+const COD_MAX_TOTAL = 500
+
 export default function Checkout() {
   const router = useRouter()
   const razorReady = useRazorpayScript()
@@ -294,6 +296,34 @@ export default function Checkout() {
         paylater: true,
       },
 
+      config: {
+        display: {
+          blocks: {
+            upi: {
+              name: 'Pay by UPI',
+              instruments: [{ method: 'upi' }],
+            },
+            cards: {
+              name: 'Cards',
+              instruments: [{ method: 'card' }],
+            },
+            other: {
+              name: 'More payment options',
+              instruments: [
+                { method: 'netbanking' },
+                { method: 'wallet' },
+                { method: 'paylater' },
+                { method: 'emi' },
+              ],
+            },
+          },
+          sequence: ['block.upi', 'block.cards', 'block.other'],
+          preferences: {
+            show_default_blocks: true,
+          },
+        },
+      },
+
       theme: {
         color: '#2D4A32', // forest green
       },
@@ -328,6 +358,11 @@ export default function Checkout() {
   }
 
   async function placeCodOrder() {
+    if (grandTotal > COD_MAX_TOTAL) {
+      alert(`Cash on Delivery is available only up to ₹${COD_MAX_TOTAL.toLocaleString()}.`)
+      return
+    }
+
     setLoading(true)
     setPaymentAction('cod')
     const codRef = `COD-${Date.now()}`
@@ -337,6 +372,7 @@ export default function Checkout() {
   /* ── Shipping cost ───────────────────────────────────────────────── */
   const shipping = getShippingCost(total)
   const grandTotal = total + shipping
+  const codAvailable = grandTotal <= COD_MAX_TOTAL
 
   /* ══ SUCCESS STATE ═══════════════════════════════════════════════ */
   if (status === 'success') {
@@ -926,17 +962,17 @@ export default function Checkout() {
 
                   <button
                     onClick={placeCodOrder}
-                    disabled={loading}
+                    disabled={loading || !codAvailable}
                     style={{
                       width: '100%',
-                      background: C.ivory,
-                      color: C.forest,
-                      border: `1px solid ${C.forest}`,
+                      background: codAvailable ? C.ivory : '#F1ECE6',
+                      color: codAvailable ? C.forest : C.light,
+                      border: `1px solid ${codAvailable ? C.forest : C.border}`,
                       borderRadius: 12,
                       padding: '13px',
                       fontSize: 14,
                       fontWeight: 700,
-                      cursor: loading ? 'wait' : 'pointer',
+                      cursor: loading ? 'wait' : codAvailable ? 'pointer' : 'not-allowed',
                       fontFamily: 'inherit',
                       display: 'flex',
                       alignItems: 'center',
@@ -951,12 +987,17 @@ export default function Checkout() {
                       </>
                     ) : (
                       <>
-                        <Banknote size={15} /> Cash on Delivery
+                        <Banknote size={15} />{' '}
+                        {codAvailable
+                          ? 'Cash on Delivery'
+                          : `COD unavailable above ₹${COD_MAX_TOTAL.toLocaleString()}`}
                       </>
                     )}
                   </button>
                   <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, margin: '8px 0 0' }}>
-                    COD orders are confirmed now and payable when your package arrives.
+                    {codAvailable
+                      ? 'COD orders are confirmed now and payable when your package arrives.'
+                      : `Please use online payment for orders above ₹${COD_MAX_TOTAL.toLocaleString()}.`}
                   </p>
 
                   {status === 'failed' && (
