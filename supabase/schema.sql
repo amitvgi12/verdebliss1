@@ -182,3 +182,41 @@ $$;
 -- Grant execute to authenticated users only
 revoke all on function increment_points(uuid, int) from public;
 grant execute on function increment_points(uuid, int) to authenticated;
+
+-- ── Refunds: customer refund requests ───────────────────────────────
+-- Stores refund/return requests submitted by customers from the storefront.
+create table if not exists public.refunds (
+  id          uuid primary key default uuid_generate_v4(),
+  user_id     uuid references public.profiles on delete set null,
+  order_id    uuid references public.orders on delete set null,
+  reason      text not null,
+  details     jsonb default '{}',
+  status      text default 'requested', -- requested | processing | approved | rejected | refunded
+  response    text,
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
+);
+
+-- Update `updated_at` automatically on change
+create or replace function public.set_refunds_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_refunds_updated_at on public.refunds;
+create trigger trg_refunds_updated_at
+  before update on public.refunds
+  for each row execute procedure public.set_refunds_updated_at();
+
+-- Row Level Security for refunds: owner can read and insert
+alter table public.refunds enable row level security;
+create policy "Owner can read refunds" on public.refunds for select using (auth.uid() = user_id);
+create policy "Owner can insert refunds" on public.refunds for insert with check (auth.uid() = user_id);
+create policy "Owner can update refunds status by staff" on public.refunds for update using (true) with check (true);
+
+-- Note: The update policy above is permissive; in production you should restrict who can update
+-- refund status (e.g., a 'staff' role). Adjust policies as needed in the Supabase dashboard.
+
