@@ -161,6 +161,7 @@ export default function Checkout() {
   const [paymentId, setPayId] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('')
   const [loading, setLoading] = useState(false)
+  const [paymentAction, setPaymentAction] = useState(null) // null | 'razorpay' | 'cod'
   const [errors, setErrors] = useState({})
 
   const [form, setForm] = useState({
@@ -223,6 +224,7 @@ export default function Checkout() {
     setStatus('success')
     clearCart()
     setLoading(false)
+    setPaymentAction(null)
   }
 
   /* ── Validate address step ───────────────────────────────────────── */
@@ -258,6 +260,7 @@ export default function Checkout() {
     }
 
     setLoading(true)
+    setPaymentAction('razorpay')
 
     /* Amount in paise (₹1 = 100 paise) */
     const amountPaise = Math.round(grandTotal * 100)
@@ -298,6 +301,7 @@ export default function Checkout() {
       modal: {
         ondismiss: () => {
           setLoading(false)
+          setPaymentAction(null)
         },
       },
 
@@ -312,17 +316,20 @@ export default function Checkout() {
         console.error('Razorpay payment failed:', response.error)
         setStatus('failed')
         setLoading(false)
+        setPaymentAction(null)
       })
       rzp.open()
     } catch (err) {
       console.error('Razorpay error:', err)
       setLoading(false)
+      setPaymentAction(null)
       alert('Could not open payment gateway. Please try again.')
     }
   }
 
   async function placeCodOrder() {
     setLoading(true)
+    setPaymentAction('cod')
     const codRef = `COD-${Date.now()}`
     await confirmOrder(codRef, 'Cash on Delivery', 'COD Pending')
   }
@@ -389,7 +396,13 @@ export default function Checkout() {
                 color: C.olive,
               }}
             >
-              Payment ID: <strong>{paymentId}</strong>
+              {paymentMethod === 'Cash on Delivery' ? 'Order Ref' : 'Payment ID'}:{' '}
+              <strong>{paymentId}</strong>
+              {paymentMethod && (
+                <div style={{ marginTop: 4 }}>
+                  Method: <strong>{paymentMethod}</strong>
+                </div>
+              )}
             </div>
           )}
           <div
@@ -875,7 +888,7 @@ export default function Checkout() {
                     }}
                   >
                     <ShieldCheck size={14} />
-                    Secured by Razorpay · UPI, Cards, Net Banking, Wallets accepted
+                    Pay online with Razorpay, including UPI when enabled for your merchant account.
                   </div>
 
                   <button
@@ -883,7 +896,7 @@ export default function Checkout() {
                     disabled={loading || !razorReady}
                     style={{
                       width: '100%',
-                      background: loading ? C.sage : C.forest,
+                      background: loading && paymentAction === 'razorpay' ? C.sage : C.forest,
                       color: 'white',
                       border: 'none',
                       borderRadius: 12,
@@ -899,7 +912,7 @@ export default function Checkout() {
                       marginBottom: 8,
                     }}
                   >
-                    {loading ? (
+                    {loading && paymentAction === 'razorpay' ? (
                       <>
                         <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />{' '}
                         Opening Payment Gateway…
@@ -907,9 +920,44 @@ export default function Checkout() {
                     ) : !razorReady ? (
                       'Loading payment gateway…'
                     ) : (
-                      <>Pay ₹{grandTotal.toLocaleString()} with Razorpay</>
+                      <>Pay Online ₹{grandTotal.toLocaleString()}</>
                     )}
                   </button>
+
+                  <button
+                    onClick={placeCodOrder}
+                    disabled={loading}
+                    style={{
+                      width: '100%',
+                      background: C.ivory,
+                      color: C.forest,
+                      border: `1px solid ${C.forest}`,
+                      borderRadius: 12,
+                      padding: '13px',
+                      fontSize: 14,
+                      fontWeight: 700,
+                      cursor: loading ? 'wait' : 'pointer',
+                      fontFamily: 'inherit',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    {loading && paymentAction === 'cod' ? (
+                      <>
+                        <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />{' '}
+                        Placing order…
+                      </>
+                    ) : (
+                      <>
+                        <Banknote size={15} /> Cash on Delivery
+                      </>
+                    )}
+                  </button>
+                  <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, margin: '8px 0 0' }}>
+                    COD orders are confirmed now and payable when your package arrives.
+                  </p>
 
                   {status === 'failed' && (
                     <motion.div
