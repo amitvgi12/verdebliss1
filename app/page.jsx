@@ -255,6 +255,7 @@ export default function Home() {
               <img
                 src="/images/products/serum.webp"
                 alt="VerdeBliss Bakuchiol Serum"
+                fetchPriority="high"
                 style={{
                   width: '100%',
                   height: '100%',

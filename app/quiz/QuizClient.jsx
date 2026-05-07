@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, ArrowRight, ArrowLeft, Check, ShoppingBag } from 'lucide-react'
 import { PRODUCTS } from '@/constants/products'
 import { useCartStore } from '@/store/cartStore'
-import ProductImage from '@/components/ui/ProductImage'
+import ProductCard from '@/components/ui/ProductCard'
 import { C, FONT } from '@/constants/theme'
 
 const QUESTIONS = [
@@ -216,52 +216,8 @@ export default function QuizClient() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
-                onClick={() => router.push(`/products/${p.id}`)}
-                style={{
-                  background: C.card,
-                  border: `1px solid ${C.border}`,
-                  borderTop: `2px solid ${C.gold}`,
-                  borderRadius: 14,
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                }}
               >
-                <div style={{ aspectRatio: '1/1', position: 'relative' }}>
-                  <ProductImage product={p} />
-                </div>
-                <div style={{ padding: '14px 14px 16px' }}>
-                  <div
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 700,
-                      color: C.goldText,
-                      letterSpacing: '0.1em',
-                      background: C.goldPale,
-                      padding: '2px 8px',
-                      borderRadius: 4,
-                      display: 'inline-flex',
-                      marginBottom: 6,
-                    }}
-                  >
-                    {p.category?.toUpperCase()}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: FONT.serif,
-                      fontSize: 14,
-                      color: C.text,
-                      marginBottom: 6,
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {p.name}
-                  </div>
-                  <div
-                    style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: FONT.serif }}
-                  >
-                    ₹{p.price.toLocaleString()}
-                  </div>
-                </div>
+                <ProductCard product={p} />
               </motion.div>
             ))}
           </div>

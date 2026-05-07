@@ -1,7 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Heart } from 'lucide-react'
+import { Heart, Minus, Plus } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
 import Stars from '@/components/ui/Stars'
 import { useCartStore } from '@/store/cartStore'
@@ -12,6 +12,9 @@ import { C, FONT } from '@/constants/theme'
 export default function ProductCard({ product: p }) {
   const router = useRouter()
   const addItem = useCartStore((s) => s.addItem)
+  const removeItem = useCartStore((s) => s.removeItem)
+  const updateQty = useCartStore((s) => s.updateQty)
+  const cartItem = useCartStore((s) => s.items.find((item) => item.id === p.id))
   const { toggle, has } = useWishlistStore()
   const user = useAuthStore((s) => s.user)
 
@@ -19,6 +22,21 @@ export default function ProductCard({ product: p }) {
   const discount = Math.round(((mrp - p.price) / mrp) * 100)
 
   const goToProduct = () => router.push(`/products/${p.id}`)
+  const stopCardNavigation = (e) => {
+    e.stopPropagation()
+  }
+
+  const decreaseQty = (e) => {
+    e.stopPropagation()
+    if (!cartItem) return
+    if (cartItem.qty <= 1) removeItem(p.id)
+    else updateQty(p.id, -1)
+  }
+
+  const increaseQty = (e) => {
+    e.stopPropagation()
+    if (p.stock !== 0) updateQty(p.id, 1)
+  }
 
   return (
     /* AUDIT FIX 6.7: role=button + tabIndex + onKeyDown for keyboard nav */
@@ -63,6 +81,7 @@ export default function ProductCard({ product: p }) {
             e.stopPropagation()
             toggle(p.id, user?.id)
           }}
+          onKeyDown={stopCardNavigation}
           style={{
             position: 'absolute',
             top: 8,
@@ -194,29 +213,89 @@ export default function ProductCard({ product: p }) {
             </span>
             <span style={{ fontSize: 10, fontWeight: 700, color: C.terra }}>-{discount}%</span>
           </div>
-          <button
-            aria-label={p.stock === 0 ? `${p.name} sold out` : `Add ${p.name} to cart`}
-            disabled={p.stock === 0}
-            onClick={(e) => {
-              e.stopPropagation()
-              if (p.stock !== 0) addItem(p)
-            }}
-            style={{
-              background: p.stock === 0 ? C.light : C.forest,
-              color: 'white',
-              border: 'none',
-              borderRadius: 8,
-              padding: '6px 12px',
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: p.stock === 0 ? 'not-allowed' : 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            {p.stock === 0 ? 'Sold Out' : 'Add'}
-          </button>
+          {cartItem ? (
+            <div
+              aria-label={`${p.name} quantity in cart`}
+              onClick={stopCardNavigation}
+              onKeyDown={stopCardNavigation}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '28px 28px 28px',
+                alignItems: 'center',
+                border: `1px solid ${C.forest}`,
+                borderRadius: 8,
+                overflow: 'hidden',
+                background: C.ivory,
+                flexShrink: 0,
+              }}
+            >
+              <button
+                type="button"
+                aria-label={`Decrease ${p.name} quantity`}
+                onClick={decreaseQty}
+                style={qtyButtonStyle}
+              >
+                <Minus size={12} />
+              </button>
+              <span
+                style={{
+                  textAlign: 'center',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: C.forest,
+                  lineHeight: '28px',
+                }}
+              >
+                {cartItem.qty}
+              </span>
+              <button
+                type="button"
+                aria-label={`Increase ${p.name} quantity`}
+                onClick={increaseQty}
+                style={qtyButtonStyle}
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+          ) : (
+            <button
+              aria-label={p.stock === 0 ? `${p.name} sold out` : `Add ${p.name} to cart`}
+              disabled={p.stock === 0}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (p.stock !== 0) addItem(p)
+              }}
+              onKeyDown={stopCardNavigation}
+              style={{
+                background: p.stock === 0 ? C.light : C.forest,
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '6px 12px',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: p.stock === 0 ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              {p.stock === 0 ? 'Sold Out' : 'Add'}
+            </button>
+          )}
         </div>
       </div>
     </motion.div>
   )
+}
+
+const qtyButtonStyle = {
+  width: 28,
+  height: 28,
+  border: 'none',
+  background: 'none',
+  color: C.forest,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 0,
 }

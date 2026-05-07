@@ -319,7 +319,10 @@ export default function CartDrawer() {
                   Proceed to Checkout — ₹{total.toLocaleString()}
                 </button>
                 <button
-                  onClick={closeCart}
+                  onClick={() => {
+                    closeCart()
+                    router.push('/products')
+                  }}
                   style={{
                     width: '100%',
                     background: 'none',

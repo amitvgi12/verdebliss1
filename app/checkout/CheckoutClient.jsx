@@ -167,7 +167,7 @@ export default function Checkout() {
 
   /* Redirect to products if cart is empty */
   useEffect(() => {
-    if (items.length === 0 && status !== 'success') router.push('/products')
+    if (items.length === 0 && status !== 'success') router.replace('/products')
   }, [items.length, router, status])
 
   const set_ = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))

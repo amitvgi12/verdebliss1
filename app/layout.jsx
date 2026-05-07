@@ -64,8 +64,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
       <head>
-        {/* Preload hero LCP image */}
-        <link rel="preload" as="image" href="/images/products/serum.webp" fetchPriority="high" />
         {/* Fonts loaded via next/font below */}
         {/* Organization JSON-LD */}
         <script
