@@ -14,14 +14,14 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 /* Standalone selectors — call inside useCartStore() for reactivity */
-export const selectTotal      = (s) => s.items.reduce((sum, i) => sum + i.price * i.qty, 0)
-export const selectItemCount  = (s) => s.items.reduce((sum, i) => sum + i.qty, 0)
+export const selectTotal = (s) => s.items.reduce((sum, i) => sum + i.price * i.qty, 0)
+export const selectItemCount = (s) => s.items.reduce((sum, i) => sum + i.qty, 0)
 export const selectPointsToEarn = (s) => Math.floor(selectTotal(s) / 10)
 
 export const useCartStore = create(
   persist(
     (set) => ({
-      items:  [],
+      items: [],
       isOpen: false,
 
       addItem: (product) =>
@@ -29,15 +29,12 @@ export const useCartStore = create(
           const existing = state.items.find((i) => i.id === product.id)
           return {
             items: existing
-              ? state.items.map((i) =>
-                  i.id === product.id ? { ...i, qty: i.qty + 1 } : i
-                )
+              ? state.items.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i))
               : [...state.items, { ...product, qty: 1 }],
           }
         }),
 
-      removeItem: (id) =>
-        set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+      removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
 
       updateQty: (id, delta) =>
         set((state) => ({
@@ -48,7 +45,7 @@ export const useCartStore = create(
 
       clearCart: () => set({ items: [] }),
 
-      openCart:  () => set({ isOpen: true }),
+      openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
     }),
     { name: 'verdebliss-cart' }

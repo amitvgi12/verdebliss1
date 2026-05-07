@@ -34,11 +34,6 @@ export default [
       'tests/**/*.{js,jsx}',
     ],
     languageOptions: {
-
-
-
-
-
       globals: {
         ...globals.browser,
         ...globals.es2021,

@@ -30,7 +30,7 @@ beforeEach(() => {
 })
 
 /* ── Fixtures ───────────────────────────────────────── */
-const SERUM = { id: '7', name: 'Niacinamide Pore Serum',  price: 2450 }
+const SERUM = { id: '7', name: 'Niacinamide Pore Serum', price: 2450 }
 const TONER = { id: '3', name: 'Green Tea Clarity Toner', price: 1450 }
 const CREAM = { id: '8', name: 'Shea Butter Night Cream', price: 2650 }
 
@@ -101,14 +101,17 @@ describe('cartStore — itemCount', () => {
 
   it('counts total quantity across all items', () => {
     const { addItem } = useCartStore.getState()
-    addItem(SERUM); addItem(SERUM) // qty 2
-    addItem(TONER)                 // qty 1
+    addItem(SERUM)
+    addItem(SERUM) // qty 2
+    addItem(TONER) // qty 1
     expect(sumCount(useCartStore.getState().items)).toBe(3)
   })
 
   it('count reflects qty after adding same item 3 times', () => {
     const { addItem } = useCartStore.getState()
-    addItem(SERUM); addItem(SERUM); addItem(SERUM)
+    addItem(SERUM)
+    addItem(SERUM)
+    addItem(SERUM)
     expect(sumCount(useCartStore.getState().items)).toBe(3)
   })
 })
@@ -121,7 +124,8 @@ describe('cartStore — total', () => {
 
   it('calculates correct total for one item × 2', () => {
     const { addItem } = useCartStore.getState()
-    addItem(SERUM); addItem(SERUM)
+    addItem(SERUM)
+    addItem(SERUM)
     expect(sumTotal(useCartStore.getState().items)).toBe(4900) // 2450 × 2
   })
 
@@ -171,14 +175,17 @@ describe('cartStore — cart open/close', () => {
 describe('cartStore — clearCart', () => {
   it('removes all items', () => {
     const { addItem, clearCart } = useCartStore.getState()
-    addItem(SERUM); addItem(TONER); addItem(CREAM)
+    addItem(SERUM)
+    addItem(TONER)
+    addItem(CREAM)
     clearCart()
     expect(useCartStore.getState().items).toHaveLength(0)
   })
 
   it('total is 0 after clearCart', () => {
     const { addItem, clearCart } = useCartStore.getState()
-    addItem(SERUM); addItem(TONER)
+    addItem(SERUM)
+    addItem(TONER)
     clearCart()
     expect(sumTotal(useCartStore.getState().items)).toBe(0)
   })

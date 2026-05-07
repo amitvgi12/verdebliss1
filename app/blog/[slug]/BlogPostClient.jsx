@@ -6,14 +6,15 @@
  */
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Clock, Calendar } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
 
 /* ── Article content ──────────────────────────────── */
 const ARTICLES = {
   'bakuchiol-vs-retinol': {
     title: 'Bakuchiol vs Retinol: Which Is Right for Your Skin?',
-    description: 'Bakuchiol vs retinol — a complete comparison of the plant-based alternative to retinol. Which works better for sensitive skin? We break down the science.',
+    description:
+      'Bakuchiol vs retinol — a complete comparison of the plant-based alternative to retinol. Which works better for sensitive skin? We break down the science.',
     category: 'Ingredient Science',
     date: '12 March 2026',
     readTime: 6,
@@ -40,14 +41,15 @@ const ARTICLES = {
 
   'skincare-routine-dry-skin': {
     title: 'The Complete Skincare Routine for Dry Skin (Organic Edition)',
-    description: 'A complete 6-step organic skincare routine for dry skin. Dermatologist-approved layering order, best ingredients, and product recommendations.',
+    description:
+      'A complete 6-step organic skincare routine for dry skin. Dermatologist-approved layering order, best ingredients, and product recommendations.',
     category: 'Skin Routines',
     date: '4 April 2026',
     readTime: 8,
     image: '/images/ingredients/shea.webp',
     sections: [
       {
-        heading: 'Understanding Dry Skin: It\'s Not Just Dehydration',
+        heading: "Understanding Dry Skin: It's Not Just Dehydration",
         body: 'Dry skin (also called xerosis) is a skin type characterised by a compromised lipid barrier — meaning your skin lacks the natural oils that prevent water from evaporating. This is different from dehydration, which is a temporary condition any skin type can experience.\n\nThe root cause matters because the fix is different. Dry skin needs lipids (oils, butters, ceramides) to rebuild the barrier. Dehydrated skin needs humectants (hyaluronic acid, glycerin) to draw water in. Most dry-skin sufferers need both.',
       },
       {
@@ -56,7 +58,7 @@ const ARTICLES = {
       },
       {
         heading: 'The Evening Routine',
-        body: 'Evening is your skin\'s repair window — cell turnover peaks between 11pm and 4am, making this the ideal time for active ingredients.\n\nDouble cleanse if you wore SPF or makeup: oil cleanser first, then gentle cleanser.\n\nApply bakuchiol serum — safe for PM use unlike retinol.\n\nFollow with a nourishing night cream. Our Shea Butter Night Cream uses unrefined shea butter and vitamin E to deeply repair the lipid barrier while you sleep.\n\nSkip the eye cream if it causes milia (small white bumps). In that case, a thin layer of your regular moisturiser is sufficient.',
+        body: "Evening is your skin's repair window — cell turnover peaks between 11pm and 4am, making this the ideal time for active ingredients.\n\nDouble cleanse if you wore SPF or makeup: oil cleanser first, then gentle cleanser.\n\nApply bakuchiol serum — safe for PM use unlike retinol.\n\nFollow with a nourishing night cream. Our Shea Butter Night Cream uses unrefined shea butter and vitamin E to deeply repair the lipid barrier while you sleep.\n\nSkip the eye cream if it causes milia (small white bumps). In that case, a thin layer of your regular moisturiser is sufficient.",
       },
       {
         heading: 'The Ingredients Dry Skin Must Have',
@@ -67,7 +69,8 @@ const ARTICLES = {
 
   'organic-skincare-india': {
     title: 'Why Organic Skincare Is the Smartest Choice for Indian Skin',
-    description: 'Indian skin faces unique challenges — UV, humidity, pollution. Learn why certified organic skincare outperforms conventional products and how to read labels.',
+    description:
+      'Indian skin faces unique challenges — UV, humidity, pollution. Learn why certified organic skincare outperforms conventional products and how to read labels.',
     category: 'Education',
     date: '18 April 2026',
     readTime: 7,
@@ -75,7 +78,7 @@ const ARTICLES = {
     sections: [
       {
         heading: 'What Makes Indian Skin Unique',
-        body: 'India spans multiple climate zones — from the arid Rajasthan desert to the humid Kerala coast to the high-altitude UV intensity of the Himalayas. Most Indian cities rank in the world\'s top 20 for air pollution. The combination of high UV indices year-round, high particulate matter in the air, and frequent humidity swings creates a unique set of skin challenges:\n\nHyperpigmentation: UV exposure triggers melanin overproduction in Fitzpatrick types IV–VI, which represent most Indian skin. Post-inflammatory hyperpigmentation (PIH) after acne is also far more prevalent.\n\nOily T-zone with dry cheeks: The classic combination skin pattern is extremely common in Indian climates.\n\nBarrier sensitivity: Frequent use of harsh conventional products combined with hard water damages the lipid barrier over time.',
+        body: "India spans multiple climate zones — from the arid Rajasthan desert to the humid Kerala coast to the high-altitude UV intensity of the Himalayas. Most Indian cities rank in the world's top 20 for air pollution. The combination of high UV indices year-round, high particulate matter in the air, and frequent humidity swings creates a unique set of skin challenges:\n\nHyperpigmentation: UV exposure triggers melanin overproduction in Fitzpatrick types IV–VI, which represent most Indian skin. Post-inflammatory hyperpigmentation (PIH) after acne is also far more prevalent.\n\nOily T-zone with dry cheeks: The classic combination skin pattern is extremely common in Indian climates.\n\nBarrier sensitivity: Frequent use of harsh conventional products combined with hard water damages the lipid barrier over time.",
       },
       {
         heading: 'The Problem with Conventional Skincare',
@@ -87,7 +90,7 @@ const ARTICLES = {
       },
       {
         heading: 'The Indian Ingredients with Science Behind Them',
-        body: 'India\'s botanical pharmacopoeia is arguably the richest in the world. Here are the ingredients where traditional Ayurvedic knowledge now has peer-reviewed clinical evidence:\n\nTurmeric (Curcuma longa): Curcumin has been shown in multiple studies to inhibit melanogenesis (pigment production) and reduce oxidative stress. It is more effective as a topical agent at low concentrations (0.1–0.5%) than at high ones, which explains why raw turmeric masks often cause staining without delivering clinical benefit.\n\nNeem: Azadirachtin from neem leaves shows significant activity against Cutibacterium acnes — the bacteria associated with acne.\n\nSandalwood (Santalum album): Santalol binds to olfactory receptors in skin cells, stimulating keratinocyte proliferation and wound healing. Clinical studies show a measurable reduction in fine lines.\n\nAmla (Indian gooseberry): One of the highest natural sources of Vitamin C. More stable than synthetic ascorbic acid due to accompanying tannins.',
+        body: "India's botanical pharmacopoeia is arguably the richest in the world. Here are the ingredients where traditional Ayurvedic knowledge now has peer-reviewed clinical evidence:\n\nTurmeric (Curcuma longa): Curcumin has been shown in multiple studies to inhibit melanogenesis (pigment production) and reduce oxidative stress. It is more effective as a topical agent at low concentrations (0.1–0.5%) than at high ones, which explains why raw turmeric masks often cause staining without delivering clinical benefit.\n\nNeem: Azadirachtin from neem leaves shows significant activity against Cutibacterium acnes — the bacteria associated with acne.\n\nSandalwood (Santalum album): Santalol binds to olfactory receptors in skin cells, stimulating keratinocyte proliferation and wound healing. Clinical studies show a measurable reduction in fine lines.\n\nAmla (Indian gooseberry): One of the highest natural sources of Vitamin C. More stable than synthetic ascorbic acid due to accompanying tannins.",
       },
     ],
   },
@@ -96,50 +99,72 @@ const ARTICLES = {
 export default function BlogPostClient({ slug }) {
   // slug passed as prop
   const router = useRouter()
-  const article   = ARTICLES[slug]
+  const article = ARTICLES[slug]
 
   // SEO handled by generateMetadata (SSR)}
   if (!article) {
-  return <div>Article not found</div>
-}
+    return <div>Article not found</div>
+  }
 
-return (
-  <div>
-    <button onClick={() => router.back()}>
-      <ArrowLeft /> Back
-    </button>
-
-    <h1>{article.title}</h1>
-    <p>{article.description}</p>
-
+  return (
     <div>
-      {article.sections.map((section, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-        >
-          <h2>{section.heading}</h2>
-          <p style={{ whiteSpace: 'pre-line' }}>{section.body}</p>
-        </motion.div>
-      ))}
-    </div>
-
-        {/* CTA */}
-    <div style={{ marginTop: 56, padding: 32, background: C.goldPale, borderRadius: 20, textAlign: 'center' }}>
-      <div style={{ fontFamily: FONT.serif, fontSize: 22, color: C.text, marginBottom: 10 }}>
-        Ready to start your organic ritual?
-      </div>
-      <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>
-        Every VerdeBliss product is formulated with the ingredients discussed in this article.
-      </p>
-      <button onClick={() => router.push('/products')}
-        style={{ background: C.forest, color: 'white', border: 'none', borderRadius: 10, padding: '12px 28px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-        Shop the Collection <ArrowRight size={15} />
+      <button onClick={() => router.back()}>
+        <ArrowLeft /> Back
       </button>
+
+      <h1>{article.title}</h1>
+      <p>{article.description}</p>
+
+      <div>
+        {article.sections.map((section, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <h2>{section.heading}</h2>
+            <p style={{ whiteSpace: 'pre-line' }}>{section.body}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div
+        style={{
+          marginTop: 56,
+          padding: 32,
+          background: C.goldPale,
+          borderRadius: 20,
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ fontFamily: FONT.serif, fontSize: 22, color: C.text, marginBottom: 10 }}>
+          Ready to start your organic ritual?
+        </div>
+        <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>
+          Every VerdeBliss product is formulated with the ingredients discussed in this article.
+        </p>
+        <button
+          onClick={() => router.push('/products')}
+          style={{
+            background: C.forest,
+            color: 'white',
+            border: 'none',
+            borderRadius: 10,
+            padding: '12px 28px',
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          Shop the Collection <ArrowRight size={15} />
+        </button>
+      </div>
     </div>
-  </div>
   )
 }
-

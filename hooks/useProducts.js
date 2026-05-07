@@ -5,7 +5,7 @@ import { PRODUCTS } from '@/constants/products'
 
 export function useProducts(filters = {}) {
   const [products, setProducts] = useState([])
-  const [loading, setLoading]   = useState(true)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let query = supabase.from('products').select('*')
@@ -22,8 +22,12 @@ export function useProducts(filters = {}) {
     query.then(({ data, error }) => {
       if (error || !data?.length) {
         let fb = [...PRODUCTS]
-        if (filters.category && filters.category !== 'All') fb = fb.filter(p => p.category === filters.category)
-        if (filters.skinType && filters.skinType !== 'All') fb = fb.filter(p => p.skin_types.includes(filters.skinType) || p.skin_types.includes('All Types'))
+        if (filters.category && filters.category !== 'All')
+          fb = fb.filter((p) => p.category === filters.category)
+        if (filters.skinType && filters.skinType !== 'All')
+          fb = fb.filter(
+            (p) => p.skin_types.includes(filters.skinType) || p.skin_types.includes('All Types')
+          )
         setProducts(fb)
       } else {
         setProducts(data)
@@ -41,9 +45,13 @@ export function useProduct(id) {
 
   useEffect(() => {
     if (!id) return
-    supabase.from('products').select('*').eq('id', id).single()
+    supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single()
       .then(({ data }) => {
-        setProduct(data || PRODUCTS.find(p => p.id === id) || null)
+        setProduct(data || PRODUCTS.find((p) => p.id === id) || null)
         setLoading(false)
       })
   }, [id])
@@ -58,7 +66,8 @@ export function useProduct(id) {
 export async function getProductsServer(filters = {}) {
   try {
     let query = supabase.from('products').select('*')
-    if (filters.category && filters.category !== 'All') query = query.eq('category', filters.category)
+    if (filters.category && filters.category !== 'All')
+      query = query.eq('category', filters.category)
     const { data, error } = await query.order('review_count', { ascending: false })
     if (error || !data?.length) return PRODUCTS
     return data
@@ -70,8 +79,8 @@ export async function getProductsServer(filters = {}) {
 export async function getProductServer(id) {
   try {
     const { data } = await supabase.from('products').select('*').eq('id', id).single()
-    return data || PRODUCTS.find(p => p.id === id) || null
+    return data || PRODUCTS.find((p) => p.id === id) || null
   } catch {
-    return PRODUCTS.find(p => p.id === id) || null
+    return PRODUCTS.find((p) => p.id === id) || null
   }
 }

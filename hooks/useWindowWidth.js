@@ -17,7 +17,10 @@ export function useWindowWidth() {
       timer = setTimeout(() => setWidth(window.innerWidth), 150)
     }
     window.addEventListener('resize', handler)
-    return () => { clearTimeout(timer); window.removeEventListener('resize', handler) }
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', handler)
+    }
   }, [])
 
   return width
@@ -25,7 +28,7 @@ export function useWindowWidth() {
 
 /* Breakpoint helpers — matches tailwind.config breakpoints */
 export const BP = {
-  mobile:  375,
-  tablet:  768,
+  mobile: 375,
+  tablet: 768,
   desktop: 1280,
 }

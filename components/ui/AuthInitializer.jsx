@@ -8,6 +8,8 @@ import { useAuthStore } from '@/store/authStore'
  */
 export default function AuthInitializer() {
   const init = useAuthStore((s) => s.init)
-  useEffect(() => { init() }, [init])
+  useEffect(() => {
+    init()
+  }, [init])
   return null
 }

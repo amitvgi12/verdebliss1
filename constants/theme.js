@@ -25,40 +25,40 @@
  */
 export const C = {
   /* Surfaces */
-  bg:          '#FAF7F2',   // warm cream — page canvas
-  card:        '#FDFAF6',   // barely-warm white — cards, drawers, panels (NOT pure #FFF)
-  warmWhite:   '#FFFEF9',   // form inputs, modals where max legibility needed
+  bg: '#FAF7F2', // warm cream — page canvas
+  card: '#FDFAF6', // barely-warm white — cards, drawers, panels (NOT pure #FFF)
+  warmWhite: '#FFFEF9', // form inputs, modals where max legibility needed
 
   /* Brand greens */
-  forest:      '#2D4A32',
+  forest: '#2D4A32',
   forestLight: '#3D6344',
 
   /* Sage / Olive */
-  sage:        '#7D9B76',
-  sagePale:    '#EAF0E8',
-  olive:       '#5C7A52',   // olive text on pale backgrounds
+  sage: '#7D9B76',
+  sagePale: '#EAF0E8',
+  olive: '#5C7A52', // olive text on pale backgrounds
 
   /* Terracotta */
-  terra:       '#C07A5A',
-  terraPale:   '#F6EDE8',
+  terra: '#C07A5A',
+  terraPale: '#F6EDE8',
 
   /* Gold — KEY earth tone, should appear on prices, labels, accents */
-  gold:        '#BFA06A',
-  goldPale:    '#F5EDD8',   // warm gold-tinted surface
+  gold: '#BFA06A',
+  goldPale: '#F5EDD8', // warm gold-tinted surface
 
   /* Ivory */
-  ivory:       '#F2EAE0',   // section backgrounds, card hover, inputs
+  ivory: '#F2EAE0', // section backgrounds, card hover, inputs
 
   /* Text */
-  text:        '#1C221E',   // deep forest-tinted dark
-  muted:       '#6B7A5E',   // warm stone — replaces cold #6E7D71
-  light:       '#A8BAA9',
+  text: '#1C221E', // deep forest-tinted dark
+  muted: '#6B7A5E', // warm stone — replaces cold #6E7D71
+  light: '#A8BAA9',
 
   /* Structure */
-  border:      '#E4DAD0',   // warm earth dividers
+  border: '#E4DAD0', // warm earth dividers
 }
 
 export const FONT = {
   serif: "'Cormorant Garamond', Georgia, serif",
-  sans:  "'DM Sans', system-ui, sans-serif",
+  sans: "'DM Sans', system-ui, sans-serif",
 }

@@ -16,13 +16,16 @@
 import { NextResponse } from 'next/server'
 
 const RATE_LIMIT_MAP = new Map()
-const RATE_LIMIT     = 20
-const WINDOW_MS      = 60_000
+const RATE_LIMIT = 20
+const WINDOW_MS = 60_000
 
 function isRateLimited(ip) {
-  const now   = Date.now()
+  const now = Date.now()
   const entry = RATE_LIMIT_MAP.get(ip) ?? { count: 0, resetAt: now + WINDOW_MS }
-  if (now > entry.resetAt) { entry.count = 0; entry.resetAt = now + WINDOW_MS }
+  if (now > entry.resetAt) {
+    entry.count = 0
+    entry.resetAt = now + WINDOW_MS
+  }
   entry.count += 1
   RATE_LIMIT_MAP.set(ip, entry)
   return entry.count > RATE_LIMIT
@@ -30,32 +33,33 @@ function isRateLimited(ip) {
 
 function validateMessages(messages) {
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > 40) return false
-  return messages.every(m =>
-    typeof m.role === 'string' &&
-    typeof m.content === 'string' &&
-    ['user', 'assistant'].includes(m.role) &&
-    m.content.length > 0 &&
-    m.content.length <= 2000
+  return messages.every(
+    (m) =>
+      typeof m.role === 'string' &&
+      typeof m.content === 'string' &&
+      ['user', 'assistant'].includes(m.role) &&
+      m.content.length > 0 &&
+      m.content.length <= 2000
   )
 }
 
 function sanitiseContext(raw) {
   if (!raw || typeof raw !== 'object') return { isLoggedIn: false }
   return {
-    isLoggedIn:  Boolean(raw.isLoggedIn),
-    name:        String(raw.name  ?? '').slice(0, 100),
-    email:       String(raw.email ?? '').slice(0, 200),
-    skinType:    String(raw.skinType ?? 'not specified').slice(0, 50),
-    tier:        String(raw.tier ?? 'Green Leaf').slice(0, 50),
-    points:      Number.isFinite(raw.points) ? raw.points : 0,
-    orderCount:  Number.isFinite(raw.orderCount) ? raw.orderCount : 0,
-    orders:      String(raw.orders ?? '').slice(0, 3000),
+    isLoggedIn: Boolean(raw.isLoggedIn),
+    name: String(raw.name ?? '').slice(0, 100),
+    email: String(raw.email ?? '').slice(0, 200),
+    skinType: String(raw.skinType ?? 'not specified').slice(0, 50),
+    tier: String(raw.tier ?? 'Green Leaf').slice(0, 50),
+    points: Number.isFinite(raw.points) ? raw.points : 0,
+    orderCount: Number.isFinite(raw.orderCount) ? raw.orderCount : 0,
+    orders: String(raw.orders ?? '').slice(0, 3000),
   }
 }
 
 function toGeminiContents(messages) {
-  return messages.map(m => ({
-    role:  m.role === 'assistant' ? 'model' : 'user',
+  return messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
   }))
 }
@@ -111,12 +115,20 @@ async function callGemini(model, apiKey, systemPrompt, messages) {
     body: JSON.stringify({
       system_instruction: { parts: [{ text: systemPrompt }] },
       contents: toGeminiContents(messages),
-      generationConfig: { maxOutputTokens: 400, temperature: 0.65, thinkingConfig: { thinkingBudget: 0 } },
+      generationConfig: {
+        maxOutputTokens: 400,
+        temperature: 0.65,
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     }),
   })
   const text = await res.text()
   let data
-  try { data = JSON.parse(text) } catch { data = null }
+  try {
+    data = JSON.parse(text)
+  } catch {
+    data = null
+  }
   return { ok: res.ok, status: res.status, data, errorBody: text }
 }
 
@@ -128,8 +140,11 @@ export async function POST(request) {
   }
 
   let body
-  try { body = await request.json() }
-  catch { return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }) }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
 
   const { messages, context } = body ?? {}
   if (!validateMessages(messages)) {
@@ -139,10 +154,13 @@ export async function POST(request) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     console.error('[chat] GEMINI_API_KEY not set')
-    return NextResponse.json({ error: 'Server configuration error — GEMINI_API_KEY missing' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Server configuration error — GEMINI_API_KEY missing' },
+      { status: 500 }
+    )
   }
 
-  const ctx    = sanitiseContext(context)
+  const ctx = sanitiseContext(context)
   const prompt = buildSystemPrompt(ctx)
 
   try {
@@ -153,15 +171,28 @@ export async function POST(request) {
     }
     if (!result.ok) {
       console.error(`[chat] Gemini ${result.status}:`, result.errorBody)
-      if (result.status === 403) return NextResponse.json({ error: 'API key invalid. Check GEMINI_API_KEY.' }, { status: 502 })
-      if (result.status === 429) return NextResponse.json({ error: 'Rate limit reached. Try again.' }, { status: 429 })
+      if (result.status === 403)
+        return NextResponse.json(
+          { error: 'API key invalid. Check GEMINI_API_KEY.' },
+          { status: 502 }
+        )
+      if (result.status === 429)
+        return NextResponse.json({ error: 'Rate limit reached. Try again.' }, { status: 429 })
       return NextResponse.json({ error: `Gemini error ${result.status}` }, { status: 502 })
     }
 
     const replyText = result.data?.candidates?.[0]?.content?.parts?.[0]?.text
     if (!replyText) {
       const reason = result.data?.candidates?.[0]?.finishReason ?? 'unknown'
-      if (reason === 'SAFETY') return NextResponse.json({ content: [{ type: 'text', text: "I can't respond to that. Ask me about skincare or your order! 🌿" }] })
+      if (reason === 'SAFETY')
+        return NextResponse.json({
+          content: [
+            {
+              type: 'text',
+              text: "I can't respond to that. Ask me about skincare or your order! 🌿",
+            },
+          ],
+        })
       return NextResponse.json({ error: 'No text returned from Gemini' }, { status: 502 })
     }
 
@@ -174,9 +205,12 @@ export async function POST(request) {
 
 // Handle OPTIONS for CORS preflight
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: {
-    'Access-Control-Allow-Origin': 'https://www.verdebliss.com',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  }})
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': 'https://www.verdebliss.com',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }

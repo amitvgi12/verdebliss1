@@ -5,8 +5,8 @@
  */
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import Stars        from '@/components/ui/Stars'
-import Badge        from '@/components/ui/Badge'
+import Stars from '@/components/ui/Stars'
+import Badge from '@/components/ui/Badge'
 import ProductImage from '@/components/ui/ProductImage'
 
 /* ── Stars ──────────────────────────────────────── */

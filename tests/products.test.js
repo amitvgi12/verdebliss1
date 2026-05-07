@@ -4,9 +4,7 @@
  * category/skin-type constants.
  */
 import { describe, it, expect } from 'vitest'
-import {
-  PRODUCTS, CATEGORIES, SKIN_TYPES, SORT_OPTIONS, TIERS,
-} from '@/constants/products'
+import { PRODUCTS, CATEGORIES, SKIN_TYPES, SORT_OPTIONS, TIERS } from '@/constants/products'
 
 describe('PRODUCTS catalogue', () => {
   it('has 8 products', () => {
@@ -15,13 +13,13 @@ describe('PRODUCTS catalogue', () => {
 
   it('every product has required fields', () => {
     PRODUCTS.forEach((p) => {
-      expect(p.id,          `${p.name} missing id`).toBeTruthy()
-      expect(p.name,        `${p.name} missing name`).toBeTruthy()
-      expect(p.price,       `${p.name} missing price`).toBeGreaterThan(0)
-      expect(p.category,    `${p.name} missing category`).toBeTruthy()
-      expect(p.ingredient,  `${p.name} missing ingredient`).toBeTruthy()
-      expect(p.skin_types,  `${p.name} missing skin_types`).toBeInstanceOf(Array)
-      expect(p.badges,      `${p.name} missing badges`).toBeInstanceOf(Array)
+      expect(p.id, `${p.name} missing id`).toBeTruthy()
+      expect(p.name, `${p.name} missing name`).toBeTruthy()
+      expect(p.price, `${p.name} missing price`).toBeGreaterThan(0)
+      expect(p.category, `${p.name} missing category`).toBeTruthy()
+      expect(p.ingredient, `${p.name} missing ingredient`).toBeTruthy()
+      expect(p.skin_types, `${p.name} missing skin_types`).toBeInstanceOf(Array)
+      expect(p.badges, `${p.name} missing badges`).toBeInstanceOf(Array)
       expect(p.description, `${p.name} missing description`).toBeTruthy()
     })
   })

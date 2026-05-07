@@ -4,9 +4,15 @@ import { vi } from 'vitest'
 vi.mock('@/lib/supabase', () => {
   function makeBuilder() {
     const b = {
-      select: () => b, eq: () => b, neq: () => b, contains: () => b,
-      order: () => b, limit: () => b, single: () => Promise.resolve({ data: null, error: { message: 'mocked' } }),
-      then: (res, rej) => Promise.resolve({ data: null, error: { message: 'mocked' } }).then(res, rej),
+      select: () => b,
+      eq: () => b,
+      neq: () => b,
+      contains: () => b,
+      order: () => b,
+      limit: () => b,
+      single: () => Promise.resolve({ data: null, error: { message: 'mocked' } }),
+      then: (res, rej) =>
+        Promise.resolve({ data: null, error: { message: 'mocked' } }).then(res, rej),
     }
     return b
   }
@@ -22,8 +28,8 @@ vi.mock('@/lib/supabase', () => {
 })
 
 vi.mock('next/navigation', () => ({
-  useRouter:      () => ({ push: vi.fn(), back: vi.fn() }),
-  usePathname:    () => '/',
+  useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
+  usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
-  useParams:      () => ({ id: '7', slug: 'bakuchiol-vs-retinol' }),
+  useParams: () => ({ id: '7', slug: 'bakuchiol-vs-retinol' }),
 }))

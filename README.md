@@ -117,6 +117,7 @@ GEMINI_API_KEY=AIzaxxx
 ### 3. Database
 
 Run `supabase/schema.sql` in your Supabase SQL Editor to create:
+
 - `profiles`, `orders`, `wishlist`, `reviews` tables
 - RLS policies (users read own data only)
 - `increment_points(user_id, points)` RPC function
@@ -135,17 +136,17 @@ npm start            # Run production server
 
 ## Scripts
 
-| Command | Purpose |
-|---|---|
-| `npm run dev` | Next.js dev server with HMR |
-| `npm run build` | Production build (static generation for products + blog) |
-| `npm start` | Run production server |
-| `npm run lint` | ESLint check |
-| `npm run format` | Prettier write |
-| `npm run format:check` | Prettier check (CI) |
-| `npm test` | Vitest run once |
-| `npm run test:watch` | Vitest watch mode |
-| `npm run test:coverage` | Coverage report (v8) |
+| Command                 | Purpose                                                  |
+| ----------------------- | -------------------------------------------------------- |
+| `npm run dev`           | Next.js dev server with HMR                              |
+| `npm run build`         | Production build (static generation for products + blog) |
+| `npm start`             | Run production server                                    |
+| `npm run lint`          | ESLint check                                             |
+| `npm run format`        | Prettier write                                           |
+| `npm run format:check`  | Prettier check (CI)                                      |
+| `npm test`              | Vitest run once                                          |
+| `npm run test:watch`    | Vitest watch mode                                        |
+| `npm run test:coverage` | Coverage report (v8)                                     |
 
 ---
 
@@ -153,11 +154,11 @@ npm start            # Run production server
 
 After running `seed_test_data.sql`, sign in with:
 
-| Email | Password | Tier | Points | Orders |
-|---|---|---|---|---|
-| kavya@verdebliss.test | TestPass123! | Gold Botanist | 620 | 3 |
-| rahul@verdebliss.test | TestPass123! | Green Leaf | 85 | 1 |
-| priya@verdebliss.test | TestPass123! | Platinum Alchemist | 1750 | 5 |
+| Email                 | Password     | Tier               | Points | Orders |
+| --------------------- | ------------ | ------------------ | ------ | ------ |
+| kavya@verdebliss.test | TestPass123! | Gold Botanist      | 620    | 3      |
+| rahul@verdebliss.test | TestPass123! | Green Leaf         | 85     | 1      |
+| priya@verdebliss.test | TestPass123! | Platinum Alchemist | 1750   | 5      |
 
 ---
 
@@ -166,11 +167,13 @@ After running `seed_test_data.sql`, sign in with:
 This codebase has all 26 audit fixes from the May 2026 site audit applied. Highlights:
 
 ### Critical
+
 - **2.1** `MotionProvider` wraps app in `MotionConfig` so Framer Motion respects OS-level `prefers-reduced-motion` (WCAG 2.3.3)
 - **2.2** `next/image` in `ProductImage` — automatic WebP/AVIF, responsive sizes, lazy loading, CLS prevention
 - **2.3** Prettier 3 with `.prettierrc` and `format` script
 
 ### SEO & Performance
+
 - **3.1/3.2** `sitemap.xml` and `robots.txt` use canonical `verdebliss.com` (not vercel.app)
 - **3.3** Per-product SSR metadata + `generateStaticParams` pre-renders all 8 product pages with Product JSON-LD
 - **3.6** FAQ page with `FAQPage` JSON-LD schema for Google rich snippets
@@ -178,6 +181,7 @@ This codebase has all 26 audit fixes from the May 2026 site audit applied. Highl
 - **4.6** Hero image preloaded with `fetchPriority="high"`
 
 ### Accessibility (WCAG 2.1)
+
 - **6.1** Skip-to-content link in `globals.css`
 - **6.2** `*:focus-visible` ring (2px solid forest, 3px offset)
 - **6.6** `SearchBar` `aria-live="polite"` region announces results to screen readers
@@ -185,6 +189,7 @@ This codebase has all 26 audit fixes from the May 2026 site audit applied. Highl
 - **6.8** All accordion buttons have `aria-expanded` + `aria-controls`
 
 ### E-Commerce
+
 - **7.4** Customer review submission UI with star picker, validation, pending-moderation flow
 - **7.5** 5-question Skin Quiz at `/quiz` with recommendation engine + 10% bundle discount CTA
 - **7.9** Sold Out badge + disabled Add button when `stock=0`
@@ -193,6 +198,7 @@ This codebase has all 26 audit fixes from the May 2026 site audit applied. Highl
 - **8.9** `increment_points` PostgreSQL RPC awards loyalty points + recalculates tier atomically
 
 ### Compliance (Section 11)
+
 - **11.2** Full INCI ingredient lists for all 8 SKUs in descending concentration order
 - **11.3** Allergen warnings + patch test notice on every product page
 - **11.4** Cruelty-Free + Vegan certification badges link externally to leapingbunny.org / peta.org
@@ -202,12 +208,14 @@ This codebase has all 26 audit fixes from the May 2026 site audit applied. Highl
 - **11.10** PAO (Period After Opening) symbols (12M / 18M) on all products
 
 ### Security
+
 - **5.1** All 6 security headers: HSTS, X-Frame-Options DENY, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
 - **5.2** Content Security Policy whitelisting Supabase, Razorpay, Gemini API
 - **5.3** `GEMINI_API_KEY` server-side only (no `NEXT_PUBLIC_` prefix) — proxied through `/api/chat`
 - **5.4** Rate limiting (20 req/min/IP) on chat API
 
 ### Code Quality
+
 - **8.1** ESLint 9 flat config with proper browser/node/vitest globals per file pattern
 - **8.2** All CI jobs use `npm ci` (not `npm install`) for reproducible builds
 - **8.3** `vitest.config.js` ESM-compatible via `fileURLToPath(import.meta.url)`
@@ -219,6 +227,7 @@ This codebase has all 26 audit fixes from the May 2026 site audit applied. Highl
 Push to `main` → GitHub Actions runs lint + tests → Vercel deploys automatically.
 
 For manual deploy:
+
 ```bash
 vercel deploy --prod
 ```

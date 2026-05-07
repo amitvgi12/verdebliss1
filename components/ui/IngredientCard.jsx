@@ -23,31 +23,31 @@ import { C, FONT } from '@/constants/theme'
 
 /* ── Ingredient name → image filename map ───────────────────────────── */
 const IMAGE_MAP = {
-  'Bakuchiol':   '/images/ingredients/bakuchiol.webp',
-  'Rose Hip':    '/images/ingredients/rose_hip.webp',
-  'Green Tea':   '/images/ingredients/greentealeaves.webp',
-  'Turmeric':    '/images/ingredients/turmeric.webp',
-  'Zinc Oxide':  '/images/ingredients/zinc.webp',
-  'Acai Berry':  '/images/ingredients/blueberries.webp',
-  'Niacinamide': '/images/ingredients/niacinamide.webp',
+  Bakuchiol: '/images/ingredients/bakuchiol.webp',
+  'Rose Hip': '/images/ingredients/rose_hip.webp',
+  'Green Tea': '/images/ingredients/greentealeaves.webp',
+  Turmeric: '/images/ingredients/turmeric.webp',
+  'Zinc Oxide': '/images/ingredients/zinc.webp',
+  'Acai Berry': '/images/ingredients/blueberries.webp',
+  Niacinamide: '/images/ingredients/niacinamide.webp',
   'Shea Butter': '/images/ingredients/shea.webp',
 }
 
 /* ── Background tints that match each ingredient's colour palette ────── */
 const BG_MAP = {
-  'Bakuchiol':   '#EAF4EB',
-  'Rose Hip':    '#FDE8EF',
-  'Green Tea':   '#E8F5E9',
-  'Turmeric':    '#FFFDE7',
-  'Zinc Oxide':  '#E3F2FD',
-  'Acai Berry':  '#F3E5F5',
-  'Niacinamide': '#E0F7FA',
+  Bakuchiol: '#EAF4EB',
+  'Rose Hip': '#FDE8EF',
+  'Green Tea': '#E8F5E9',
+  Turmeric: '#FFFDE7',
+  'Zinc Oxide': '#E3F2FD',
+  'Acai Berry': '#F3E5F5',
+  Niacinamide: '#E0F7FA',
   'Shea Butter': '#FFF8E1',
 }
 
 export default function IngredientCard({ ingredient, description, imageHeight = 160 }) {
   const src = IMAGE_MAP[ingredient]
-  const bg  = BG_MAP[ingredient] ?? C.sagePale
+  const bg = BG_MAP[ingredient] ?? C.sagePale
 
   // Track whether the image loaded successfully
   const [imgFailed, setImgFailed] = useState(false)
@@ -97,8 +97,12 @@ export default function IngredientCard({ ingredient, description, imageHeight = 
               display: 'block',
               transition: 'transform 0.35s ease',
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.06)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.06)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+            }}
             onError={() => setImgFailed(true)}
           />
         ) : (
@@ -114,14 +118,20 @@ export default function IngredientCard({ ingredient, description, imageHeight = 
       {(ingredient || description) && (
         <div style={{ padding: '14px 16px' }}>
           {ingredient && (
-            <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: description ? 4 : 0, fontFamily: FONT.serif }}>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: C.text,
+                marginBottom: description ? 4 : 0,
+                fontFamily: FONT.serif,
+              }}
+            >
               {ingredient}
             </div>
           )}
           {description && (
-            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
-              {description}
-            </div>
+            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>{description}</div>
           )}
         </div>
       )}

@@ -10,7 +10,14 @@ export default function SkeletonCard() {
   return (
     <>
       <style>{`@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }`}</style>
-      <div style={{ background: C.card, borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.border}` }}>
+      <div
+        style={{
+          background: C.card,
+          borderRadius: 16,
+          overflow: 'hidden',
+          border: `1px solid ${C.border}`,
+        }}
+      >
         <div style={{ height: 180, ...pulse }} />
         <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ height: 10, width: '40%', borderRadius: 6, ...pulse }} />

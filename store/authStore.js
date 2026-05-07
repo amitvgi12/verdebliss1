@@ -3,12 +3,14 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 
 export const useAuthStore = create((set, get) => ({
-  user:    null,
+  user: null,
   profile: null,
   loading: true,
 
   init: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
     if (session?.user) {
       await get().fetchProfile(session.user.id)
       set({ user: session.user, loading: false })
@@ -38,7 +40,8 @@ export const useAuthStore = create((set, get) => ({
 
   signUp: async (email, password, fullName, skinType) => {
     const { data, error } = await supabase.auth.signUp({
-      email, password,
+      email,
+      password,
       options: { data: { full_name: fullName, skin_type: skinType } },
     })
     if (error) throw error

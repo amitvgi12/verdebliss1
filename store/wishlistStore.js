@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 export const useWishlistStore = create(
   persist(
     (set, get) => ({
-      ids: [],          // local fallback (guest users)
+      ids: [], // local fallback (guest users)
       synced: false,
 
       // Toggle: works for both guest and logged-in users
@@ -21,7 +21,9 @@ export const useWishlistStore = create(
         // Persist to Supabase if logged in
         if (userId) {
           if (inList) {
-            await supabase.from('wishlist').delete()
+            await supabase
+              .from('wishlist')
+              .delete()
               .match({ user_id: userId, product_id: productId })
           } else {
             await supabase.from('wishlist').insert({ user_id: userId, product_id: productId })
@@ -31,10 +33,7 @@ export const useWishlistStore = create(
 
       // Sync from Supabase after login
       syncFromServer: async (userId) => {
-        const { data } = await supabase
-          .from('wishlist')
-          .select('product_id')
-          .eq('user_id', userId)
+        const { data } = await supabase.from('wishlist').select('product_id').eq('user_id', userId)
         if (data) {
           set({ ids: data.map((r) => r.product_id), synced: true })
         }

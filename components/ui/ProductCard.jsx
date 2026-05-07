@@ -10,12 +10,12 @@ import { useAuthStore } from '@/store/authStore'
 import { C, FONT } from '@/constants/theme'
 
 export default function ProductCard({ product: p }) {
-  const router  = useRouter()
+  const router = useRouter()
   const addItem = useCartStore((s) => s.addItem)
   const { toggle, has } = useWishlistStore()
-  const user    = useAuthStore((s) => s.user)
+  const user = useAuthStore((s) => s.user)
 
-  const mrp      = Math.round((p.price ?? 0) * 1.2)
+  const mrp = Math.round((p.price ?? 0) * 1.2)
   const discount = Math.round(((mrp - p.price) / mrp) * 100)
 
   const goToProduct = () => router.push(`/products/${p.id}`)
@@ -27,7 +27,12 @@ export default function ProductCard({ product: p }) {
       tabIndex={0}
       aria-label={`View ${p.name}, ₹${p.price?.toLocaleString()}`}
       onClick={goToProduct}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToProduct() } }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          goToProduct()
+        }
+      }}
       whileTap={{ scale: 0.98 }}
       style={{
         background: C.card,
@@ -42,20 +47,67 @@ export default function ProductCard({ product: p }) {
       }}
     >
       {/* Image */}
-      <div style={{ aspectRatio: '1/1', background: C.ivory, position: 'relative', overflow: 'hidden' }}>
+      <div
+        style={{
+          aspectRatio: '1/1',
+          background: C.ivory,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
         <ProductImage product={p} />
         {/* Wishlist button */}
         <button
           aria-label={has(p.id) ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
-          onClick={(e) => { e.stopPropagation(); toggle(p.id, user?.id) }}
-          style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => {
+            e.stopPropagation()
+            toggle(p.id, user?.id)
+          }}
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            background: 'rgba(255,255,255,0.9)',
+            border: 'none',
+            borderRadius: '50%',
+            width: 32,
+            height: 32,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          <Heart size={16} fill={has(p.id) ? C.terra : 'none'} color={has(p.id) ? C.terra : C.muted} />
+          <Heart
+            size={16}
+            fill={has(p.id) ? C.terra : 'none'}
+            color={has(p.id) ? C.terra : C.muted}
+          />
         </button>
         {/* Badges */}
-        <div style={{ position: 'absolute', bottom: 8, left: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            left: 8,
+            display: 'flex',
+            gap: 4,
+            flexWrap: 'wrap',
+          }}
+        >
           {(p.badges ?? []).slice(0, 2).map((b) => (
-            <span key={b} style={{ fontSize: 8, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(45,74,50,0.85)', color: 'white', letterSpacing: '0.06em' }}>
+            <span
+              key={b}
+              style={{
+                fontSize: 8,
+                fontWeight: 700,
+                padding: '2px 7px',
+                borderRadius: 99,
+                background: 'rgba(45,74,50,0.85)',
+                color: 'white',
+                letterSpacing: '0.06em',
+              }}
+            >
               {b.toUpperCase()}
             </span>
           ))}
@@ -65,11 +117,34 @@ export default function ProductCard({ product: p }) {
       {/* Info */}
       <div style={{ padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         {/* Category chip */}
-        <div style={{ display: 'inline-flex', width: 'fit-content', fontSize: 9, color: C.olive, fontWeight: 700, letterSpacing: '0.10em', background: C.goldPale, padding: '2px 8px', borderRadius: 4, marginBottom: 6 }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            width: 'fit-content',
+            fontSize: 9,
+            color: C.olive,
+            fontWeight: 700,
+            letterSpacing: '0.10em',
+            background: C.goldPale,
+            padding: '2px 8px',
+            borderRadius: 4,
+            marginBottom: 6,
+          }}
+        >
           {p.category?.toUpperCase()}
         </div>
 
-        <div style={{ fontSize: 14, fontWeight: 500, color: C.text, lineHeight: 1.3, fontFamily: FONT.serif, marginBottom: 6, flex: 1 }}>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: C.text,
+            lineHeight: 1.3,
+            fontFamily: FONT.serif,
+            marginBottom: 6,
+            flex: 1,
+          }}
+        >
           {p.name}
         </div>
 
@@ -83,13 +158,28 @@ export default function ProductCard({ product: p }) {
             <span style={{ fontSize: 16, fontWeight: 700, color: C.text, fontFamily: FONT.serif }}>
               ₹{(p.price ?? 0).toLocaleString()}
             </span>
-            <span style={{ fontSize: 12, color: C.light, textDecoration: 'line-through' }}>₹{mrp.toLocaleString()}</span>
+            <span style={{ fontSize: 12, color: C.light, textDecoration: 'line-through' }}>
+              ₹{mrp.toLocaleString()}
+            </span>
             <span style={{ fontSize: 10, fontWeight: 700, color: C.terra }}>-{discount}%</span>
           </div>
           <button
             aria-label={`Add ${p.name} to cart`}
-            onClick={(e) => { e.stopPropagation(); addItem(p) }}
-            style={{ background: C.forest, color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+            onClick={(e) => {
+              e.stopPropagation()
+              addItem(p)
+            }}
+            style={{
+              background: C.forest,
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              padding: '6px 12px',
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
           >
             Add
           </button>
