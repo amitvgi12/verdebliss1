@@ -1,0 +1,23 @@
+export const dynamic = 'force-dynamic'
+
+import { Suspense } from 'react'
+import ProductsClient from './ProductsClient'
+
+export const metadata = {
+  title: 'Shop Organic Skincare',
+  description:
+    'Browse VerdeBliss certified organic serums, moisturisers, cleansers and SPF. Filter by skin type. Free shipping above ₹499.',
+  openGraph: {
+    title: 'Shop Organic Skincare | VerdeBliss',
+    url: 'https://www.verdebliss.com/products',
+  },
+  alternates: { canonical: 'https://www.verdebliss.com/products' },
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductsClient />
+    </Suspense>
+  )
+}

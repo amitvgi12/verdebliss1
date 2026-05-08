@@ -1,0 +1,35 @@
+import type { Product } from '@/types'
+
+export const SITE_URL = 'https://www.verdebliss.com'
+
+export const PRODUCT_IMAGE_BY_ID: Record<string, string> = {
+  '1': '/images/products/serum.webp',
+  '2': '/images/products/moisturiser.webp',
+  '3': '/images/products/toner.webp',
+  '4': '/images/products/cleanser.webp',
+  '5': '/images/products/spf.webp',
+  '6': '/images/products/lip-elixir.webp',
+  '7': '/images/products/niacinamide-serum.webp',
+  '8': '/images/products/night-cream.webp',
+}
+
+export function absoluteUrl(path: string): string {
+  if (path.startsWith('http')) return path
+  return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
+}
+
+export function productImagePath(product?: Pick<Product, 'id' | 'image_url'> | null): string {
+  return (
+    product?.image_url || PRODUCT_IMAGE_BY_ID[product?.id ?? ''] || '/images/products/serum.webp'
+  )
+}
+
+export function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c')
+}
+
+export function StructuredData({ data }: { data: unknown }) {
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }} />
+  )
+}
