@@ -59,3 +59,10 @@ This package applies the critical, major, and minor fixes identified in the fres
 - `next build --experimental-build-mode generate` completed and produced the route table.
 
 Note: In this container, standard `npm run build` compiled, generated static pages, finalized optimization, and wrote `.next` build artifacts, but the process did not return cleanly after `Collecting build traces`. Standalone TypeScript/lint/test checks passed, and the Next generate phase completed successfully.
+
+## 2026-05-08 follow-up fix
+
+- Made `supabase/schema.sql` idempotent so re-running it on an existing Supabase project no longer fails with `ERROR: 42P07: relation "products" already exists`.
+- Preserved existing UUID product tables instead of forcing a destructive ID-type migration.
+- Updated checkout product lookup to support both UUID product IDs from Supabase and text/static fallback product IDs.
+- Added `supabase/README_RUN_SCHEMA.md` with execution notes.

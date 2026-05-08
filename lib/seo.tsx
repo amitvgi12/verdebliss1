@@ -18,6 +18,11 @@ export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
 }
 
+export function productPath(product?: Pick<Product, 'id' | 'slug'> | null): string {
+  const identifier = product?.slug || product?.id || ''
+  return `/products/${encodeURIComponent(identifier)}`
+}
+
 export function productImagePath(product?: Pick<Product, 'id' | 'image_url'> | null): string {
   return (
     product?.image_url || PRODUCT_IMAGE_BY_ID[product?.id ?? ''] || '/images/products/serum.webp'

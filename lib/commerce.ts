@@ -97,21 +97,61 @@ export function validateCartItems(raw: unknown): IncomingCartItem[] {
   return [...merged.entries()].map(([id, qty]) => ({ id, qty }))
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+async function queryProductsByIds(ids: string[]): Promise<Product[]> {
+  if (!ids.length) return []
+  const supabase = createSupabaseAdmin()
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, price, ingredient, emoji, bg_color, image_url, stock, active')
+    .in('id', ids)
+
+  if (error) throw error
+  return ((data ?? []) as Product[]).filter((product) => product.active !== false)
+}
+
 async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
-  if (!hasSupabaseAdminEnv()) return PRODUCTS.filter((product) => ids.includes(product.id))
+  const staticProducts = PRODUCTS.filter((product) => ids.includes(product.id))
+  if (!hasSupabaseAdminEnv()) return staticProducts
+
+  const dbProducts: Product[] = []
+  const found = new Set<string>()
 
   try {
-    const supabase = createSupabaseAdmin()
-    const { data, error } = await supabase
-      .from('products')
-      .select('id, name, price, ingredient, emoji, bg_color, image_url, stock')
-      .in('id', ids)
+    // Existing Supabase projects may have uuid product IDs, while fresh/static
+    // builds use text IDs such as "1". Query uuid IDs separately so a uuid-typed
+    // products.id column never receives invalid text IDs.
+    const uuidIds = ids.filter((id) => UUID_RE.test(id))
+    const textIds = ids.filter((id) => !UUID_RE.test(id))
 
-    if (error || !data?.length) return PRODUCTS.filter((product) => ids.includes(product.id))
-    return data as Product[]
-  } catch {
-    return PRODUCTS.filter((product) => ids.includes(product.id))
+    if (uuidIds.length) {
+      const products = await queryProductsByIds(uuidIds)
+      for (const product of products) {
+        dbProducts.push(product)
+        found.add(product.id)
+      }
+    }
+
+    // For fresh installs with text product IDs, this query succeeds. For older
+    // uuid product tables it may fail, in which case static fallback handles
+    // known demo IDs and unknown IDs remain a clear Product not found error.
+    const unresolvedTextIds = textIds.filter((id) => !found.has(id))
+    if (unresolvedTextIds.length) {
+      const products = await queryProductsByIds(unresolvedTextIds)
+      for (const product of products) {
+        dbProducts.push(product)
+        found.add(product.id)
+      }
+    }
+  } catch (error) {
+    console.warn('[commerce] Product DB lookup fell back where possible:', error)
   }
+
+  const merged = new Map<string, Product>()
+  for (const product of staticProducts) merged.set(product.id, product)
+  for (const product of dbProducts) merged.set(product.id, product)
+  return [...merged.values()]
 }
 
 export async function normalizeCart(rawItems: unknown) {

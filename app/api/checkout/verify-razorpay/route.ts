@@ -48,9 +48,16 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('[checkout/verify-razorpay]', error)
+    const message = error instanceof Error ? error.message : 'Payment verification failed'
+    const isConfigError = message.toLowerCase().includes('razorpay secret')
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Payment verification failed' },
-      { status: 400 }
+      {
+        error: isConfigError
+          ? 'Online payment verification is not enabled yet. Set RAZORPAY_KEY_SECRET in the server environment.'
+          : message,
+        code: isConfigError ? 'RAZORPAY_SECRET_MISSING' : 'PAYMENT_VERIFY_FAILED',
+      },
+      { status: isConfigError ? 503 : 400 }
     )
   }
 }

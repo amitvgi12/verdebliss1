@@ -2,9 +2,10 @@ export const dynamic = 'force-dynamic'
 
 import { getProductServer } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
-import { absoluteUrl, productImagePath, StructuredData } from '@/lib/seo'
+import { absoluteUrl, productImagePath, productPath, StructuredData } from '@/lib/seo'
+import type { Product } from '@/types'
 
-function productJsonLd(product, id) {
+function productJsonLd(product: Product) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -18,7 +19,7 @@ function productJsonLd(product, id) {
       priceCurrency: 'INR',
       availability:
         (product.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      url: absoluteUrl(`/products/${id}`),
+      url: absoluteUrl(productPath(product)),
     },
     ...(product.rating && {
       aggregateRating: {
@@ -30,12 +31,13 @@ function productJsonLd(product, id) {
   }
 }
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProductServer(id)
   if (!p) return { title: 'Product Not Found' }
 
   const image = productImagePath(p)
+  const canonical = absoluteUrl(productPath(p))
   return {
     title: p.name,
     description: `${p.description} Shop ${p.name} at VerdeBliss. Free shipping above ₹499.`,
@@ -43,18 +45,18 @@ export async function generateMetadata({ params }) {
       title: `${p.name} | VerdeBliss`,
       description: p.description,
       images: [image],
-      url: absoluteUrl(`/products/${id}`),
+      url: canonical,
     },
-    alternates: { canonical: absoluteUrl(`/products/${id}`) },
+    alternates: { canonical },
   }
 }
 
-export default async function ProductDetailPage({ params }) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const product = await getProductServer(id)
   return (
     <>
-      {product && <StructuredData data={productJsonLd(product, id)} />}
+      {product && <StructuredData data={productJsonLd(product)} />}
       <ProductDetailClient id={id} initialProduct={product} />
     </>
   )

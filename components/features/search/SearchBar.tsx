@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, ArrowRight } from 'lucide-react'
 import { PRODUCTS } from '@/constants/products'
 import { C } from '@/constants/theme'
+import { productPath } from '@/lib/seo'
 
 const STORAGE_KEY = 'verdebliss-recent-searches'
 
@@ -61,7 +62,7 @@ export default function SearchBar() {
     saveRecent(product.name)
     setQ('')
     setFocused(false)
-    router.push(`/products/${product.id}`)
+    router.push(productPath(product))
   }
 
   const handleKey = (e) => {

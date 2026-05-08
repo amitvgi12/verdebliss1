@@ -189,6 +189,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false)
   const [paymentAction, setPaymentAction] = useState(null) // null | 'razorpay' | 'cod'
   const [errors, setErrors] = useState({})
+  const [checkoutError, setCheckoutError] = useState('')
 
   const [form, setForm] = useState({
     name: profile?.full_name ?? user?.email?.split('@')[0] ?? '',
@@ -209,6 +210,7 @@ export default function Checkout() {
   const set_ = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   async function confirmOrder(result) {
+    setCheckoutError('')
     setPayId(result.paymentId || result.orderId || '')
     setPaymentMethod(result.paymentMethod || '')
     setStatus('success')
@@ -246,14 +248,17 @@ export default function Checkout() {
   async function launchRazorpay() {
     const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
     if (!publicKey) {
-      alert('Razorpay is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID.')
+      setCheckoutError(
+        'Online payment is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID in Vercel/local env.'
+      )
       return
     }
     if (!window.Razorpay) {
-      alert('Payment gateway is still loading. Please wait a moment and try again.')
+      setCheckoutError('Payment gateway is still loading. Please wait a moment and try again.')
       return
     }
 
+    setCheckoutError('')
     setLoading(true)
     setPaymentAction('razorpay')
 
@@ -333,7 +338,7 @@ export default function Checkout() {
             setStatus('failed')
             setLoading(false)
             setPaymentAction(null)
-            alert(
+            setCheckoutError(
               err?.message ??
                 'Payment verification failed. Please contact support with your payment ID.'
             )
@@ -353,16 +358,19 @@ export default function Checkout() {
       console.error('[Checkout] Could not create Razorpay order:', err)
       setLoading(false)
       setPaymentAction(null)
-      alert(err?.message ?? 'Could not start payment. Please try again.')
+      setCheckoutError(err?.message ?? 'Could not start payment. Please try again.')
     }
   }
 
   async function placeCodOrder() {
     if (grandTotal > COD_MAX_TOTAL) {
-      alert(`Cash on Delivery is available only up to ₹${COD_MAX_TOTAL.toLocaleString()}.`)
+      setCheckoutError(
+        `Cash on Delivery is available only up to ₹${COD_MAX_TOTAL.toLocaleString()}.`
+      )
       return
     }
 
+    setCheckoutError('')
     setLoading(true)
     setPaymentAction('cod')
     try {
@@ -372,7 +380,7 @@ export default function Checkout() {
       console.error('[Checkout] COD order failed:', err)
       setLoading(false)
       setPaymentAction(null)
-      alert(err?.message ?? 'Could not place Cash on Delivery order. Please try again.')
+      setCheckoutError(err?.message ?? 'Could not place Cash on Delivery order. Please try again.')
     }
   }
 
@@ -933,6 +941,24 @@ export default function Checkout() {
                     <ShieldCheck size={14} />
                     Pay online with Razorpay, including UPI when enabled for your merchant account.
                   </div>
+
+                  {checkoutError && (
+                    <div
+                      role="alert"
+                      style={{
+                        border: `1px solid ${C.terra}`,
+                        background: '#FFF7F2',
+                        color: C.terra,
+                        borderRadius: 10,
+                        padding: '10px 12px',
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                        marginBottom: 12,
+                      }}
+                    >
+                      {checkoutError}
+                    </div>
+                  )}
 
                   <button
                     onClick={launchRazorpay}

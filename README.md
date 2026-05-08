@@ -107,8 +107,10 @@ Copy `.env.example` to `.env.local` and fill in:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
 
-# Razorpay — public key (server-side uses RAZORPAY_KEY_SECRET separately)
+# Razorpay — public browser key and server credentials
 NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxx
+RAZORPAY_KEY_ID=rzp_test_xxx
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 
 # Gemini — server-side ONLY (no NEXT_PUBLIC_ prefix)
 GEMINI_API_KEY=AIzaxxx
@@ -232,7 +234,7 @@ For manual deploy:
 vercel deploy --prod
 ```
 
-Required Vercel env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `GEMINI_API_KEY`.
+Required Vercel env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and optionally `GEMINI_API_KEY`.
 
 ---
 

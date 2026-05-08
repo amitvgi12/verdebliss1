@@ -27,9 +27,16 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('[checkout/create-razorpay-order]', error)
+    const message = error instanceof Error ? error.message : 'Unable to create payment order'
+    const isConfigError = message.toLowerCase().includes('razorpay server credentials')
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unable to create payment order' },
-      { status: 400 }
+      {
+        error: isConfigError
+          ? 'Online payment is not enabled yet. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the server environment.'
+          : message,
+        code: isConfigError ? 'RAZORPAY_SERVER_CREDENTIALS_MISSING' : 'CHECKOUT_CREATE_FAILED',
+      },
+      { status: isConfigError ? 503 : 400 }
     )
   }
 }

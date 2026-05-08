@@ -168,8 +168,9 @@ export default function ProductDetailClient({ id, initialProduct }) {
   const width = useWindowWidth()
   const isMobile = width < BP.tablet
 
-  const { product: serverProduct, loading } = useProduct(initialProduct ? null : id)
+  const { product: serverProduct, loading } = useProduct(initialProduct ? undefined : id)
   const p = initialProduct ?? serverProduct
+  const isLoading = !initialProduct && loading
   const { products: all } = useProducts({})
   const addItem = useCartStore((s) => s.addItem)
   const { toggle, has } = useWishlistStore()
@@ -189,7 +190,7 @@ export default function ProductDetailClient({ id, initialProduct }) {
 
   const toggleAcc = (secId) => setSection((prev) => (prev === secId ? '' : secId))
 
-  if (loading)
+  if (isLoading)
     return (
       <div
         style={{
@@ -239,7 +240,8 @@ export default function ProductDetailClient({ id, initialProduct }) {
       </div>
     )
 
-  const compliance = PRODUCT_COMPLIANCE[id] ?? {}
+  const compliance =
+    PRODUCT_COMPLIANCE[p.id] ?? PRODUCT_COMPLIANCE[p.slug] ?? PRODUCT_COMPLIANCE[id] ?? {}
   const related = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
   const mrp = Math.round((p.price ?? 0) * 1.25)
   const discount = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)

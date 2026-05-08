@@ -8,6 +8,7 @@ import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
 import { C, FONT } from '@/constants/theme'
+import { productPath } from '@/lib/seo'
 
 export default function ProductCard({ product: p }) {
   const router = useRouter()
@@ -21,7 +22,7 @@ export default function ProductCard({ product: p }) {
   const mrp = Math.round((p.price ?? 0) * 1.2)
   const discount = Math.round(((mrp - p.price) / mrp) * 100)
 
-  const goToProduct = () => router.push(`/products/${p.id}`)
+  const goToProduct = () => router.push(productPath(p))
   const stopCardNavigation = (e) => {
     e.stopPropagation()
   }
