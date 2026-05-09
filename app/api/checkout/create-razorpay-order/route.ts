@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createRazorpayOrder, normalizeCart, validateAddress } from '@/lib/commerce'
+import {
+  createCheckoutSession,
+  createRazorpayOrder,
+  normalizeCart,
+  validateAddress,
+} from '@/lib/commerce'
 import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
 
 export async function POST(request: Request) {
@@ -17,7 +22,17 @@ export async function POST(request: Request) {
       item_count: String(items.reduce((count, item) => count + item.qty, 0)),
     })
 
+    const session = await createCheckoutSession({
+      userId: user?.id ?? null,
+      address,
+      items,
+      totals,
+      razorpayOrder,
+      receipt,
+    })
+
     return NextResponse.json({
+      checkoutSessionId: session.id,
       orderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
@@ -28,15 +43,23 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('[checkout/create-razorpay-order]', error)
     const message = error instanceof Error ? error.message : 'Unable to create payment order'
-    const isConfigError = message.toLowerCase().includes('razorpay server credentials')
+    const lower = message.toLowerCase()
+    const isRazorpayConfig = lower.includes('razorpay server credentials')
+    const isPersistenceConfig = lower.includes('commerce persistence')
     return NextResponse.json(
       {
-        error: isConfigError
+        error: isRazorpayConfig
           ? 'Online payment is not enabled yet. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the server environment.'
-          : message,
-        code: isConfigError ? 'RAZORPAY_SERVER_CREDENTIALS_MISSING' : 'CHECKOUT_CREATE_FAILED',
+          : isPersistenceConfig
+            ? 'Online payment is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+            : message,
+        code: isRazorpayConfig
+          ? 'RAZORPAY_SERVER_CREDENTIALS_MISSING'
+          : isPersistenceConfig
+            ? 'COMMERCE_PERSISTENCE_MISSING'
+            : 'CHECKOUT_CREATE_FAILED',
       },
-      { status: isConfigError ? 503 : 400 }
+      { status: isRazorpayConfig || isPersistenceConfig ? 503 : 400 }
     )
   }
 }

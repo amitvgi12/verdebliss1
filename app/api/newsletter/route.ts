@@ -16,6 +16,12 @@ export async function POST(request: Request) {
     if (!EMAIL_RE.test(email) || email.length > 200) throw new Error('Please enter a valid email')
 
     if (!hasSupabaseAdminEnv()) {
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+          { error: 'Newsletter service is not configured. Please try again later.' },
+          { status: 503 }
+        )
+      }
       return NextResponse.json({ ok: true, stored: false, reason: 'supabase_admin_not_configured' })
     }
 

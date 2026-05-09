@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import { permanentRedirect } from 'next/navigation'
 import { getProductServer } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
 import { absoluteUrl, productImagePath, productPath, StructuredData } from '@/lib/seo'
@@ -20,6 +21,23 @@ function productJsonLd(product: Product) {
       availability:
         (product.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       url: absoluteUrl(productPath(product)),
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: product.price >= 499 ? 0 : 79,
+          currency: 'INR',
+        },
+      },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'IN',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 14,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn',
+      },
     },
     ...(product.rating && {
       aggregateRating: {
@@ -54,6 +72,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const product = await getProductServer(id)
+
+  if (product?.slug && product.slug !== id) {
+    permanentRedirect(productPath(product))
+  }
+
   return (
     <>
       {product && <StructuredData data={productJsonLd(product)} />}

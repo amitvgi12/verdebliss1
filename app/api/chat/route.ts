@@ -19,12 +19,35 @@ import {
   getUserFromAuthorizationHeader,
   hasSupabaseAdminEnv,
 } from '@/lib/supabase-admin'
+import { getProductsServer } from '@/lib/products-server'
+import type { Product } from '@/types'
 
-const RATE_LIMIT_MAP = new Map()
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface TrustedContext {
+  isLoggedIn: boolean
+  name: string
+  email: string
+  skinType: string
+  tier: string
+  points: number
+  orderCount: number
+  orders: string
+}
+
+interface RateLimitEntry {
+  count: number
+  resetAt: number
+}
+
+const RATE_LIMIT_MAP = new Map<string, RateLimitEntry>()
 const RATE_LIMIT = 20
 const WINDOW_MS = 60_000
 
-function isRateLimited(ip) {
+function isRateLimited(ip: string): boolean {
   const now = Date.now()
   const entry = RATE_LIMIT_MAP.get(ip) ?? { count: 0, resetAt: now + WINDOW_MS }
   if (now > entry.resetAt) {
@@ -36,42 +59,68 @@ function isRateLimited(ip) {
   return entry.count > RATE_LIMIT
 }
 
-function validateMessages(messages) {
+function validateMessages(messages: unknown): messages is ChatMessage[] {
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > 40) return false
-  return messages.every(
-    (m) =>
-      typeof m.role === 'string' &&
-      typeof m.content === 'string' &&
-      ['user', 'assistant'].includes(m.role) &&
-      m.content.length > 0 &&
-      m.content.length <= 2000
-  )
+  return messages.every((m: unknown) => {
+    if (!m || typeof m !== 'object') return false
+    const message = m as Record<string, unknown>
+    return (
+      typeof message.role === 'string' &&
+      typeof message.content === 'string' &&
+      ['user', 'assistant'].includes(message.role) &&
+      message.content.length > 0 &&
+      message.content.length <= 2000
+    )
+  })
 }
 
-function sanitiseContext(raw) {
-  if (!raw || typeof raw !== 'object') return { isLoggedIn: false }
+function sanitiseContext(raw: unknown): TrustedContext {
+  if (!raw || typeof raw !== 'object') {
+    return {
+      isLoggedIn: false,
+      name: '',
+      email: '',
+      skinType: 'not specified',
+      tier: 'Green Leaf',
+      points: 0,
+      orderCount: 0,
+      orders: '',
+    }
+  }
+  const source = raw as Record<string, unknown>
   return {
-    isLoggedIn: Boolean(raw.isLoggedIn),
-    name: String(raw.name ?? '').slice(0, 100),
-    email: String(raw.email ?? '').slice(0, 200),
-    skinType: String(raw.skinType ?? 'not specified').slice(0, 50),
-    tier: String(raw.tier ?? 'Green Leaf').slice(0, 50),
-    points: Number.isFinite(raw.points) ? raw.points : 0,
-    orderCount: Number.isFinite(raw.orderCount) ? raw.orderCount : 0,
-    orders: String(raw.orders ?? '').slice(0, 3000),
+    isLoggedIn: Boolean(source.isLoggedIn),
+    name: String(source.name ?? '').slice(0, 100),
+    email: String(source.email ?? '').slice(0, 200),
+    skinType: String(source.skinType ?? 'not specified').slice(0, 50),
+    tier: String(source.tier ?? 'Green Leaf').slice(0, 50),
+    points: Number.isFinite(Number(source.points)) ? Number(source.points) : 0,
+    orderCount: Number.isFinite(Number(source.orderCount)) ? Number(source.orderCount) : 0,
+    orders: String(source.orders ?? '').slice(0, 3000),
   }
 }
 
-function toGeminiContents(messages) {
+function toGeminiContents(messages: ChatMessage[]) {
   return messages.map((m) => ({
     role: m.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: m.content }],
   }))
 }
 
-async function buildTrustedContext(request) {
+async function buildTrustedContext(request: Request): Promise<TrustedContext> {
   const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
-  if (!user || !hasSupabaseAdminEnv()) return { isLoggedIn: false }
+  if (!user || !hasSupabaseAdminEnv()) {
+    return {
+      isLoggedIn: false,
+      name: '',
+      email: '',
+      skinType: 'not specified',
+      tier: 'Green Leaf',
+      points: 0,
+      orderCount: 0,
+      orders: '',
+    }
+  }
 
   const supabase = createSupabaseAdmin()
   const { data: profile } = await supabase
@@ -110,17 +159,20 @@ async function buildTrustedContext(request) {
   }
 }
 
-function buildSystemPrompt(ctx) {
-  const catalogue = `
-VerdeBliss product catalogue:
-- Bakuchiol Renewal Serum ₹2850 — dry/combination skin
-- Rose Hip Glow Moisturiser ₹1990 — dry/sensitive
-- Green Tea Clarity Toner ₹1450 — oily/combination
-- Turmeric Brightening Cleanser ₹1250 — all types
-- Botanical SPF 50 Shield ₹2200 — all types
-- Niacinamide Pore Serum ₹2450 — oily/combination
-- Shea Butter Night Cream ₹2650 — dry/sensitive
-- Wild Berry Lip Elixir ₹890 — all types`
+function buildCatalogue(products: Product[]): string {
+  return [
+    'VerdeBliss product catalogue:',
+    ...products.map((product) => {
+      const skinTypes = Array.isArray(product.skin_types)
+        ? product.skin_types.join('/')
+        : 'all types'
+      return `- ${product.name} ₹${product.price} — ${skinTypes}`
+    }),
+  ].join('\n')
+}
+
+function buildSystemPrompt(ctx: TrustedContext, products: Product[]): string {
+  const catalogue = buildCatalogue(products)
 
   const policies = `
 Key policies: Free shipping ₹499+. Returns within 14 days (unopened). Refund 3–7 business days.
@@ -153,7 +205,12 @@ For points: state exact balance (${ctx.points} points, ${ctx.tier} tier).
 For skincare recommendations: factor in skin type (${ctx.skinType}).`
 }
 
-async function callGemini(model, apiKey, systemPrompt, messages) {
+async function callGemini(
+  model: string,
+  apiKey: string,
+  systemPrompt: string,
+  messages: ChatMessage[]
+) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
   const res = await fetch(url, {
     method: 'POST',
@@ -178,7 +235,7 @@ async function callGemini(model, apiKey, systemPrompt, messages) {
   return { ok: res.ok, status: res.status, data, errorBody: text }
 }
 
-export async function POST(request) {
+export async function POST(request: Request) {
   // Rate limiting
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   if (isRateLimited(ip)) {
@@ -207,7 +264,8 @@ export async function POST(request) {
   }
 
   const ctx = sanitiseContext(await buildTrustedContext(request))
-  const prompt = buildSystemPrompt(ctx)
+  const products = await getProductsServer()
+  const prompt = buildSystemPrompt(ctx, products)
 
   try {
     let result = await callGemini('gemini-2.5-flash', apiKey, prompt, messages)

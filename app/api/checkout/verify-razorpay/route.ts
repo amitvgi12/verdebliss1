@@ -1,11 +1,5 @@
 import { NextResponse } from 'next/server'
-import {
-  normalizeCart,
-  persistOrder,
-  validateAddress,
-  verifyRazorpaySignature,
-} from '@/lib/commerce'
-import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
+import { completeRazorpayCheckout, verifyRazorpaySignature } from '@/lib/commerce'
 
 export async function POST(request: Request) {
   try {
@@ -22,42 +16,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid payment signature' }, { status: 400 })
     }
 
-    const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
-    const address = validateAddress(body?.address)
-    const { items, totals } = await normalizeCart(body?.items)
-
-    const order = await persistOrder({
-      userId: user?.id ?? null,
-      status: 'Processing',
-      paymentStatus: 'paid',
-      paymentMethod: 'Razorpay',
-      paymentId: razorpayPaymentId,
-      paymentOrderId: razorpayOrderId,
-      address,
-      items,
-      totals,
-      awardPoints: Boolean(user?.id),
+    // Browser-submitted cart/address data is intentionally ignored here. The
+    // order is created from the trusted checkout_sessions row created by the
+    // server before opening the Razorpay modal.
+    const completed = await completeRazorpayCheckout({
+      razorpayOrderId,
+      razorpayPaymentId,
+      rawPaymentPayload: body as Record<string, unknown>,
     })
 
     return NextResponse.json({
-      orderId: order.id,
+      orderId: completed.orderId,
       paymentId: razorpayPaymentId,
       paymentMethod: 'Razorpay',
-      pointsAwarded: order.pointsAwarded,
-      totals,
+      pointsAwarded: completed.pointsAwarded,
+      totals: completed.totals,
+      idempotent: completed.idempotent,
     })
   } catch (error) {
     console.error('[checkout/verify-razorpay]', error)
     const message = error instanceof Error ? error.message : 'Payment verification failed'
-    const isConfigError = message.toLowerCase().includes('razorpay secret')
+    const lower = message.toLowerCase()
+    const isSecretConfig = lower.includes('razorpay secret')
+    const isPersistenceConfig = lower.includes('commerce persistence')
     return NextResponse.json(
       {
-        error: isConfigError
+        error: isSecretConfig
           ? 'Online payment verification is not enabled yet. Set RAZORPAY_KEY_SECRET in the server environment.'
-          : message,
-        code: isConfigError ? 'RAZORPAY_SECRET_MISSING' : 'PAYMENT_VERIFY_FAILED',
+          : isPersistenceConfig
+            ? 'Online payment verification is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+            : message,
+        code: isSecretConfig
+          ? 'RAZORPAY_SECRET_MISSING'
+          : isPersistenceConfig
+            ? 'COMMERCE_PERSISTENCE_MISSING'
+            : 'PAYMENT_VERIFY_FAILED',
       },
-      { status: isConfigError ? 503 : 400 }
+      { status: isSecretConfig || isPersistenceConfig ? 503 : 400 }
     )
   }
 }

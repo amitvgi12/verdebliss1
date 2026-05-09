@@ -30,6 +30,12 @@ export async function POST(request: Request) {
     }
 
     if (!hasSupabaseAdminEnv()) {
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+          { error: 'Contact service is not configured. Please email hello@verdebliss.in.' },
+          { status: 503 }
+        )
+      }
       return NextResponse.json({ ok: true, stored: false, reason: 'supabase_admin_not_configured' })
     }
 

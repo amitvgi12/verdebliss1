@@ -108,6 +108,61 @@ alter table public.orders add column if not exists payment_status text default '
 alter table public.orders add column if not exists created_at timestamptz default now();
 alter table public.orders add column if not exists updated_at timestamptz default now();
 
+
+-- Pending checkout session created before opening Razorpay. Verification and
+-- webhooks use this server-owned snapshot instead of trusting browser cart data.
+create table if not exists public.checkout_sessions (
+  id                  uuid primary key default uuid_generate_v4(),
+  user_id             uuid references public.profiles on delete set null,
+  status              text not null default 'pending',
+  razorpay_order_id   text not null,
+  receipt             text,
+  subtotal            numeric(10,2) not null default 0,
+  shipping            numeric(10,2) not null default 0,
+  total               numeric(10,2) not null default 0,
+  amount_paise        int not null default 0,
+  currency            text not null default 'INR',
+  cart_snapshot       jsonb not null default '[]'::jsonb,
+  address             jsonb not null default '{}'::jsonb,
+  expires_at          timestamptz,
+  completed_order_id  uuid references public.orders on delete set null,
+  payment_id          text,
+  created_at          timestamptz default now(),
+  updated_at          timestamptz default now()
+);
+
+alter table public.checkout_sessions add column if not exists user_id uuid references public.profiles on delete set null;
+alter table public.checkout_sessions add column if not exists status text not null default 'pending';
+alter table public.checkout_sessions add column if not exists razorpay_order_id text;
+alter table public.checkout_sessions add column if not exists receipt text;
+alter table public.checkout_sessions add column if not exists subtotal numeric(10,2) not null default 0;
+alter table public.checkout_sessions add column if not exists shipping numeric(10,2) not null default 0;
+alter table public.checkout_sessions add column if not exists total numeric(10,2) not null default 0;
+alter table public.checkout_sessions add column if not exists amount_paise int not null default 0;
+alter table public.checkout_sessions add column if not exists currency text not null default 'INR';
+alter table public.checkout_sessions add column if not exists cart_snapshot jsonb not null default '[]'::jsonb;
+alter table public.checkout_sessions add column if not exists address jsonb not null default '{}'::jsonb;
+alter table public.checkout_sessions add column if not exists expires_at timestamptz;
+alter table public.checkout_sessions add column if not exists completed_order_id uuid references public.orders on delete set null;
+alter table public.checkout_sessions add column if not exists payment_id text;
+alter table public.checkout_sessions add column if not exists created_at timestamptz default now();
+alter table public.checkout_sessions add column if not exists updated_at timestamptz default now();
+
+create unique index if not exists checkout_sessions_razorpay_order_unique_idx
+  on public.checkout_sessions (razorpay_order_id)
+  where razorpay_order_id is not null;
+create unique index if not exists checkout_sessions_payment_id_unique_idx
+  on public.checkout_sessions (payment_id)
+  where payment_id is not null;
+create index if not exists checkout_sessions_status_idx on public.checkout_sessions (status);
+
+create unique index if not exists orders_payment_id_unique_idx
+  on public.orders (payment_id)
+  where payment_id is not null;
+create unique index if not exists orders_payment_order_id_unique_idx
+  on public.orders (payment_order_id)
+  where payment_order_id is not null and payment_status = 'paid';
+
 create table if not exists public.order_items (
   id            uuid primary key default uuid_generate_v4(),
   order_id      uuid not null references public.orders on delete cascade,
@@ -158,6 +213,13 @@ create table if not exists public.payment_events (
   created_at           timestamptz default now()
 );
 
+
+create index if not exists payment_events_provider_order_idx on public.payment_events (provider_order_id);
+create index if not exists payment_events_provider_payment_idx on public.payment_events (provider_payment_id);
+create unique index if not exists payment_events_unique_event_idx
+  on public.payment_events (provider, provider_order_id, provider_payment_id, event_type)
+  where provider_order_id is not null and provider_payment_id is not null;
+
 create table if not exists public.loyalty_ledger (
   id            uuid primary key default uuid_generate_v4(),
   user_id       uuid not null references public.profiles on delete cascade,
@@ -167,6 +229,20 @@ create table if not exists public.loyalty_ledger (
   reason        text,
   created_at    timestamptz default now()
 );
+
+
+create table if not exists public.inventory_movements (
+  id          uuid primary key default uuid_generate_v4(),
+  order_id    uuid references public.orders on delete set null,
+  product_id  text not null,
+  quantity    int not null,
+  movement    text not null,
+  reason      text,
+  created_at  timestamptz default now()
+);
+
+create index if not exists inventory_movements_order_idx on public.inventory_movements (order_id);
+create index if not exists inventory_movements_product_idx on public.inventory_movements (product_id);
 
 create table if not exists public.wishlist (
   id          uuid primary key default uuid_generate_v4(),
@@ -220,6 +296,11 @@ create table if not exists public.refunds (
 alter table public.refunds add column if not exists details jsonb default '{}';
 alter table public.refunds add column if not exists response text;
 alter table public.refunds add column if not exists updated_at timestamptz default now();
+
+
+create unique index if not exists refunds_one_open_request_per_order_idx
+  on public.refunds (order_id)
+  where order_id is not null and status in ('requested','reviewing','approved');
 
 create table if not exists public.contact_tickets (
   id          uuid primary key default uuid_generate_v4(),
@@ -280,6 +361,10 @@ create trigger trg_profiles_updated_at before update on public.profiles
 
 drop trigger if exists trg_orders_updated_at on public.orders;
 create trigger trg_orders_updated_at before update on public.orders
+  for each row execute procedure public.touch_updated_at();
+
+drop trigger if exists trg_checkout_sessions_updated_at on public.checkout_sessions;
+create trigger trg_checkout_sessions_updated_at before update on public.checkout_sessions
   for each row execute procedure public.touch_updated_at();
 
 drop trigger if exists trg_reviews_updated_at on public.reviews;
@@ -348,6 +433,100 @@ $$;
 revoke all on function public.apply_loyalty_points(uuid, int) from public, anon, authenticated;
 grant execute on function public.apply_loyalty_points(uuid, int) to service_role;
 
+
+-- Keep customer-editable profile fields separate from loyalty/staff fields.
+create or replace function public.protect_profile_privileged_fields()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (old.points is distinct from new.points)
+     or (old.tier is distinct from new.tier)
+     or (old.is_staff is distinct from new.is_staff) then
+    if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
+       and not public.is_staff() then
+      raise exception 'Direct updates to profile points, tier, or staff status are not allowed';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_profiles_protect_privileged_fields on public.profiles;
+create trigger trg_profiles_protect_privileged_fields
+  before update on public.profiles
+  for each row execute procedure public.protect_profile_privileged_fields();
+
+create or replace function public.update_profile_basics(
+  p_full_name text,
+  p_avatar_url text,
+  p_skin_type text
+) returns public.profiles
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  updated_profile public.profiles;
+begin
+  update public.profiles
+  set full_name = nullif(trim(p_full_name), ''),
+      avatar_url = nullif(trim(p_avatar_url), ''),
+      skin_type = nullif(trim(p_skin_type), ''),
+      updated_at = now()
+  where id = auth.uid()
+  returning * into updated_profile;
+
+  if updated_profile.id is null then
+    raise exception 'Profile not found';
+  end if;
+
+  return updated_profile;
+end;
+$$;
+
+revoke all on function public.update_profile_basics(text, text, text) from public, anon;
+grant execute on function public.update_profile_basics(text, text, text) to authenticated;
+
+-- Atomic stock reservation used by the service-role checkout API. Product IDs
+-- are compared as text so existing UUID product tables and text-ID installs are
+-- both supported.
+create or replace function public.reserve_inventory_for_order(
+  p_order_id uuid,
+  p_items jsonb
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  item jsonb;
+  affected int;
+begin
+  for item in select * from jsonb_array_elements(p_items)
+  loop
+    update public.products
+    set stock = stock - greatest((item->>'qty')::int, 0),
+        updated_at = now()
+    where id::text = item->>'id'
+      and stock >= greatest((item->>'qty')::int, 0);
+
+    get diagnostics affected = row_count;
+    if affected = 0 then
+      raise exception 'Insufficient stock for product %', item->>'id';
+    end if;
+
+    insert into public.inventory_movements (order_id, product_id, quantity, movement, reason)
+    values (p_order_id, item->>'id', -greatest((item->>'qty')::int, 0), 'reserve', 'checkout');
+  end loop;
+end;
+$$;
+
+revoke all on function public.reserve_inventory_for_order(uuid, jsonb) from public, anon, authenticated;
+grant execute on function public.reserve_inventory_for_order(uuid, jsonb) to service_role;
+
 -- Removed unsafe legacy RPC from prior versions.
 drop function if exists public.increment_points(uuid, int);
 
@@ -356,8 +535,10 @@ alter table public.products enable row level security;
 alter table public.profiles enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_items enable row level security;
+alter table public.checkout_sessions enable row level security;
 alter table public.payment_events enable row level security;
 alter table public.loyalty_ledger enable row level security;
+alter table public.inventory_movements enable row level security;
 alter table public.wishlist enable row level security;
 alter table public.reviews enable row level security;
 alter table public.addresses enable row level security;
@@ -370,6 +551,7 @@ drop policy if exists "Anyone can view products" on public.products;
 drop policy if exists "Anyone can read active products" on public.products;
 drop policy if exists "Owner can read own profile" on public.profiles;
 drop policy if exists "Owner can update own profile basics" on public.profiles;
+drop policy if exists "Owner can update own permitted profile fields" on public.profiles;
 drop policy if exists "Authenticated users can create orders" on public.orders;
 drop policy if exists "Authenticated users can view their own orders" on public.orders;
 drop policy if exists "Owner can read own orders" on public.orders;
@@ -394,8 +576,12 @@ create policy "Anyone can read active products" on public.products
 -- Profiles: owner only; staff can read/update operationally
 create policy "Owner can read own profile" on public.profiles
   for select using (auth.uid() = id or public.is_staff());
-create policy "Owner can update own profile basics" on public.profiles
+-- Customers may update only columns granted below; privileged fields are also protected by trigger.
+create policy "Owner can update own permitted profile fields" on public.profiles
   for update using (auth.uid() = id) with check (auth.uid() = id and is_staff = false);
+
+revoke update on public.profiles from anon, authenticated;
+grant update(full_name, avatar_url, skin_type, updated_at) on public.profiles to authenticated;
 
 -- Orders/order items: customers can read their own orders only. Inserts happen through service-role API.
 create policy "Owner can read own orders" on public.orders
@@ -447,14 +633,14 @@ begin
 
   if product_id_type in ('text', 'character varying') then
     insert into public.products (id, slug, name, description, price, category, skin_types, badges, ingredient, emoji, bg_color, image_url, rating, review_count, stock) values
-    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for visible cell renewal without irritation.', 2850, 'Serum', array['Dry','Combination'], array['Vegan','Organic Certified'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', 4.8, 124, 100),
-    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 1990, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-Free','Vegan'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', 4.7, 89, 100),
-    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Balance oil and refine pores with antioxidant-rich green tea extract.', 1450, 'Toner', array['Oily','Combination'], array['Vegan','Organic Certified'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', 4.5, 67, 100),
-    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a luminous complexion.', 1250, 'Cleanser', array['All Types'], array['Cruelty-Free','Organic Certified'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', 4.6, 103, 100),
-    ('5', 'botanical-spf-50-shield', 'Botanical SPF 50 Shield', 'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.', 2200, 'SPF', array['All Types'], array['Vegan','Cruelty-Free'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', 4.9, 215, 100),
-    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with acai berry and shea for pillowy softness.', 890, 'Lip Care', array['All Types'], array['Vegan','Organic Certified'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', 4.4, 58, 100),
-    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Minimise pores and control sebum with a 10% niacinamide complex.', 2450, 'Serum', array['Oily','Combination'], array['Vegan','Cruelty-Free'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', 4.7, 142, 100),
-    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Intensive overnight repair with shea butter and vitamin E for morning glow.', 2650, 'Moisturiser', array['Dry','Sensitive'], array['Organic Certified','Cruelty-Free'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', 4.8, 76, 100)
+    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for visible cell renewal without irritation.', 250, 'Serum', array['Dry','Combination'], array['Vegan','Organic Certified'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', 4.8, 124, 100),
+    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 390, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-Free','Vegan'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', 4.7, 89, 100),
+    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Balance oil and refine pores with antioxidant-rich green tea extract.', 450, 'Toner', array['Oily','Combination'], array['Vegan','Organic Certified'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', 4.5, 67, 100),
+    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a luminous complexion.', 250, 'Cleanser', array['All Types'], array['Cruelty-Free','Organic Certified'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', 4.6, 103, 100),
+    ('5', 'botanical-spf-50-shield', 'Botanical SPF 50 Shield', 'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.', 220, 'SPF', array['All Types'], array['Vegan','Cruelty-Free'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', 4.9, 215, 100),
+    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with acai berry and shea for pillowy softness.', 490, 'Lip Care', array['All Types'], array['Vegan','Organic Certified'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', 4.4, 58, 100),
+    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Minimise pores and control sebum with a 10% niacinamide complex.', 350, 'Serum', array['Oily','Combination'], array['Vegan','Cruelty-Free'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', 4.7, 142, 100),
+    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Intensive overnight repair with shea butter and vitamin E for morning glow.', 550, 'Moisturiser', array['Dry','Sensitive'], array['Organic Certified','Cruelty-Free'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', 4.8, 76, 100)
     on conflict (id) do update set
       slug = excluded.slug,
       name = excluded.name,
