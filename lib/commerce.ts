@@ -397,6 +397,13 @@ export async function getCheckoutSessionByRazorpayOrderId(
   return normaliseCheckoutSession(data)
 }
 
+export interface PersistedOrderResult {
+  id: string
+  pointsAwarded: boolean
+  storage: 'supabase'
+  idempotent?: boolean
+}
+
 async function getExistingOrderByPaymentId(paymentId: string) {
   if (!paymentId || !hasSupabaseAdminEnv()) return null
   const supabase = createSupabaseAdmin()
@@ -415,22 +422,6 @@ async function getExistingOrderByPaymentId(paymentId: string) {
   } | null
 }
 
-async function reserveInventory(orderId: string, items: NormalizedCartItem[]) {
-  if (!hasSupabaseAdminEnv()) return
-  const supabase = createSupabaseAdmin()
-  const { error } = await supabase.rpc('reserve_inventory_for_order', {
-    p_order_id: orderId,
-    p_items: toOrderSnapshot(items),
-  })
-
-  if (error) {
-    // The order is kept for auditability and support follow-up. Staff can either
-    // source inventory or refund; payment data remains reconciled.
-    await supabase.from('orders').update({ status: 'Inventory Review' }).eq('id', orderId)
-    throw new Error(error.message)
-  }
-}
-
 export async function persistOrder(input: {
   userId: string | null
   status: string
@@ -443,39 +434,45 @@ export async function persistOrder(input: {
   totals: CartTotals
   awardPoints: boolean
   rawPaymentPayload?: Record<string, unknown>
-}) {
+}): Promise<PersistedOrderResult> {
   const existing = await getExistingOrderByPaymentId(input.paymentId)
   if (existing) {
     return {
       id: existing.id,
       pointsAwarded: Boolean(existing.points_earned),
-      storage: 'supabase' as const,
+      storage: 'supabase',
       idempotent: true,
     }
   }
 
   const supabase = requireSupabaseAdmin()
-  const snapshot = toOrderSnapshot(input.items)
-  const { data: order, error } = await supabase
-    .from('orders')
-    .insert({
-      user_id: input.userId,
+
+  // Production order finalisation is delegated to one Postgres RPC. The order,
+  // line items, stock movement, payment event, and loyalty ledger commit in a
+  // single database transaction, so failed inventory or duplicate payment checks
+  // cannot leave a partially-finalised order.
+  const { data, error } = await supabase.rpc('finalize_commerce_order', {
+    p_user_id: input.userId,
+    p_status: input.status,
+    p_payment_status: input.paymentStatus,
+    p_payment_method: input.paymentMethod,
+    p_payment_id: input.paymentId,
+    p_payment_order_id: input.paymentOrderId ?? null,
+    p_address: {
+      ...input.address,
+      payment_method: input.paymentMethod,
+    },
+    p_items: toOrderSnapshot(input.items),
+    p_subtotal: input.totals.subtotal,
+    p_shipping: input.totals.shipping,
+    p_total: input.totals.total,
+    p_points_to_earn: input.totals.pointsToEarn,
+    p_award_points: input.awardPoints,
+    p_raw_payment_payload: input.rawPaymentPayload ?? {
+      payment_method: input.paymentMethod,
       status: input.status,
-      subtotal: input.totals.subtotal,
-      shipping: input.totals.shipping,
-      total: input.totals.total,
-      points_earned: input.awardPoints ? input.totals.pointsToEarn : 0,
-      items: snapshot,
-      address: {
-        ...input.address,
-        payment_method: input.paymentMethod,
-      },
-      payment_id: input.paymentId,
-      payment_order_id: input.paymentOrderId ?? null,
-      payment_status: input.paymentStatus,
-    })
-    .select('id')
-    .single()
+    },
+  })
 
   if (error) {
     const duplicate = await getExistingOrderByPaymentId(input.paymentId)
@@ -483,61 +480,22 @@ export async function persistOrder(input: {
       return {
         id: duplicate.id,
         pointsAwarded: Boolean(duplicate.points_earned),
-        storage: 'supabase' as const,
+        storage: 'supabase',
         idempotent: true,
       }
     }
     throw new Error(error.message)
   }
 
-  if (order?.id) {
-    await reserveInventory(order.id, input.items)
+  const row = Array.isArray(data) ? data[0] : data
+  if (!row?.order_id) throw new Error('Order finalisation did not return an order id')
 
-    await supabase.from('payment_events').insert({
-      order_id: order.id,
-      provider: input.paymentMethod === 'Cash on Delivery' ? 'cod' : 'razorpay',
-      provider_order_id: input.paymentOrderId,
-      provider_payment_id: input.paymentId,
-      event_type: input.paymentStatus,
-      amount: input.totals.total,
-      currency: CURRENCY,
-      verified: input.paymentStatus === 'paid',
-      payload: input.rawPaymentPayload ?? {
-        payment_method: input.paymentMethod,
-        status: input.status,
-      },
-    })
-
-    await supabase.from('order_items').insert(
-      input.items.map((item) => ({
-        order_id: order.id,
-        product_id: item.id,
-        product_name: item.name,
-        quantity: item.qty,
-        unit_price: item.price,
-        line_total: roundMoney(item.price * item.qty),
-      }))
-    )
+  return {
+    id: String(row.order_id),
+    pointsAwarded: Boolean(row.points_awarded),
+    storage: 'supabase',
+    idempotent: Boolean(row.idempotent),
   }
-
-  let pointsAwarded = false
-  if (input.awardPoints && input.userId && input.totals.pointsToEarn > 0 && order?.id) {
-    await supabase.from('loyalty_ledger').insert({
-      user_id: input.userId,
-      order_id: order.id,
-      event_type: 'order_payment_verified',
-      points_delta: input.totals.pointsToEarn,
-      reason: `Verified payment ${input.paymentId}`,
-    })
-
-    await supabase.rpc('apply_loyalty_points', {
-      p_user_id: input.userId,
-      p_points: input.totals.pointsToEarn,
-    })
-    pointsAwarded = true
-  }
-
-  return { id: order?.id ?? input.paymentId, pointsAwarded, storage: 'supabase' as const }
 }
 
 export async function completeRazorpayCheckout(input: {

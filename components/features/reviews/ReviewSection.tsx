@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -7,18 +6,39 @@ import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/authStore'
 import Stars from '@/components/ui/Stars'
 import { C, FONT } from '@/constants/theme'
+import type { ApprovedReview } from '@/lib/products-server'
 
-export default function ReviewSection({ productId }) {
+interface ReviewRow {
+  id: string
+  rating: number
+  title: string | null
+  body: string | null
+  created_at: string
+  profiles?: { full_name?: string | null } | null
+}
+
+type ReviewForm = { rating: number; title: string; body: string }
+type ReviewErrors = Partial<Record<'title' | 'body', string>>
+
+export default function ReviewSection({
+  productId,
+  initialReviews = [],
+}: {
+  productId: string
+  initialReviews?: ApprovedReview[]
+}) {
   const user = useAuthStore((s) => s.user)
   const profile = useAuthStore((s) => s.profile)
 
-  const [reviews, setReviews] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [reviews, setReviews] = useState<ReviewRow[]>(
+    (initialReviews ?? []) as unknown as ReviewRow[]
+  )
+  const [loading, setLoading] = useState((initialReviews ?? []).length === 0)
   const [showForm, setShowForm] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState({ rating: 5, title: '', body: '' })
-  const [errors, setErrors] = useState({})
+  const [form, setForm] = useState<ReviewForm>({ rating: 5, title: '', body: '' })
+  const [errors, setErrors] = useState<ReviewErrors>({})
 
   useEffect(() => {
     fetchReviews()
@@ -33,12 +53,12 @@ export default function ReviewSection({ productId }) {
       .eq('approved', true)
       .order('created_at', { ascending: false })
       .limit(20)
-    setReviews(data ?? [])
+    setReviews((data ?? []) as unknown as ReviewRow[])
     setLoading(false)
   }
 
   function validate() {
-    const e = {}
+    const e: ReviewErrors = {}
     if (!form.title.trim()) e.title = 'Please add a review title'
     if (form.body.trim().length < 20) e.body = 'Review must be at least 20 characters'
     setErrors(e)
@@ -50,7 +70,7 @@ export default function ReviewSection({ productId }) {
     setSubmitting(true)
     const { error } = await supabase.from('reviews').insert({
       product_id: productId,
-      user_id: user.id,
+      user_id: user?.id,
       rating: form.rating,
       title: form.title.trim(),
       body: form.body.trim(),
@@ -352,8 +372,10 @@ export default function ReviewSection({ productId }) {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <Stars rating={r.rating} size={13} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{r.title}</span>
+                  <Stars rating={r.rating ?? 0} size={13} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>
+                    {r.title ?? 'Review'}
+                  </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span
@@ -378,7 +400,7 @@ export default function ReviewSection({ productId }) {
                 </div>
               </div>
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: '0 0 8px' }}>
-                {r.body}
+                {r.body ?? ''}
               </p>
               <p style={{ fontSize: 11, color: C.light }}>
                 — {r.profiles?.full_name ?? 'Verified Customer'}

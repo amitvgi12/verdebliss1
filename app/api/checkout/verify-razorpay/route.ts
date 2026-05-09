@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
+import { isRateLimited } from '@/lib/rate-limit'
 import { completeRazorpayCheckout, verifyRazorpaySignature } from '@/lib/commerce'
 
 export async function POST(request: Request) {
   try {
+    if (await isRateLimited(request, 'checkout_verify', 20, 60)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again shortly.' },
+        { status: 429 }
+      )
+    }
     const body = await request.json()
     const razorpayOrderId = String(body?.razorpay_order_id ?? '')
     const razorpayPaymentId = String(body?.razorpay_payment_id ?? '')

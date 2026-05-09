@@ -14,6 +14,7 @@
  *   - Dynamic system prompt from user context (orders, profile)
  */
 import { NextResponse } from 'next/server'
+import { isRateLimited } from '@/lib/rate-limit'
 import {
   createSupabaseAdmin,
   getUserFromAuthorizationHeader,
@@ -36,27 +37,6 @@ interface TrustedContext {
   points: number
   orderCount: number
   orders: string
-}
-
-interface RateLimitEntry {
-  count: number
-  resetAt: number
-}
-
-const RATE_LIMIT_MAP = new Map<string, RateLimitEntry>()
-const RATE_LIMIT = 20
-const WINDOW_MS = 60_000
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = RATE_LIMIT_MAP.get(ip) ?? { count: 0, resetAt: now + WINDOW_MS }
-  if (now > entry.resetAt) {
-    entry.count = 0
-    entry.resetAt = now + WINDOW_MS
-  }
-  entry.count += 1
-  RATE_LIMIT_MAP.set(ip, entry)
-  return entry.count > RATE_LIMIT
 }
 
 function validateMessages(messages: unknown): messages is ChatMessage[] {
@@ -236,9 +216,7 @@ async function callGemini(
 }
 
 export async function POST(request: Request) {
-  // Rate limiting
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(request, 'chat', 20, 60)) {
     return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 })
   }
 

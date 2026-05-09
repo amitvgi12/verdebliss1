@@ -1,5 +1,5 @@
 'use client'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Heart, Minus, Plus } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
@@ -9,9 +9,9 @@ import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
 import { C, FONT } from '@/constants/theme'
 import { productPath } from '@/lib/seo'
+import type { Product } from '@/types'
 
-export default function ProductCard({ product: p }) {
-  const router = useRouter()
+export default function ProductCard({ product: p }: { product: Product }) {
   const addItem = useCartStore((s) => s.addItem)
   const removeItem = useCartStore((s) => s.removeItem)
   const updateQty = useCartStore((s) => s.updateQty)
@@ -20,52 +20,32 @@ export default function ProductCard({ product: p }) {
   const user = useAuthStore((s) => s.user)
 
   const mrp = Math.round((p.price ?? 0) * 1.2)
-  const discount = Math.round(((mrp - p.price) / mrp) * 100)
+  const discount = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
+  const href = productPath(p)
 
-  const goToProduct = () => router.push(productPath(p))
-  const stopCardNavigation = (e) => {
-    e.stopPropagation()
-  }
-
-  const decreaseQty = (e) => {
-    e.stopPropagation()
+  const decreaseQty = () => {
     if (!cartItem) return
     if (cartItem.qty <= 1) removeItem(p.id)
     else updateQty(p.id, -1)
   }
 
-  const increaseQty = (e) => {
-    e.stopPropagation()
+  const increaseQty = () => {
     if (p.stock !== 0) updateQty(p.id, 1)
   }
 
   return (
-    /* AUDIT FIX 6.7: role=button + tabIndex + onKeyDown for keyboard nav */
-    <motion.div
-      role="button"
-      tabIndex={0}
-      aria-label={`View ${p.name}, ₹${p.price?.toLocaleString()}`}
-      onClick={goToProduct}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          goToProduct()
-        }
-      }}
+    <motion.article
       whileTap={{ scale: 0.98 }}
       style={{
         background: C.card,
         borderRadius: 16,
         overflow: 'hidden',
-        cursor: 'pointer',
         border: `1px solid ${C.border}`,
         borderTop: `2px solid ${C.gold}`,
         display: 'flex',
         flexDirection: 'column',
-        outline: 'none', // focus-visible handled globally in globals.css
       }}
     >
-      {/* Image */}
       <div
         style={{
           aspectRatio: '1/1',
@@ -74,15 +54,13 @@ export default function ProductCard({ product: p }) {
           overflow: 'hidden',
         }}
       >
-        <ProductImage product={p} />
-        {/* Wishlist button */}
+        <Link href={href} aria-label={`View ${p.name}, ₹${p.price?.toLocaleString()}`}>
+          <ProductImage product={p} />
+        </Link>
         <button
+          type="button"
           aria-label={has(p.id) ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
-          onClick={(e) => {
-            e.stopPropagation()
-            toggle(p.id, user?.id)
-          }}
-          onKeyDown={stopCardNavigation}
+          onClick={() => toggle(p.id, user?.id)}
           style={{
             position: 'absolute',
             top: 8,
@@ -90,8 +68,8 @@ export default function ProductCard({ product: p }) {
             background: 'rgba(255,255,255,0.9)',
             border: 'none',
             borderRadius: '50%',
-            width: 32,
-            height: 32,
+            width: 40,
+            height: 40,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -99,12 +77,11 @@ export default function ProductCard({ product: p }) {
           }}
         >
           <Heart
-            size={16}
+            size={18}
             fill={has(p.id) ? C.terra : 'none'}
             color={has(p.id) ? C.terra : C.muted}
           />
         </button>
-        {/* Badges */}
         <div
           style={{
             position: 'absolute',
@@ -115,59 +92,21 @@ export default function ProductCard({ product: p }) {
             flexWrap: 'wrap',
           }}
         >
-          {p.stock === 0 && (
-            <span
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                padding: '3px 9px',
-                borderRadius: 99,
-                background: '#B91C1C',
-                color: 'white',
-                letterSpacing: '0.06em',
-              }}
-            >
-              SOLD OUT
-            </span>
-          )}
+          {p.stock === 0 && <ProductBadge label="SOLD OUT" background="#B91C1C" />}
           {p.ingredient === 'Green Tea' && (
-            <span
+            <ProductBadge
+              label="12+ ONLY"
+              background="#B45309"
               title="Contains BHA — not for under 12 / pregnancy"
-              style={{
-                fontSize: 8,
-                fontWeight: 700,
-                padding: '2px 7px',
-                borderRadius: 99,
-                background: '#B45309',
-                color: 'white',
-                letterSpacing: '0.06em',
-              }}
-            >
-              12+ ONLY
-            </span>
+            />
           )}
           {(p.badges ?? []).slice(0, 2).map((b) => (
-            <span
-              key={b}
-              style={{
-                fontSize: 8,
-                fontWeight: 700,
-                padding: '2px 7px',
-                borderRadius: 99,
-                background: 'rgba(45,74,50,0.85)',
-                color: 'white',
-                letterSpacing: '0.06em',
-              }}
-            >
-              {b.toUpperCase()}
-            </span>
+            <ProductBadge key={b} label={b.toUpperCase()} background="rgba(45,74,50,0.85)" />
           ))}
         </div>
       </div>
 
-      {/* Info */}
       <div style={{ padding: '14px 14px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        {/* Category chip */}
         <div
           style={{
             display: 'inline-flex',
@@ -185,7 +124,8 @@ export default function ProductCard({ product: p }) {
           {p.category?.toUpperCase()}
         </div>
 
-        <div
+        <Link
+          href={href}
           style={{
             fontSize: 14,
             fontWeight: 500,
@@ -194,18 +134,26 @@ export default function ProductCard({ product: p }) {
             fontFamily: FONT.serif,
             marginBottom: 6,
             flex: 1,
+            textDecoration: 'none',
           }}
         >
           {p.name}
-        </div>
+        </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
           <Stars rating={p.rating} size={11} />
           <span style={{ fontSize: 11, color: C.muted }}>({p.review_count})</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 16, fontWeight: 700, color: C.text, fontFamily: FONT.serif }}>
               ₹{(p.price ?? 0).toLocaleString()}
             </span>
@@ -217,14 +165,12 @@ export default function ProductCard({ product: p }) {
           {cartItem ? (
             <div
               aria-label={`${p.name} quantity in cart`}
-              onClick={stopCardNavigation}
-              onKeyDown={stopCardNavigation}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '28px 28px 28px',
+                gridTemplateColumns: '40px 32px 40px',
                 alignItems: 'center',
                 border: `1px solid ${C.forest}`,
-                borderRadius: 8,
+                borderRadius: 10,
                 overflow: 'hidden',
                 background: C.ivory,
                 flexShrink: 0,
@@ -236,17 +182,9 @@ export default function ProductCard({ product: p }) {
                 onClick={decreaseQty}
                 style={qtyButtonStyle}
               >
-                <Minus size={12} />
+                <Minus size={14} />
               </button>
-              <span
-                style={{
-                  textAlign: 'center',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: C.forest,
-                  lineHeight: '28px',
-                }}
-              >
+              <span style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: C.forest }}>
                 {cartItem.qty}
               </span>
               <button
@@ -255,25 +193,25 @@ export default function ProductCard({ product: p }) {
                 onClick={increaseQty}
                 style={qtyButtonStyle}
               >
-                <Plus size={12} />
+                <Plus size={14} />
               </button>
             </div>
           ) : (
             <button
+              type="button"
               aria-label={p.stock === 0 ? `${p.name} sold out` : `Add ${p.name} to cart`}
               disabled={p.stock === 0}
-              onClick={(e) => {
-                e.stopPropagation()
+              onClick={() => {
                 if (p.stock !== 0) addItem(p)
               }}
-              onKeyDown={stopCardNavigation}
               style={{
                 background: p.stock === 0 ? C.light : C.forest,
                 color: 'white',
                 border: 'none',
-                borderRadius: 8,
-                padding: '6px 12px',
-                fontSize: 11,
+                borderRadius: 10,
+                minHeight: 40,
+                padding: '8px 14px',
+                fontSize: 12,
                 fontWeight: 600,
                 cursor: p.stock === 0 ? 'not-allowed' : 'pointer',
                 fontFamily: 'inherit',
@@ -284,13 +222,40 @@ export default function ProductCard({ product: p }) {
           )}
         </div>
       </div>
-    </motion.div>
+    </motion.article>
+  )
+}
+
+function ProductBadge({
+  label,
+  background,
+  title,
+}: {
+  label: string
+  background: string
+  title?: string
+}) {
+  return (
+    <span
+      title={title}
+      style={{
+        fontSize: 8,
+        fontWeight: 700,
+        padding: '2px 7px',
+        borderRadius: 99,
+        background,
+        color: 'white',
+        letterSpacing: '0.06em',
+      }}
+    >
+      {label}
+    </span>
   )
 }
 
 const qtyButtonStyle = {
-  width: 28,
-  height: 28,
+  width: 40,
+  height: 40,
   border: 'none',
   background: 'none',
   color: C.forest,

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isRateLimited } from '@/lib/rate-limit'
 import {
   createCheckoutSession,
   createRazorpayOrder,
@@ -9,6 +10,12 @@ import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
 
 export async function POST(request: Request) {
   try {
+    if (await isRateLimited(request, 'checkout_create', 10, 60)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again shortly.' },
+        { status: 429 }
+      )
+    }
     const body = await request.json()
     const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
     const address = validateAddress(body?.address)

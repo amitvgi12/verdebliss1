@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * CookieConsent.jsx — GDPR/CCPA compliant cookie consent banner (11.7)
  *

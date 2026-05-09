@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { permanentRedirect } from 'next/navigation'
-import { getProductServer } from '@/lib/products-server'
+import { getApprovedReviewsServer, getProductServer } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
 import { absoluteUrl, productImagePath, productPath, StructuredData } from '@/lib/seo'
 import type { Product } from '@/types'
@@ -77,10 +77,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     permanentRedirect(productPath(product))
   }
 
+  const initialReviews = product ? await getApprovedReviewsServer(product.id) : []
+
   return (
     <>
       {product && <StructuredData data={productJsonLd(product)} />}
-      <ProductDetailClient id={id} initialProduct={product} />
+      <ProductDetailClient id={id} initialProduct={product} initialReviews={initialReviews} />
     </>
   )
 }

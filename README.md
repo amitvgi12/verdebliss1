@@ -1,244 +1,164 @@
-# VerdeBliss — Certified Organic Skincare
+# VerdeBliss — Next.js D2C Organic Skincare Storefront
 
-Production e-commerce platform for VerdeBliss, a luxury organic skincare brand from India. Built on Next.js 16 App Router with Supabase, Razorpay, and an AI-powered support chatbot.
+Production-oriented D2C storefront for VerdeBliss organic cosmetics. The app uses Next.js App Router, TypeScript, Tailwind tooling, Supabase Postgres/Auth/RLS, Razorpay Checkout, and a Gemini-powered support chatbot.
 
-**Live site:** [www.verdebliss.com](https://www.verdebliss.com)
+Live site: https://www.verdebliss.com/
 
----
+## Current architecture
 
-## Stack
-
-- **Framework:** Next.js 16 (App Router) · React 19
-- **Styling:** CSS-in-JS via inline styles + design tokens (`constants/theme.js`)
-- **Fonts:** `next/font/google` — Cormorant Garamond + DM Sans (zero layout shift, self-hosted at build)
-- **State:** Zustand (cart, auth, wishlist, toast) with `persist` middleware
-- **Backend:** Supabase (Postgres + Auth + RLS + Edge Functions)
-- **Payments:** Razorpay Checkout SDK (UPI / Cards / Net Banking / EMI)
-- **AI Chatbot:** Google Gemini 2.5 Flash (with 2.0-flash fallback) via server-side route handler
-- **Animation:** Framer Motion (with `useReducedMotion` for WCAG 2.3.3 compliance)
-- **Testing:** Vitest + React Testing Library + JSDOM
-- **Linting:** ESLint 9 (flat config) + Prettier 3
-- **Hosting:** Vercel (CI/CD via GitHub Actions)
-
----
-
-## Project Structure
-
-```
-verdebliss/
-├── app/                          ← Next.js App Router (only routing surface)
-│   ├── layout.jsx                ← Root layout, metadata, JSON-LD, MotionProvider
-│   ├── page.jsx                  ← Home
-│   ├── globals.css               ← Skip-link, focus-visible, reduced motion, .sr-only
-│   ├── account/                  ← My Account dashboard
-│   ├── api/chat/route.js         ← Gemini AI chatbot proxy
-│   ├── blog/                     ← Journal index + dynamic [slug] posts
-│   ├── checkout/                 ← Razorpay checkout (with order persistence)
-│   ├── contact/, our-story/, ingredients/, sustainability/, press/
-│   ├── faq/                      ← FAQ with FAQPage JSON-LD schema
-│   ├── products/                 ← Listing + dynamic [id] detail (SSR Product JSON-LD)
-│   └── quiz/                     ← Skin Quiz with recommendation engine
-├── components/
-│   ├── features/
-│   │   ├── cart/CartDrawer.jsx
-│   │   ├── chat/ChatBot.jsx
-│   │   ├── loyalty/LoyaltyPanel.jsx
-│   │   ├── reviews/ReviewSection.jsx   ← Customer review submission + display
-│   │   └── search/SearchBar.jsx        ← With aria-live region
-│   ├── layout/
-│   │   ├── Footer.jsx
-│   │   └── Nav.jsx
-│   └── ui/
-│       ├── AuthInitializer.jsx
-│       ├── Badge.jsx, CookieConsent.jsx, IngredientCard.jsx, LegalModal.jsx
-│       ├── MotionProvider.jsx          ← WCAG 2.3.3 reduced-motion wrapper
-│       ├── ProductCard.jsx, ProductImage.jsx (next/image)
-│       └── SkeletonCard.jsx, Stars.jsx, Toast.jsx
-├── constants/
-│   ├── productCompliance.js      ← INCI, allergens, PAO per SKU
-│   ├── products.js               ← Product catalogue (8 SKUs)
-│   ├── shipping.js               ← FREE_SHIPPING_THRESHOLD (single source)
-│   └── theme.js                  ← Design tokens (incl. WCAG-AA goldText)
-├── hooks/
-│   ├── useProducts.js            ← Server + client fetchers
-│   └── useWindowWidth.js
-├── lib/
-│   ├── supabase.js               ← Client SDK
-│   └── products-server.js        ← getProductServer / getProductsServer
-├── store/
-│   ├── authStore.js              ← Supabase auth + profile
-│   ├── cartStore.js              ← Persisted cart (localStorage)
-│   ├── toastStore.js
-│   └── wishlistStore.js          ← Synced to Supabase when logged in
-├── public/
-│   ├── images/                   ← /products/*.webp, /ingredients/*.webp
-│   ├── favicon.svg, manifest.json
-│   ├── robots.txt                ← Sitemap directive points to verdebliss.com
-│   └── sitemap.xml               ← All product/blog/static URLs (verdebliss.com)
-├── supabase/
-│   ├── schema.sql                ← Tables + RLS + increment_points RPC
-│   └── seed_test_data.sql        ← Test users (kavya, rahul, priya)
-├── tests/                        ← Vitest unit + component tests
-├── .github/workflows/main.yml    ← Lint → test → preview → production
-├── eslint.config.mjs             ← ESLint 9 flat config (browser/node/vitest globals)
-├── next.config.js                ← 6 security headers, CSP, immutable cache
-├── package.json
-├── tsconfig.json                 ← TS support enabled (allowJs)
-├── vercel.json                   ← Framework: nextjs, installCommand: npm ci
-└── vitest.config.js              ← ESM-compatible (fileURLToPath)
+```text
+Customer browser
+  ├─ Next.js App Router pages and client components
+  ├─ Zustand cart/auth/wishlist/toast stores
+  └─ Razorpay Checkout modal
+       ↓
+Next.js server routes
+  ├─ /api/checkout/create-razorpay-order
+  ├─ /api/checkout/verify-razorpay
+  ├─ /api/checkout/cod
+  ├─ /api/webhooks/razorpay
+  ├─ /api/contact
+  ├─ /api/newsletter
+  ├─ /api/refunds/request
+  ├─ /api/chat
+  └─ /api/version
+       ↓
+Supabase Postgres + RLS
+  ├─ products, profiles
+  ├─ checkout_sessions
+  ├─ orders, order_items
+  ├─ payment_events
+  ├─ inventory_movements
+  ├─ loyalty_ledger
+  ├─ reviews
+  ├─ refunds
+  ├─ contact_tickets, customer_consents
+  └─ api_rate_limits
 ```
 
----
+## Key production controls
 
-## Setup
+- Checkout is server-owned. The browser cannot directly create paid orders.
+- Razorpay order creation happens in `/api/checkout/create-razorpay-order`.
+- Razorpay success is verified in `/api/checkout/verify-razorpay` using the server secret.
+- Webhook events are verified in `/api/webhooks/razorpay` with `RAZORPAY_WEBHOOK_SECRET`.
+- Final order creation uses the `public.finalize_commerce_order(...)` Postgres RPC so order, items, inventory, payment event, and loyalty points commit atomically.
+- Supabase RLS prevents customers from inserting or mutating orders, payment events, inventory movements, or loyalty points directly.
+- Public APIs use database-backed rate limiting via `public.check_api_rate_limit(...)` with a local fallback for development.
+- Product detail pages redirect numeric IDs to slug URLs and render Product JSON-LD with shipping/returns data.
+- Approved product reviews are server-rendered on first load and hydrated client-side for review submission.
+- Product cards use semantic `article`, `Link`, and `button` controls instead of clickable parent `div`s.
 
-### 1. Install
+## Tech stack
+
+- Next.js 15 App Router
+- React 19
+- TypeScript
+- Tailwind CSS tooling
+- Supabase Postgres, Auth, RLS
+- Razorpay Checkout
+- Google Gemini API for support chatbot
+- Zustand for client state
+- Framer Motion for selected interactions
+- Vitest + React Testing Library
+- ESLint flat config + Prettier
+
+## Repository structure
+
+```text
+app/                         Next.js App Router pages and API routes
+components/                  UI, layout, cart, chat, review components
+constants/                   Product, theme, shipping, compliance constants
+hooks/                       Product/window hooks
+lib/                         Commerce, SEO, Supabase, rate-limit helpers
+store/                       Zustand stores
+supabase/                    Idempotent schema and seed data
+tests/                       Unit/component tests
+public/                      Optimized assets, manifest, robots
+```
+
+## Environment variables
+
+Create `.env.local` for local development and configure the same values in Vercel for deployment.
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_or_live_xxxxx
+RAZORPAY_KEY_ID=rzp_test_or_live_xxxxx
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+
+GEMINI_API_KEY=
+NEXT_PUBLIC_GIT_SHA=local
+NEXT_PUBLIC_BUILD_TIME=local
+```
+
+Notes:
+
+- `NEXT_PUBLIC_RAZORPAY_KEY_ID` is safe for the browser.
+- `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY` must remain server-only.
+- GitHub Secrets do not automatically become Vercel runtime variables unless the deployment workflow passes them through.
+
+## Supabase setup
+
+Run in this order:
+
+```sql
+-- 1. Required schema, safe to re-run
+supabase/schema.sql
+
+-- 2. Optional demo/test data
+supabase/seed_test_data.sql
+```
+
+The schema is idempotent. It uses `create table if not exists`, `alter table ... add column if not exists`, `drop policy if exists`, and `drop trigger if exists` where appropriate.
+
+## Razorpay setup
+
+1. Add `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_ID`, and `RAZORPAY_KEY_SECRET`.
+2. Configure webhook URL:
+
+```text
+https://www.verdebliss.com/api/webhooks/razorpay
+```
+
+3. Add the webhook secret to `RAZORPAY_WEBHOOK_SECRET`.
+4. Enable at least `payment.captured` and `payment.authorized` events.
+
+## Development
 
 ```bash
 npm ci
+npm run dev
 ```
 
-### 2. Environment
-
-Copy `.env.example` to `.env.local` and fill in:
+## Validation commands
 
 ```bash
-# Supabase — public keys
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
-
-# Razorpay — public browser key and server credentials
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxx
-RAZORPAY_KEY_ID=rzp_test_xxx
-RAZORPAY_KEY_SECRET=your_razorpay_key_secret
-RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
-
-# Gemini — server-side ONLY (no NEXT_PUBLIC_ prefix)
-GEMINI_API_KEY=AIzaxxx
+npm run format:check
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
 ```
 
-### 3. Database
+## Production deployment checklist
 
-Run `supabase/schema.sql` in your Supabase SQL Editor to create:
+1. Run `supabase/schema.sql`.
+2. Confirm all server-only environment variables are configured in Vercel Production.
+3. Configure Razorpay webhook and secret.
+4. Deploy.
+5. Open `/api/version` and verify the deployed Git SHA/build time.
+6. Test checkout with Razorpay test keys.
+7. Test COD, contact, newsletter, review submission, refund request, and chatbot flows.
+8. Clear browser cart/localStorage if old cart rows contain stale product IDs.
 
-- `profiles`, `orders`, `wishlist`, `reviews` tables
-- RLS policies (users read own data only)
-- `increment_points(user_id, points)` RPC function
+## Documentation files retained
 
-For seed data: run `supabase/seed_test_data.sql` (creates 3 test accounts).
-
-### 4. Develop
-
-```bash
-npm run dev          # http://localhost:3000
-npm run build        # Production build
-npm start            # Run production server
-```
-
----
-
-## Scripts
-
-| Command                 | Purpose                                                  |
-| ----------------------- | -------------------------------------------------------- |
-| `npm run dev`           | Next.js dev server with HMR                              |
-| `npm run build`         | Production build (static generation for products + blog) |
-| `npm start`             | Run production server                                    |
-| `npm run lint`          | ESLint check                                             |
-| `npm run format`        | Prettier write                                           |
-| `npm run format:check`  | Prettier check (CI)                                      |
-| `npm test`              | Vitest run once                                          |
-| `npm run test:watch`    | Vitest watch mode                                        |
-| `npm run test:coverage` | Coverage report (v8)                                     |
-
----
-
-## Test Accounts
-
-After running `seed_test_data.sql`, sign in with:
-
-| Email                 | Password     | Tier               | Points | Orders |
-| --------------------- | ------------ | ------------------ | ------ | ------ |
-| kavya@verdebliss.test | TestPass123! | Gold Botanist      | 620    | 3      |
-| rahul@verdebliss.test | TestPass123! | Green Leaf         | 85     | 1      |
-| priya@verdebliss.test | TestPass123! | Platinum Alchemist | 1750   | 5      |
-
----
-
-## Audit Compliance
-
-This codebase has all 26 audit fixes from the May 2026 site audit applied. Highlights:
-
-### Critical
-
-- **2.1** `MotionProvider` wraps app in `MotionConfig` so Framer Motion respects OS-level `prefers-reduced-motion` (WCAG 2.3.3)
-- **2.2** `next/image` in `ProductImage` — automatic WebP/AVIF, responsive sizes, lazy loading, CLS prevention
-- **2.3** Prettier 3 with `.prettierrc` and `format` script
-
-### SEO & Performance
-
-- **3.1/3.2** `sitemap.xml` and `robots.txt` use canonical `verdebliss.com` (not vercel.app)
-- **3.3** Per-product SSR metadata + `generateStaticParams` pre-renders all 8 product pages with Product JSON-LD
-- **3.6** FAQ page with `FAQPage` JSON-LD schema for Google rich snippets
-- **4.5** `next/font/google` replaces synchronous Google Fonts `<link>`
-- **4.6** Hero image preloaded with `fetchPriority="high"`
-
-### Accessibility (WCAG 2.1)
-
-- **6.1** Skip-to-content link in `globals.css`
-- **6.2** `*:focus-visible` ring (2px solid forest, 3px offset)
-- **6.6** `SearchBar` `aria-live="polite"` region announces results to screen readers
-- **6.7** `goldText` token (#8B6914) for small text on light backgrounds — WCAG AA compliant 4.5:1 contrast
-- **6.8** All accordion buttons have `aria-expanded` + `aria-controls`
-
-### E-Commerce
-
-- **7.4** Customer review submission UI with star picker, validation, pending-moderation flow
-- **7.5** 5-question Skin Quiz at `/quiz` with recommendation engine + 10% bundle discount CTA
-- **7.9** Sold Out badge + disabled Add button when `stock=0`
-- **7.10** FAQ page at `/faq` with 12 Q&A pairs
-- **8.7** `shipping.js` constants imported into `CheckoutClient` and `CartDrawer` (single source of truth)
-- **8.9** `increment_points` PostgreSQL RPC awards loyalty points + recalculates tier atomically
-
-### Compliance (Section 11)
-
-- **11.2** Full INCI ingredient lists for all 8 SKUs in descending concentration order
-- **11.3** Allergen warnings + patch test notice on every product page
-- **11.4** Cruelty-Free + Vegan certification badges link externally to leapingbunny.org / peta.org
-- **11.5** "100% Natural" replaced with verifiable "95%+ Organic Ingredients"
-- **11.6/11.9** FTC disclaimers + Verified Purchase tags on testimonials
-- **11.7** GDPR/CCPA-compliant cookie consent with granular essential/analytics/marketing toggles
-- **11.10** PAO (Period After Opening) symbols (12M / 18M) on all products
-
-### Security
-
-- **5.1** All 6 security headers: HSTS, X-Frame-Options DENY, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy
-- **5.2** Content Security Policy whitelisting Supabase, Razorpay, Gemini API
-- **5.3** `GEMINI_API_KEY` server-side only (no `NEXT_PUBLIC_` prefix) — proxied through `/api/chat`
-- **5.4** Rate limiting (20 req/min/IP) on chat API
-
-### Code Quality
-
-- **8.1** ESLint 9 flat config with proper browser/node/vitest globals per file pattern
-- **8.2** All CI jobs use `npm ci` (not `npm install`) for reproducible builds
-- **8.3** `vitest.config.js` ESM-compatible via `fileURLToPath(import.meta.url)`
-
----
-
-## Deployment
-
-Push to `main` → GitHub Actions runs lint + tests → Vercel deploys automatically.
-
-For manual deploy:
-
-```bash
-vercel deploy --prod
-```
-
-Required Vercel env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, and optionally `GEMINI_API_KEY`.
-
----
-
-## License
-
-Proprietary — VerdeBliss Cosmetics Pvt. Ltd. © 2026
+- `README.md` — current architecture, setup, validation, deployment.
+- `PRODUCTION_NOTES.md` — production-hardening notes and known follow-ups.
+- `QA_TEST_CASES.md` — manual QA checklist.
+- `supabase/README_RUN_SCHEMA.md` — Supabase SQL run notes.

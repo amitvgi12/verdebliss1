@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isRateLimited } from '@/lib/rate-limit'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
 const EMAIL_RE = /\S+@\S+\.\S+/
@@ -13,6 +14,12 @@ const TOPICS = new Set([
 
 export async function POST(request: Request) {
   try {
+    if (await isRateLimited(request, 'contact', 5, 60)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again shortly.' },
+        { status: 429 }
+      )
+    }
     const body = await request.json()
     const name = String(body?.name ?? '').trim()
     const email = String(body?.email ?? '')

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -87,7 +86,8 @@ export default function Nav() {
               priority
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
-                e.currentTarget.nextElementSibling.style.display = 'block'
+                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null
+                if (fallback) fallback.style.display = 'block'
               }}
             />
             <span

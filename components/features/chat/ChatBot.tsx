@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 /**
  * ChatBot.jsx — Context-aware support + beauty advisor
@@ -69,7 +68,7 @@ export default function ChatBot() {
   }, [msgs, loading])
 
   /* ── Send message ───────────────────────────────────────────────── */
-  const send = async (text) => {
+  const send = async (text?: string) => {
     const msg = (text ?? input).trim()
     if (!msg || loading) return
     setInput('')

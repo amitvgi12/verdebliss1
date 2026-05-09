@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 /**
  * QuizClient.jsx — Skin Quiz / Recommendation Engine
@@ -20,6 +19,7 @@ import { useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/store/cartStore'
 import ProductCard from '@/components/ui/ProductCard'
 import { C, FONT } from '@/constants/theme'
+import type { Product } from '@/types'
 
 const QUESTIONS = [
   {
@@ -82,7 +82,7 @@ const QUESTIONS = [
  * Always includes: cleanser + moisturiser + SPF (universal essentials).
  * Adds targeted treatments based on concern + age + skin type.
  */
-function findCatalogProduct(catalog, fallbackId) {
+function findCatalogProduct(catalog: Product[], fallbackId: string): Product | undefined {
   const fallback = PRODUCTS.find((p) => p.id === fallbackId)
   return (
     catalog.find((p) => String(p.id) === String(fallbackId)) ||
@@ -91,8 +91,11 @@ function findCatalogProduct(catalog, fallbackId) {
   )
 }
 
-function recommend(answers, catalog = PRODUCTS) {
-  const set = new Set()
+function recommend(
+  answers: Record<string, string>,
+  catalog: Product[] = PRODUCTS as Product[]
+): Product[] {
+  const set = new Set<string>()
 
   // Universal essentials
   set.add('4') // Turmeric Brightening Cleanser
@@ -119,7 +122,7 @@ function recommend(answers, catalog = PRODUCTS) {
   // Budget cap
   let products = Array.from(set)
     .map((id) => findCatalogProduct(catalog, id))
-    .filter(Boolean)
+    .filter((product): product is Product => Boolean(product))
 
   if (answers.budget === 'under_3k') {
     products = products.slice(0, 3)
@@ -136,13 +139,13 @@ export default function QuizClient() {
   const openCart = useCartStore((s) => s.openCart)
 
   const [step, setStep] = useState(0) // 0..QUESTIONS.length-1
-  const [answers, setAnswers] = useState({})
+  const [answers, setAnswers] = useState<Record<string, string>>({})
   const [done, setDone] = useState(false)
 
   const q = QUESTIONS[step]
   const isLast = step === QUESTIONS.length - 1
 
-  function pick(qid, value) {
+  function pick(qid: string, value: string) {
     setAnswers((a) => ({ ...a, [qid]: value }))
     if (step < QUESTIONS.length - 1) {
       setTimeout(() => setStep(step + 1), 220)
@@ -154,14 +157,14 @@ export default function QuizClient() {
   }
 
   function addBundleToCart() {
-    const products = recommend(answers, catalog.length ? catalog : PRODUCTS)
+    const products = recommend(answers, (catalog.length ? catalog : PRODUCTS) as Product[])
     products.forEach((p) => addItem(p))
     openCart()
   }
 
   /* ── Result screen ────────────────────────────────────────── */
   if (done) {
-    const products = recommend(answers, catalog.length ? catalog : PRODUCTS)
+    const products = recommend(answers, (catalog.length ? catalog : PRODUCTS) as Product[])
     const subtotal = products.reduce((s, p) => s + p.price, 0)
     const bundle = Math.round(subtotal * 0.9)
 

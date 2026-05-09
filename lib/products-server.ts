@@ -2,6 +2,15 @@ import { PRODUCTS } from '@/constants/products'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
+export interface ApprovedReview {
+  id: string
+  rating: number
+  title: string | null
+  body: string | null
+  created_at: string
+  profiles?: { full_name?: string | null } | null
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function staticProductByIdOrSlug(idOrSlug: string): Product | null {
@@ -56,4 +65,27 @@ export async function getProductServer(idOrSlug: string): Promise<Product | null
   }
 
   return staticProductByIdOrSlug(idOrSlug)
+}
+
+export async function getApprovedReviewsServer(
+  productId: string,
+  limit = 5
+): Promise<ApprovedReview[]> {
+  if (!hasSupabaseAdminEnv()) return []
+
+  try {
+    const supabase = createSupabaseAdmin()
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('id, rating, title, body, created_at, profiles(full_name)')
+      .eq('product_id', productId)
+      .eq('approved', true)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) return []
+    return (data ?? []) as unknown as ApprovedReview[]
+  } catch {
+    return []
+  }
 }

@@ -230,6 +230,10 @@ create table if not exists public.loyalty_ledger (
   created_at    timestamptz default now()
 );
 
+create unique index if not exists loyalty_ledger_order_event_unique_idx
+  on public.loyalty_ledger (order_id, event_type)
+  where order_id is not null;
+
 
 create table if not exists public.inventory_movements (
   id          uuid primary key default uuid_generate_v4(),
@@ -325,6 +329,54 @@ create table if not exists public.customer_consents (
   created_at    timestamptz default now(),
   unique(email, consent_type)
 );
+
+
+create table if not exists public.api_rate_limits (
+  key         text primary key,
+  count       int not null default 0,
+  reset_at    timestamptz not null,
+  updated_at  timestamptz default now()
+);
+
+
+
+create or replace function public.check_api_rate_limit(
+  p_key text,
+  p_limit int,
+  p_window_seconds int
+) returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_allowed boolean;
+begin
+  if p_limit <= 0 then
+    return false;
+  end if;
+
+  insert into public.api_rate_limits (key, count, reset_at, updated_at)
+  values (p_key, 1, now() + make_interval(secs => greatest(p_window_seconds, 1)), now())
+  on conflict (key) do update set
+    count = case
+      when public.api_rate_limits.reset_at <= now() then 1
+      else public.api_rate_limits.count + 1
+    end,
+    reset_at = case
+      when public.api_rate_limits.reset_at <= now()
+        then now() + make_interval(secs => greatest(p_window_seconds, 1))
+      else public.api_rate_limits.reset_at
+    end,
+    updated_at = now()
+  returning count <= p_limit into v_allowed;
+
+  return coalesce(v_allowed, false);
+end;
+$$;
+
+revoke all on function public.check_api_rate_limit(text, int, int) from public, anon, authenticated;
+grant execute on function public.check_api_rate_limit(text, int, int) to service_role;
 
 -- ── Helper functions ────────────────────────────────
 create or replace function public.is_staff()
@@ -527,6 +579,159 @@ $$;
 revoke all on function public.reserve_inventory_for_order(uuid, jsonb) from public, anon, authenticated;
 grant execute on function public.reserve_inventory_for_order(uuid, jsonb) to service_role;
 
+
+-- Atomic order finalisation used by the service-role checkout API. This keeps
+-- payment reconciliation, stock reservation, order line items, and loyalty
+-- points inside one database transaction. If any step fails, Postgres rolls back
+-- the entire function call.
+create or replace function public.finalize_commerce_order(
+  p_user_id uuid,
+  p_status text,
+  p_payment_status text,
+  p_payment_method text,
+  p_payment_id text,
+  p_payment_order_id text,
+  p_address jsonb,
+  p_items jsonb,
+  p_subtotal numeric,
+  p_shipping numeric,
+  p_total numeric,
+  p_points_to_earn int,
+  p_award_points boolean,
+  p_raw_payment_payload jsonb
+) returns table(order_id uuid, points_awarded boolean, idempotent boolean)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_order_id uuid;
+  v_existing record;
+  v_item jsonb;
+  v_qty int;
+  v_line_total numeric;
+  v_provider text;
+  v_points int := greatest(coalesce(p_points_to_earn, 0), 0);
+  v_stock_rows int;
+begin
+  if coalesce(trim(p_payment_id), '') = '' then
+    raise exception 'Payment id is required';
+  end if;
+
+  select id, coalesce(points_earned, 0) as points_earned
+  into v_existing
+  from public.orders
+  where payment_id = p_payment_id
+  limit 1;
+
+  if v_existing.id is not null then
+    order_id := v_existing.id;
+    points_awarded := v_existing.points_earned > 0;
+    idempotent := true;
+    return next;
+    return;
+  end if;
+
+  if jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 then
+    raise exception 'Order items are required';
+  end if;
+
+  insert into public.orders (
+    user_id, status, subtotal, shipping, total, points_earned, items, address,
+    payment_id, payment_order_id, payment_status
+  ) values (
+    p_user_id,
+    coalesce(nullif(trim(p_status), ''), 'Processing'),
+    round(coalesce(p_subtotal, 0), 2),
+    round(coalesce(p_shipping, 0), 2),
+    round(coalesce(p_total, 0), 2),
+    case when coalesce(p_award_points, false) and p_user_id is not null then v_points else 0 end,
+    p_items,
+    coalesce(p_address, '{}'::jsonb),
+    p_payment_id,
+    nullif(trim(coalesce(p_payment_order_id, '')), ''),
+    coalesce(nullif(trim(p_payment_status), ''), 'pending')
+  ) returning id into v_order_id;
+
+  for v_item in select * from jsonb_array_elements(p_items)
+  loop
+    v_qty := greatest(coalesce((v_item->>'qty')::int, 0), 0);
+    if v_qty <= 0 then
+      raise exception 'Invalid quantity for product %', v_item->>'id';
+    end if;
+
+    update public.products
+    set stock = stock - v_qty,
+        updated_at = now()
+    where id::text = v_item->>'id'
+      and stock >= v_qty;
+
+    get diagnostics v_stock_rows = row_count;
+    if v_stock_rows = 0 then
+      raise exception 'Insufficient stock for product %', v_item->>'id';
+    end if;
+
+    v_line_total := round(coalesce((v_item->>'price')::numeric, 0) * v_qty, 2);
+
+    insert into public.order_items (order_id, product_id, product_name, quantity, unit_price, line_total)
+    values (
+      v_order_id,
+      v_item->>'id',
+      coalesce(nullif(v_item->>'name', ''), 'Product'),
+      v_qty,
+      round(coalesce((v_item->>'price')::numeric, 0), 2),
+      v_line_total
+    );
+
+    insert into public.inventory_movements (order_id, product_id, quantity, movement, reason)
+    values (v_order_id, v_item->>'id', -v_qty, 'reserve', 'checkout_finalised');
+  end loop;
+
+  v_provider := case when lower(coalesce(p_payment_method, '')) = 'cash on delivery' then 'cod' else 'razorpay' end;
+
+  insert into public.payment_events (
+    order_id, provider, provider_order_id, provider_payment_id, event_type,
+    amount, currency, verified, payload
+  ) values (
+    v_order_id,
+    v_provider,
+    nullif(trim(coalesce(p_payment_order_id, '')), ''),
+    p_payment_id,
+    coalesce(nullif(trim(p_payment_status), ''), 'pending'),
+    round(coalesce(p_total, 0), 2),
+    'INR',
+    p_payment_status = 'paid',
+    coalesce(p_raw_payment_payload, '{}'::jsonb)
+  ) on conflict do nothing;
+
+  points_awarded := false;
+  if coalesce(p_award_points, false) and p_user_id is not null and v_points > 0 then
+    insert into public.loyalty_ledger (user_id, order_id, event_type, points_delta, reason)
+    values (p_user_id, v_order_id, 'order_payment_verified', v_points, 'Verified payment ' || p_payment_id)
+    on conflict do nothing;
+
+    update public.profiles
+    set points = points + v_points,
+        tier = case
+          when points + v_points >= 1500 then 'Platinum Alchemist'
+          when points + v_points >= 500 then 'Gold Botanist'
+          else 'Green Leaf'
+        end,
+        updated_at = now()
+    where id = p_user_id;
+
+    points_awarded := true;
+  end if;
+
+  order_id := v_order_id;
+  idempotent := false;
+  return next;
+end;
+$$;
+
+revoke all on function public.finalize_commerce_order(uuid, text, text, text, text, text, jsonb, jsonb, numeric, numeric, numeric, int, boolean, jsonb) from public, anon, authenticated;
+grant execute on function public.finalize_commerce_order(uuid, text, text, text, text, text, jsonb, jsonb, numeric, numeric, numeric, int, boolean, jsonb) to service_role;
+
 -- Removed unsafe legacy RPC from prior versions.
 drop function if exists public.increment_points(uuid, int);
 
@@ -545,6 +750,7 @@ alter table public.addresses enable row level security;
 alter table public.refunds enable row level security;
 alter table public.contact_tickets enable row level security;
 alter table public.customer_consents enable row level security;
+alter table public.api_rate_limits enable row level security;
 
 -- Drop previous and unsafe policy names before recreating hardened policies.
 drop policy if exists "Anyone can view products" on public.products;

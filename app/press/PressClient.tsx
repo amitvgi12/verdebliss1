@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 /**
  * Press.jsx — Media & press page

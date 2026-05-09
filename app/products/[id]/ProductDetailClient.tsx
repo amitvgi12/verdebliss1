@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 /**
  * ProductDetail.jsx — By Nature–style product page
@@ -11,7 +10,7 @@
  *   11.10 — PAO (Period After Opening) indicator
  */
 
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -38,6 +37,7 @@ import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
+import type { ApprovedReview } from '@/lib/products-server'
 
 /* ── Per-ingredient INCI fallback ─────────────────────────────── */
 const HOW_TO_USE = [
@@ -84,7 +84,7 @@ const CERTIFICATIONS = [
 ]
 
 /* ── PAO symbol ───────────────────────────────────────────────── */
-function PAOSymbol({ months }) {
+function PAOSymbol({ months }: { months: number | string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <svg
@@ -162,7 +162,15 @@ function Accordion({ id, label, open, onToggle, children }) {
   )
 }
 
-export default function ProductDetailClient({ id, initialProduct }) {
+export default function ProductDetailClient({
+  id,
+  initialProduct,
+  initialReviews = [],
+}: {
+  id: string
+  initialProduct?: any
+  initialReviews?: ApprovedReview[]
+}) {
   // id passed as prop
   const router = useRouter()
   const width = useWindowWidth()
@@ -250,7 +258,7 @@ export default function ProductDetailClient({ id, initialProduct }) {
 
   const outerPad = isMobile ? '0 16px' : '0 24px'
   const sectionPad = isMobile ? '20px 16px 48px' : '32px 24px 64px'
-  const gridStyle = isMobile
+  const gridStyle: CSSProperties = isMobile
     ? { display: 'flex', flexDirection: 'column', gap: 0 }
     : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }
 
@@ -359,7 +367,7 @@ export default function ProductDetailClient({ id, initialProduct }) {
                   border: `1px solid ${C.border}`,
                 }}
               >
-                <PAOSymbol months={compliance.pao} productId={id} />
+                <PAOSymbol months={compliance.pao} />
                 <p style={{ fontSize: 10, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
                   Store in a cool, dry place away from direct sunlight. Best before date printed on
                   packaging.
@@ -985,7 +993,7 @@ export default function ProductDetailClient({ id, initialProduct }) {
       </div>
 
       {/* Customer reviews */}
-      <ReviewSection productId={id} />
+      <ReviewSection productId={p.id} initialReviews={initialReviews} />
     </div>
   )
 }

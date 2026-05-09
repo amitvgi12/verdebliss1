@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 /**
  * Checkout.jsx — /checkout
@@ -13,7 +12,7 @@
  * The Razorpay script is loaded dynamically only on this page (not every page).
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type CSSProperties, type ChangeEvent, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -30,6 +29,34 @@ import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '
 import ProductImage from '@/components/ui/ProductImage'
 import { useAuthStore } from '@/store/authStore'
 import { C, FONT } from '@/constants/theme'
+import type { CartItem } from '@/types'
+
+type CheckoutForm = {
+  name: string
+  email: string
+  phone: string
+  line1: string
+  line2: string
+  city: string
+  state: string
+  pincode: string
+}
+
+type CheckoutErrors = Partial<Record<keyof CheckoutForm, string>>
+type CheckoutStatus = null | 'success' | 'failed'
+type PaymentAction = null | 'razorpay' | 'cod'
+type CheckoutResult = {
+  paymentId?: string
+  orderId?: string
+  paymentMethod?: string
+  [key: string]: unknown
+}
+type RazorpaySuccess = {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+type RazorpayFailure = { error?: unknown }
 
 /* ── Load Razorpay checkout script dynamically ─────────────────────── */
 function useRazorpayScript() {
@@ -53,7 +80,7 @@ function useRazorpayScript() {
 }
 
 /* ── Step indicator ────────────────────────────────────────────────── */
-function Steps({ current }) {
+function Steps({ current }: { current: number }) {
   const steps = ['Address', 'Review', 'Payment']
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 32 }}>
@@ -110,7 +137,19 @@ function Steps({ current }) {
 }
 
 /* ── Input field ───────────────────────────────────────────────────── */
-function Field({ id, label, required, error, children }) {
+function Field({
+  id,
+  label,
+  required = false,
+  error,
+  children,
+}: {
+  id: string
+  label: string
+  required?: boolean
+  error?: string
+  children: ReactNode
+}) {
   return (
     <div style={{ marginBottom: 16 }}>
       <label
@@ -133,7 +172,7 @@ function Field({ id, label, required, error, children }) {
   )
 }
 
-const inputStyle = (err) => ({
+const inputStyle = (err?: string | boolean): CSSProperties => ({
   width: '100%',
   padding: '11px 14px',
   border: `1px solid ${err ? C.terra : C.border}`,
@@ -148,26 +187,26 @@ const inputStyle = (err) => ({
 
 const COD_MAX_TOTAL = 500
 
-function cartPayload(items) {
+function cartPayload(items: CartItem[]) {
   return items.map((item) => ({ id: item.id, qty: item.qty }))
 }
 
-async function authHeaders() {
+async function authHeaders(): Promise<Record<string, string>> {
   const { supabase } = await import('@/lib/supabase')
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-async function postCheckout(url, payload) {
+async function postCheckout<T = CheckoutResult>(url: string, payload: unknown): Promise<T> {
   const headers = await authHeaders()
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify(payload),
   })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data?.error ?? 'Checkout request failed')
+  const data = (await res.json().catch(() => ({}))) as { error?: string } & T
+  if (!res.ok) throw new Error(data.error ?? 'Checkout request failed')
   return data
 }
 
@@ -183,15 +222,15 @@ export default function Checkout() {
   const profile = useAuthStore((s) => s.profile)
 
   const [step, setStep] = useState(0) // 0=address, 1=review, 2=paying
-  const [status, setStatus] = useState(null) // null | 'success' | 'failed'
+  const [status, setStatus] = useState<CheckoutStatus>(null) // null | 'success' | 'failed'
   const [paymentId, setPayId] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('')
   const [loading, setLoading] = useState(false)
-  const [paymentAction, setPaymentAction] = useState(null) // null | 'razorpay' | 'cod'
-  const [errors, setErrors] = useState({})
+  const [paymentAction, setPaymentAction] = useState<PaymentAction>(null) // null | 'razorpay' | 'cod'
+  const [errors, setErrors] = useState<CheckoutErrors>({})
   const [checkoutError, setCheckoutError] = useState('')
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<CheckoutForm>({
     name: profile?.full_name ?? user?.email?.split('@')[0] ?? '',
     email: user?.email ?? '',
     phone: '',
@@ -207,9 +246,10 @@ export default function Checkout() {
     if (items.length === 0 && status !== 'success') router.replace('/products')
   }, [items.length, router, status])
 
-  const set_ = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const set_ = (k: keyof CheckoutForm) => (e: ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }))
 
-  async function confirmOrder(result) {
+  async function confirmOrder(result: CheckoutResult) {
     setCheckoutError('')
     setPayId(result.paymentId || result.orderId || '')
     setPaymentMethod(result.paymentMethod || '')
@@ -228,7 +268,7 @@ export default function Checkout() {
 
   /* ── Validate address step ───────────────────────────────────────── */
   function validate() {
-    const e = {}
+    const e: CheckoutErrors = {}
     if (!form.name.trim()) e.name = 'Full name is required'
     if (!form.email.trim()) e.email = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email'
@@ -324,7 +364,7 @@ export default function Checkout() {
           },
         },
 
-        handler: async (response) => {
+        handler: async (response: RazorpaySuccess) => {
           try {
             const verified = await postCheckout('/api/checkout/verify-razorpay', {
               ...checkoutPayload(),
@@ -333,13 +373,13 @@ export default function Checkout() {
               razorpay_signature: response.razorpay_signature,
             })
             await confirmOrder(verified)
-          } catch (err) {
+          } catch (err: unknown) {
             console.error('[Checkout] Payment verification failed:', err)
             setStatus('failed')
             setLoading(false)
             setPaymentAction(null)
             setCheckoutError(
-              err?.message ??
+              (err instanceof Error ? err.message : undefined) ??
                 'Payment verification failed. Please contact support with your payment ID.'
             )
           }
@@ -347,18 +387,20 @@ export default function Checkout() {
       }
 
       const rzp = new window.Razorpay(options)
-      rzp.on('payment.failed', (response) => {
+      rzp.on('payment.failed', (response: RazorpayFailure) => {
         console.error('Razorpay payment failed:', response.error)
         setStatus('failed')
         setLoading(false)
         setPaymentAction(null)
       })
       rzp.open()
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('[Checkout] Could not create Razorpay order:', err)
       setLoading(false)
       setPaymentAction(null)
-      setCheckoutError(err?.message ?? 'Could not start payment. Please try again.')
+      setCheckoutError(
+        err instanceof Error ? err.message : 'Could not start payment. Please try again.'
+      )
     }
   }
 
@@ -376,11 +418,15 @@ export default function Checkout() {
     try {
       const order = await postCheckout('/api/checkout/cod', checkoutPayload())
       await confirmOrder(order)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('[Checkout] COD order failed:', err)
       setLoading(false)
       setPaymentAction(null)
-      setCheckoutError(err?.message ?? 'Could not place Cash on Delivery order. Please try again.')
+      setCheckoutError(
+        err instanceof Error
+          ? err.message
+          : 'Could not place Cash on Delivery order. Please try again.'
+      )
     }
   }
 
