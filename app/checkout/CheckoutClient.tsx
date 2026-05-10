@@ -58,19 +58,38 @@ type RazorpaySuccess = {
 }
 type RazorpayFailure = { error?: unknown }
 
-/* ── Load Razorpay checkout script dynamically ─────────────────────── */
+/* ── Load Razorpay checkout script dynamically ─────────────────────────
+ * Programmatic script injection. Razorpay's origin is allow-listed in the
+ * CSP (see middleware.ts) so this works without a nonce. We keep the script
+ * around across unmounts (re-loading on every checkout return is wasteful)
+ * and silently no-op when the iframe API has already been registered.
+ *
+ * Note for migration: a future refactor can replace this with `next/script`
+ * + `strategy="lazyOnload"` to integrate with Next's build pipeline, but
+ * that requires moving the load trigger into the React tree (Razorpay
+ * doesn't always boot reliably from `beforeInteractive` in App Router).
+ */
 function useRazorpayScript() {
   const [ready, setReady] = useState(false)
   useEffect(() => {
-    if (document.getElementById('razorpay-script')) {
+    if (typeof window === 'undefined') return
+    if (window.Razorpay) {
       setReady(true)
+      return
+    }
+    if (document.getElementById('razorpay-script')) {
+      // Already injected, possibly still loading — wait for it.
+      const existing = document.getElementById('razorpay-script') as HTMLScriptElement | null
+      if (existing) existing.addEventListener('load', () => setReady(true), { once: true })
       return
     }
     const script = document.createElement('script')
     script.id = 'razorpay-script'
     script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
     script.onload = () => setReady(true)
-    script.onerror = () => console.error('Failed to load Razorpay')
+    script.onerror = () =>
+      console.error('[Razorpay] Failed to load checkout script — verify CSP and network.')
     document.body.appendChild(script)
     return () => {
       /* keep script — don't remove on unmount */
@@ -202,7 +221,7 @@ async function postCheckout<T = CheckoutResult>(url: string, payload: unknown): 
   const headers = await authHeaders()
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...headers },
+    headers: { 'Content-Type': 'application/json', 'x-vb-client': 'web', ...headers },
     body: JSON.stringify(payload),
   })
   const data = (await res.json().catch(() => ({}))) as { error?: string } & T
@@ -387,8 +406,9 @@ export default function Checkout() {
       }
 
       const rzp = new window.Razorpay(options)
-      rzp.on('payment.failed', (response: RazorpayFailure) => {
-        console.error('Razorpay payment failed:', response.error)
+      rzp.on('payment.failed', (...args: unknown[]) => {
+        const response = args[0] as RazorpayFailure | undefined
+        console.error('Razorpay payment failed:', response?.error)
         setStatus('failed')
         setLoading(false)
         setPaymentAction(null)

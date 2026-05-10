@@ -1,29 +1,6 @@
-/**
- * IngredientCard.jsx
- *
- * Renders a real ingredient photograph stored in /public/ingredients/.
- * Vite serves /public at the site root, so the path in the browser is /ingredients/{file}.
- *
- * IMAGE FILE NAMES expected in /public/ingredients/:
- *   Bakuchiol    → bakuchiol.webp
- *   Rose Hip     → rose_hip.webp
- *   Green Tea    → greentealeaves.webp
- *   Turmeric     → turmeric.webp
- *   Zinc Oxide   → zinc.webp
- *   Acai Berry   → blueberries.webp
- *   Niacinamide  → niacinamide.webp
- *   Shea Butter  → shea.webp
- *
- * Add any new ingredient: just add its key → filename entry below.
- * If a file is missing the card shows a sage-green placeholder — never crashes.
- */
-
 import Image from 'next/image'
-import { useState } from 'react'
-import { C, FONT } from '@/constants/theme'
 
-/* ── Ingredient name → image filename map ───────────────────────────── */
-const IMAGE_MAP = {
+const IMAGE_MAP: Record<string, string> = {
   Bakuchiol: '/images/ingredients/bakuchiol.webp',
   'Rose Hip': '/images/ingredients/rose_hip.webp',
   'Green Tea': '/images/ingredients/greentealeaves.webp',
@@ -34,8 +11,7 @@ const IMAGE_MAP = {
   'Shea Butter': '/images/ingredients/shea.webp',
 }
 
-/* ── Background tints that match each ingredient's colour palette ────── */
-const BG_MAP = {
+const BG_MAP: Record<string, string> = {
   Bakuchiol: '#EAF4EB',
   'Rose Hip': '#FDE8EF',
   'Green Tea': '#E8F5E9',
@@ -56,91 +32,40 @@ export default function IngredientCard({
   imageHeight?: number
 }) {
   const src = IMAGE_MAP[ingredient]
-  const bg = BG_MAP[ingredient] ?? C.sagePale
-
-  // Track whether the image loaded successfully
-  const [imgFailed, setImgFailed] = useState(false)
+  const bg = BG_MAP[ingredient] ?? '#EAF0E8' /* sagePale */
 
   return (
-    <div
-      style={{
-        background: '#FDFAF6',
-        borderRadius: 16,
-        border: `1px solid ${C.border}`,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'box-shadow 0.2s, transform 0.2s',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = '0 8px 28px rgba(0,0,0,0.09)'
-        e.currentTarget.style.transform = 'translateY(-4px)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = 'none'
-        e.currentTarget.style.transform = 'translateY(0)'
-      }}
-    >
-      {/* ── Image area ── */}
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-[0_8px_28px_rgba(0,0,0,0.09)]">
       <div
-        style={{
-          height: imageHeight,
-          background: bg,
-          overflow: 'hidden',
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-        }}
+        className="relative flex flex-shrink-0 items-center justify-center overflow-hidden"
+        style={{ height: imageHeight, background: bg }}
       >
-        {src && !imgFailed ? (
+        {src ? (
           <Image
             src={src}
             alt={ingredient}
             fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            style={{
-              objectFit: 'cover',
-              objectPosition: 'center',
-              transition: 'transform 0.35s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.06)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)'
-            }}
-            onError={() => setImgFailed(true)}
+            sizes="(max-width: 768px) 50vw, 200px"
+            className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.06]"
           />
         ) : (
-          /* Placeholder shown when image is missing or failed to load */
-          <div style={{ textAlign: 'center', opacity: 0.5 }}>
-            <div style={{ fontSize: 52, marginBottom: 6 }}>🌿</div>
-            <div style={{ fontSize: 11, color: C.muted }}>Image coming soon</div>
+          <div className="text-center opacity-50">
+            <div className="mb-1.5 text-5xl">🌿</div>
+            <div className="text-[11px] text-muted">Image coming soon</div>
           </div>
         )}
       </div>
 
-      {/* ── Text ── */}
       {(ingredient || description) && (
-        <div style={{ padding: '14px 16px' }}>
+        <div className="px-4 py-3.5">
           {ingredient && (
-            <div
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: C.text,
-                marginBottom: description ? 4 : 0,
-                fontFamily: FONT.serif,
-              }}
+            <h3
+              className={`font-serif text-sm font-semibold text-text ${description ? 'mb-1' : ''}`}
             >
               {ingredient}
-            </div>
+            </h3>
           )}
-          {description && (
-            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>{description}</div>
-          )}
+          {description && <p className="text-xs leading-relaxed text-muted">{description}</p>}
         </div>
       )}
     </div>

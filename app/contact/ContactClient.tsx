@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
+import TurnstileWidget from '@/components/ui/TurnstileWidget'
 
 const TOPICS = [
   'Product question',
@@ -18,7 +19,7 @@ const TOPICS = [
 ]
 
 const CHANNELS = [
-  { icon: '📩', title: 'Email us', value: 'hello@verdebliss.in', sub: 'Response within 24 hours' },
+  { icon: '📩', title: 'Email us', value: 'hello@verdebliss.com', sub: 'Response within 24 hours' },
   { icon: '📞', title: 'Call us', value: '+91 20 6789 0123', sub: 'Mon–Sat, 9 AM–6 PM IST' },
   { icon: '💬', title: 'Live Chat', value: 'Via the chat bubble', sub: 'Available 9 AM–9 PM IST' },
   {
@@ -34,6 +35,8 @@ export default function ContactClient() {
   const [submitted, setSubmit] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const turnstileRequired = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
   const handleSubmit = async () => {
     setError('')
@@ -41,18 +44,22 @@ export default function ContactClient() {
       setError('Please enter your name, email, and message.')
       return
     }
+    if (turnstileRequired && !turnstileToken) {
+      setError('Please complete the bot check before sending.')
+      return
+    }
     setLoading(true)
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        headers: { 'Content-Type': 'application/json', 'x-vb-client': 'web' },
+        body: JSON.stringify({ ...form, turnstileToken }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.error ?? 'Could not send message')
       setSubmit(true)
     } catch (err) {
-      setError(err?.message ?? 'Could not send message. Please try again.')
+      setError(err instanceof Error ? err.message : 'Could not send message. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -311,6 +318,10 @@ export default function ContactClient() {
                   {error}
                 </div>
               )}
+              <TurnstileWidget
+                onToken={setTurnstileToken}
+                onExpire={() => setTurnstileToken(null)}
+              />
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleSubmit}

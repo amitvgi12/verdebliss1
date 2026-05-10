@@ -6,6 +6,7 @@ import { Search, X, ArrowRight } from 'lucide-react'
 import { PRODUCTS } from '@/constants/products'
 import { C } from '@/constants/theme'
 import { productPath } from '@/lib/seo'
+import type { Product } from '@/types'
 
 const STORAGE_KEY = 'verdebliss-recent-searches'
 
@@ -13,24 +14,25 @@ export default function SearchBar() {
   const router = useRouter()
   const [q, setQ] = useState('')
   const [focused, setFocused] = useState(false)
-  const [recent, setRecent] = useState(() => {
+  const [recent, setRecent] = useState<string[]>(() => {
     if (typeof window === 'undefined') return []
     try {
-      return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]')
+      const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]')
+      return Array.isArray(stored) ? (stored as string[]) : []
     } catch {
       return []
     }
   })
-  const inputRef = useRef(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const [cursor, setCursor] = useState(-1)
 
   // Fuzzy match helper
-  const fuzzy = (str, pattern) => {
-    const s = str.toLowerCase(),
-      p = pattern.toLowerCase()
-    let si = 0,
-      pi = 0,
-      score = 0
+  const fuzzy = (str: string, pattern: string) => {
+    const s = str.toLowerCase()
+    const p = pattern.toLowerCase()
+    let si = 0
+    let pi = 0
+    let score = 0
     while (si < s.length && pi < p.length) {
       if (s[si] === p[pi]) {
         score++
@@ -41,13 +43,15 @@ export default function SearchBar() {
     return pi === p.length ? score / p.length : 0
   }
 
-  const results =
+  const results: Product[] =
     q.length > 1
-      ? PRODUCTS.filter((p) => fuzzy(p.name + p.category + p.ingredient, q) > 0.4).slice(0, 6)
+      ? PRODUCTS.filter(
+          (p) => fuzzy(`${p.name}${p.category ?? ''}${p.ingredient ?? ''}`, q) > 0.4
+        ).slice(0, 6)
       : []
 
-  const saveRecent = (term) => {
-    const updated = [term, ...recent.filter((r) => r !== term)].slice(0, 5)
+  const saveRecent = (term: string) => {
+    const updated = [term, ...recent.filter((r: string) => r !== term)].slice(0, 5)
     setRecent(updated)
     if (typeof window !== 'undefined') {
       try {
@@ -58,14 +62,14 @@ export default function SearchBar() {
     }
   }
 
-  const go = (product) => {
+  const go = (product: Product) => {
     saveRecent(product.name)
     setQ('')
     setFocused(false)
     router.push(productPath(product))
   }
 
-  const handleKey = (e) => {
+  const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') setCursor((c) => Math.min(c + 1, results.length - 1))
     if (e.key === 'ArrowUp') setCursor((c) => Math.max(c - 1, -1))
     if (e.key === 'Enter' && cursor >= 0 && results[cursor]) go(results[cursor])
@@ -160,7 +164,7 @@ export default function SearchBar() {
                 >
                   RECENT
                 </div>
-                {recent.map((r) => (
+                {recent.map((r: string) => (
                   <button
                     key={r}
                     type="button"

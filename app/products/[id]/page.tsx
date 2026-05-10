@@ -1,18 +1,30 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 import { permanentRedirect } from 'next/navigation'
-import { getApprovedReviewsServer, getProductServer } from '@/lib/products-server'
+import {
+  getApprovedReviewsServer,
+  getProductServer,
+  getReviewAggregatesServer,
+} from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
-import { absoluteUrl, productImagePath, productPath, StructuredData } from '@/lib/seo'
+import { absoluteUrl, productImagePath, productPath } from '@/lib/seo'
+import { StructuredData } from '@/lib/structured-data'
+import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from '@/constants/shipping'
 import type { Product } from '@/types'
 
-function productJsonLd(product: Product) {
-  return {
+interface ReviewAggregate {
+  count: number
+  average: number
+}
+
+function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
+  const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.description,
     image: absoluteUrl(productImagePath(product)),
+    sku: product.id,
     brand: { '@type': 'Brand', name: 'VerdeBliss' },
     offers: {
       '@type': 'Offer',
@@ -21,13 +33,21 @@ function productJsonLd(product: Product) {
       availability:
         (product.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       url: absoluteUrl(productPath(product)),
+      // Honest shipping disclosure: Free shipping kicks in on cart subtotal,
+      // not single-product price. Quote the standard rate; the threshold is
+      // surfaced via the checkout UI / FAQ, not Schema-level conditional rates.
       shippingDetails: {
         '@type': 'OfferShippingDetails',
         shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
         shippingRate: {
           '@type': 'MonetaryAmount',
-          value: product.price >= 499 ? 0 : 79,
+          value: STANDARD_SHIPPING_COST,
           currency: 'INR',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
+          transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 3, unitCode: 'DAY' },
         },
       },
       hasMerchantReturnPolicy: {
@@ -39,14 +59,30 @@ function productJsonLd(product: Product) {
         returnFees: 'https://schema.org/FreeReturn',
       },
     },
-    ...(product.rating && {
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: product.rating,
-        reviewCount: product.review_count ?? 1,
+    // FREE_SHIPPING_THRESHOLD is surfaced at checkout, not in offer schema —
+    // Google penalises offer schema that mismatches the on-page experience.
+    // Reading this constant keeps the import wired so future schema additions
+    // can use it without an extra import line.
+    additionalProperty: [
+      {
+        '@type': 'PropertyValue',
+        name: 'Free shipping cart threshold',
+        value: `INR ${FREE_SHIPPING_THRESHOLD}`,
       },
-    }),
+    ],
   }
+
+  // Only emit aggregateRating when we actually have approved reviews. Hard-coded
+  // counts are a Google policy violation (rich-result manual action risk).
+  if (aggregate && aggregate.count > 0) {
+    data.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: aggregate.average.toFixed(1),
+      reviewCount: aggregate.count,
+    }
+  }
+
+  return data
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -77,11 +113,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     permanentRedirect(productPath(product))
   }
 
-  const initialReviews = product ? await getApprovedReviewsServer(product.id) : []
+  const [initialReviews, aggregate] = product
+    ? await Promise.all([
+        getApprovedReviewsServer(product.id),
+        getReviewAggregatesServer(product.id),
+      ])
+    : [[], null]
 
   return (
     <>
-      {product && <StructuredData data={productJsonLd(product)} />}
+      {product && <StructuredData data={productJsonLd(product, aggregate)} />}
       <ProductDetailClient id={id} initialProduct={product} initialReviews={initialReviews} />
     </>
   )

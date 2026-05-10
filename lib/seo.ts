@@ -30,11 +30,11 @@ export function productImagePath(product?: Pick<Product, 'id' | 'image_url'> | n
 }
 
 export function safeJsonLd(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, '\\u003c')
-}
-
-export function StructuredData({ data }: { data: unknown }) {
-  return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }} />
-  )
+  // Escape characters that can break out of <script> tags or HTML context.
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
 }

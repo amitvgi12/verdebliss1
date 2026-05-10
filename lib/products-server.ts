@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { PRODUCTS } from '@/constants/products'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
@@ -11,15 +12,19 @@ export interface ApprovedReview {
   profiles?: { full_name?: string | null } | null
 }
 
+export interface ReviewAggregate {
+  count: number
+  average: number
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function staticProductByIdOrSlug(idOrSlug: string): Product | null {
   return PRODUCTS.find((p) => p.id === idOrSlug || p.slug === idOrSlug) ?? null
 }
 
-export async function getProductsServer(): Promise<Product[]> {
+async function fetchProductsFromDb(): Promise<Product[]> {
   if (!hasSupabaseAdminEnv()) return PRODUCTS
-
   try {
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase
@@ -34,37 +39,49 @@ export async function getProductsServer(): Promise<Product[]> {
   }
 }
 
-export async function getProductServer(idOrSlug: string): Promise<Product | null> {
-  if (hasSupabaseAdminEnv()) {
-    try {
-      const supabase = createSupabaseAdmin()
+// Cache the catalogue for 5 min. Catalogue is read on every product page,
+// homepage, and chat call — uncached this becomes a per-request DB hit.
+export const getProductsServer = unstable_cache(
+  async (): Promise<Product[]> => fetchProductsFromDb(),
+  ['products-catalogue-v1'],
+  { revalidate: 300, tags: ['products'] }
+)
 
-      // Query slug first. This avoids invalid uuid casts on older Supabase
-      // projects where products.id is uuid but the route param is a slug or
-      // static product number such as "2".
-      const bySlug = await supabase
+async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
+  if (!hasSupabaseAdminEnv()) return staticProductByIdOrSlug(idOrSlug)
+
+  try {
+    const supabase = createSupabaseAdmin()
+
+    // Query slug first. This avoids invalid uuid casts on older Supabase
+    // projects where products.id is uuid but the route param is a slug or
+    // static product number such as "2".
+    const bySlug = await supabase
+      .from('products')
+      .select('*')
+      .eq('slug', idOrSlug)
+      .eq('active', true)
+      .maybeSingle()
+    if (!bySlug.error && bySlug.data) return bySlug.data as Product
+
+    if (UUID_RE.test(idOrSlug)) {
+      const byId = await supabase
         .from('products')
         .select('*')
-        .eq('slug', idOrSlug)
+        .eq('id', idOrSlug)
         .eq('active', true)
         .maybeSingle()
-      if (!bySlug.error && bySlug.data) return bySlug.data as Product
-
-      if (UUID_RE.test(idOrSlug)) {
-        const byId = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', idOrSlug)
-          .eq('active', true)
-          .maybeSingle()
-        if (!byId.error && byId.data) return byId.data as Product
-      }
-    } catch {
-      // Fall back to static catalogue below.
+      if (!byId.error && byId.data) return byId.data as Product
     }
+  } catch {
+    // Fall back to static catalogue below.
   }
 
   return staticProductByIdOrSlug(idOrSlug)
+}
+
+export async function getProductServer(idOrSlug: string): Promise<Product | null> {
+  return fetchProductFromDb(idOrSlug)
 }
 
 export async function getApprovedReviewsServer(
@@ -87,5 +104,35 @@ export async function getApprovedReviewsServer(
     return (data ?? []) as unknown as ApprovedReview[]
   } catch {
     return []
+  }
+}
+
+/**
+ * Returns the *real* approved-review aggregate so the AggregateRating JSON-LD
+ * never lies about review counts. Returns null if there are no approved reviews
+ * — the caller must omit aggregateRating in that case.
+ */
+export async function getReviewAggregatesServer(
+  productId: string
+): Promise<ReviewAggregate | null> {
+  if (!hasSupabaseAdminEnv()) return null
+
+  try {
+    const supabase = createSupabaseAdmin()
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('rating')
+      .eq('product_id', productId)
+      .eq('approved', true)
+
+    if (error || !data || !data.length) return null
+    const ratings = data
+      .map((r: { rating: number }) => Number(r.rating))
+      .filter((r: number) => Number.isFinite(r) && r > 0)
+    if (!ratings.length) return null
+    const sum = ratings.reduce((acc: number, r: number) => acc + r, 0)
+    return { count: ratings.length, average: sum / ratings.length }
+  } catch {
+    return null
   }
 }

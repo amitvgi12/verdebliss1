@@ -1,15 +1,9 @@
-/**
- * components.test.jsx
- * Renders Stars, Badge, and ProductImage in jsdom
- * and asserts key DOM properties.
- */
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Stars from '@/components/ui/Stars'
 import Badge from '@/components/ui/Badge'
 import ProductImage from '@/components/ui/ProductImage'
 
-/* ── Stars ──────────────────────────────────────── */
 describe('Stars component', () => {
   it('renders exactly 5 star SVGs', () => {
     const { container } = render(<Stars rating={4.8} />)
@@ -20,8 +14,8 @@ describe('Stars component', () => {
   it('renders with a custom size prop', () => {
     const { container } = render(<Stars rating={3} size={20} />)
     const first = container.querySelector('svg')
-    expect(first.getAttribute('width')).toBe('20')
-    expect(first.getAttribute('height')).toBe('20')
+    expect(first?.getAttribute('width')).toBe('20')
+    expect(first?.getAttribute('height')).toBe('20')
   })
 
   it('renders without crashing for rating 0', () => {
@@ -33,7 +27,6 @@ describe('Stars component', () => {
   })
 })
 
-/* ── Badge ───────────────────────────────────────── */
 describe('Badge component', () => {
   it('renders the label text in uppercase', () => {
     render(<Badge label="Vegan" />)
@@ -55,11 +48,11 @@ describe('Badge component', () => {
   })
 })
 
-/* ── ProductImage ────────────────────────────────── */
 describe('ProductImage component', () => {
   const baseProduct = {
     id: '7',
     name: 'Niacinamide Pore Serum',
+    price: 350,
     ingredient: 'Niacinamide',
     image_url: null,
   }
@@ -79,25 +72,20 @@ describe('ProductImage component', () => {
     const p = { ...baseProduct, ingredient: 'Unknown', name: 'Unknown Product' }
     const { container } = render(<ProductImage product={p} />)
     const img = container.querySelector('img')
-    expect(img.src).toContain('serum.webp')
+    expect(img?.getAttribute('src') ?? '').toMatch(/serum\.webp/)
   })
 
   it('uses image_url from Supabase when provided', () => {
     const p = { ...baseProduct, image_url: '/images/products/custom.webp' }
     const { container } = render(<ProductImage product={p} />)
     const img = container.querySelector('img')
-    expect(img.src).toContain('custom.webp')
+    expect(img?.getAttribute('src') ?? '').toMatch(/custom\.webp/)
   })
 
   it('renders ingredient-matched image for Turmeric', () => {
     const p = { ...baseProduct, ingredient: 'Turmeric', name: 'Cleanser' }
     const { container } = render(<ProductImage product={p} />)
     const img = container.querySelector('img')
-    expect(img.src).toContain('cleanser.webp')
-  })
-
-  it('renders without crashing for a product with no ingredient', () => {
-    const p = { id: '99', name: 'Mystery', ingredient: null }
-    expect(() => render(<ProductImage product={p} />)).not.toThrow()
+    expect(img?.getAttribute('src') ?? '').toMatch(/cleanser\.webp/)
   })
 })

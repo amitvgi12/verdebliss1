@@ -1,26 +1,13 @@
-'use client'
-/**
- * Home.jsx
- *
- * BUG FIXED: Hero decorative circles had no z-index and sat ABOVE the CTA
- * button, swallowing click events at some viewport widths.
- * FIX: decorative circles get zIndex:0, content area gets zIndex:1.
- *
- * NEW: Ingredients section with SVG IngredientCard illustrations.
- * NEW: Hero shows serum.webp product image instead of emoji.
- */
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { ArrowRight, Check } from 'lucide-react'
-import { useState } from 'react'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import ProductCard from '@/components/ui/ProductCard'
-import SkeletonCard from '@/components/ui/SkeletonCard'
 import IngredientCard from '@/components/ui/IngredientCard'
 import Stars from '@/components/ui/Stars'
-import { useProducts } from '@/hooks/useProducts'
-import { C, FONT } from '@/constants/theme'
-import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
+import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
+import { getProductsServer } from '@/lib/products-server'
+
+export const revalidate = 300
 
 const TESTIMONIALS = [
   {
@@ -58,723 +45,257 @@ const INGREDIENTS = [
   },
 ]
 
-export default function Home() {
-  const router = useRouter()
-  const width = useWindowWidth()
-  const isMobile = width < BP.tablet
-  const { products, loading } = useProducts({ sortBy: 'Bestselling' })
-  const [email, setEmail] = useState('')
-  const [subscribed, setSubscribed] = useState(false)
-  const [newsletterError, setNewsletterError] = useState('')
-  const [newsletterLoading, setNewsletterLoading] = useState(false)
-
-  const handleNewsletterSubmit = async () => {
-    setNewsletterError('')
-    setNewsletterLoading(true)
-    try {
-      const res = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'homepage_newsletter' }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.error ?? 'Could not subscribe')
-      setSubscribed(true)
-    } catch (err) {
-      setNewsletterError(err?.message ?? 'Could not subscribe. Please try again.')
-    } finally {
-      setNewsletterLoading(false)
-    }
-  }
+export default async function Home() {
+  // Server-side product fetch — content is in the HTML for crawlers from the
+  // first byte. Replaces the legacy `useProducts()` client hook on the home page.
+  const products = await getProductsServer()
+  const featured = products.slice(0, 6)
 
   return (
-    <div style={{ background: C.bg }}>
-      {/* ── Hero ────────────────────────────────────────────────────── */}
+    <div className="bg-bg">
+      {/* ── Hero ────────────────────────────────────────────────── */}
       <section
+        className="relative flex items-center overflow-hidden px-4 py-20"
         style={{
-          background: `linear-gradient(135deg, ${C.forest} 0%, #1B3022 55%, #2D4A32 100%)`,
+          background: 'linear-gradient(135deg, #2D4A32 0%, #1B3022 55%, #2D4A32 100%)',
           minHeight: '88vh',
-          display: 'flex',
-          alignItems: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-          padding: '80px 16px',
         }}
       >
-        {/* Decorative circles — z-index:0 so they NEVER block buttons */}
+        {/* Decorative circles, pointer-events-none so they never block CTAs */}
         <div
-          style={{
-            position: 'absolute',
-            top: -120,
-            right: -80,
-            width: 520,
-            height: 520,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.025)',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
+          aria-hidden
+          className="pointer-events-none absolute -right-20 -top-32 z-0 h-[520px] w-[520px] rounded-full bg-white/[0.025]"
         />
         <div
-          style={{
-            position: 'absolute',
-            bottom: -100,
-            left: 160,
-            width: 360,
-            height: 360,
-            borderRadius: '50%',
-            background: 'rgba(125,155,118,0.07)',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
+          aria-hidden
+          className="pointer-events-none absolute -bottom-24 left-40 z-0 h-[360px] w-[360px] rounded-full bg-sage/10"
         />
 
-        {/* Content — z-index:1 so it always sits above decorative elements */}
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: '0 auto',
-            width: '100%',
-            display: 'grid',
-            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-            gap: isMobile ? 32 : 48,
-            alignItems: 'center',
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.9 }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                color: C.sage,
-                letterSpacing: '0.18em',
-                marginBottom: 20,
-                fontWeight: 600,
-              }}
-            >
+        <div className="relative z-10 mx-auto grid w-full max-w-[1200px] grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
+          <div>
+            <p className="mb-5 text-[10px] font-semibold tracking-[0.18em] text-sage">
               ✦ CERTIFIED ORGANIC &nbsp;·&nbsp; CRUELTY-FREE &nbsp;·&nbsp; VEGAN ✦
-            </div>
-            <h1
-              style={{
-                fontFamily: FONT.serif,
-                fontSize: 'clamp(40px,5.5vw,76px)',
-                color: 'white',
-                lineHeight: 1.0,
-                margin: '0 0 24px',
-                fontWeight: 400,
-              }}
-            >
+            </p>
+            <h1 className="m-0 mb-6 font-serif text-[clamp(40px,5.5vw,76px)] font-normal leading-none text-white">
               Pure.
               <br />
-              <em style={{ color: C.sage }}>Botanical.</em>
+              <em className="not-italic text-sage">Botanical.</em>
               <br />
               Radiant.
             </h1>
-            <p
-              style={{
-                fontSize: 16,
-                color: 'rgba(255,255,255,0.6)',
-                lineHeight: 1.8,
-                marginBottom: 40,
-                maxWidth: 420,
-              }}
-            >
+            <p className="mb-10 max-w-[420px] text-base leading-relaxed text-white/60">
               Luxury skincare rooted in nature. Formulated with the finest certified organic
               botanicals.
             </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <motion.button
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => router.push('/products')}
-                style={{
-                  background: C.terra,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 10,
-                  padding: '14px 28px',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontFamily: 'inherit',
-                  letterSpacing: '0.02em',
-                }}
-              >
+            <div className="flex flex-wrap gap-3">
+              <Link href="/products" className="btn-terra">
                 Shop the Collection <ArrowRight size={15} />
-              </motion.button>
-              <motion.button
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => router.push('/quiz')}
-                style={{
-                  background: 'transparent',
-                  color: 'white',
-                  border: `1px solid rgba(255,255,255,0.28)`,
-                  borderRadius: 10,
-                  padding: '14px 24px',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontFamily: 'inherit',
-                  letterSpacing: '0.02em',
-                }}
+              </Link>
+              <Link
+                href="/quiz"
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-white/30 bg-transparent px-6 py-3.5 text-sm font-semibold tracking-wide text-white"
               >
                 Take Skin Quiz <ArrowRight size={15} />
-              </motion.button>
+              </Link>
             </div>
-            <div style={{ display: 'flex', gap: 36, marginTop: 52, flexWrap: 'wrap' }}>
+            <dl className="mt-12 flex flex-wrap gap-9">
               {[
                 ['500+', 'Organic Ingredients'],
                 ['4.8★', 'Average Rating'],
                 ['50K+', 'Happy Customers'],
               ].map(([n, l]) => (
                 <div key={l}>
-                  <div
-                    style={{ fontSize: 24, fontWeight: 700, color: C.gold, fontFamily: FONT.serif }}
-                  >
-                    {n}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
-                    {l}
-                  </div>
+                  <dt className="font-serif text-2xl font-bold text-gold">{n}</dt>
+                  <dd className="mt-0.5 text-[11px] text-white/45">{l}</dd>
                 </div>
               ))}
-            </div>
-          </motion.div>
+            </dl>
+          </div>
 
-          {/* Hero product image — fills circle edge-to-edge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, delay: 0.15 }}
-            style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}
-          >
-            {/* overflow:hidden clips image to circle, objectFit:cover fills it completely */}
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          {/* Hero product image */}
+          <div className="relative flex justify-center">
+            <div
+              className="relative flex-shrink-0 overflow-hidden rounded-full border-2 border-sage/35"
               style={{
                 width: 'min(360px, 90vw)',
                 height: 'min(360px, 90vw)',
-                borderRadius: '50%',
-                border: '2px solid rgba(125,155,118,0.35)',
-                overflow: 'hidden',
                 boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
-                flexShrink: 0,
-                position: 'relative',
               }}
             >
               <Image
                 src="/images/products/serum.webp"
                 alt="VerdeBliss Bakuchiol Serum"
                 priority
+                fetchPriority="high"
                 fill
                 sizes="(max-width: 768px) 90vw, 360px"
                 style={{ objectFit: 'cover', objectPosition: 'center' }}
               />
-            </motion.div>
-
-            {/* Floating tags */}
-            {[
-              {
-                label: 'Bakuchiol Serum',
-                sub: 'Best Seller ✦',
-                pos: { top: 16, left: -20 },
-                em: '✨',
-              },
-              {
-                label: 'SPF 50 Shield',
-                sub: '4.9★ Rated',
-                pos: { bottom: 50, right: -12 },
-                em: '☀️',
-              },
-            ].map(({ label, sub, pos, em }, i) => (
-              <motion.div
-                key={label}
-                animate={{ y: [0, -7, 0] }}
-                transition={{
-                  duration: 3 + i,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                  delay: i * 1.2,
-                }}
-                style={{
-                  position: 'absolute',
-                  ...pos,
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  borderRadius: 12,
-                  padding: '10px 14px',
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'center',
-                }}
-              >
-                <span style={{ fontSize: 22 }}>{em}</span>
-                <div>
-                  <div style={{ fontSize: 12, color: 'white', fontWeight: 500 }}>{label}</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>{sub}</div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+            </div>
+            <div className="absolute -left-5 top-4 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
+              <span className="text-[22px]">✨</span>
+              <div>
+                <div className="text-xs font-medium text-white">Bakuchiol Serum</div>
+                <div className="text-[10px] text-white/55">Best Seller ✦</div>
+              </div>
+            </div>
+            <div className="absolute -right-3 bottom-12 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
+              <span className="text-[22px]">☀️</span>
+              <div>
+                <div className="text-xs font-medium text-white">SPF 50 Shield</div>
+                <div className="text-[10px] text-white/55">4.9★ Rated</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── Featured Products ─────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 16px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
-          <div
-            style={{
-              fontSize: 10,
-              color: C.terra,
-              letterSpacing: '0.14em',
-              marginBottom: 10,
-              fontWeight: 600,
-            }}
-          >
-            CURATED FOR YOU
-          </div>
-          <h2
-            style={{
-              fontFamily: FONT.serif,
-              fontSize: 'clamp(32px,4vw,44px)',
-              color: C.text,
-              margin: '0 0 12px',
-              fontWeight: 400,
-            }}
-          >
-            The Collection
-          </h2>
-          <p
-            style={{
-              fontSize: 14,
-              color: C.muted,
-              maxWidth: 420,
-              margin: '0 auto',
-              lineHeight: 1.7,
-            }}
-          >
+      {/* ── Featured Products ─────────────────────────────────── */}
+      <section className="container-content py-20">
+        <header className="mb-12 text-center">
+          <p className="label-eyebrow mb-2.5">CURATED FOR YOU</p>
+          <h2 className="h-section">The Collection</h2>
+          <p className="mx-auto max-w-[420px] text-sm leading-relaxed text-muted">
             Every formula crafted from certified organic botanicals, dermatologist-approved and
             loved by thousands.
           </p>
+        </header>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5">
+          {featured.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
         </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: 20,
-          }}
-        >
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-            : products.slice(0, 6).map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 40 }}>
-          <button
-            onClick={() => router.push('/products')}
-            style={{
-              background: 'none',
-              border: `2px solid ${C.forest}`,
-              color: C.forest,
-              borderRadius: 10,
-              padding: '12px 32px',
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
+        <div className="mt-10 text-center">
+          <Link href="/products" className="btn-outline">
             View All Products <ArrowRight size={15} />
-          </button>
+          </Link>
         </div>
       </section>
 
-      {/* ── Key Ingredients ───────────────────────────────────────────── */}
-      <section style={{ background: C.ivory, padding: '80px 16px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <div
-              style={{
-                fontSize: 10,
-                color: C.terra,
-                letterSpacing: '0.14em',
-                marginBottom: 10,
-                fontWeight: 600,
-              }}
-            >
-              WHAT&apos;S INSIDE
-            </div>
-            <h2
-              style={{
-                fontFamily: FONT.serif,
-                fontSize: 'clamp(32px,4vw,44px)',
-                color: C.text,
-                margin: '0 0 12px',
-                fontWeight: 400,
-              }}
-            >
-              Nature&apos;s Finest Ingredients
-            </h2>
-            <p
-              style={{
-                fontSize: 14,
-                color: C.muted,
-                maxWidth: 460,
-                margin: '0 auto',
-                lineHeight: 1.7,
-              }}
-            >
+      {/* ── Key Ingredients ───────────────────────────────────── */}
+      <section className="bg-ivory px-4 py-20">
+        <div className="container-content">
+          <header className="mb-12 text-center">
+            <p className="label-eyebrow mb-2.5">WHAT&apos;S INSIDE</p>
+            <h2 className="h-section">Nature&apos;s Finest Ingredients</h2>
+            <p className="mx-auto max-w-[460px] text-sm leading-relaxed text-muted">
               Every formula begins with the most potent certified-organic ingredients the earth has
               to offer.
             </p>
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
-              gap: 20,
-            }}
-          >
-            {INGREDIENTS.map((ing, i) => (
-              <motion.div
+          </header>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5">
+            {INGREDIENTS.map((ing) => (
+              <IngredientCard
                 key={ing.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.07 }}
-                viewport={{ once: true }}
-              >
-                <IngredientCard ingredient={ing.name} description={ing.desc} imageHeight={140} />
-              </motion.div>
+                ingredient={ing.name}
+                description={ing.desc}
+                imageHeight={140}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Philosophy ────────────────────────────────────────────────── */}
-      <section style={{ background: C.forest, padding: '80px 16px' }}>
-        <div
-          style={{
-            maxWidth: 1100,
-            margin: '0 auto',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: 48,
-            alignItems: 'center',
-          }}
-        >
+      {/* ── Philosophy ────────────────────────────────────────── */}
+      <section className="bg-forest px-4 py-20">
+        <div className="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 md:grid-cols-2">
           <div>
-            <div
-              style={{
-                fontSize: 10,
-                color: C.sage,
-                letterSpacing: '0.14em',
-                marginBottom: 12,
-                fontWeight: 600,
-              }}
-            >
+            <p className="mb-3 text-[10px] font-semibold tracking-[0.14em] text-sage">
               OUR PHILOSOPHY
-            </div>
-            <h2
-              style={{
-                fontFamily: FONT.serif,
-                fontSize: 'clamp(28px,4vw,44px)',
-                color: 'white',
-                margin: '0 0 20px',
-                fontWeight: 400,
-                lineHeight: 1.1,
-              }}
-            >
+            </p>
+            <h2 className="mb-5 font-serif text-[clamp(28px,4vw,44px)] font-normal leading-tight text-white">
               Beauty that honours the earth
             </h2>
-            <p
-              style={{
-                color: 'rgba(255,255,255,0.62)',
-                lineHeight: 1.85,
-                fontSize: 15,
-                marginBottom: 28,
-              }}
-            >
+            <p className="mb-7 text-[15px] leading-relaxed text-white/60">
               Every VerdeBliss formula is crafted from certified organic botanicals, never tested on
               animals, and packaged in eco-conscious materials.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
                 ['🌱', '95%+ Organic Ingredients'],
                 ['🐰', 'Cruelty-Free'],
                 ['♻️', 'Eco Packaging'],
                 ['🏆', 'Dermatologist OK'],
               ].map(([e, l]) => (
-                <div
+                <li
                   key={l}
-                  style={{
-                    display: 'flex',
-                    gap: 10,
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    background: 'rgba(255,255,255,0.05)',
-                    borderRadius: 10,
-                    border: '1px solid rgba(255,255,255,0.07)',
-                  }}
+                  className="flex items-center gap-2.5 rounded-[10px] border border-white/10 bg-white/5 px-3 py-2"
                 >
-                  <span style={{ fontSize: 16 }}>{e}</span>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>{l}</span>
-                </div>
+                  <span className="text-base" aria-hidden>
+                    {e}
+                  </span>
+                  <span className="text-xs text-white/70">{l}</span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            {['🌿', '🌸', '🍯', '🌺'].map((e, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.04 }}
-                style={{
-                  background: `rgba(255,255,255,${0.04 + i * 0.018})`,
-                  borderRadius: 16,
-                  height: 130,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 48,
-                  border: '1px solid rgba(255,255,255,0.07)',
-                }}
+          <div className="grid grid-cols-2 gap-3" aria-hidden>
+            {['🌿', '🌸', '🍯', '🌺'].map((e) => (
+              <div
+                key={e}
+                className="flex h-32 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-5xl"
               >
                 {e}
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Testimonials ──────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 16px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
-          <div
-            style={{
-              fontSize: 10,
-              color: C.terra,
-              letterSpacing: '0.14em',
-              marginBottom: 10,
-              fontWeight: 600,
-            }}
-          >
-            REAL RESULTS
-          </div>
-          <h2
-            style={{
-              fontFamily: FONT.serif,
-              fontSize: 'clamp(32px,4vw,44px)',
-              color: C.text,
-              margin: 0,
-              fontWeight: 400,
-            }}
-          >
+      {/* ── Testimonials ──────────────────────────────────────── */}
+      <section className="container-content py-20">
+        <header className="mb-12 text-center">
+          <p className="label-eyebrow mb-2.5">REAL RESULTS</p>
+          <h2 className="m-0 font-serif text-[clamp(32px,4vw,44px)] font-normal text-text">
             Loved by thousands
           </h2>
-        </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            gap: 20,
-          }}
-        >
-          {TESTIMONIALS.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              viewport={{ once: true }}
-              style={{
-                background: C.card,
-                border: `1px solid ${C.border}`,
-                borderLeft: `3px solid ${C.gold}`,
-                borderRadius: 16,
-                padding: 28,
-              }}
+        </header>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5">
+          {TESTIMONIALS.map((t) => (
+            <article
+              key={t.name}
+              className="rounded-2xl border border-border border-l-[3px] border-l-gold bg-card p-7"
             >
               <Stars rating={t.rating} size={14} />
-              <p
-                style={{
-                  fontSize: 16,
-                  color: C.text,
-                  lineHeight: 1.7,
-                  margin: '16px 0',
-                  fontStyle: 'italic',
-                  fontFamily: FONT.serif,
-                }}
-              >
+              <p className="my-4 font-serif text-base italic leading-relaxed text-text">
                 &ldquo;{t.text}&rdquo;
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <footer className="flex items-center gap-2.5">
                 <div
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: '50%',
-                    background: C.sagePale,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: C.forest,
-                  }}
+                  aria-hidden
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-sagePale text-sm font-semibold text-forest"
                 >
                   {t.name[0]}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{t.name}</div>
-                  <div style={{ fontSize: 11, color: C.muted }}>
+                  <div className="text-[13px] font-semibold text-text">{t.name}</div>
+                  <div className="text-[11px] text-muted">
                     {t.skin} skin · {t.city}
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </footer>
+            </article>
           ))}
         </div>
+
+        {/* FTC + Verified Purchase disclosure */}
+        <p className="mt-6 text-center text-[11px] leading-relaxed text-light">
+          All reviews are from verified purchasers. Results may vary based on individual skin type,
+          usage, and lifestyle. Individual results are not guaranteed. *These statements have not
+          been evaluated by a regulatory authority.
+        </p>
       </section>
 
-      {/* 11.6 FTC + 11.9 Verified Purchase disclosure */}
-      <p
-        style={{
-          textAlign: 'center',
-          fontSize: 11,
-          color: C.light,
-          marginTop: 24,
-          lineHeight: 1.7,
-        }}
-      >
-        All reviews are from verified purchasers. Results may vary based on individual skin type,
-        usage, and lifestyle. Individual results are not guaranteed. *These statements have not been
-        evaluated by a regulatory authority.
-      </p>
-      {/* ── Newsletter ────────────────────────────────────────────────── */}
-      <section style={{ background: C.ivory, padding: '60px 16px', textAlign: 'center' }}>
-        <div
-          style={{
-            fontSize: 10,
-            color: C.terra,
-            letterSpacing: '0.14em',
-            marginBottom: 10,
-            fontWeight: 600,
-          }}
-        >
-          JOIN THE CIRCLE
-        </div>
-        <h2
-          style={{
-            fontFamily: FONT.serif,
-            fontSize: 'clamp(24px,3vw,34px)',
-            color: C.text,
-            margin: '0 0 8px',
-            fontWeight: 400,
-          }}
-        >
+      {/* ── Newsletter ────────────────────────────────────────── */}
+      <section className="bg-ivory px-4 py-16 text-center">
+        <p className="label-eyebrow mb-2.5">JOIN THE CIRCLE</p>
+        <h2 className="mb-2 font-serif text-[clamp(24px,3vw,34px)] font-normal text-text">
           Subscribe &amp; earn 50 bonus points
         </h2>
-        <p style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>
+        <p className="mb-7 text-sm text-muted">
           New launches, rituals, and exclusive offers — delivered to your inbox.
         </p>
-        {subscribed ? (
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              background: '#EBF0E9',
-              borderRadius: 10,
-              padding: '12px 24px',
-              color: C.forest,
-              fontWeight: 500,
-            }}
-          >
-            <Check size={16} /> You&apos;re on the list! 50 points added soon.
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'flex',
-              gap: 10,
-              justifyContent: 'center',
-              maxWidth: 400,
-              margin: '0 auto',
-              flexWrap: 'wrap',
-            }}
-          >
-            <label
-              htmlFor="newsletter-email"
-              style={{
-                position: 'absolute',
-                width: 1,
-                height: 1,
-                overflow: 'hidden',
-                clip: 'rect(0 0 0 0)',
-              }}
-            >
-              Email address
-            </label>
-            <input
-              id="newsletter-email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              style={{
-                flex: 1,
-                minWidth: 180,
-                padding: '12px 18px',
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                fontSize: 14,
-                outline: 'none',
-                fontFamily: 'inherit',
-                background: C.warmWhite,
-                color: C.text,
-              }}
-            />
-            {newsletterError && (
-              <div role="alert" style={{ width: '100%', fontSize: 12, color: '#A32D2D' }}>
-                {newsletterError}
-              </div>
-            )}
-            <button
-              onClick={handleNewsletterSubmit}
-              disabled={newsletterLoading}
-              style={{
-                background: C.gold,
-                color: 'white',
-                border: 'none',
-                borderRadius: 10,
-                padding: '12px 22px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {newsletterLoading ? 'Subscribing…' : 'Subscribe'}
-            </button>
-          </div>
-        )}
+        <NewsletterForm />
       </section>
     </div>
   )

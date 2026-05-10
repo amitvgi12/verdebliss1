@@ -1,47 +1,25 @@
-/**
- * cartStore.test.js
- *
- * Key facts about the real cartStore (src/store/cartStore.js):
- *
- *  1. Cart open state is stored as `isOpen`, NOT `cartOpen`.
- *  2. `total` and `itemCount` are defined as ES getter properties:
- *       get total()     { return get().items.reduce(...) }
- *       get itemCount() { return get().items.reduce(...) }
- *     Zustand's setState() merges state via object spread, which strips
- *     getter definitions from the resulting plain object. So calling
- *     `useCartStore.getState().total` after setState returns undefined.
- *     → Compute total/count directly from state.items in tests.
- *
- *  3. `persist` middleware is active — uses localStorage (available in jsdom).
- *     beforeEach resets items and isOpen via setState.
- */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useCartStore } from '@/store/cartStore'
+import type { CartItem } from '@/types'
 
-/* ── helpers ────────────────────────────────────────── */
-/** Compute total from items, matching the store's own formula */
-const sumTotal = (items) => items.reduce((s, i) => s + i.price * i.qty, 0)
-/** Compute item count from items */
-const sumCount = (items) => items.reduce((s, i) => s + i.qty, 0)
+const sumTotal = (items: CartItem[]) => items.reduce((s, i) => s + i.price * i.qty, 0)
+const sumCount = (items: CartItem[]) => items.reduce((s, i) => s + i.qty, 0)
 
-/* ── Reset store before every test ─────────────────── */
 beforeEach(() => {
   useCartStore.setState({ items: [], isOpen: false })
 })
 
-/* ── Fixtures ───────────────────────────────────────── */
 const SERUM = { id: '7', name: 'Niacinamide Pore Serum', price: 2450 }
 const TONER = { id: '3', name: 'Green Tea Clarity Toner', price: 1450 }
 const CREAM = { id: '8', name: 'Shea Butter Night Cream', price: 2650 }
 
-/* ── addItem ────────────────────────────────────────── */
 describe('cartStore — addItem', () => {
   it('adds a new item with qty 1', () => {
     useCartStore.getState().addItem(SERUM)
     const { items } = useCartStore.getState()
     expect(items).toHaveLength(1)
-    expect(items[0].id).toBe('7')
-    expect(items[0].qty).toBe(1)
+    expect(items[0]?.id).toBe('7')
+    expect(items[0]?.qty).toBe(1)
   })
 
   it('increments qty when the same item is added again', () => {
@@ -50,7 +28,7 @@ describe('cartStore — addItem', () => {
     addItem(SERUM)
     const { items } = useCartStore.getState()
     expect(items).toHaveLength(1)
-    expect(items[0].qty).toBe(2)
+    expect(items[0]?.qty).toBe(2)
   })
 
   it('adds multiple distinct items', () => {
@@ -62,11 +40,10 @@ describe('cartStore — addItem', () => {
 
   it('new item price is preserved correctly', () => {
     useCartStore.getState().addItem(SERUM)
-    expect(useCartStore.getState().items[0].price).toBe(2450)
+    expect(useCartStore.getState().items[0]?.price).toBe(2450)
   })
 })
 
-/* ── removeItem ─────────────────────────────────────── */
 describe('cartStore — removeItem', () => {
   it('removes an item by id', () => {
     const { addItem, removeItem } = useCartStore.getState()
@@ -75,7 +52,7 @@ describe('cartStore — removeItem', () => {
     removeItem('7')
     const { items } = useCartStore.getState()
     expect(items).toHaveLength(1)
-    expect(items[0].id).toBe('3')
+    expect(items[0]?.id).toBe('3')
   })
 
   it('does nothing when removing a non-existent id', () => {
@@ -92,18 +69,16 @@ describe('cartStore — removeItem', () => {
   })
 })
 
-/* ── itemCount ──────────────────────────────────────── */
 describe('cartStore — itemCount', () => {
   it('cart has 0 items after reset', () => {
-    // Compute directly from items (getter is stripped by setState spread)
     expect(sumCount(useCartStore.getState().items)).toBe(0)
   })
 
   it('counts total quantity across all items', () => {
     const { addItem } = useCartStore.getState()
     addItem(SERUM)
-    addItem(SERUM) // qty 2
-    addItem(TONER) // qty 1
+    addItem(SERUM)
+    addItem(TONER)
     expect(sumCount(useCartStore.getState().items)).toBe(3)
   })
 
@@ -116,7 +91,6 @@ describe('cartStore — itemCount', () => {
   })
 })
 
-/* ── total ──────────────────────────────────────────── */
 describe('cartStore — total', () => {
   it('total is 0 for an empty cart', () => {
     expect(sumTotal(useCartStore.getState().items)).toBe(0)
@@ -126,14 +100,14 @@ describe('cartStore — total', () => {
     const { addItem } = useCartStore.getState()
     addItem(SERUM)
     addItem(SERUM)
-    expect(sumTotal(useCartStore.getState().items)).toBe(4900) // 2450 × 2
+    expect(sumTotal(useCartStore.getState().items)).toBe(4900)
   })
 
   it('calculates correct total for multiple distinct items', () => {
     const { addItem } = useCartStore.getState()
-    addItem(SERUM) // 2450
-    addItem(TONER) // 1450
-    addItem(CREAM) // 2650
+    addItem(SERUM)
+    addItem(TONER)
+    addItem(CREAM)
     expect(sumTotal(useCartStore.getState().items)).toBe(6550)
   })
 
@@ -141,15 +115,13 @@ describe('cartStore — total', () => {
     const { addItem, removeItem } = useCartStore.getState()
     addItem(SERUM)
     addItem(TONER)
-    removeItem('3') // remove TONER
+    removeItem('3')
     expect(sumTotal(useCartStore.getState().items)).toBe(2450)
   })
 })
 
-/* ── cart drawer open / close ───────────────────────── */
 describe('cartStore — cart open/close', () => {
   it('cart is closed (isOpen=false) after reset', () => {
-    // Real store key is `isOpen`, not `cartOpen`
     expect(useCartStore.getState().isOpen).toBe(false)
   })
 
@@ -171,7 +143,6 @@ describe('cartStore — cart open/close', () => {
   })
 })
 
-/* ── clearCart ──────────────────────────────────────── */
 describe('cartStore — clearCart', () => {
   it('removes all items', () => {
     const { addItem, clearCart } = useCartStore.getState()

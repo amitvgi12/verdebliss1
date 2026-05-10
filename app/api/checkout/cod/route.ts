@@ -1,10 +1,15 @@
+import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import { COD_MAX_TOTAL, normalizeCart, persistOrder, validateAddress } from '@/lib/commerce'
 import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
+import { requireSameOriginRequest } from '@/lib/csrf'
 
 export async function POST(request: Request) {
   try {
+    const csrfFailure = requireSameOriginRequest(request)
+    if (csrfFailure) return csrfFailure
+
     if (await isRateLimited(request, 'checkout_cod', 6, 60)) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again shortly.' },
@@ -23,7 +28,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const codRef = `COD-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
+    const codRef = `COD-${Date.now()}-${randomBytes(3).toString('hex').toUpperCase()}`
     const order = await persistOrder({
       userId: user?.id ?? null,
       status: 'COD Pending',

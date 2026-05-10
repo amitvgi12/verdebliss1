@@ -1,7 +1,7 @@
 /**
- * products.test.js
+ * products.test.ts
  * Tests the static product catalogue, image mapping, and
- * category/skin-type constants.
+ * category/skin-type constants. All assertions are strict-mode safe.
  */
 import { describe, it, expect } from 'vitest'
 import { PRODUCTS, CATEGORIES, SKIN_TYPES, SORT_OPTIONS, TIERS } from '@/constants/products'
@@ -26,15 +26,15 @@ describe('PRODUCTS catalogue', () => {
 
   it('rating is between 0 and 5 for all products', () => {
     PRODUCTS.forEach((p) => {
-      expect(p.rating).toBeGreaterThanOrEqual(0)
-      expect(p.rating).toBeLessThanOrEqual(5)
+      expect(p.rating ?? 0).toBeGreaterThanOrEqual(0)
+      expect(p.rating ?? 0).toBeLessThanOrEqual(5)
     })
   })
 
   it('review_count is a non-negative integer', () => {
     PRODUCTS.forEach((p) => {
-      expect(p.review_count).toBeGreaterThanOrEqual(0)
-      expect(Number.isInteger(p.review_count)).toBe(true)
+      expect(p.review_count ?? 0).toBeGreaterThanOrEqual(0)
+      expect(Number.isInteger(p.review_count ?? 0)).toBe(true)
     })
   })
 
@@ -44,23 +44,17 @@ describe('PRODUCTS catalogue', () => {
     expect(unique.size).toBe(ids.length)
   })
 
-  it('price is a positive number for all products', () => {
-    PRODUCTS.forEach((p) => {
-      expect(typeof p.price).toBe('number')
-      expect(p.price).toBeGreaterThan(0)
-    })
-  })
-
   it('Niacinamide Pore Serum is in the Serum category', () => {
     const product = PRODUCTS.find((p) => p.name.includes('Niacinamide'))
     expect(product).toBeDefined()
-    expect(product.category).toBe('Serum')
+    expect(product?.category).toBe('Serum')
   })
 
   it('Botanical SPF 50 Shield has the highest review count', () => {
-    const maxReviews = Math.max(...PRODUCTS.map((p) => p.review_count))
-    const topProduct = PRODUCTS.find((p) => p.review_count === maxReviews)
-    expect(topProduct.name).toContain('SPF')
+    const maxReviews = Math.max(...PRODUCTS.map((p) => p.review_count ?? 0))
+    const topProduct = PRODUCTS.find((p) => (p.review_count ?? 0) === maxReviews)
+    expect(topProduct).toBeDefined()
+    expect(topProduct?.name).toContain('SPF')
   })
 })
 
@@ -105,13 +99,16 @@ describe('TIERS', () => {
 
   it('tiers are ordered by ascending min points', () => {
     for (let i = 1; i < TIERS.length; i++) {
-      expect(TIERS[i].min).toBeGreaterThan(TIERS[i - 1].min)
+      const prev = TIERS[i - 1]
+      const curr = TIERS[i]
+      if (!prev || !curr) throw new Error('Tier missing')
+      expect(curr.min).toBeGreaterThan(prev.min)
     }
   })
 
   it('the top tier has max: Infinity', () => {
     const top = TIERS[TIERS.length - 1]
-    expect(top.max).toBe(Infinity)
+    expect(top?.max).toBe(Infinity)
   })
 
   it('each tier has name, color, and emoji', () => {

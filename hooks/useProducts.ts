@@ -66,7 +66,9 @@ function staticProductByIdOrSlug(idOrSlug?: string): Product | null {
 }
 
 export function useProduct(id?: string) {
-  const [product, setProduct] = useState<Product | null>(() => staticProductByIdOrSlug(id))
+  const [product, setProduct] = useState<Product | null>(() =>
+    id ? staticProductByIdOrSlug(id) : null
+  )
   const [loading, setLoading] = useState(Boolean(id))
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export function useProduct(id?: string) {
     setLoading(true)
 
     async function loadProduct() {
+      if (!id) return
       try {
         // Slugs work on both text-ID and uuid-ID Supabase product tables.
         const bySlug = await supabase

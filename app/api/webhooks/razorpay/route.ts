@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server'
 import {
   completeRazorpayCheckout,
   recordPaymentEvent,
+  recordReconciliationFailure,
   verifyRazorpayWebhookSignature,
 } from '@/lib/commerce'
+import { reportError } from '@/lib/observability'
 
 interface RazorpayWebhookEntity {
   id?: string
@@ -28,6 +30,9 @@ function pickOrderEntity(payload: Record<string, unknown>): RazorpayWebhookEntit
 }
 
 export async function POST(request: Request) {
+  // IMPORTANT: read the raw body. JSON.parse-then-re-stringify breaks the
+  // signature because Razorpay signs the bytes-on-the-wire, not a normalised
+  // form. The signature header is the only thing that authenticates this call.
   const rawBody = await request.text()
   const signature = request.headers.get('x-razorpay-signature') ?? ''
 
@@ -87,10 +92,23 @@ export async function POST(request: Request) {
     } catch (error) {
       reconciliation = 'pending'
       reconciliationError = error instanceof Error ? error.message : 'Webhook reconciliation failed'
-      console.warn(
-        '[webhooks/razorpay] Event recorded; reconciliation pending:',
-        reconciliationError
-      )
+
+      // Persist to DLQ so an admin / cron can retry without racing Razorpay.
+      await recordReconciliationFailure({
+        eventType,
+        providerOrderId,
+        providerPaymentId,
+        payload: event,
+        failureReason: reconciliationError,
+      })
+
+      // Structured signal for log-based alerting (and Sentry if wired).
+      reportError('payment_reconciliation_failed', {
+        providerOrderId,
+        providerPaymentId,
+        eventType,
+        reason: reconciliationError,
+      })
     }
   }
 

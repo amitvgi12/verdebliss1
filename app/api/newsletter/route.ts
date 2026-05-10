@@ -1,21 +1,37 @@
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
+import { requireSameOriginRequest } from '@/lib/csrf'
+import { verifyTurnstileFromRequest } from '@/lib/turnstile'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
 const EMAIL_RE = /\S+@\S+\.\S+/
 
 export async function POST(request: Request) {
   try {
-    if (await isRateLimited(request, 'newsletter', 5, 60)) {
+    const csrfFailure = requireSameOriginRequest(request)
+    if (csrfFailure) return csrfFailure
+
+    const body = await request.json()
+    const email = String(body?.email ?? '')
+      .trim()
+      .toLowerCase()
+
+    if (await isRateLimited(request, 'newsletter', 5, 60, email || null)) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again shortly.' },
         { status: 429 }
       )
     }
-    const body = await request.json()
-    const email = String(body?.email ?? '')
-      .trim()
-      .toLowerCase()
+
+    // Bot defence: Turnstile + honeypot.
+    const turnstile = await verifyTurnstileFromRequest(request, body)
+    if (!turnstile.ok) {
+      return NextResponse.json(
+        { error: 'Bot check failed. Please refresh and try again.' },
+        { status: 400 }
+      )
+    }
+
     const source = String(body?.source ?? 'homepage_newsletter').slice(0, 100)
     const honeypot = String(body?.website ?? '').trim()
 

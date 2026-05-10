@@ -27,7 +27,7 @@ function AuthForm() {
       if (mode === 'login') await signIn(email, pass)
       else await signUp(email, pass, name, skin)
     } catch (e) {
-      setError(e.message)
+      setError(e instanceof Error ? e.message : String(e))
     }
     setLoading(false)
   }
@@ -255,10 +255,25 @@ function AuthForm() {
 }
 
 // ── Dashboard ──────────────────────────────────────────
-function Dashboard({ user, profile }) {
+interface OrderRow {
+  id: string
+  status?: string
+  total?: number
+  points_earned?: number
+  created_at?: string
+  items?: Array<{ id: string; name: string; qty: number; price: number }>
+}
+
+function Dashboard({
+  user,
+  profile,
+}: {
+  user: { id: string; email?: string }
+  profile: import('@/types').CustomerProfile | null
+}) {
   const signOut = useAuthStore((s) => s.signOut)
   const { ids: wishIds } = useWishlistStore()
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState<OrderRow[]>([])
 
   useEffect(() => {
     supabase
@@ -266,7 +281,9 @@ function Dashboard({ user, profile }) {
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .then(({ data }) => data && setOrders(data))
+      .then(({ data }) => {
+        if (Array.isArray(data)) setOrders(data as OrderRow[])
+      })
   }, [user.id])
 
   const wishProducts = PRODUCTS.filter((p) => wishIds.includes(p.id))
@@ -487,7 +504,7 @@ function Dashboard({ user, profile }) {
                     }}
                   >
                     <span>
-                      {new Date(o.created_at).toLocaleDateString('en-IN', {
+                      {new Date(o.created_at ?? Date.now()).toLocaleDateString('en-IN', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric',

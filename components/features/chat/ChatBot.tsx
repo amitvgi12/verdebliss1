@@ -1,6 +1,6 @@
 'use client'
 /**
- * ChatBot.jsx — Context-aware support + beauty advisor
+ * ChatBot.tsx — Context-aware support + beauty advisor
  *
  * When a user is logged in the bot receives:
  *   - profile (name, skin type, tier, points)
@@ -19,6 +19,11 @@ import { useRouter } from 'next/navigation'
 import { C } from '@/constants/theme'
 import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { useAuthStore } from '@/store/authStore'
+
+interface ChatTurn {
+  role: 'user' | 'assistant'
+  content: string
+}
 
 /* ── Quick reply sets ───────────────────────────────────────────────── */
 const GUEST_REPLIES = [
@@ -44,10 +49,10 @@ export default function ChatBot() {
   const profile = useAuthStore((s) => s.profile)
 
   const [open, setOpen] = useState(false)
-  const [msgs, setMsgs] = useState([])
+  const [msgs, setMsgs] = useState<ChatTurn[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const endRef = useRef(null)
+  const endRef = useRef<HTMLDivElement | null>(null)
 
   /* ── Welcome message depends on auth state ─────────────────────── */
   const welcomeMsg = useCallback(() => {
@@ -59,7 +64,7 @@ export default function ChatBot() {
 
   /* Reset messages when auth state changes */
   useEffect(() => {
-    setMsgs([{ role: 'assistant', content: welcomeMsg() }])
+    setMsgs([{ role: 'assistant' as const, content: welcomeMsg() }])
   }, [user?.id, welcomeMsg])
 
   /* Scroll to bottom on new messages */
@@ -72,7 +77,7 @@ export default function ChatBot() {
     const msg = (text ?? input).trim()
     if (!msg || loading) return
     setInput('')
-    const next = [...msgs, { role: 'user', content: msg }]
+    const next: ChatTurn[] = [...msgs, { role: 'user' as const, content: msg }]
     setMsgs(next)
     setLoading(true)
 
@@ -85,6 +90,7 @@ export default function ChatBot() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-vb-client': 'web',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ messages: next }),
@@ -96,17 +102,23 @@ export default function ChatBot() {
         console.error('[ChatBot] API error', res.status, data)
         setMsgs([
           ...next,
-          { role: 'assistant', content: `⚠️ ${data?.error ?? `Server error ${res.status}`}` },
+          {
+            role: 'assistant' as const,
+            content: `⚠️ ${data?.error ?? `Server error ${res.status}`}`,
+          },
         ])
       } else {
         const reply = data.content?.[0]?.text ?? 'Let me help you find the perfect match! 🌿'
-        setMsgs([...next, { role: 'assistant', content: reply }])
+        setMsgs([...next, { role: 'assistant' as const, content: reply }])
       }
     } catch (err) {
       console.error('[ChatBot] Network error', err)
       setMsgs([
         ...next,
-        { role: 'assistant', content: "Couldn't reach the server — please check your connection." },
+        {
+          role: 'assistant' as const,
+          content: "Couldn't reach the server — please check your connection.",
+        },
       ])
     }
     setLoading(false)

@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import {
@@ -7,9 +8,13 @@ import {
   validateAddress,
 } from '@/lib/commerce'
 import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
+import { requireSameOriginRequest } from '@/lib/csrf'
 
 export async function POST(request: Request) {
   try {
+    const csrfFailure = requireSameOriginRequest(request)
+    if (csrfFailure) return csrfFailure
+
     if (await isRateLimited(request, 'checkout_create', 10, 60)) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again shortly.' },
@@ -20,7 +25,8 @@ export async function POST(request: Request) {
     const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
     const address = validateAddress(body?.address)
     const { items, totals } = await normalizeCart(body?.items)
-    const receipt = `vb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`.slice(0, 40)
+    // Cryptographically random receipt suffix prevents adjacent-receipt enumeration.
+    const receipt = `vb_${Date.now()}_${randomBytes(4).toString('hex')}`.slice(0, 40)
 
     const razorpayOrder = await createRazorpayOrder(totals.total, receipt, {
       customer_email: address.email,

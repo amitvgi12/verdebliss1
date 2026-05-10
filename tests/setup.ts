@@ -11,8 +11,10 @@ vi.mock('@/lib/supabase', () => {
       order: () => b,
       limit: () => b,
       single: () => Promise.resolve({ data: null, error: { message: 'mocked' } }),
-      then: (res, rej) =>
-        Promise.resolve({ data: null, error: { message: 'mocked' } }).then(res, rej),
+      then: (
+        res: (value: { data: null; error: { message: string } }) => unknown,
+        rej?: (reason?: unknown) => unknown
+      ) => Promise.resolve({ data: null, error: { message: 'mocked' } }).then(res, rej),
     }
     return b
   }

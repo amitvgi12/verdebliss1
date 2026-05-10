@@ -1,13 +1,28 @@
+'use client'
 /**
- * LegalModal.jsx — Privacy, Terms, Cookies + Returns & Refund Policy
+ * LegalModal — Privacy, Terms, Cookies, Returns & Refund.
+ *
+ * Focus-trapped, scroll-locked, ESC closes, click-outside closes. WCAG dialog.
  */
 
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
-import { C, FONT } from '@/constants/theme'
 
-const CONTENT = {
+export type LegalModalType = 'privacy' | 'terms' | 'cookie' | 'refund'
+
+interface Section {
+  heading: string
+  body: string
+}
+
+interface Doc {
+  title: string
+  updated: string
+  sections: Section[]
+}
+
+const CONTENT: Record<LegalModalType, Doc> = {
   privacy: {
     title: 'Privacy Policy',
     updated: 'Last updated: 1 April 2026',
@@ -30,7 +45,7 @@ const CONTENT = {
       },
       {
         heading: '5. Your Rights',
-        body: 'You have the right to access, correct, delete, or port your personal data. To exercise these rights, contact privacy@verdebliss.in.',
+        body: 'You have the right to access, correct, delete, or port your personal data. To exercise these rights, contact privacy@verdebliss.com.',
       },
       {
         heading: '6. Data Security',
@@ -38,11 +53,10 @@ const CONTENT = {
       },
       {
         heading: '7. Contact',
-        body: 'For privacy-related queries, contact privacy@verdebliss.in or write to VerdeBliss Cosmetics Private Limited, Kharadi, Pune 411014, Maharashtra, India.',
+        body: 'For privacy-related queries, contact privacy@verdebliss.com or write to VerdeBliss Cosmetics Private Limited, Kharadi, Pune 411014, Maharashtra, India.',
       },
     ],
   },
-
   terms: {
     title: 'Terms of Service',
     updated: 'Last updated: 1 April 2026',
@@ -73,7 +87,7 @@ const CONTENT = {
       },
       {
         heading: '7. Intellectual Property',
-        body: 'All content on verdebliss.in is owned by VerdeBliss Cosmetics Private Limited and protected under Indian and international IP law.',
+        body: 'All content on verdebliss.com is owned by VerdeBliss Cosmetics Private Limited and protected under Indian and international IP law.',
       },
       {
         heading: '8. Limitation of Liability',
@@ -85,7 +99,6 @@ const CONTENT = {
       },
     ],
   },
-
   cookie: {
     title: 'Cookie Policy',
     updated: 'Last updated: 1 April 2026',
@@ -106,17 +119,16 @@ const CONTENT = {
         heading: 'Managing cookies',
         body: 'Manage cookies via your browser settings. Disabling essential cookies will prevent you from logging in or maintaining your cart.',
       },
-      { heading: 'Contact', body: 'For questions about cookies, contact privacy@verdebliss.in.' },
+      { heading: 'Contact', body: 'For questions about cookies, contact privacy@verdebliss.com.' },
     ],
   },
-
   refund: {
     title: 'Returns & Refund Policy',
     updated: 'Last updated: 1 April 2026',
     sections: [
       {
         heading: '1. Our Promise',
-        body: 'We want you to love every VerdeBliss product. If you are not completely satisfied, we are here to make it right. Our policy applies to all orders placed on verdebliss.vercel.app and verdebliss.in.',
+        body: 'We want you to love every VerdeBliss product. If you are not completely satisfied, we are here to make it right. Our policy applies to all orders placed on verdebliss.com.',
       },
       {
         heading: '2. Eligibility for Returns',
@@ -124,15 +136,15 @@ const CONTENT = {
       },
       {
         heading: '3. How to Initiate a Return',
-        body: 'Step 1: Email returns@verdebliss.in within 14 days of delivery with your order number, the product(s) you wish to return, and the reason for return.\n\nStep 2: Our team will respond within 2 business days with a Return Merchandise Authorisation (RMA) number and a prepaid return shipping label.\n\nStep 3: Pack the product securely in its original packaging. Write your RMA number on the outside of the parcel.\n\nStep 4: Drop the parcel at the nearest courier partner location. Do not send returns without an RMA number — they will not be accepted.',
+        body: 'Step 1: Email returns@verdebliss.com within 14 days of delivery with your order number, the product(s) you wish to return, and the reason for return.\n\nStep 2: Our team will respond within 2 business days with a Return Merchandise Authorisation (RMA) number and a prepaid return shipping label.\n\nStep 3: Pack the product securely in its original packaging. Write your RMA number on the outside of the parcel.\n\nStep 4: Drop the parcel at the nearest courier partner location. Do not send returns without an RMA number — they will not be accepted.',
       },
       {
         heading: '4. Adverse Skin Reactions',
-        body: 'All VerdeBliss products are dermatologist tested. However, if you experience an unexpected adverse reaction, we will offer a full exchange or store credit even if the product has been opened.\n\nTo claim: email reactions@verdebliss.in with your order number, the product name, a brief description of the reaction, and (optionally) a photo. We may refer you to our dermatologist partner for a complimentary skin assessment.',
+        body: 'All VerdeBliss products are dermatologist tested. However, if you experience an unexpected adverse reaction, we will offer a full exchange or store credit even if the product has been opened.\n\nTo claim: email reactions@verdebliss.com with your order number, the product name, a brief description of the reaction, and (optionally) a photo. We may refer you to our dermatologist partner for a complimentary skin assessment.',
       },
       {
         heading: '5. Damaged or Incorrect Items',
-        body: 'If your order arrives damaged or you receive an incorrect item, contact us within 48 hours of delivery at support@verdebliss.in. Attach a photo of the damage or incorrect item. We will ship a replacement at no cost within 3–5 business days, or issue a full refund — your choice.',
+        body: 'If your order arrives damaged or you receive an incorrect item, contact us within 48 hours of delivery at support@verdebliss.com. Attach a photo of the damage or incorrect item. We will ship a replacement at no cost within 3–5 business days, or issue a full refund — your choice.',
       },
       {
         heading: '6. Refund Processing',
@@ -148,26 +160,31 @@ const CONTENT = {
       },
       {
         heading: '9. Contact Us',
-        body: 'Returns: returns@verdebliss.in\nAdverse reactions: reactions@verdebliss.in\nDamaged / incorrect items: support@verdebliss.in\nGeneral: hello@verdebliss.in\n\nVerdeBliss Cosmetics Private Limited\nKharadi, Pune 411014, Maharashtra, India',
+        body: 'Returns: returns@verdebliss.com\nAdverse reactions: reactions@verdebliss.com\nDamaged / incorrect items: support@verdebliss.com\nGeneral: hello@verdebliss.com\n\nVerdeBliss Cosmetics Private Limited\nKharadi, Pune 411014, Maharashtra, India',
       },
     ],
   },
 }
 
-export default function LegalModal({ type, onClose }) {
+interface LegalModalProps {
+  type: LegalModalType
+  onClose: () => void
+}
+
+export default function LegalModal({ type, onClose }: LegalModalProps) {
   const doc = CONTENT[type]
-  const dialogRef = useRef(null)
-  const previouslyFocusedRef = useRef(null)
+  const dialogRef = useRef<HTMLDivElement | null>(null)
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (!doc) return
-    previouslyFocusedRef.current = document.activeElement
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null
     document.body.style.overflow = 'hidden'
     requestAnimationFrame(() => {
-      const first = dialogRef.current?.querySelector(
+      const first = dialogRef.current?.querySelector<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       )
-      first?.focus?.()
+      first?.focus()
     })
     return () => {
       document.body.style.overflow = ''
@@ -177,21 +194,20 @@ export default function LegalModal({ type, onClose }) {
 
   useEffect(() => {
     if (!doc) return
-    const handler = (e) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
       if (e.key !== 'Tab') return
       const focusable = dialogRef.current
         ? Array.from(
-            dialogRef.current.querySelectorAll(
+            dialogRef.current.querySelectorAll<HTMLElement>(
               'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
             )
-          ).filter(
-            (el): el is HTMLElement => el instanceof HTMLElement && !el.hasAttribute('disabled')
-          )
+          ).filter((el) => !el.hasAttribute('disabled'))
         : []
       if (!focusable.length) return
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
+      if (!first || !last) return
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault()
         last.focus()
@@ -213,16 +229,7 @@ export default function LegalModal({ type, onClose }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(28,34,30,0.6)',
-          zIndex: 400,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '16px',
-        }}
+        className="fixed inset-0 z-[400] flex items-center justify-center bg-text/60 p-4"
         role="dialog"
         aria-modal="true"
         aria-label={doc.title}
@@ -233,122 +240,44 @@ export default function LegalModal({ type, onClose }) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 16 }}
           onClick={(e) => e.stopPropagation()}
-          style={{
-            background: '#FFFEF9',
-            borderRadius: 20,
-            width: '100%',
-            maxWidth: 680,
-            maxHeight: '90vh',
-            display: 'flex',
-            flexDirection: 'column',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-          }}
+          className="flex max-h-[90vh] w-full max-w-[680px] flex-col rounded-[20px] bg-warmWhite shadow-[0_20px_60px_rgba(0,0,0,0.2)]"
         >
-          {/* Header */}
-          <div
-            style={{
-              padding: '20px 24px',
-              borderBottom: `1px solid ${C.border}`,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexShrink: 0,
-            }}
-          >
+          <header className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 py-5">
             <div>
-              <h2
-                style={{
-                  fontFamily: FONT.serif,
-                  fontSize: 24,
-                  color: C.text,
-                  margin: 0,
-                  fontWeight: 400,
-                }}
-              >
-                {doc.title}
-              </h2>
-              <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{doc.updated}</div>
+              <h2 className="m-0 font-serif text-2xl font-normal text-text">{doc.title}</h2>
+              <p className="mt-1 text-xs text-muted">{doc.updated}</p>
             </div>
             <button
+              type="button"
               onClick={onClose}
               aria-label="Close"
-              style={{
-                background: 'none',
-                border: `1px solid ${C.border}`,
-                borderRadius: 8,
-                width: 34,
-                height: 34,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
+              className="flex h-[34px] w-[34px] flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-transparent"
             >
-              <X size={15} color={C.muted} />
+              <X size={15} className="text-muted" />
             </button>
-          </div>
+          </header>
 
-          {/* Scrollable content */}
-          <div style={{ overflowY: 'auto', padding: '20px 24px', flex: 1 }}>
+          <div className="flex-1 overflow-y-auto px-6 py-5">
             {doc.sections.map((s) => (
-              <div key={s.heading} style={{ marginBottom: 24 }}>
-                <h3
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: C.text,
-                    marginBottom: 8,
-                    fontFamily: FONT.serif,
-                  }}
-                >
-                  {s.heading}
-                </h3>
+              <section key={s.heading} className="mb-6">
+                <h3 className="mb-2 font-serif text-sm font-semibold text-text">{s.heading}</h3>
                 {s.body.split('\n\n').map((para, i) => (
                   <p
                     key={i}
-                    style={{
-                      fontSize: 13,
-                      color: C.muted,
-                      lineHeight: 1.8,
-                      marginBottom: 8,
-                      whiteSpace: 'pre-wrap',
-                    }}
+                    className="mb-2 whitespace-pre-wrap text-[13px] leading-relaxed text-muted"
                   >
                     {para}
                   </p>
                 ))}
-              </div>
+              </section>
             ))}
           </div>
 
-          {/* Footer */}
-          <div
-            style={{
-              padding: '14px 24px',
-              borderTop: `1px solid ${C.border}`,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              flexShrink: 0,
-            }}
-          >
-            <button
-              onClick={onClose}
-              style={{
-                background: C.forest,
-                color: 'white',
-                border: 'none',
-                borderRadius: 10,
-                padding: '10px 24px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
+          <footer className="flex flex-shrink-0 justify-end border-t border-border px-6 py-3.5">
+            <button type="button" onClick={onClose} className="btn-primary px-6 py-2.5">
               I understand
             </button>
-          </div>
+          </footer>
         </motion.div>
       </motion.div>
     </AnimatePresence>

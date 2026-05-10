@@ -1,191 +1,107 @@
 'use client'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { User, ShoppingBag, Menu, X, Search } from 'lucide-react'
 import SearchBar from '@/components/features/search/SearchBar'
 import { useCartStore, selectItemCount } from '@/store/cartStore'
 import { useAuthStore } from '@/store/authStore'
-import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
-import { C, FONT } from '@/constants/theme'
+
+const LINKS = [
+  { path: '/', label: 'Home' },
+  { path: '/products', label: 'Shop' },
+  { path: '/quiz', label: 'Skin Quiz' },
+  { path: '/blog', label: 'Journal' },
+  { path: '/faq', label: 'FAQ' },
+  { path: '/account', label: 'Account' },
+]
 
 export default function Nav() {
-  const router = useRouter()
   const pathname = usePathname()
   const openCart = useCartStore((s) => s.openCart)
   const itemCount = useCartStore(selectItemCount)
   const user = useAuthStore((s) => s.user)
-  const width = useWindowWidth()
-  const isMobile = width < BP.tablet
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
-  const links = [
-    { path: '/', label: 'Home' },
-    { path: '/products', label: 'Shop' },
-    { path: '/quiz', label: 'Skin Quiz' },
-    { path: '/blog', label: 'Journal' },
-    { path: '/faq', label: 'FAQ' },
-    { path: '/account', label: 'Account' },
-  ]
-
-  const isActive = (path) =>
+  const isActive = (path: string) =>
     pathname === path || (path === '/products' && pathname?.startsWith('/products'))
 
-  const goTo = (path) => {
-    router.push(path)
+  const closeMenus = () => {
     setMenuOpen(false)
     setSearchOpen(false)
   }
 
   return (
     <>
-      <nav
-        style={{
-          background: 'rgba(250,247,242,0.96)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: `1px solid ${C.border}`,
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          padding: '0 16px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1200,
-            margin: '0 auto',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            height: 60,
-          }}
-        >
+      <nav className="sticky top-0 z-[100] border-b border-border bg-bg/95 px-4 backdrop-blur-md">
+        <div className="mx-auto flex h-[60px] max-w-[1200px] items-center gap-3">
           {/* Logo */}
-          <button
-            onClick={() => goTo('/')}
+          <Link
+            href="/"
             aria-label="VerdeBliss home"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-            }}
+            onClick={closeMenus}
+            className="flex flex-shrink-0 items-center"
           >
             <Image
               src="/images/logo.webp"
               alt="VerdeBliss"
               width={120}
               height={40}
-              style={{ height: 40, width: 'auto', objectFit: 'contain' }}
               priority
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null
-                if (fallback) fallback.style.display = 'block'
-              }}
+              className="h-10 w-auto object-contain"
             />
-            <span
-              style={{
-                display: 'none',
-                fontSize: 16,
-                fontWeight: 600,
-                color: C.forest,
-                fontFamily: FONT.serif,
-              }}
-            >
-              VerdeBliss
-            </span>
-          </button>
+          </Link>
 
-          {/* Desktop nav links */}
-          {!isMobile && (
-            <div style={{ display: 'flex', gap: 20, marginLeft: 8, flexShrink: 0 }}>
-              {links.map(({ path, label }) => (
-                <button
-                  key={path}
-                  onClick={() => goTo(path)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: 13,
-                    fontWeight: isActive(path) ? 600 : 400,
-                    color: isActive(path) ? C.forest : C.muted,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    padding: '4px 0',
-                    borderBottom: isActive(path) ? `2px solid ${C.gold}` : '2px solid transparent',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Desktop nav links — md+ only via Tailwind, CSS-driven (no JS hydration mismatch) */}
+          <div className="ml-2 hidden flex-shrink-0 gap-5 md:flex">
+            {LINKS.map(({ path, label }) => (
+              <Link
+                key={path}
+                href={path}
+                onClick={closeMenus}
+                className={`whitespace-nowrap py-1 text-[13px] transition ${
+                  isActive(path)
+                    ? 'border-b-2 border-gold font-semibold text-forest'
+                    : 'border-b-2 border-transparent font-normal text-muted hover:text-forest'
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
 
-          {!isMobile && (
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <SearchBar />
-            </div>
-          )}
-
-          {isMobile && <div style={{ flex: 1 }} />}
+          {/* Desktop search */}
+          <div className="hidden min-w-0 flex-1 md:block">
+            <SearchBar />
+          </div>
+          {/* Mobile spacer */}
+          <div className="flex-1 md:hidden" />
 
           {/* Icon row */}
-          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-            {isMobile && (
-              <button
-                onClick={() => setSearchOpen((o) => !o)}
-                aria-label="Search"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 8,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                <Search size={18} color={C.text} />
-              </button>
-            )}
+          <div className="flex flex-shrink-0 items-center">
+            {/* Mobile-only search toggle */}
             <button
-              onClick={() => goTo('/account')}
-              aria-label="Account"
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 8,
-                cursor: 'pointer',
-                borderRadius: 8,
-                display: 'flex',
-                alignItems: 'center',
-              }}
+              type="button"
+              onClick={() => setSearchOpen((o) => !o)}
+              aria-label="Search"
+              className="flex cursor-pointer items-center border-none bg-transparent p-2 md:hidden"
             >
-              <User size={18} color={user ? C.forest : C.text} />
+              <Search size={18} className="text-text" />
             </button>
+            <Link href="/account" aria-label="Account" className="flex items-center rounded-lg p-2">
+              <User size={18} className={user ? 'text-forest' : 'text-text'} />
+            </Link>
             <button
+              type="button"
               onClick={openCart}
               aria-label={`Cart, ${itemCount} items`}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 8,
-                cursor: 'pointer',
-                borderRadius: 8,
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-              }}
+              className="relative flex cursor-pointer items-center rounded-lg border-none bg-transparent p-2"
             >
-              <ShoppingBag size={18} color={C.text} />
+              <ShoppingBag size={18} className="text-text" />
               <AnimatePresence>
                 {itemCount > 0 && (
                   <motion.span
@@ -193,56 +109,40 @@ export default function Nav() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    style={{
-                      position: 'absolute',
-                      top: 3,
-                      right: 3,
-                      background: C.gold,
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: 16,
-                      height: 16,
-                      fontSize: 9,
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
+                    className="absolute right-[3px] top-[3px] flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[9px] font-bold text-white"
                   >
                     {itemCount}
                   </motion.span>
                 )}
               </AnimatePresence>
             </button>
-            {isMobile && (
-              <button
-                onClick={() => setMenuOpen((o) => !o)}
-                aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 8,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                }}
-              >
-                {menuOpen ? <X size={18} color={C.text} /> : <Menu size={18} color={C.text} />}
-              </button>
-            )}
+            {/* Mobile-only burger */}
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+              className="flex cursor-pointer items-center border-none bg-transparent p-2 md:hidden"
+            >
+              {menuOpen ? (
+                <X size={18} className="text-text" />
+              ) : (
+                <Menu size={18} className="text-text" />
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Mobile search */}
+        {/* Mobile search drawer */}
         <AnimatePresence>
-          {isMobile && searchOpen && (
+          {searchOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              style={{ overflow: 'hidden', borderTop: `1px solid ${C.border}` }}
+              className="overflow-hidden border-t border-border md:hidden"
             >
-              <div style={{ padding: '10px 16px' }}>
+              <div className="px-4 py-2.5">
                 <SearchBar />
               </div>
             </motion.div>
@@ -250,58 +150,39 @@ export default function Nav() {
         </AnimatePresence>
       </nav>
 
-      {/* Mobile menu drawer */}
+      {/* Mobile menu */}
       <AnimatePresence>
-        {isMobile && menuOpen && (
+        {menuOpen && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 98 }}
+              className="fixed inset-0 z-[98] bg-black/30 md:hidden"
             />
-            <motion.div
+            <motion.aside
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 26 }}
-              style={{
-                position: 'fixed',
-                top: 0,
-                right: 0,
-                bottom: 0,
-                width: 240,
-                background: C.card,
-                zIndex: 99,
-                padding: '80px 20px 20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-              }}
+              className="fixed bottom-0 right-0 top-0 z-[99] flex w-60 flex-col gap-1 bg-card px-5 pb-5 pt-20 md:hidden"
             >
-              {links.map(({ path, label }) => (
-                <button
+              {LINKS.map(({ path, label }) => (
+                <Link
                   key={path}
-                  onClick={() => goTo(path)}
-                  style={{
-                    background: isActive(path) ? C.sagePale : 'none',
-                    border: 'none',
-                    textAlign: 'left',
-                    padding: '12px 16px',
-                    borderRadius: 10,
-                    fontSize: 16,
-                    fontWeight: isActive(path) ? 600 : 400,
-                    color: isActive(path) ? C.forest : C.text,
-                    cursor: 'pointer',
-                    fontFamily: FONT.serif,
-                    width: '100%',
-                  }}
+                  href={path}
+                  onClick={closeMenus}
+                  className={`block w-full rounded-[10px] px-4 py-3 text-left font-serif text-base ${
+                    isActive(path)
+                      ? 'bg-sagePale font-semibold text-forest'
+                      : 'font-normal text-text'
+                  }`}
                 >
                   {label}
-                </button>
+                </Link>
               ))}
-            </motion.div>
+            </motion.aside>
           </>
         )}
       </AnimatePresence>

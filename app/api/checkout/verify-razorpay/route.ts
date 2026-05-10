@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
+import { requireSameOriginRequest } from '@/lib/csrf'
 import { completeRazorpayCheckout, verifyRazorpaySignature } from '@/lib/commerce'
 
 export async function POST(request: Request) {
   try {
+    const csrfFailure = requireSameOriginRequest(request)
+    if (csrfFailure) return csrfFailure
+
     if (await isRateLimited(request, 'checkout_verify', 20, 60)) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again shortly.' },

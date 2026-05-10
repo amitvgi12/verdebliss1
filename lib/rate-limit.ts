@@ -1,21 +1,54 @@
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
+/**
+ * IP-aware rate limiter with database persistence + in-memory fallback.
+ *
+ * Notes for production hardening:
+ *  - On Vercel, `x-forwarded-for` is appended such that the leftmost entry is
+ *    the original client. We trust `x-vercel-forwarded-for` first when present
+ *    because Vercel's edge sets it from a verified source.
+ *  - Callers can pass an `additionalKey` (e.g. user id, email, cart id) so a
+ *    single attacker cannot bypass the limiter merely by rotating IPs.
+ *  - Ingress traffic from CGNAT / corporate proxies will share an IP. Limits
+ *    should be set per scope to tolerate this.
+ */
+
 interface MemoryBucket {
   count: number
   resetAt: number
 }
 
 const memoryBuckets = new Map<string, MemoryBucket>()
+const MEMORY_BUCKET_HARD_CAP = 5_000
 
 function getClientIp(request: Request): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  )
+  const vercelForwarded = request.headers.get('x-vercel-forwarded-for')
+  if (vercelForwarded) return vercelForwarded.split(',')[0]?.trim() || 'unknown'
+
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0]?.trim() || 'unknown'
+
+  return request.headers.get('x-real-ip') || 'unknown'
 }
 
 function memoryLimit(key: string, limit: number, windowSeconds: number): boolean {
+  // Soft eviction so a leaky-bucket attack cannot pin the process.
+  if (memoryBuckets.size > MEMORY_BUCKET_HARD_CAP) {
+    const now = Date.now()
+    for (const [k, bucket] of memoryBuckets) {
+      if (bucket.resetAt <= now) memoryBuckets.delete(k)
+    }
+    if (memoryBuckets.size > MEMORY_BUCKET_HARD_CAP) {
+      // Last resort: drop a portion of the oldest entries.
+      const toDrop = Math.ceil(memoryBuckets.size * 0.1)
+      let dropped = 0
+      for (const k of memoryBuckets.keys()) {
+        if (dropped++ >= toDrop) break
+        memoryBuckets.delete(k)
+      }
+    }
+  }
+
   const now = Date.now()
   const resetAt = now + windowSeconds * 1000
   const bucket = memoryBuckets.get(key) ?? { count: 0, resetAt }
@@ -28,30 +61,51 @@ function memoryLimit(key: string, limit: number, windowSeconds: number): boolean
   return bucket.count > limit
 }
 
+async function checkSingleKey(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+  if (!hasSupabaseAdminEnv()) return memoryLimit(key, limit, windowSeconds)
+
+  try {
+    const supabase = createSupabaseAdmin()
+    const { data, error } = await supabase.rpc('check_api_rate_limit', {
+      p_key: key,
+      p_limit: limit,
+      p_window_seconds: windowSeconds,
+    })
+    if (error) {
+      console.warn('[rate-limit] DB limiter error, falling back to memory:', error.message)
+      return memoryLimit(key, limit, windowSeconds)
+    }
+    return data !== true
+  } catch (error) {
+    console.warn(
+      '[rate-limit] DB limiter threw, falling back to memory:',
+      error instanceof Error ? error.message : error
+    )
+    return memoryLimit(key, limit, windowSeconds)
+  }
+}
+
 export async function isRateLimited(
   request: Request,
   scope: string,
   limit: number,
-  windowSeconds = 60
+  windowSeconds = 60,
+  additionalKey?: string | null
 ): Promise<boolean> {
   const ip = getClientIp(request)
-  const key = `${scope}:${ip}`
+  const ipKey = `${scope}:ip:${ip}`
 
-  if (!hasSupabaseAdminEnv()) {
-    return memoryLimit(key, limit, windowSeconds)
+  // IP gate first.
+  if (await checkSingleKey(ipKey, limit, windowSeconds)) return true
+
+  // If caller supplied an identity gate (user id, email, cart id), also throttle
+  // by that — protects against IP rotation.
+  if (additionalKey) {
+    const idKey = `${scope}:id:${additionalKey}`
+    // Identity bucket is a bit more generous so legitimate users on shared IPs
+    // are not collateral damage.
+    if (await checkSingleKey(idKey, Math.max(limit, limit * 2), windowSeconds)) return true
   }
 
-  const supabase = createSupabaseAdmin()
-  const { data, error } = await supabase.rpc('check_api_rate_limit', {
-    p_key: key,
-    p_limit: limit,
-    p_window_seconds: windowSeconds,
-  })
-
-  if (error) {
-    console.warn('[rate-limit] Falling back to in-memory limiter:', error.message)
-    return memoryLimit(key, limit, windowSeconds)
-  }
-
-  return data !== true
+  return false
 }

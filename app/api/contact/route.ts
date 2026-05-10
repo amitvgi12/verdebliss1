@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
+import { requireSameOriginRequest } from '@/lib/csrf'
+import { verifyTurnstileFromRequest } from '@/lib/turnstile'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
 const EMAIL_RE = /\S+@\S+\.\S+/
@@ -14,17 +16,32 @@ const TOPICS = new Set([
 
 export async function POST(request: Request) {
   try {
-    if (await isRateLimited(request, 'contact', 5, 60)) {
+    const csrfFailure = requireSameOriginRequest(request)
+    if (csrfFailure) return csrfFailure
+
+    const body = await request.json()
+    const email = String(body?.email ?? '')
+      .trim()
+      .toLowerCase()
+
+    if (await isRateLimited(request, 'contact', 5, 60, email || null)) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again shortly.' },
         { status: 429 }
       )
     }
-    const body = await request.json()
+
+    // Bot defence: Turnstile token verified server-side. Honeypot check below
+    // is kept for redundancy.
+    const turnstile = await verifyTurnstileFromRequest(request, body)
+    if (!turnstile.ok) {
+      return NextResponse.json(
+        { error: 'Bot check failed. Please refresh and try again.' },
+        { status: 400 }
+      )
+    }
+
     const name = String(body?.name ?? '').trim()
-    const email = String(body?.email ?? '')
-      .trim()
-      .toLowerCase()
     const topic = String(body?.topic ?? 'Other').trim() || 'Other'
     const message = String(body?.message ?? '').trim()
     const honeypot = String(body?.website ?? '').trim()
@@ -39,7 +56,7 @@ export async function POST(request: Request) {
     if (!hasSupabaseAdminEnv()) {
       if (process.env.NODE_ENV === 'production') {
         return NextResponse.json(
-          { error: 'Contact service is not configured. Please email hello@verdebliss.in.' },
+          { error: 'Contact service is not configured. Please email hello@verdebliss.com.' },
           { status: 503 }
         )
       }

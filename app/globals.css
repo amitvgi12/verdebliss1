@@ -1,5 +1,51 @@
 @import 'tailwindcss';
 
+/* ── Tailwind v4 theme tokens ─────────────────────────────────
+ * These map our brand palette into Tailwind utilities (bg-forest,
+ * text-muted, border-border, etc.). They mirror constants/theme.ts
+ * one-for-one so the legacy `C.*` references remain accurate during
+ * a gradual migration.
+ * ───────────────────────────────────────────────────────────── */
+@theme {
+  /* Surfaces */
+  --color-bg: #faf7f2;
+  --color-card: #fdfaf6;
+  --color-warmWhite: #fffef9;
+
+  /* Brand greens */
+  --color-forest: #2d4a32;
+  --color-forestLight: #3d6344;
+
+  /* Sage / Olive */
+  --color-sage: #7d9b76;
+  --color-sagePale: #eaf0e8;
+  --color-olive: #5c7a52;
+
+  /* Terracotta */
+  --color-terra: #c07a5a;
+  --color-terraPale: #f6ede8;
+
+  /* Gold */
+  --color-gold: #bfa06a;
+  --color-goldText: #8b6914;
+  --color-goldPale: #f5edd8;
+
+  /* Ivory */
+  --color-ivory: #f2eae0;
+
+  /* Text */
+  --color-text: #1c221e;
+  --color-muted: #6b7a5e;
+  --color-light: #a8baa9;
+
+  /* Structure */
+  --color-border: #e4dad0;
+
+  /* Fonts */
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+}
+
 /* ── Reset ───────────────────────────────────────────────────── */
 *,
 *::before,
@@ -13,8 +59,8 @@ html {
 }
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
-  background: #faf7f2;
-  color: #1c221e;
+  background: var(--color-bg);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -23,7 +69,7 @@ body {
   position: absolute;
   top: -100px;
   left: 8px;
-  background: #2d4a32;
+  background: var(--color-forest);
   color: white;
   padding: 8px 16px;
   border-radius: 0 0 8px 8px;
@@ -37,14 +83,14 @@ body {
   top: 0;
 }
 
-/* ── Focus visible (6.6 — keyboard users) ───────────────────── */
+/* ── Focus visible (WCAG 2.4.7) ─────────────────────────────── */
 *:focus-visible {
-  outline: 2px solid #2d4a32;
+  outline: 2px solid var(--color-forest);
   outline-offset: 3px;
   border-radius: 4px;
 }
 
-/* ── Reduced motion (WCAG 2.3.3 + 7.8) ─────────────────────── */
+/* ── Reduced motion (WCAG 2.3.3) ────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -62,14 +108,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #faf7f2;
+  background: var(--color-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #c07a5a;
+  background: var(--color-terra);
   border-radius: 3px;
 }
 
-/* Screen-reader only utility (WCAG 6.6) */
+/* Screen-reader-only utility (WCAG 2.4.6) */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -80,4 +126,32 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── Reusable component classes (Tailwind @apply layer) ─────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border-none bg-forest px-7 py-3.5 font-sans text-sm font-semibold tracking-wide text-white transition-transform hover:translate-x-1 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-terra {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border-none bg-terra px-7 py-3.5 font-sans text-sm font-semibold tracking-wide text-white transition-transform hover:translate-x-1 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-gold {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border-none bg-gold px-6 py-3 font-sans text-sm font-semibold text-white transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-outline {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border-2 border-forest bg-transparent px-7 py-3 font-sans text-sm font-semibold text-forest transition hover:bg-forest hover:text-white;
+  }
+  .input-base {
+    @apply w-full rounded-[10px] border border-border bg-warmWhite px-4 py-3 font-sans text-sm text-text outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/20;
+  }
+  .label-eyebrow {
+    @apply text-[10px] font-semibold uppercase tracking-[0.14em] text-terra;
+  }
+  .h-section {
+    @apply mb-3 font-serif text-[clamp(2rem,4vw,2.75rem)] font-normal text-text;
+  }
+  .container-content {
+    @apply mx-auto w-full max-w-[1200px] px-4;
+  }
 }

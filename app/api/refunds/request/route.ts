@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
+import { requireSameOriginRequest } from '@/lib/csrf'
 import {
   createSupabaseAdmin,
   getUserFromAuthorizationHeader,
@@ -11,16 +12,20 @@ const OPEN_REFUND_STATUSES = ['requested', 'reviewing', 'approved']
 
 export async function POST(request: Request) {
   try {
-    if (await isRateLimited(request, 'refunds', 4, 300)) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again shortly.' },
-        { status: 429 }
-      )
-    }
+    const csrfFailure = requireSameOriginRequest(request)
+    if (csrfFailure) return csrfFailure
+
     const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
     if (!user) return NextResponse.json({ error: 'Sign in required' }, { status: 401 })
     if (!hasSupabaseAdminEnv()) {
       return NextResponse.json({ error: 'Refund service not configured' }, { status: 503 })
+    }
+
+    if (await isRateLimited(request, 'refunds', 4, 300, user.id)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again shortly.' },
+        { status: 429 }
+      )
     }
 
     const body = await request.json()

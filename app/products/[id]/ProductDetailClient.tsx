@@ -115,7 +115,19 @@ function PAOSymbol({ months }: { months: number | string }) {
 }
 
 /* ── Accordion ────────────────────────────────────────────────── */
-function Accordion({ id, label, open, onToggle, children }) {
+function Accordion({
+  id,
+  label,
+  open,
+  onToggle,
+  children,
+}: {
+  id: string
+  label: string
+  open: boolean
+  onToggle: () => void
+  children: React.ReactNode
+}) {
   return (
     <div style={{ borderBottom: `1px solid ${C.border}` }}>
       <button
@@ -196,7 +208,7 @@ export default function ProductDetailClient({
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const toggleAcc = (secId) => setSection((prev) => (prev === secId ? '' : secId))
+  const toggleAcc = (secId: string) => setSection((prev) => (prev === secId ? '' : secId))
 
   if (isLoading)
     return (
@@ -249,7 +261,10 @@ export default function ProductDetailClient({
     )
 
   const compliance =
-    PRODUCT_COMPLIANCE[p.id] ?? PRODUCT_COMPLIANCE[p.slug] ?? PRODUCT_COMPLIANCE[id] ?? {}
+    PRODUCT_COMPLIANCE[p.id] ??
+    (p.slug ? PRODUCT_COMPLIANCE[p.slug] : undefined) ??
+    PRODUCT_COMPLIANCE[id] ??
+    null
   const related = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
   const mrp = Math.round((p.price ?? 0) * 1.25)
   const discount = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
@@ -266,8 +281,8 @@ export default function ProductDetailClient({
   const prodCerts = CERTIFICATIONS.filter((c) => {
     if (c.label === 'Derma-Tested') return true
     if (c.label === 'Eco Packaging') return true
-    return (p.badges ?? []).some((b) =>
-      b.toLowerCase().includes(c.label.toLowerCase().split('-')[0])
+    return (p.badges ?? []).some((b: string) =>
+      b.toLowerCase().includes(c.label.toLowerCase().split('-')[0] ?? '')
     )
   })
 
@@ -488,7 +503,7 @@ export default function ProductDetailClient({
               <div style={infoCard}>
                 <div style={infoLabel}>IDEAL FOR</div>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  {(p.skin_types ?? []).map((s) => (
+                  {(p.skin_types ?? []).map((s: string) => (
                     <span
                       key={s}
                       style={{

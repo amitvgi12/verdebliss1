@@ -338,6 +338,33 @@ create table if not exists public.api_rate_limits (
   updated_at  timestamptz default now()
 );
 
+-- Webhook reconciliation DLQ. Razorpay sends a webhook, signature verifies, and
+-- recordPaymentEvent succeeds — but completing the order fails (e.g. session
+-- already completed, stock changed, transient DB error). The event is durably
+-- captured here so an ops cron / admin UI can retry or investigate without
+-- racing Razorpay's retry behaviour.
+create table if not exists public.payment_reconciliation_failures (
+  id                   uuid primary key default uuid_generate_v4(),
+  provider             text not null default 'razorpay',
+  event_type           text not null,
+  provider_order_id    text,
+  provider_payment_id  text,
+  payload              jsonb default '{}',
+  failure_reason       text,
+  resolved             boolean default false,
+  resolved_at          timestamptz,
+  resolved_by          text,
+  retry_count          int default 0,
+  last_retry_at        timestamptz,
+  created_at           timestamptz default now()
+);
+
+create index if not exists payment_reconciliation_failures_unresolved_idx
+  on public.payment_reconciliation_failures (created_at)
+  where resolved = false;
+create index if not exists payment_reconciliation_failures_provider_payment_idx
+  on public.payment_reconciliation_failures (provider_payment_id);
+
 
 
 create or replace function public.check_api_rate_limit(
@@ -456,7 +483,23 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- ── Loyalty update: server/service-role only ─────────
+-- ── Loyalty: tier rules in ONE place ─────────────────
+-- Mirrored in lib/loyalty.ts (TS side). When you change a threshold here,
+-- update the TS helper too. There's a regression test in tests/loyalty.test.ts.
+create or replace function public.tier_for_points(p_points int)
+returns text
+language sql
+immutable
+as $$
+  select case
+    when coalesce(p_points, 0) >= 1500 then 'Platinum Alchemist'
+    when coalesce(p_points, 0) >= 500 then 'Gold Botanist'
+    else 'Green Leaf'
+  end;
+$$;
+
+grant execute on function public.tier_for_points(int) to public, anon, authenticated, service_role;
+
 create or replace function public.apply_loyalty_points(
   p_user_id uuid,
   p_points int
@@ -472,11 +515,7 @@ begin
 
   update public.profiles
   set points = points + p_points,
-      tier = case
-        when points + p_points >= 1500 then 'Platinum Alchemist'
-        when points + p_points >= 500 then 'Gold Botanist'
-        else 'Green Leaf'
-      end,
+      tier = public.tier_for_points(points + p_points),
       updated_at = now()
   where id = p_user_id;
 end;
@@ -712,11 +751,7 @@ begin
 
     update public.profiles
     set points = points + v_points,
-        tier = case
-          when points + v_points >= 1500 then 'Platinum Alchemist'
-          when points + v_points >= 500 then 'Gold Botanist'
-          else 'Green Leaf'
-        end,
+        tier = public.tier_for_points(points + v_points),
         updated_at = now()
     where id = p_user_id;
 
@@ -751,6 +786,7 @@ alter table public.refunds enable row level security;
 alter table public.contact_tickets enable row level security;
 alter table public.customer_consents enable row level security;
 alter table public.api_rate_limits enable row level security;
+alter table public.payment_reconciliation_failures enable row level security;
 
 -- Drop previous and unsafe policy names before recreating hardened policies.
 drop policy if exists "Anyone can view products" on public.products;

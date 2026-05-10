@@ -1,13 +1,7 @@
-'use client'
-/**
- * ProductImage.jsx — CRITICAL FIX 2.2
- * Replaced plain <img> with next/image <Image fill>
- * Benefits: automatic WebP/AVIF, responsive sizing, lazy loading,
- * CLS prevention, CDN delivery via Vercel Image Optimization.
- */
 import Image from 'next/image'
+import type { Product } from '@/types'
 
-const INGREDIENT_GRADIENTS = {
+const INGREDIENT_GRADIENTS: Record<string, string> = {
   Bakuchiol: 'linear-gradient(160deg,#d4e8cd 0%,#b8d9af 100%)',
   'Rose Hip': 'linear-gradient(160deg,#fce8ee 0%,#f7c5d3 100%)',
   'Green Tea': 'linear-gradient(160deg,#dcedc8 0%,#c5e1a5 100%)',
@@ -18,7 +12,7 @@ const INGREDIENT_GRADIENTS = {
   'Shea Butter': 'linear-gradient(160deg,#fff3e0 0%,#ffcc80 100%)',
 }
 
-const PRODUCT_IMAGES = {
+const PRODUCT_IMAGES: Record<string, string> = {
   Bakuchiol: '/images/products/serum.webp',
   'Rose Hip': '/images/products/moisturiser.webp',
   'Green Tea': '/images/products/toner.webp',
@@ -31,27 +25,32 @@ const PRODUCT_IMAGES = {
 
 const DEFAULT_GRADIENT = 'linear-gradient(160deg,#eaf0e8 0%,#c8dbc6 100%)'
 
-export default function ProductImage({ product, priority = false }) {
+interface ProductImageProps {
+  product?: Pick<Product, 'image_url' | 'name' | 'ingredient'> | null
+  priority?: boolean
+  sizes?: string
+}
+
+export default function ProductImage({
+  product,
+  priority = false,
+  sizes = '(max-width: 768px) 100vw, 50vw',
+}: ProductImageProps) {
+  const ingredient = product?.ingredient
   const src =
-    product?.image_url ?? PRODUCT_IMAGES[product?.ingredient] ?? '/images/products/serum.webp'
-  const bg = INGREDIENT_GRADIENTS[product?.ingredient] ?? DEFAULT_GRADIENT
+    product?.image_url ??
+    (ingredient && PRODUCT_IMAGES[ingredient]) ??
+    '/images/products/serum.webp'
+  const bg = (ingredient && INGREDIENT_GRADIENTS[ingredient]) ?? DEFAULT_GRADIENT
 
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: bg,
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="relative h-full w-full overflow-hidden" style={{ background: bg }}>
       <Image
         src={src}
         alt={product?.name ?? 'VerdeBliss product'}
         fill
-        sizes="(max-width: 768px) 100vw, 50vw"
-        style={{ objectFit: 'contain', padding: '10%' }}
+        sizes={sizes}
+        className="object-contain p-[10%]"
         priority={priority}
       />
     </div>

@@ -4,7 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
 
-export default function FAQClient({ items }) {
+interface FAQItem {
+  q: string
+  a: string
+}
+
+export default function FAQClient({ items }: { items: FAQItem[] }) {
   const [open, setOpen] = useState(0)
 
   return (
@@ -35,13 +40,13 @@ export default function FAQClient({ items }) {
             Frequently Asked Questions
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, lineHeight: 1.7 }}>
-            Can&apos;t find what you&apos;re looking for? Email us at hello@verdebliss.in
+            Can&apos;t find what you&apos;re looking for? Email us at hello@verdebliss.com
           </p>
         </div>
       </div>
 
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 16px 64px' }}>
-        {items.map((item, i) => {
+        {items.map((item: FAQItem, i: number) => {
           const isOpen = open === i
           return (
             <div key={i} style={{ borderBottom: `1px solid ${C.border}` }}>

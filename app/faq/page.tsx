@@ -1,7 +1,7 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 import FAQClient from './FAQClient'
-import { StructuredData } from '@/lib/seo'
+import { StructuredData } from '@/lib/structured-data'
 
 const FAQ_DATA = [
   {
@@ -14,7 +14,7 @@ const FAQ_DATA = [
   },
   {
     q: 'What is your return policy?',
-    a: 'We accept returns of unopened products within 14 days of delivery. Opened products are eligible for exchange if you experience an adverse reaction. Email returns@verdebliss.in with your order ID.',
+    a: 'We accept returns of unopened products within 14 days of delivery. Opened products are eligible for exchange if you experience an adverse reaction. Email returns@verdebliss.com with your order ID.',
   },
   {
     q: 'How do loyalty points work?',
@@ -50,7 +50,7 @@ const FAQ_DATA = [
   },
   {
     q: 'What if I have a reaction to a product?',
-    a: 'Stop using the product immediately and consult a dermatologist. Email reactions@verdebliss.in with your order ID and photos — we will issue a full refund and provide a free replacement of an alternative product.',
+    a: 'Stop using the product immediately and consult a dermatologist. Email reactions@verdebliss.com with your order ID and photos — we will issue a full refund and provide a free replacement of an alternative product.',
   },
 ]
 

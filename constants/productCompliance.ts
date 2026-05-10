@@ -8,7 +8,16 @@
  *   - Age guidance where applicable
  */
 
-export const PRODUCT_COMPLIANCE = {
+export interface ProductCompliance {
+  pao: number
+  inci: string
+  allergens: string
+  patchTest: boolean
+  agingNote: string | null
+  freeFrom: string[]
+}
+
+export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
   /* Bakuchiol Renewal Serum */
   1: {
     pao: 12,

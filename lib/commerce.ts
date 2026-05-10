@@ -1,10 +1,14 @@
 import crypto from 'node:crypto'
 import { PRODUCTS } from '@/constants/products'
 import { getShippingCost } from '@/constants/shipping'
+import { pointsForSubtotal } from '@/lib/loyalty'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
-export const COD_MAX_TOTAL = 500
+// COD cap raised from ₹500 (which collided with the ₹499 free-shipping
+// threshold and made COD effectively unreachable for any cart of 2+ items)
+// to a level usable by real customers.
+export const COD_MAX_TOTAL = 2500
 export const CURRENCY = 'INR'
 
 export interface CheckoutAddress {
@@ -226,7 +230,7 @@ export async function normalizeCart(rawItems: unknown) {
   const subtotal = roundMoney(items.reduce((sum, item) => sum + item.price * item.qty, 0))
   const shipping = roundMoney(getShippingCost(subtotal))
   const total = roundMoney(subtotal + shipping)
-  const pointsToEarn = Math.floor(subtotal / 10)
+  const pointsToEarn = pointsForSubtotal(subtotal)
 
   return { items, totals: { subtotal, shipping, total, pointsToEarn } satisfies CartTotals }
 }
@@ -514,7 +518,7 @@ export async function completeRazorpayCheckout(input: {
         subtotal: session.subtotal,
         shipping: session.shipping,
         total: session.total,
-        pointsToEarn: Math.floor(session.subtotal / 10),
+        pointsToEarn: pointsForSubtotal(session.subtotal),
       },
       idempotent: true,
     }
@@ -539,7 +543,7 @@ export async function completeRazorpayCheckout(input: {
     subtotal: session.subtotal,
     shipping: session.shipping,
     total: session.total,
-    pointsToEarn: Math.floor(session.subtotal / 10),
+    pointsToEarn: pointsForSubtotal(session.subtotal),
   }
 
   const order = await persistOrder({
@@ -602,5 +606,34 @@ export async function recordPaymentEvent(input: {
   // any other persistence error is logged for operational investigation.
   if (error && error.code !== '23505') {
     console.warn('[commerce] Could not record payment event:', error.message)
+  }
+}
+
+export async function recordReconciliationFailure(input: {
+  eventType: string
+  providerOrderId: string | null
+  providerPaymentId: string | null
+  payload: Record<string, unknown>
+  failureReason: string
+}) {
+  if (!hasSupabaseAdminEnv()) return
+  try {
+    const supabase = createSupabaseAdmin()
+    const { error } = await supabase.from('payment_reconciliation_failures').insert({
+      provider: 'razorpay',
+      event_type: input.eventType,
+      provider_order_id: input.providerOrderId,
+      provider_payment_id: input.providerPaymentId,
+      payload: input.payload,
+      failure_reason: input.failureReason,
+      resolved: false,
+      retry_count: 0,
+    })
+    if (error) {
+      // We're already in a failure path; do not throw — preserve webhook 200.
+      console.warn('[commerce] Could not persist reconciliation failure:', error.message)
+    }
+  } catch (err) {
+    console.warn('[commerce] DLQ insert threw:', err instanceof Error ? err.message : String(err))
   }
 }

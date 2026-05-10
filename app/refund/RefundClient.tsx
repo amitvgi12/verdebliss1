@@ -8,20 +8,29 @@ import { C, FONT } from '@/constants/theme'
 import { useAuthStore } from '@/store/authStore'
 import { supabase } from '@/lib/supabase'
 
+interface RefundRow {
+  id: string
+  order_id?: string | null
+  reason?: string | null
+  status?: string | null
+  created_at?: string | null
+}
+
 export default function RefundClient() {
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
   const [loading, setLoading] = useState(false)
-  const [refunds, setRefunds] = useState([])
-  const [error, setError] = useState(null)
+  const [refunds, setRefunds] = useState<RefundRow[]>([])
+  const [error, setError] = useState<string | null>(null)
   const [reason, setReason] = useState('')
 
   useEffect(() => {
     if (!user) return
-    fetchRefunds()
+    void fetchRefunds()
   }, [user])
 
   async function fetchRefunds() {
+    if (!user) return
     setLoading(true)
     setError(null)
     try {
@@ -36,10 +45,10 @@ export default function RefundClient() {
         setRefunds([])
         setError(err.message)
       } else {
-        setRefunds(data || [])
+        setRefunds((data ?? []) as RefundRow[])
       }
     } catch (e) {
-      setError(String(e))
+      setError(e instanceof Error ? e.message : String(e))
     } finally {
       setLoading(false)
     }
@@ -63,6 +72,7 @@ export default function RefundClient() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-vb-client': 'web',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ reason }),
@@ -70,9 +80,9 @@ export default function RefundClient() {
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload?.error ?? 'Could not submit refund request')
       setReason('')
-      fetchRefunds()
+      void fetchRefunds()
     } catch (e) {
-      setError(e.message ?? String(e))
+      setError(e instanceof Error ? e.message : String(e))
     } finally {
       setLoading(false)
     }
@@ -150,7 +160,7 @@ export default function RefundClient() {
                     >
                       <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{r.reason}</div>
                       <div style={{ fontSize: 12, color: C.muted }}>
-                        {new Date(r.created_at).toLocaleString()}
+                        {r.created_at ? new Date(r.created_at).toLocaleString() : ''}
                       </div>
                     </div>
                     <div style={{ fontSize: 13, color: C.muted }}>Status: {r.status}</div>

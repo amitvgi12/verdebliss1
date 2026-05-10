@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion'
-import { TIERS } from '@/constants/products'
+import { TIERS, type LoyaltyTier } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
+import type { CustomerProfile } from '@/types'
 
-export default function LoyaltyPanel({ profile }) {
+interface LoyaltyPanelProps {
+  profile?: CustomerProfile | null
+}
+
+export default function LoyaltyPanel({ profile }: LoyaltyPanelProps) {
   const points = profile?.points ?? 0
-  const tier = TIERS.find((t) => points >= t.min && points <= t.max) ?? TIERS[0]
+  const tier: LoyaltyTier = TIERS.find((t) => points >= t.min && points <= t.max) ?? TIERS[0]!
   const nextTier = TIERS[TIERS.indexOf(tier) + 1]
   const pct = nextTier ? Math.round(((points - tier.min) / (nextTier.min - tier.min)) * 100) : 100
 
