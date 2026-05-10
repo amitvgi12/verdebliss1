@@ -37,7 +37,7 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
-import type { ApprovedReview } from '@/lib/products-server'
+import type { ApprovedReview, ReviewAggregate } from '@/lib/products-server'
 import type { Product } from '@/types'
 
 import PAOSymbol from './_components/PAOSymbol'
@@ -91,10 +91,12 @@ export default function ProductDetailClient({
   id,
   initialProduct,
   initialReviews = [],
+  initialReviewAggregate = null,
 }: {
   id: string
   initialProduct?: Product | null
   initialReviews?: ApprovedReview[]
+  initialReviewAggregate?: ReviewAggregate | null
 }) {
   // id passed as prop
   const router = useRouter()
@@ -202,7 +204,7 @@ export default function ProductDetailClient({
     <div className="min-h-screen bg-bg">
       {/* Breadcrumb */}
       <div className="overflow-x-hidden border-b border-border bg-bg">
-        <div className="container-content">
+        <div className="site-container">
           <nav
             aria-label="Breadcrumb"
             className="flex h-10 items-center gap-1 overflow-hidden text-xs text-muted"
@@ -383,10 +385,18 @@ export default function ProductDetailClient({
                 flexWrap: 'wrap',
               }}
             >
-              <Stars rating={p.rating} size={14} />
-              <span style={{ fontSize: 13, color: C.muted }}>
-                {p.rating?.toFixed(1)} ({p.review_count} verified reviews)
-              </span>
+              {initialReviewAggregate && initialReviewAggregate.count > 0 ? (
+                <>
+                  <Stars rating={initialReviewAggregate.average} size={14} />
+                  <span style={{ fontSize: 13, color: C.muted }}>
+                    {initialReviewAggregate.average.toFixed(1)} ({initialReviewAggregate.count}{' '}
+                    approved review
+                    {initialReviewAggregate.count === 1 ? '' : 's'})
+                  </span>
+                </>
+              ) : (
+                <span style={{ fontSize: 13, color: C.muted }}>No approved reviews yet</span>
+              )}
             </div>
 
             <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, marginBottom: 20 }}>

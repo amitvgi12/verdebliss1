@@ -40,7 +40,8 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
   if (subscribed) {
     return (
       <div className="inline-flex items-center gap-2 rounded-[10px] bg-sagePale px-6 py-3 font-medium text-forest">
-        <Check size={16} aria-hidden /> You&apos;re on the list! 50 points added soon.
+        <Check size={16} aria-hidden /> You&apos;re on the list. Please check your inbox for
+        updates.
       </div>
     )
   }
@@ -48,10 +49,10 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
   return (
     <form
       onSubmit={onSubmit}
-      className="mx-auto flex max-w-md flex-col items-center gap-3"
+      className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3"
       noValidate
     >
-      <div className="flex w-full flex-wrap justify-center gap-2.5">
+      <div className="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-[1fr_auto]">
         <label htmlFor="newsletter-email" className="sr-only">
           Email address
         </label>
@@ -64,7 +65,7 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="input-base min-w-[180px] flex-1"
+          className="input-base min-w-0"
           aria-invalid={Boolean(error)}
           aria-describedby={error ? 'newsletter-error' : undefined}
         />

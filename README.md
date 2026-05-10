@@ -1,139 +1,114 @@
-# VerdeBliss — Next.js D2C Organic Skincare Storefront
+# VerdeBliss — Next.js Commerce Platform
 
-Production-oriented D2C storefront for VerdeBliss organic cosmetics. The app uses Next.js App Router, TypeScript, Tailwind tooling, Supabase Postgres/Auth/RLS, Razorpay Checkout, and a Gemini-powered support chatbot.
+VerdeBliss is a production-oriented D2C skincare storefront built with **Next.js App Router**, **TypeScript strict mode**, **Tailwind CSS**, **Supabase**, and **Razorpay**.
 
-Live site: https://www.verdebliss.com/
+The current architecture is server-first for SEO-critical routes and server-owned for payment/order integrity. Browser code never writes orders, payment events, loyalty points, or inventory movements directly.
 
 ## Current architecture
 
 ```text
-Customer browser
-  ├─ Next.js App Router pages and client components
-  ├─ Zustand cart/auth/wishlist/toast stores
-  └─ Razorpay Checkout modal
-       ↓
-Next.js server routes
+Browser UI
+  ├─ Server-rendered homepage, products, product detail, blog, policy pages
+  ├─ Client islands: cart, checkout steps, account, filters, reviews form, chatbot
+  └─ API calls use x-vb-client + Origin/Referer checks
+
+Next.js API boundary
   ├─ /api/checkout/create-razorpay-order
   ├─ /api/checkout/verify-razorpay
   ├─ /api/checkout/cod
   ├─ /api/webhooks/razorpay
+  ├─ /api/reviews
+  ├─ /api/refunds/request
   ├─ /api/contact
   ├─ /api/newsletter
-  ├─ /api/refunds/request
-  ├─ /api/chat
   └─ /api/version
-       ↓
-Supabase Postgres + RLS
+
+Supabase Postgres
   ├─ products, profiles
   ├─ checkout_sessions
   ├─ orders, order_items
-  ├─ payment_events
+  ├─ payment_events, payment_reconciliation_failures
   ├─ inventory_movements
   ├─ loyalty_ledger
-  ├─ reviews
-  ├─ refunds
-  ├─ contact_tickets, customer_consents
+  ├─ reviews with verified-purchase fields
+  ├─ refunds, contact_tickets, customer_consents
   └─ api_rate_limits
 ```
 
-## Key production controls
+## Production fixes included
 
-- Checkout is server-owned. The browser cannot directly create paid orders.
-- Razorpay order creation happens in `/api/checkout/create-razorpay-order`.
-- Razorpay success is verified in `/api/checkout/verify-razorpay` using the server secret.
-- Webhook events are verified in `/api/webhooks/razorpay` with `RAZORPAY_WEBHOOK_SECRET`.
-- Final order creation uses the `public.finalize_commerce_order(...)` Postgres RPC so order, items, inventory, payment event, and loyalty points commit atomically.
-- Supabase RLS prevents customers from inserting or mutating orders, payment events, inventory movements, or loyalty points directly.
-- Public APIs use database-backed rate limiting via `public.check_api_rate_limit(...)` with a local fallback for development.
-- Product detail pages redirect numeric IDs to slug URLs and render Product JSON-LD with shipping/returns data.
-- Approved product reviews are server-rendered on first load and hydrated client-side for review submission.
-- Product cards use semantic `article`, `Link`, and `button` controls instead of clickable parent `div`s.
+- Server-owned Razorpay checkout sessions.
+- Server-side Razorpay signature verification and payment amount/currency validation.
+- Raw-body Razorpay webhook verification.
+- Atomic order finalisation through `public.finalize_commerce_order(...)`.
+- Inventory and loyalty updates happen inside the database transaction.
+- DB-backed API rate limiting.
+- Strict TypeScript enabled.
+- Homepage is server-rendered.
+- `/products` now server-renders product cards instead of shipping an empty client shell.
+- Product sitemap uses DB-first catalogue via `getProductsServer()`.
+- Review submissions go through `/api/reviews` and require a purchased order item.
+- Product detail no longer displays fake “verified reviews” counts when approved review data is unavailable.
+- Newsletter copy no longer promises points that the backend does not award.
+- UI containment helpers fix the edge-to-edge/misaligned layouts visible in the audit screenshots.
+- Sentry SDK imports were removed from app modules because they caused Next build-trace instability in this repo; structured log signatures remain for log-drain alerting.
 
-## Tech stack
-
-- Next.js 15 App Router
-- React 19
-- TypeScript
-- Tailwind CSS tooling
-- Supabase Postgres, Auth, RLS
-- Razorpay Checkout
-- Google Gemini API for support chatbot
-- Zustand for client state
-- Framer Motion for selected interactions
-- Vitest + React Testing Library
-- ESLint flat config + Prettier
-
-## Repository structure
-
-```text
-app/                         Next.js App Router pages and API routes
-components/                  UI, layout, cart, chat, review components
-constants/                   Product, theme, shipping, compliance constants
-hooks/                       Product/window hooks
-lib/                         Commerce, SEO, Supabase, rate-limit helpers
-store/                       Zustand stores
-supabase/                    Idempotent schema and seed data
-tests/                       Unit/component tests
-public/                      Optimized assets, manifest, robots
-```
-
-## Environment variables
-
-Create `.env.local` for local development and configure the same values in Vercel for deployment.
+## Required environment variables
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_or_live_xxxxx
-RAZORPAY_KEY_ID=rzp_test_or_live_xxxxx
+NEXT_PUBLIC_RAZORPAY_KEY_ID=
+RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
 RAZORPAY_WEBHOOK_SECRET=
 
 GEMINI_API_KEY=
-NEXT_PUBLIC_GIT_SHA=local
-NEXT_PUBLIC_BUILD_TIME=local
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+
+NEXT_PUBLIC_BUILD_SHA=
+NEXT_PUBLIC_BUILD_TIME=
+NEXT_PUBLIC_APP_VERSION=
+CF_ORIGIN_SECRET=
 ```
 
-Notes:
+## Local setup
 
-- `NEXT_PUBLIC_RAZORPAY_KEY_ID` is safe for the browser.
-- `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY` must remain server-only.
-- GitHub Secrets do not automatically become Vercel runtime variables unless the deployment workflow passes them through.
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
+```
 
-## Supabase setup
+## Database setup
 
-Run in this order:
+Run in Supabase SQL editor:
 
 ```sql
--- 1. Required schema, safe to re-run
+-- 1. Main schema / migrations
 supabase/schema.sql
 
--- 2. Optional demo/test data
+-- 2. Optional local/demo data
 supabase/seed_test_data.sql
 ```
 
-The schema is idempotent. It uses `create table if not exists`, `alter table ... add column if not exists`, `drop policy if exists`, and `drop trigger if exists` where appropriate.
+`schema.sql` is idempotent and can be rerun on an existing project.
 
 ## Razorpay setup
 
-1. Add `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_ID`, and `RAZORPAY_KEY_SECRET`.
-2. Configure webhook URL:
+1. Add `RAZORPAY_KEY_ID`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, and `RAZORPAY_KEY_SECRET` to Vercel.
+2. Add webhook URL in Razorpay:
 
 ```text
 https://www.verdebliss.com/api/webhooks/razorpay
 ```
 
-3. Add the webhook secret to `RAZORPAY_WEBHOOK_SECRET`.
-4. Enable at least `payment.captured` and `payment.authorized` events.
-
-## Development
-
-```bash
-npm ci
-npm run dev
-```
+3. Add `RAZORPAY_WEBHOOK_SECRET` to Vercel.
+4. Subscribe at minimum to payment authorized/captured/failed events.
+5. Monitor `payment_reconciliation_failures` and `[ALERT] payment_reconciliation_failed` log events.
 
 ## Validation commands
 
@@ -141,24 +116,23 @@ npm run dev
 npm run format:check
 npm run lint
 npx tsc --noEmit
-npm test
+npm test -- --run
 npm run build
 ```
 
-## Production deployment checklist
+In this sandbox, `next build` completed compilation/static generation but did not exit after build-trace collection. The two-phase Next build completed successfully:
 
-1. Run `supabase/schema.sql`.
-2. Confirm all server-only environment variables are configured in Vercel Production.
-3. Configure Razorpay webhook and secret.
-4. Deploy.
-5. Open `/api/version` and verify the deployed Git SHA/build time.
-6. Test checkout with Razorpay test keys.
-7. Test COD, contact, newsletter, review submission, refund request, and chatbot flows.
-8. Clear browser cart/localStorage if old cart rows contain stale product IDs.
+```bash
+npx next build --experimental-build-mode compile
+npx next build --experimental-build-mode generate
+```
 
-## Documentation files retained
+Validate the standard `npm run build` on Vercel/GitHub Actions before deployment.
 
-- `README.md` — current architecture, setup, validation, deployment.
-- `PRODUCTION_NOTES.md` — production-hardening notes and known follow-ups.
-- `QA_TEST_CASES.md` — manual QA checklist.
-- `supabase/README_RUN_SCHEMA.md` — Supabase SQL run notes.
+## Production runbook summary
+
+- Treat `payment_reconciliation_failures` as an operational queue.
+- Wire log alerts for `[ALERT] payment_reconciliation_failed`, `[EXCEPTION]`, and checkout API 5xx spikes.
+- Do not restore hardcoded review counts; use approved review aggregates only.
+- Do not promise loyalty points unless a `loyalty_ledger` event is actually created.
+- Keep product catalogue DB-first; `constants/products.ts` is only fallback data.

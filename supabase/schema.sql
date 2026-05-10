@@ -257,20 +257,27 @@ create table if not exists public.wishlist (
 );
 
 create table if not exists public.reviews (
-  id          uuid primary key default uuid_generate_v4(),
-  product_id  text not null,
-  user_id     uuid references public.profiles on delete set null,
-  rating      int check (rating between 1 and 5),
-  title       text,
-  body        text,
-  approved    boolean default false,
-  created_at  timestamptz default now(),
-  updated_at  timestamptz default now()
+  id                 uuid primary key default uuid_generate_v4(),
+  product_id         text not null,
+  user_id            uuid references public.profiles on delete set null,
+  order_item_id      uuid references public.order_items on delete set null,
+  verified_purchase  boolean default false,
+  rating             int check (rating between 1 and 5),
+  title              text,
+  body               text,
+  approved           boolean default false,
+  created_at         timestamptz default now(),
+  updated_at         timestamptz default now()
 );
 
 alter table public.reviews add column if not exists title text;
 alter table public.reviews add column if not exists approved boolean default false;
 alter table public.reviews add column if not exists updated_at timestamptz default now();
+alter table public.reviews add column if not exists order_item_id uuid references public.order_items on delete set null;
+alter table public.reviews add column if not exists verified_purchase boolean default false;
+create unique index if not exists reviews_one_per_user_product_idx
+  on public.reviews (user_id, product_id)
+  where user_id is not null;
 
 create table if not exists public.addresses (
   id          uuid primary key default uuid_generate_v4(),
@@ -805,6 +812,7 @@ drop policy if exists "Anyone can view reviews" on public.reviews;
 drop policy if exists "Anyone can read approved reviews" on public.reviews;
 drop policy if exists "Authenticated users can create reviews" on public.reviews;
 drop policy if exists "Owner can insert pending review" on public.reviews;
+drop policy if exists "Service role can insert verified pending reviews" on public.reviews;
 drop policy if exists "Staff can moderate reviews" on public.reviews;
 drop policy if exists "Owner can read refunds" on public.refunds;
 drop policy if exists "Owner can insert refund requests" on public.refunds;
@@ -843,11 +851,10 @@ create policy "Owner can manage wishlist" on public.wishlist
 create policy "Owner can manage addresses" on public.addresses
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- Reviews: only approved reviews are public; customers can insert pending reviews.
+-- Reviews: only approved reviews are public. Review submissions go through
+-- /api/reviews so the server can verify a matching order_item before insert.
 create policy "Anyone can read approved reviews" on public.reviews
   for select using (approved = true or auth.uid() = user_id or public.is_staff());
-create policy "Owner can insert pending review" on public.reviews
-  for insert with check (auth.uid() = user_id and approved = false);
 create policy "Staff can moderate reviews" on public.reviews
   for update using (public.is_staff()) with check (public.is_staff());
 

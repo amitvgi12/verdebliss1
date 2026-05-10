@@ -38,7 +38,7 @@ export default function Nav() {
   return (
     <>
       <nav className="sticky top-0 z-[100] border-b border-border bg-bg/95 px-4 backdrop-blur-md">
-        <div className="mx-auto flex h-[60px] max-w-[1200px] items-center gap-3">
+        <div className="site-container flex h-[60px] items-center gap-3">
           {/* Logo */}
           <Link
             href="/"

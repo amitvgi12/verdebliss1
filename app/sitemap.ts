@@ -1,10 +1,12 @@
 import type { MetadataRoute } from 'next'
-import { PRODUCTS } from '@/constants/products'
+import { getProductsServer } from '@/lib/products-server'
 import { productPath } from '@/lib/seo'
 
 const BASE_URL = 'https://www.verdebliss.com'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 3600
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
   const staticRoutes = [
     '',
@@ -26,12 +28,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1 : 0.7,
   }))
 
-  const products: MetadataRoute.Sitemap = PRODUCTS.map((product) => ({
+  // Catalogue is DB-first via getProductsServer(), with static fallback for local
+  // builds. That keeps public URLs aligned with the canonical product source.
+  const products = await getProductsServer()
+  const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${BASE_URL}${productPath(product)}`,
-    lastModified: now,
+    lastModified: product.created_at ? new Date(product.created_at) : now,
     changeFrequency: 'weekly',
     priority: 0.8,
   }))
 
-  return [...routes, ...products]
+  return [...routes, ...productRoutes]
 }

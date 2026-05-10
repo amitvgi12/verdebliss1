@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Star, Send, CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { apiPost } from '@/lib/api-client'
 import { useAuthStore } from '@/store/authStore'
 import Stars from '@/components/ui/Stars'
 import { C, FONT } from '@/constants/theme'
@@ -14,6 +15,7 @@ interface ReviewRow {
   title: string | null
   body: string | null
   created_at: string
+  verified_purchase?: boolean | null
   profiles?: { full_name?: string | null } | null
 }
 
@@ -33,7 +35,7 @@ export default function ReviewSection({
   const [reviews, setReviews] = useState<ReviewRow[]>(
     (initialReviews ?? []) as unknown as ReviewRow[]
   )
-  const [loading, setLoading] = useState((initialReviews ?? []).length === 0)
+  const [loading, setLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -41,6 +43,9 @@ export default function ReviewSection({
   const [errors, setErrors] = useState<ReviewErrors>({})
 
   useEffect(() => {
+    // Refresh approved reviews after hydration, but never show a server-rendered
+    // page as perpetually 'Loading reviews…'. Empty approved-review states are
+    // rendered honestly as 'No reviews yet'.
     fetchReviews()
   }, [productId])
 
@@ -48,7 +53,7 @@ export default function ReviewSection({
     setLoading(true)
     const { data } = await supabase
       .from('reviews')
-      .select('id, rating, title, body, created_at, profiles(full_name)')
+      .select('id, rating, title, body, created_at, verified_purchase, profiles(full_name)')
       .eq('product_id', productId)
       .eq('approved', true)
       .order('created_at', { ascending: false })
@@ -68,19 +73,27 @@ export default function ReviewSection({
   async function submitReview() {
     if (!validate()) return
     setSubmitting(true)
-    const { error } = await supabase.from('reviews').insert({
-      product_id: productId,
-      user_id: user?.id,
-      rating: form.rating,
-      title: form.title.trim(),
-      body: form.body.trim(),
-      approved: false,
-    })
-    setSubmitting(false)
-    if (!error) {
+    try {
+      const { data } = await supabase.auth.getSession()
+      await apiPost(
+        '/api/reviews',
+        {
+          productId,
+          rating: form.rating,
+          title: form.title.trim(),
+          body: form.body.trim(),
+        },
+        { authToken: data.session?.access_token }
+      )
       setSubmitted(true)
       setShowForm(false)
       setForm({ rating: 5, title: '', body: '' })
+    } catch (error) {
+      setErrors({
+        body: error instanceof Error ? error.message : 'Unable to submit review right now.',
+      })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -117,7 +130,7 @@ export default function ReviewSection({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Stars rating={parseFloat(avgRating)} size={16} />
               <span style={{ fontSize: 14, color: C.muted }}>
-                {avgRating} · {reviews.length} verified review{reviews.length !== 1 ? 's' : ''}
+                {avgRating} · {reviews.length} approved review{reviews.length !== 1 ? 's' : ''}
               </span>
             </div>
           )}
@@ -312,8 +325,7 @@ export default function ReviewSection({
               </div>
 
               <p style={{ fontSize: 11, color: C.muted, marginBottom: 14 }}>
-                ✅ Verified Purchase · Reviews are moderated before publishing. FTC disclosure: all
-                reviews are from real customers.
+                Reviews are accepted only from eligible customers and moderated before publishing.
               </p>
 
               <button
@@ -378,18 +390,20 @@ export default function ReviewSection({
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: C.forest,
-                      background: C.sagePale,
-                      padding: '2px 8px',
-                      borderRadius: 99,
-                    }}
-                  >
-                    VERIFIED PURCHASE
-                  </span>
+                  {r.verified_purchase && (
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: C.forest,
+                        background: C.sagePale,
+                        padding: '2px 8px',
+                        borderRadius: 99,
+                      }}
+                    >
+                      VERIFIED PURCHASE
+                    </span>
+                  )}
                   <span style={{ fontSize: 11, color: C.muted }}>
                     {new Date(r.created_at).toLocaleDateString('en-IN', {
                       day: 'numeric',
@@ -403,7 +417,7 @@ export default function ReviewSection({
                 {r.body ?? ''}
               </p>
               <p style={{ fontSize: 11, color: C.light }}>
-                — {r.profiles?.full_name ?? 'Verified Customer'}
+                — {r.profiles?.full_name ?? 'Customer'}
               </p>
             </div>
           ))}

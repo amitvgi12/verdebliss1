@@ -1,27 +1,16 @@
 /**
- * Next.js instrumentation entry point. Loaded by Next once per process,
- * before any route handler or page runs. We use it to register Sentry on
- * server (node) and edge runtimes when `SENTRY_DSN` is set.
+ * Next.js instrumentation hook.
  *
- * If the DSN is unset, this is a no-op — every callsite still works because
- * `lib/observability.ts` falls back to structured `console` output.
+ * The previous Sentry SDK import pulled optional OpenTelemetry/Prisma modules
+ * into `next build` page-data collection and caused non-deterministic worker
+ * exits in this repo. Production observability is handled through structured
+ * log events from `lib/observability.ts` plus platform log drains/alerts.
+ * Re-introduce a vendor SDK only after verifying `next build` completes cleanly.
  */
 export async function register() {
-  if (!process.env.SENTRY_DSN) return
-
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    await import('./sentry.server.config')
-  } else if (process.env.NEXT_RUNTIME === 'edge') {
-    await import('./sentry.edge.config')
-  }
+  // Intentionally no-op.
 }
 
-export async function onRequestError(
-  err: unknown,
-  request: Parameters<typeof import('@sentry/nextjs').captureRequestError>[1],
-  context: Parameters<typeof import('@sentry/nextjs').captureRequestError>[2]
-) {
-  if (!process.env.SENTRY_DSN) return
-  const Sentry = await import('@sentry/nextjs')
-  Sentry.captureRequestError(err, request, context)
+export async function onRequestError(err: unknown) {
+  console.error('[EXCEPTION] next_request_error', err)
 }

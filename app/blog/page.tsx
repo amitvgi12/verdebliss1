@@ -44,7 +44,7 @@ export default function BlogIndexPage() {
   return (
     <div className="bg-bg">
       <section className="bg-forest px-4 py-16 text-center">
-        <div className="container-content">
+        <div className="site-container">
           <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
             THE VERDEBLISS JOURNAL
           </p>
@@ -57,7 +57,7 @@ export default function BlogIndexPage() {
         </div>
       </section>
 
-      <section className="container-content py-16">
+      <section className="site-container py-16">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
           {POSTS.map((post) => (
             <article

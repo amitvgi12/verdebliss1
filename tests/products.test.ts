@@ -119,3 +119,28 @@ describe('TIERS', () => {
     })
   })
 })
+
+describe('server product filtering', () => {
+  it('filters catalogue by category for server-rendered /products page', async () => {
+    const { filterAndSortProducts } = await import('@/app/products/page')
+    const serums = filterAndSortProducts(PRODUCTS, {
+      category: 'Serum',
+      skinType: 'All',
+      sortBy: 'Bestselling',
+    })
+    expect(serums.length).toBeGreaterThan(0)
+    expect(serums.every((p) => p.category === 'Serum')).toBe(true)
+  })
+
+  it('sorts server-rendered products from low to high price', async () => {
+    const { filterAndSortProducts } = await import('@/app/products/page')
+    const sorted = filterAndSortProducts(PRODUCTS, {
+      category: 'All',
+      skinType: 'All',
+      sortBy: 'Price: Low to High',
+    })
+    for (let i = 1; i < sorted.length; i++) {
+      expect(sorted[i]?.price ?? 0).toBeGreaterThanOrEqual(sorted[i - 1]?.price ?? 0)
+    }
+  })
+})

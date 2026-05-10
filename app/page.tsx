@@ -71,10 +71,11 @@ export default async function Home() {
           className="pointer-events-none absolute -bottom-24 left-40 z-0 h-[360px] w-[360px] rounded-full bg-sage/10"
         />
 
-        <div className="relative z-10 mx-auto grid w-full max-w-[1200px] grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
+        <div className="site-container relative z-10 grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
           <div>
             <p className="mb-5 text-[10px] font-semibold tracking-[0.18em] text-sage">
-              ✦ CERTIFIED ORGANIC &nbsp;·&nbsp; CRUELTY-FREE &nbsp;·&nbsp; VEGAN ✦
+              ✦ BOTANICAL SKINCARE &nbsp;·&nbsp; CRUELTY-FREE PRINCIPLES &nbsp;·&nbsp; VEGAN
+              FORMULAS ✦
             </p>
             <h1 className="m-0 mb-6 font-serif text-[clamp(40px,5.5vw,76px)] font-normal leading-none text-white">
               Pure.
@@ -100,9 +101,9 @@ export default async function Home() {
             </div>
             <dl className="mt-12 flex flex-wrap gap-9">
               {[
-                ['500+', 'Organic Ingredients'],
-                ['4.8★', 'Average Rating'],
-                ['50K+', 'Happy Customers'],
+                ['8', 'Launch Formulas'],
+                ['6', 'Care Categories'],
+                ['₹499+', 'Free Shipping'],
               ].map(([n, l]) => (
                 <div key={l}>
                   <dt className="font-serif text-2xl font-bold text-gold">{n}</dt>
@@ -153,16 +154,16 @@ export default async function Home() {
       </section>
 
       {/* ── Featured Products ─────────────────────────────────── */}
-      <section className="container-content py-20">
+      <section className="site-container page-section">
         <header className="mb-12 text-center">
           <p className="label-eyebrow mb-2.5">CURATED FOR YOU</p>
           <h2 className="h-section">The Collection</h2>
           <p className="mx-auto max-w-[420px] text-sm leading-relaxed text-muted">
-            Every formula crafted from certified organic botanicals, dermatologist-approved and
-            loved by thousands.
+            Every formula is designed around botanical actives, transparent ingredients, and
+            everyday skin rituals.
           </p>
         </header>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5">
+        <div className="product-grid product-grid-compact">
           {featured.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
@@ -176,7 +177,7 @@ export default async function Home() {
 
       {/* ── Key Ingredients ───────────────────────────────────── */}
       <section className="bg-ivory px-4 py-20">
-        <div className="container-content">
+        <div className="site-container">
           <header className="mb-12 text-center">
             <p className="label-eyebrow mb-2.5">WHAT&apos;S INSIDE</p>
             <h2 className="h-section">Nature&apos;s Finest Ingredients</h2>
@@ -200,7 +201,7 @@ export default async function Home() {
 
       {/* ── Philosophy ────────────────────────────────────────── */}
       <section className="overflow-hidden bg-forest px-4 py-20">
-        <div className="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 md:grid-cols-2">
+        <div className="site-container grid grid-cols-1 items-center gap-12 md:grid-cols-2">
           <div>
             <p className="mb-3 text-[10px] font-semibold tracking-[0.14em] text-sage">
               OUR PHILOSOPHY
@@ -209,15 +210,15 @@ export default async function Home() {
               Beauty that honours the earth
             </h2>
             <p className="mb-7 text-[15px] leading-relaxed text-white/60">
-              Every VerdeBliss formula is crafted from certified organic botanicals, never tested on
-              animals, and packaged in eco-conscious materials.
+              Every VerdeBliss formula is designed around botanical ingredients, cruelty-free
+              principles, and more conscious packaging choices.
             </p>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
-                ['🌱', '95%+ Organic Ingredients'],
+                ['🌱', 'Botanical Actives'],
                 ['🐰', 'Cruelty-Free'],
                 ['♻️', 'Eco Packaging'],
-                ['🏆', 'Dermatologist OK'],
+                ['🏆', 'Ingredient Transparency'],
               ].map(([e, l]) => (
                 <li
                   key={l}
@@ -245,7 +246,7 @@ export default async function Home() {
       </section>
 
       {/* ── Testimonials ──────────────────────────────────────── */}
-      <section className="container-content py-20">
+      <section className="site-container page-section">
         <header className="mb-12 text-center">
           <p className="label-eyebrow mb-2.5">REAL RESULTS</p>
           <h2 className="m-0 font-serif text-[clamp(32px,4vw,44px)] font-normal text-text">
@@ -282,9 +283,9 @@ export default async function Home() {
 
         {/* FTC + Verified Purchase disclosure */}
         <p className="mt-6 text-center text-[11px] leading-relaxed text-light">
-          All reviews are from verified purchasers. Results may vary based on individual skin type,
-          usage, and lifestyle. Individual results are not guaranteed. *These statements have not
-          been evaluated by a regulatory authority.
+          Testimonials are from customer feedback collected by VerdeBliss. Results may vary based on
+          individual skin type, usage, and lifestyle. Individual results are not guaranteed. *These
+          statements have not been evaluated by a regulatory authority.
         </p>
       </section>
 
@@ -292,10 +293,10 @@ export default async function Home() {
       <section className="bg-ivory px-4 py-16 text-center">
         <p className="label-eyebrow mb-2.5">JOIN THE CIRCLE</p>
         <h2 className="mb-2 font-serif text-[clamp(24px,3vw,34px)] font-normal text-text">
-          Subscribe &amp; earn 50 bonus points
+          Subscribe for launch rituals
         </h2>
         <p className="mb-7 text-sm text-muted">
-          New launches, rituals, and exclusive offers — delivered to your inbox.
+          New launches, ingredient education, and exclusive offers — delivered to your inbox.
         </p>
         <NewsletterForm />
       </section>

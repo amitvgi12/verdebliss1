@@ -54,7 +54,7 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
 export default function Footer() {
   return (
     <footer className="bg-forest px-4 pb-7 pt-14 text-white/55">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-10">
+      <div className="site-container grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-10">
         {/* Brand column */}
         <div>
           <Link
@@ -72,7 +72,7 @@ export default function Footer() {
           </Link>
 
           <p className="mb-4 max-w-[240px] text-[13px] leading-relaxed">
-            Where nature becomes luxury. Certified organic botanicals for your most radiant skin.
+            Where nature becomes luxury. Botanical skincare rituals for your most radiant skin.
           </p>
           <a
             href="mailto:hello@verdebliss.com"
@@ -88,7 +88,7 @@ export default function Footer() {
         <LinkColumn title="SUPPORT" links={SUPPORT_LINKS} />
       </div>
 
-      <div className="mx-auto mt-9 flex max-w-[1200px] flex-wrap justify-between gap-2 border-t border-white/10 pt-6 text-[11px]">
+      <div className="site-container mt-9 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-6 text-[11px]">
         <span>© 2026 VerdeBliss Cosmetics Private Limited.</span>
         <LegalLinks />
       </div>

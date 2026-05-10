@@ -29,7 +29,6 @@ interface ChatMessage {
 interface TrustedContext {
   isLoggedIn: boolean
   name: string
-  email: string
   skinType: string
   tier: string
   points: number
@@ -78,7 +77,6 @@ function emptyContext(): TrustedContext {
   return {
     isLoggedIn: false,
     name: '',
-    email: '',
     skinType: 'not specified',
     tier: 'Green Leaf',
     points: 0,
@@ -94,7 +92,20 @@ function toGeminiContents(messages: ChatMessage[]) {
   }))
 }
 
-async function buildTrustedContext(request: Request): Promise<TrustedContext> {
+function conversationNeedsOrderContext(messages: ChatMessage[]): boolean {
+  const text = messages
+    .map((m) => m.content)
+    .join(' ')
+    .toLowerCase()
+  return /\b(order|refund|return|delivery|delivered|tracking|payment|paid|cod|points|loyalty|status)\b/.test(
+    text
+  )
+}
+
+async function buildTrustedContext(
+  request: Request,
+  includeOrders: boolean
+): Promise<TrustedContext> {
   const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
   if (!user || !hasSupabaseAdminEnv()) return emptyContext()
 
@@ -105,18 +116,20 @@ async function buildTrustedContext(request: Request): Promise<TrustedContext> {
     .eq('id', user.id)
     .maybeSingle()
 
-  const { data: orders } = await supabase
-    .from('orders')
-    .select('id, status, total, items, payment_id, payment_status, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  const orderList = includeOrders
+    ? ((
+        await supabase
+          .from('orders')
+          .select('id, status, total, items, payment_status, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(3)
+      ).data ?? [])
+    : []
 
-  const orderList = Array.isArray(orders) ? orders : []
   return {
     isLoggedIn: true,
     name: sanitiseForPrompt(String(profile?.full_name ?? user.email ?? ''), 100),
-    email: sanitiseForPrompt(String(user.email ?? ''), 200),
     skinType: sanitiseForPrompt(String(profile?.skin_type ?? 'not specified'), 50),
     tier: sanitiseForPrompt(String(profile?.tier ?? 'Green Leaf'), 50),
     points: Number.isFinite(Number(profile?.points)) ? Number(profile?.points) : 0,
@@ -137,8 +150,7 @@ async function buildTrustedContext(request: Request): Promise<TrustedContext> {
         const orderId = sanitiseForPrompt(String(o.id ?? ''), 8)
         const status = sanitiseForPrompt(String(o.status ?? ''), 30)
         const paymentStatus = sanitiseForPrompt(String(o.payment_status ?? 'unknown'), 30)
-        const paymentRef = sanitiseForPrompt(String(o.payment_id ?? 'N/A'), 60)
-        return `Order ${i + 1}: ID ${orderId}... | Status: ${status} | Payment: ${paymentStatus} | Total: ₹${Number(o.total) || 0} | Date: ${date} | Items: ${items} | Payment ref: ${paymentRef}`
+        return `Order ${i + 1}: ID ${orderId}... | Status: ${status} | Payment: ${paymentStatus} | Total: ₹${Number(o.total) || 0} | Date: ${date} | Items: ${items}`
       })
       .join('\n'),
   }
@@ -182,7 +194,7 @@ ${catalogue}${policies}`
   return `${base}
 
 LOGGED-IN USER:
-  Name: ${ctx.name} | Email: ${ctx.email}
+  Name: ${ctx.name}
   Skin type: ${ctx.skinType} | Tier: ${ctx.tier} | Points: ${ctx.points}
   Orders: ${ctx.orderCount}
 
@@ -271,7 +283,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const ctx = await buildTrustedContext(request)
+  const ctx = await buildTrustedContext(request, conversationNeedsOrderContext(messages))
   const products = await getProductsServer()
   const prompt = buildSystemPrompt(ctx, products)
 

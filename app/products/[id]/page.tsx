@@ -123,7 +123,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   return (
     <>
       {product && <StructuredData data={productJsonLd(product, aggregate)} />}
-      <ProductDetailClient id={id} initialProduct={product} initialReviews={initialReviews} />
+      <ProductDetailClient
+        id={id}
+        initialProduct={product}
+        initialReviews={initialReviews}
+        initialReviewAggregate={aggregate}
+      />
     </>
   )
 }

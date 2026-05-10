@@ -9,6 +9,7 @@ export interface ApprovedReview {
   title: string | null
   body: string | null
   created_at: string
+  verified_purchase?: boolean | null
   profiles?: { full_name?: string | null } | null
 }
 
@@ -94,7 +95,7 @@ export async function getApprovedReviewsServer(
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase
       .from('reviews')
-      .select('id, rating, title, body, created_at, profiles(full_name)')
+      .select('id, rating, title, body, created_at, verified_purchase, profiles(full_name)')
       .eq('product_id', productId)
       .eq('approved', true)
       .order('created_at', { ascending: false })
