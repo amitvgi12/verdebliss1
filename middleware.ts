@@ -2,18 +2,43 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 /**
- * Per-request CSP nonce middleware.
+ * Per-request CSP nonce middleware + optional Cloudflare origin gate.
  *
  * - Generates a fresh nonce per request via Web Crypto (Edge runtime safe).
  * - Forwards the nonce to Server Components via the `x-nonce` request header,
  *   which `app/layout.tsx` reads with `headers()` to attach to JSON-LD blocks.
  * - Sets a strict CSP that drops `'unsafe-inline'` for scripts.
+ * - When `CF_ORIGIN_SECRET` is set, rejects requests to `/api/*` that don't
+ *   carry the matching `x-cf-origin-secret` header. See `CLOUDFLARE_WAF.md`.
  *
  * Why strict-dynamic + nonce: it lets Next's chunk loader (which is itself
  * loaded with the nonce) load further chunks without us having to nonce every
  * generated <script>.
  */
+
+const CF_ORIGIN_SECRET = process.env.CF_ORIGIN_SECRET
+const CF_ORIGIN_GATE_ENABLED = Boolean(CF_ORIGIN_SECRET)
+// Webhook routes are exempt: third parties (Razorpay) call them directly
+// through Cloudflare, but the WAF rule for the webhook locks down the source
+// IP so app-level gating is unnecessary. We still want them to work even if
+// Cloudflare's header rewrite ever lags behind a deploy.
+const CF_ORIGIN_GATE_EXEMPT = (path: string) =>
+  path.startsWith('/api/webhooks/') || path === '/api/version'
+
 export function middleware(request: NextRequest) {
+  // 1) Optional Cloudflare origin gate — runs before any other work so direct
+  //    -to-origin abuse pays the absolute minimum cost.
+  if (
+    CF_ORIGIN_GATE_ENABLED &&
+    request.nextUrl.pathname.startsWith('/api/') &&
+    !CF_ORIGIN_GATE_EXEMPT(request.nextUrl.pathname)
+  ) {
+    const presented = request.headers.get('x-cf-origin-secret')
+    if (presented !== CF_ORIGIN_SECRET) {
+      return new NextResponse('Forbidden', { status: 403 })
+    }
+  }
+
   const nonce = generateNonce()
   const isProduction = process.env.NODE_ENV === 'production'
 
@@ -33,7 +58,7 @@ export function middleware(request: NextRequest) {
     "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https://*.supabase.co",
-    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com",
+    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io",
     'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
     "frame-ancestors 'none'",
     "object-src 'none'",

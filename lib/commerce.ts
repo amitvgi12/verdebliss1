@@ -1,14 +1,17 @@
 import crypto from 'node:crypto'
 import { PRODUCTS } from '@/constants/products'
 import { getShippingCost } from '@/constants/shipping'
+import { COD_MAX_TOTAL } from '@/constants/checkout'
 import { pointsForSubtotal } from '@/lib/loyalty'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
-// COD cap raised from ₹500 (which collided with the ₹499 free-shipping
-// threshold and made COD effectively unreachable for any cart of 2+ items)
-// to a level usable by real customers.
-export const COD_MAX_TOTAL = 2500
+// Re-export for back-compat with existing server-side callers that import
+// COD_MAX_TOTAL from this module. New imports should use '@/constants/checkout'.
+export { COD_MAX_TOTAL }
+
+// COD cap is defined in constants/checkout.ts (client+server safe) and
+// re-exported above for back-compat.
 export const CURRENCY = 'INR'
 
 export interface CheckoutAddress {

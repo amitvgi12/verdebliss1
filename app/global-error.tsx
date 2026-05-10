@@ -1,14 +1,12 @@
 'use client'
 
 /**
- * Global error boundary (Next.js App Router convention).
- *
- * Triggered for unhandled errors anywhere in the React tree. We surface a
- * neutral fallback to the user and ship the exception to our observability
- * helper — replace `reportException` with Sentry once `SENTRY_DSN` is set.
+ * Global error boundary (Next.js App Router convention) — owns the entire
+ * <html> when triggered. Catches catastrophic errors that escape the layout.
  */
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { reportException } from '@/lib/observability'
 
 export default function GlobalError({
   error,
@@ -18,11 +16,7 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Stable signature so log-based alerts can match.
-    console.error('[EXCEPTION] global_error', error?.message, {
-      digest: error?.digest,
-      stack: error?.stack,
-    })
+    reportException(error, { boundary: 'global', digest: error?.digest })
   }, [error])
 
   return (

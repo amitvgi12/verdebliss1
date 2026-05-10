@@ -33,11 +33,15 @@ import { useProduct, useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
-import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
 import type { ApprovedReview } from '@/lib/products-server'
+import type { Product } from '@/types'
+
+import PAOSymbol from './_components/PAOSymbol'
+import Accordion from './_components/Accordion'
 
 /* ── Per-ingredient INCI fallback ─────────────────────────────── */
 const HOW_TO_USE = [
@@ -83,110 +87,18 @@ const CERTIFICATIONS = [
   { label: 'Eco Packaging', emoji: '♻️', url: null, org: 'FSC-Certified Packaging' },
 ]
 
-/* ── PAO symbol ───────────────────────────────────────────────── */
-function PAOSymbol({ months }: { months: number | string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <svg
-        width="36"
-        height="36"
-        viewBox="0 0 36 36"
-        aria-label={`Period After Opening: ${months} months`}
-        role="img"
-      >
-        <circle cx="18" cy="18" r="16" fill="none" stroke={C.muted} strokeWidth="1.5" />
-        <text x="18" y="21" textAnchor="middle" fontSize="10" fill={C.text} fontWeight="600">
-          {months}M
-        </text>
-        <path
-          d="M12 7 L12 3 L24 3 L24 7"
-          fill="none"
-          stroke={C.muted}
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-      <div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: C.text }}>Period After Opening</div>
-        <div style={{ fontSize: 11, color: C.muted }}>Use within {months} months of opening</div>
-      </div>
-    </div>
-  )
-}
-
-/* ── Accordion ────────────────────────────────────────────────── */
-function Accordion({
-  id,
-  label,
-  open,
-  onToggle,
-  children,
-}: {
-  id: string
-  label: string
-  open: boolean
-  onToggle: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <div style={{ borderBottom: `1px solid ${C.border}` }}>
-      <button
-        onClick={onToggle}
-        aria-expanded={open}
-        aria-controls={`accordion-${id}`}
-        style={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '16px 0',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          fontFamily: 'inherit',
-          textAlign: 'left',
-        }}
-      >
-        <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{label}</span>
-        <motion.span
-          animate={{ rotate: open ? 45 : 0 }}
-          transition={{ duration: 0.18 }}
-          style={{ fontSize: 22, color: C.muted, lineHeight: 1, display: 'block' }}
-        >
-          +
-        </motion.span>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key={id}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            style={{ overflow: 'hidden' }}
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
 export default function ProductDetailClient({
   id,
   initialProduct,
   initialReviews = [],
 }: {
   id: string
-  initialProduct?: any
+  initialProduct?: Product | null
   initialReviews?: ApprovedReview[]
 }) {
   // id passed as prop
   const router = useRouter()
-  const width = useWindowWidth()
-  const isMobile = width < BP.tablet
+  const isMobile = useIsMobile()
 
   const { product: serverProduct, loading } = useProduct(initialProduct ? undefined : id)
   const p = initialProduct ?? serverProduct
@@ -203,6 +115,7 @@ export default function ProductDetailClient({
   /* ── Dynamic SEO with Product JSON-LD ─── */
 
   const handleAdd = () => {
+    if (!p) return
     for (let i = 0; i < qty; i++) addItem(p)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
@@ -271,7 +184,6 @@ export default function ProductDetailClient({
   const loyalPts = Math.floor((p.price ?? 0) / 10)
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
 
-  const outerPad = isMobile ? '0 16px' : '0 24px'
   const sectionPad = isMobile ? '20px 16px 48px' : '32px 24px 64px'
   const gridStyle: CSSProperties = isMobile
     ? { display: 'flex', flexDirection: 'column', gap: 0 }
@@ -287,42 +199,30 @@ export default function ProductDetailClient({
   })
 
   return (
-    <div style={{ background: C.bg, minHeight: '100vh' }}>
+    <div className="min-h-screen bg-bg">
       {/* Breadcrumb */}
-      <div style={{ borderBottom: `1px solid ${C.border}`, background: C.bg, overflowX: 'hidden' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: outerPad }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-              height: 40,
-              fontSize: 12,
-              color: C.muted,
-              overflow: 'hidden',
-            }}
+      <div className="overflow-x-hidden border-b border-border bg-bg">
+        <div className="container-content">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex h-10 items-center gap-1 overflow-hidden text-xs text-muted"
           >
-            <button onClick={() => router.push('/')} style={crumbBtn}>
+            <button
+              onClick={() => router.push('/')}
+              className="cursor-pointer border-none bg-transparent text-muted hover:text-text"
+            >
               Home
             </button>
-            <ChevronRight size={11} style={{ flexShrink: 0 }} />
-            <button onClick={() => router.push('/products')} style={crumbBtn}>
+            <ChevronRight size={11} className="flex-shrink-0" />
+            <button
+              onClick={() => router.push('/products')}
+              className="cursor-pointer border-none bg-transparent text-muted hover:text-text"
+            >
               Shop
             </button>
-            <ChevronRight size={11} style={{ flexShrink: 0 }} />
-            <span
-              style={{
-                color: C.text,
-                fontWeight: 500,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                minWidth: 0,
-              }}
-            >
-              {p.name}
-            </span>
-          </div>
+            <ChevronRight size={11} className="flex-shrink-0" />
+            <span className="min-w-0 truncate font-medium text-text">{p.name}</span>
+          </nav>
         </div>
       </div>
 
@@ -1013,17 +913,6 @@ export default function ProductDetailClient({
   )
 }
 
-const crumbBtn = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  fontSize: 12,
-  color: '#6B7A5E',
-  padding: 0,
-  fontWeight: 400,
-  flexShrink: 0,
-}
 const infoCard = { background: '#F2EAE0', borderRadius: 12, padding: '14px 16px' }
 const infoLabel = {
   fontSize: 9,

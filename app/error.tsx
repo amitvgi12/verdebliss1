@@ -2,11 +2,11 @@
 
 /**
  * Route-level error boundary. Catches errors in pages without taking the
- * shell (Nav, Footer) down with them. Reserves global-error.tsx for the
- * truly catastrophic case where the layout itself crashes.
+ * shell (Nav, Footer) down with them.
  */
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { reportException } from '@/lib/observability'
 
 export default function Error({
   error,
@@ -16,10 +16,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error('[EXCEPTION] route_error', error?.message, {
-      digest: error?.digest,
-      stack: error?.stack,
-    })
+    reportException(error, { boundary: 'route', digest: error?.digest })
   }, [error])
 
   return (

@@ -17,7 +17,6 @@ import { MessageCircle, X, Send, LogIn } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { C } from '@/constants/theme'
-import { useWindowWidth, BP } from '@/hooks/useWindowWidth'
 import { useAuthStore } from '@/store/authStore'
 
 interface ChatTurn {
@@ -43,8 +42,6 @@ const MEMBER_REPLIES = [
 
 export default function ChatBot() {
   const router = useRouter()
-  const width = useWindowWidth()
-  const isMobile = width < BP.tablet
   const user = useAuthStore((s) => s.user)
   const profile = useAuthStore((s) => s.profile)
 
@@ -124,39 +121,17 @@ export default function ChatBot() {
     setLoading(false)
   }
 
-  /* ── Responsive layout values ───────────────────────────────────── */
-  const fabRight = isMobile ? 16 : 28
-  const fabBottom = isMobile ? 20 : 28
-  const panelRight = isMobile ? 16 : 28
-  const panelWidth = isMobile ? 'calc(100vw - 32px)' : 'min(360px, calc(100vw - 56px))'
-  const panelHeight = isMobile ? 460 : 520
-  const panelBottom = isMobile ? 80 : 94
-
   const quickReplies = user ? MEMBER_REPLIES : GUEST_REPLIES
 
   return (
     <>
-      {/* FAB — no whileHover (causes glow bleed on mobile) */}
+      {/* FAB — fixed bottom-right; responsive offsets via Tailwind. */}
       <motion.button
         whileTap={{ scale: 0.94 }}
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? 'Close chat' : 'Chat with Verde'}
-        style={{
-          position: 'fixed',
-          bottom: fabBottom,
-          right: fabRight,
-          width: 52,
-          height: 52,
-          borderRadius: '50%',
-          background: C.forest,
-          border: 'none',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: isMobile ? '0 2px 12px rgba(45,74,50,0.35)' : '0 4px 20px rgba(45,74,50,0.4)',
-          zIndex: 150,
-        }}
+        className="fixed bottom-5 right-4 z-[150] flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full border-none shadow-[0_2px_12px_rgba(45,74,50,0.35)] sm:bottom-7 sm:right-7 sm:shadow-[0_4px_20px_rgba(45,74,50,0.4)]"
+        style={{ background: C.forest }}
       >
         <AnimatePresence mode="wait">
           {open ? (
@@ -191,21 +166,7 @@ export default function ChatBot() {
             transition={{ type: 'spring', damping: 26 }}
             role="dialog"
             aria-label="Verde — VerdeBliss support advisor"
-            style={{
-              position: 'fixed',
-              bottom: panelBottom,
-              right: panelRight,
-              width: panelWidth,
-              height: panelHeight,
-              background: C.card,
-              borderRadius: 20,
-              border: `1px solid ${C.border}`,
-              boxShadow: '0 8px 48px rgba(0,0,0,0.14)',
-              zIndex: 150,
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
+            className="fixed bottom-20 right-4 z-[150] flex h-[460px] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-[20px] border border-border bg-card shadow-[0_8px_48px_rgba(0,0,0,0.14)] sm:bottom-[94px] sm:right-7 sm:h-[520px] sm:w-[min(360px,calc(100vw-56px))]"
           >
             {/* Header */}
             <div

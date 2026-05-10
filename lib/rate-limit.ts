@@ -1,12 +1,13 @@
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
+import { getClientIp } from '@/lib/client-ip'
 
 /**
  * IP-aware rate limiter with database persistence + in-memory fallback.
  *
  * Notes for production hardening:
- *  - On Vercel, `x-forwarded-for` is appended such that the leftmost entry is
- *    the original client. We trust `x-vercel-forwarded-for` first when present
- *    because Vercel's edge sets it from a verified source.
+ *  - Client IP extraction is centralised in `lib/client-ip.ts`. The order
+ *    prefers `cf-connecting-ip` (Cloudflare edge), then `x-vercel-forwarded-for`,
+ *    then `x-forwarded-for`. See `CLOUDFLARE_WAF.md` for proxy hardening.
  *  - Callers can pass an `additionalKey` (e.g. user id, email, cart id) so a
  *    single attacker cannot bypass the limiter merely by rotating IPs.
  *  - Ingress traffic from CGNAT / corporate proxies will share an IP. Limits
@@ -20,16 +21,6 @@ interface MemoryBucket {
 
 const memoryBuckets = new Map<string, MemoryBucket>()
 const MEMORY_BUCKET_HARD_CAP = 5_000
-
-function getClientIp(request: Request): string {
-  const vercelForwarded = request.headers.get('x-vercel-forwarded-for')
-  if (vercelForwarded) return vercelForwarded.split(',')[0]?.trim() || 'unknown'
-
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0]?.trim() || 'unknown'
-
-  return request.headers.get('x-real-ip') || 'unknown'
-}
 
 function memoryLimit(key: string, limit: number, windowSeconds: number): boolean {
   // Soft eviction so a leaky-bucket attack cannot pin the process.

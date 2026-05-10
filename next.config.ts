@@ -72,4 +72,29 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+// Wrap with Sentry build plugin only when SENTRY_DSN is set. The plugin
+// uploads source maps and tags releases. When unset (dev / forks without a
+// Sentry account), we export the bare config — Sentry SDK is dynamically
+// imported at runtime by lib/observability.ts and is a no-op without a DSN.
+async function buildExportedConfig() {
+  if (!process.env.SENTRY_DSN || !process.env.SENTRY_ORG || !process.env.SENTRY_PROJECT) {
+    return nextConfig
+  }
+  try {
+    const { withSentryConfig } = await import('@sentry/nextjs')
+    return withSentryConfig(nextConfig, {
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      // Auth via SENTRY_AUTH_TOKEN env var — never inline.
+      silent: !process.env.CI,
+      sourcemaps: { disable: false },
+      disableLogger: true,
+      automaticVercelMonitors: false,
+    })
+  } catch {
+    return nextConfig
+  }
+}
+
+// Next.js accepts a Promise<NextConfig> for the default export.
+export default buildExportedConfig()

@@ -112,13 +112,15 @@ export default async function Home() {
             </dl>
           </div>
 
-          {/* Hero product image */}
-          <div className="relative flex justify-center">
+          {/* Hero product image — wrapped in an overflow-hidden container so
+              decorative glass cards positioned outside the circle never push
+              the document horizontally. */}
+          <div className="relative mx-auto flex w-full max-w-[420px] justify-center overflow-hidden px-2 py-6">
             <div
               className="relative flex-shrink-0 overflow-hidden rounded-full border-2 border-sage/35"
               style={{
-                width: 'min(360px, 90vw)',
-                height: 'min(360px, 90vw)',
+                width: 'min(360px, 80vw)',
+                height: 'min(360px, 80vw)',
                 boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
               }}
             >
@@ -128,18 +130,18 @@ export default async function Home() {
                 priority
                 fetchPriority="high"
                 fill
-                sizes="(max-width: 768px) 90vw, 360px"
+                sizes="(max-width: 768px) 80vw, 360px"
                 style={{ objectFit: 'cover', objectPosition: 'center' }}
               />
             </div>
-            <div className="absolute -left-5 top-4 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
+            <div className="absolute left-0 top-10 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
               <span className="text-[22px]">✨</span>
               <div>
                 <div className="text-xs font-medium text-white">Bakuchiol Serum</div>
                 <div className="text-[10px] text-white/55">Best Seller ✦</div>
               </div>
             </div>
-            <div className="absolute -right-3 bottom-12 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
+            <div className="absolute bottom-16 right-0 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
               <span className="text-[22px]">☀️</span>
               <div>
                 <div className="text-xs font-medium text-white">SPF 50 Shield</div>
@@ -197,7 +199,7 @@ export default async function Home() {
       </section>
 
       {/* ── Philosophy ────────────────────────────────────────── */}
-      <section className="bg-forest px-4 py-20">
+      <section className="overflow-hidden bg-forest px-4 py-20">
         <div className="mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-12 md:grid-cols-2">
           <div>
             <p className="mb-3 text-[10px] font-semibold tracking-[0.14em] text-sage">

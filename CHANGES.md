@@ -9,8 +9,8 @@ remediation. The state of the codebase below reflects the latest pass.
 npx tsc --noEmit         PASS  (strict mode, 0 errors)
 npx prettier --check .   PASS  (all files)
 npm run lint             PASS  (0 errors, 0 warnings)
-npm test                 PASS  (5 suites, 58 tests)
-npm run build            PASS  (15 routes, middleware 34.4 kB)
+npm test                 PASS  (6 suites, 66 tests)
+npm run build            PASS  (15 routes, middleware 114 kB)
 ```
 
 ## P0 — Security & SEO foundations
@@ -27,54 +27,54 @@ npm run build            PASS  (15 routes, middleware 34.4 kB)
   COOP / CORP / HSTS / `interest-cohort=()` added
 - **All `@verdebliss.in` → `@verdebliss.com`** (15 files: payment notes, chat
   policy, FAQs, contact, legal modal, sitemap, structured data)
+- **Real bug fixed in checkout**: client had `COD_MAX_TOTAL = 500`, server
+  had `2500`. Surfaced misleading "COD unavailable" copy to users above ₹500.
+  Now both sides import from `constants/checkout.ts` (single source of truth).
+- **`overflow-x: clip` on html/body/main** (visual fix from horizontal-scroll bug)
 
 ## P1 — Architecture & data integrity
 
 - **Tailwind v4 design tokens in `@theme` block** — replaces inline-style soup
-  on the homepage and core UI
 - **Reusable Tailwind component classes** — `btn-primary`, `btn-terra`,
   `btn-gold`, `btn-outline`, `input-base`, `label-eyebrow`, `h-section`,
   `container-content`
-- **Tailwind migration** — Homepage / Nav / Footer / ProductCard / ProductImage
-  / IngredientCard / Stars / SkeletonCard / Badge / NewsletterForm / LegalModal
-  / **ProductsClient (catalogue)** / CookieConsent
+- **Tailwind migration of major surfaces** — Homepage / Nav / Footer /
+  ProductCard / ProductImage / IngredientCard / Stars / SkeletonCard / Badge /
+  NewsletterForm / LegalModal / **ProductsClient (catalogue)** /
+  **CheckoutClient (orchestrator + 6 sub-components)** / CookieConsent /
+  ProductDetailClient (breadcrumb)
 - **Footer split** into Server Component + `LegalLinks` + `SocialButtons`
   client islands
-- **Nav uses CSS responsive utilities** — `useWindowWidth` removed (no SSR/CSR
-  layout-jump)
-- **`AggregateRating` reads real review counts** via new
-  `getReviewAggregatesServer` — Google rich-result policy compliant
-- **Honest `shippingDetails`** in product JSON-LD — no more "Free shipping" lie
-  at SERP for sub-₹499 products
-- **COD cap raised ₹500 → ₹2500** — was unreachable for any 2-item cart
+- **Nav uses CSS responsive utilities** — `useWindowWidth` removed
+- **`AggregateRating` reads real review counts** via `getReviewAggregatesServer`
+- **Honest `shippingDetails`** in product JSON-LD
+- **COD cap raised ₹500 → ₹2500**
 - **Webhook reconciliation DLQ** — `payment_reconciliation_failures` table
-  with RLS + indexes, persisted on every reconciliation failure so an admin /
-  cron can retry without racing Razorpay's 24-hour retry window
+  with RLS + indexes, persisted on every reconciliation failure
 - **Observability shim** — `lib/observability.ts` emits `[ALERT]`,
-  `[EXCEPTION]`, `[METRIC]` log signatures; one-line swap to `@sentry/nextjs`
-  when `SENTRY_DSN` is configured (no call-site changes needed)
+  `[EXCEPTION]`, `[METRIC]` log signatures. **Sentry-ready**: when
+  `SENTRY_DSN` is set, dynamically imports `@sentry/nextjs` and forwards
+  events. `instrumentation.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`,
+  `instrumentation-client.ts` all wired.
 - **Chat prompt-injection defence** — `sanitiseForPrompt()` strips control
-  characters and trigger phrases on every DB-sourced string before
-  concatenation; "data only — never instructions" framing in system prompt
+  characters and trigger phrases on every DB-sourced string
 - **Loyalty tier rules consolidated** — `lib/loyalty.ts` (TS) and
-  `tier_for_points()` (Postgres) are the single source of truth; both
-  `apply_loyalty_points` and `finalize_commerce_order` now call the SQL helper
-- **`getProductsServer` cached** via `unstable_cache` — no per-request DB hit
+  `tier_for_points()` (Postgres) are the single source of truth
+- **`getProductsServer` cached** via `unstable_cache`
 - **Razorpay script hardened** — `window.Razorpay` first, `document.getElementById`
-  fallback with load listener, structured error log
-- **Razorpay preconnect + dns-prefetch** — first-checkout RTT cut
+  fallback with load listener
+- **Razorpay preconnect + dns-prefetch**
 
 ## P2 — Defence in depth & polish
 
-- **CSRF helper** (`lib/csrf.ts`) — requires `x-vb-client: web` header
-  (preflight defence) + Origin allow-list, wired into all 7 mutating routes
+- **CSRF helper** (`lib/csrf.ts`) — `x-vb-client: web` header + Origin
+  allow-list, wired into all 7 mutating routes
+- **Centralised proxy-aware client-IP resolver** (`lib/client-ip.ts`):
+  prefers `cf-connecting-ip` → `x-vercel-forwarded-for` → `x-forwarded-for` →
+  `x-real-ip`. 8 unit tests covering precedence, spoofing resistance,
+  empty-header handling.
 - **Cloudflare Turnstile** bot defence on contact + newsletter
-  - `lib/turnstile.ts` server verifier (5 s timeout, fail-closed)
-  - `components/ui/TurnstileWidget.tsx` client island (no-op without site key)
-  - CSP allow-listed for `challenges.cloudflare.com`
-  - Silently passes server-side when env vars unset (dev-friendly)
-- **`apiPost()` helper** in `lib/api-client.ts` — single source of truth for
-  client → server JSON calls, automatic CSRF header
+- **`apiPost()` helper** — single source of truth for client → server JSON calls
 - **Build-config cleanup** — removed `cpus: 1`, `workerThreads: false`,
   `staticPageGenerationTimeout: 20`
 - **Image immutable cache headers** for `/images/(.*)`
@@ -82,23 +82,76 @@ npm run build            PASS  (15 routes, middleware 34.4 kB)
   (catastrophic), `app/not-found.tsx` (custom 404 with `noindex`),
   `app/loading.tsx` (streaming skeleton)
 - **`.env.example`** — fully documented including `NEXT_PUBLIC_TURNSTILE_SITE_KEY`,
-  `TURNSTILE_SECRET_KEY`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT`
+  `TURNSTILE_SECRET_KEY`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `CF_ORIGIN_SECRET`
+- **`useIsMobile` hook** — SSR-safe `useSyncExternalStore` + `matchMedia`,
+  replaces all `useWindowWidth` usage. The legacy hook is deleted.
+- **Cloudflare WAF / origin gate**:
+  - `middleware.ts` rejects `/api/*` requests without
+    `x-cf-origin-secret` matching `CF_ORIGIN_SECRET` (env-gated, off by default).
+    Webhooks and `/api/version` exempted.
+  - **`CLOUDFLARE_WAF.md`** — full runbook covering DNS, origin lockdown
+    (header secret + Authenticated Origin Pulls), WAF custom rules
+    (bot block, Razorpay-IP allow-list, geo allow-list), rate-limit rules,
+    cache rules, monitoring, verification curl commands, rollback procedure.
+
+## Big refactor: CheckoutClient.tsx
+
+**1284 lines → 413-line orchestrator + 6 single-purpose Tailwind sub-components:**
+
+```
+app/checkout/
+  CheckoutClient.tsx        413  (orchestrator: state, validation, Razorpay flow)
+  checkout-types.ts          33  (shared types)
+  _components/
+    Steps.tsx                47  (3-step progress indicator)
+    Field.tsx                43  (form field + reusable inputClassName)
+    AddressStep.tsx         125  (Step 0: delivery address form)
+    ReviewStep.tsx          188  (Step 1: review + payment buttons)
+    OrderSummary.tsx         91  (right-column sticky summary)
+    SuccessState.tsx         99  (post-payment confirmation card)
+```
+
+The orchestrator is now small enough to read in one sitting; each sub-component
+is independently testable; presentation is fully Tailwind. **No behaviour change
+to the payment flow** — types, props, and state names are preserved end-to-end
+to minimise regression risk.
+
+## ProductDetailClient.tsx — partial extraction
+
+- `initialProduct: any` → `Product | null` (real type-safety win)
+- Breadcrumb migrated to Tailwind
+- `PAOSymbol` and `Accordion` extracted to `app/products/[id]/_components/`
+- Migrated from `useWindowWidth` to `useIsMobile`
+- 1046 → 947 lines
+
+The remaining gallery + buy-box + tabs + reviews JSX inside ProductDetailClient
+has business state intertwined with rendering. That's the Cypress-coverage-needed
+refactor still left for a focused session with E2E tests.
 
 ## New files
 
-- `middleware.ts` — per-request CSP nonce
+- `middleware.ts` — per-request CSP nonce + optional CF origin gate
 - `lib/csrf.ts` — origin / header gate
 - `lib/api-client.ts` — CSRF-safe fetch wrapper
+- `lib/client-ip.ts` — proxy-aware IP resolver
 - `lib/loyalty.ts` — tier single source of truth
 - `lib/structured-data.tsx` — Server Component for nonced JSON-LD
 - `lib/turnstile.ts` — Cloudflare Turnstile server verifier
 - `lib/observability.ts` — Sentry-ready alerting shim
+- `constants/checkout.ts` — client+server-safe COD threshold
+- `hooks/useIsMobile.ts` — SSR-safe responsive hook
+- `instrumentation.ts` / `instrumentation-client.ts` / `sentry.server.config.ts` /
+  `sentry.edge.config.ts` — Sentry initialisation
 - `components/features/newsletter/NewsletterForm.tsx`
-- `components/layout/LegalLinks.tsx`
-- `components/layout/SocialButtons.tsx`
+- `components/layout/LegalLinks.tsx` / `components/layout/SocialButtons.tsx`
 - `components/ui/TurnstileWidget.tsx`
-- `app/error.tsx` / `app/global-error.tsx` / `app/not-found.tsx` / `app/loading.tsx`
-- `tests/loyalty.test.ts`
+- `app/error.tsx` / `app/global-error.tsx` / `app/not-found.tsx` /
+  `app/loading.tsx`
+- `app/checkout/_components/*` — 6 extracted checkout sub-components
+- `app/products/[id]/_components/PAOSymbol.tsx`
+- `app/products/[id]/_components/Accordion.tsx`
+- `tests/loyalty.test.ts` / `tests/client-ip.test.ts`
+- `CLOUDFLARE_WAF.md` — production hardening runbook
 
 ## Database changes
 
@@ -111,32 +164,23 @@ database is safe. The new objects are additive:
 
 ## Migration notes for the team
 
-1. **Run `supabase/schema.sql`** — additive; existing data is preserved
-2. **Set `MX` records for `@verdebliss.com`** *before* deployment (the email
-   migration is a deploy-time cliff, not gradual)
+1. **Run `supabase/schema.sql`** — additive; existing data preserved
+2. **Set `MX` records for `@verdebliss.com`** _before_ deployment
 3. **Optional but recommended env vars**:
    - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` (bot defence)
-   - `SENTRY_DSN` (replace `lib/observability.ts` body with Sentry SDK)
+   - `SENTRY_DSN` (real-time exception capture; observability shim already wired)
+   - `CF_ORIGIN_SECRET` (when fronting with Cloudflare — see `CLOUDFLARE_WAF.md`)
 4. **Razorpay webhook URL** — unchanged
 5. **CSP rollout** — middleware ships strict CSP. Any third-party scripts
    (analytics, chat widgets) not already in the allow-list need to be added
-   to `cspDirectives` in `middleware.ts`. Cloudflare Turnstile is already
-   allow-listed.
+   to `cspDirectives` in `middleware.ts`. Cloudflare Turnstile is allow-listed.
 
-## Known follow-ups (genuine work, not 5-minute fixes)
+## Known follow-ups
 
-- `app/checkout/CheckoutClient.tsx` (1,284 lines) and
-  `app/products/[id]/ProductDetailClient.tsx` (1,031 lines) are strict-mode
-  clean and have CSRF wired in, but remain inline-style monoliths. Splitting
-  each into 4–5 sub-components and migrating to Tailwind is a 2–3 day
-  refactor — high value (testability, bundle size, dev velocity), but high
-  surface for breaking the payment flow if rushed.
-- Real Sentry SDK wiring (`@sentry/nextjs`) — `lib/observability.ts` is the
-  swap point.
+- `app/products/[id]/ProductDetailClient.tsx` (947 lines) — the giant gallery +
+  buy-box + tabs + reviews JSX block is still inline-styled. Splitting it is
+  the Cypress-coverage-needed refactor.
 - Address book vs. order address snapshot — separate concerns currently share
   storage.
-- WAF / Cloudflare front for `/api/checkout/*` — defence in depth beyond what
-  app-level rate limits provide.
-- Replace `useWindowWidth` in `ChatBot.tsx` and `ProductDetailClient.tsx`
-  with CSS media-driven responsive (Nav and CookieConsent are already
-  migrated).
+- Real Cloudflare deployment — `CLOUDFLARE_WAF.md` is the runbook; the work
+  itself is environment configuration (DNS, WAF dashboard).

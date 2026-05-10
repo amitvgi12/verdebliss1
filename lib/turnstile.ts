@@ -17,6 +17,8 @@
  * the env var.
  */
 
+import { getClientIp } from '@/lib/client-ip'
+
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
 export interface TurnstileVerifyResult {
@@ -74,13 +76,9 @@ export async function verifyTurnstileToken(
   }
 }
 
-function getClientIp(request: Request): string | null {
-  return (
-    request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    null
-  )
+function localClientIp(request: Request): string | null {
+  const ip = getClientIp(request)
+  return ip === 'unknown' ? null : ip
 }
 
 /**
@@ -92,6 +90,6 @@ export async function verifyTurnstileFromRequest(
   body: { turnstileToken?: unknown }
 ): Promise<TurnstileVerifyResult> {
   const token = typeof body.turnstileToken === 'string' ? body.turnstileToken : null
-  const ip = getClientIp(request)
+  const ip = localClientIp(request)
   return verifyTurnstileToken(token, ip)
 }
