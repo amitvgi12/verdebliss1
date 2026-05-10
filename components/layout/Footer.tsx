@@ -53,7 +53,7 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
 
 export default function Footer() {
   return (
-    <footer className="bg-forest px-4 pb-7 pt-14 text-white/55">
+    <footer className="site-footer bg-forest px-4 text-white/55">
       <div className="site-container grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-10">
         {/* Brand column */}
         <div>

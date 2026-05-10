@@ -342,7 +342,7 @@ export default function Checkout() {
   /* ══ MAIN CHECKOUT ═══════════════════════════════════════════════ */
   return (
     <div className="min-h-screen bg-bg">
-      <div className="mx-auto max-w-[1100px] px-4 pb-16 pt-8">
+      <div className="checkout-shell">
         {/* Back */}
         <button
           onClick={() => router.push('/products')}
@@ -355,7 +355,7 @@ export default function Checkout() {
           Checkout
         </h1>
 
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="checkout-grid">
           {/* ── LEFT: Form ─────────────────────────────────── */}
           <div>
             <Steps current={step} />

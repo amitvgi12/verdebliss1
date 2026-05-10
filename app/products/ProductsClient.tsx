@@ -124,7 +124,7 @@ export default function ProductsClient({
               </div>
             </div>
 
-            <div className={`product-grid transition-opacity ${isPending ? 'opacity-60' : ''}`}>
+            <div className={`catalog-grid transition-opacity ${isPending ? 'opacity-60' : ''}`}>
               {products.map((p, i) => (
                 <motion.div
                   key={p.id}

@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prebuild": "node scripts/cleanup-legacy-sentry.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

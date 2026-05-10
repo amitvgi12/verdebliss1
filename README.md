@@ -136,3 +136,13 @@ Validate the standard `npm run build` on Vercel/GitHub Actions before deployment
 - Do not restore hardcoded review counts; use approved review aggregates only.
 - Do not promise loyalty points unless a `loyalty_ledger` event is actually created.
 - Keep product catalogue DB-first; `constants/products.ts` is only fallback data.
+
+### Legacy Sentry config cleanup
+
+This package intentionally does **not** install `@sentry/nextjs`. Earlier builds used root-level `sentry.edge.config.ts`, `sentry.server.config.ts`, or `sentry.client.config.ts`. If you copy this package over an older checkout instead of deploying from a clean clone, those orphan files can remain and Next.js will try to compile them, causing:
+
+```text
+Cannot find module '@sentry/nextjs'
+```
+
+`npm run build` now runs `scripts/cleanup-legacy-sentry.mjs` first and removes those stale files automatically. For manual cleanup, delete any root-level `sentry.*.config.*` files before building.

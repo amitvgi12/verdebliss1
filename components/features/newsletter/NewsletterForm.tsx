@@ -49,10 +49,10 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
   return (
     <form
       onSubmit={onSubmit}
-      className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-3"
+      className="vb-newsletter-form flex flex-col items-center gap-3"
       noValidate
     >
-      <div className="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-[1fr_auto]">
+      <div className="vb-newsletter-row">
         <label htmlFor="newsletter-email" className="sr-only">
           Email address
         </label>
@@ -65,7 +65,7 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="input-base min-w-0"
+          className="input-base vb-newsletter-input"
           aria-invalid={Boolean(error)}
           aria-describedby={error ? 'newsletter-error' : undefined}
         />

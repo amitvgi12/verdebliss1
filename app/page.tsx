@@ -176,7 +176,7 @@ export default async function Home() {
       </section>
 
       {/* ── Key Ingredients ───────────────────────────────────── */}
-      <section className="bg-ivory px-4 py-20">
+      <section className="home-ingredients-section bg-ivory px-4">
         <div className="site-container">
           <header className="mb-12 text-center">
             <p className="label-eyebrow mb-2.5">WHAT&apos;S INSIDE</p>
@@ -186,7 +186,7 @@ export default async function Home() {
               to offer.
             </p>
           </header>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5">
+          <div className="home-ingredients-grid">
             {INGREDIENTS.map((ing) => (
               <IngredientCard
                 key={ing.name}
@@ -246,8 +246,8 @@ export default async function Home() {
       </section>
 
       {/* ── Testimonials ──────────────────────────────────────── */}
-      <section className="site-container page-section">
-        <header className="mb-12 text-center">
+      <section className="site-container home-testimonials-section">
+        <header className="mb-10 text-center">
           <p className="label-eyebrow mb-2.5">REAL RESULTS</p>
           <h2 className="m-0 font-serif text-[clamp(32px,4vw,44px)] font-normal text-text">
             Loved by thousands
@@ -290,7 +290,7 @@ export default async function Home() {
       </section>
 
       {/* ── Newsletter ────────────────────────────────────────── */}
-      <section className="bg-ivory px-4 py-16 text-center">
+      <section className="home-newsletter-section bg-ivory px-4 text-center">
         <p className="label-eyebrow mb-2.5">JOIN THE CIRCLE</p>
         <h2 className="mb-2 font-serif text-[clamp(24px,3vw,34px)] font-normal text-text">
           Subscribe for launch rituals

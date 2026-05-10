@@ -1,12 +1,10 @@
 /**
  * Lightweight observability shim.
  *
- * Sentry is registered through `instrumentation.ts` when `SENTRY_DSN` is set,
- * which captures request/global errors without importing the Sentry SDK into
- * every route module. These helpers intentionally stay dependency-free so
- * Next's build tracer does not pull Prisma/OpenTelemetry optional packages into
- * page-data collection. Log drains can alert on the stable `[ALERT]` and
- * `[EXCEPTION]` prefixes.
+ * These helpers intentionally stay dependency-free so Next's build tracer
+ * does not pull optional observability packages into page-data collection.
+ * Production deployments should route stdout/stderr to the platform log drain
+ * and alert on the stable `[ALERT]`, `[EXCEPTION]`, and `[METRIC]` prefixes.
  */
 
 export type ErrorContext = Record<string, unknown>
