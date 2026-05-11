@@ -22,7 +22,7 @@ npm run build            PASS  (15 routes, middleware 114 kB)
 - **Per-IP + per-identity rate limiter** — user id / email / cart id as second
   bucket so IP rotation cannot bypass throttling; eviction-safe in-memory fallback
 - **`'unsafe-inline'` removed from `script-src`** — per-request CSP nonce in
-  `middleware.ts` + `strict-dynamic`
+  `proxy.ts` + `strict-dynamic`
 - **`X-XSS-Protection` removed** (deprecated header) — full `Permissions-Policy`,
   COOP / CORP / HSTS / `interest-cohort=()` added
 - **All `@verdebliss.in` → `@verdebliss.com`** (15 files: payment notes, chat
@@ -86,7 +86,7 @@ npm run build            PASS  (15 routes, middleware 114 kB)
 - **`useIsMobile` hook** — SSR-safe `useSyncExternalStore` + `matchMedia`,
   replaces all `useWindowWidth` usage. The legacy hook is deleted.
 - **Cloudflare WAF / origin gate**:
-  - `middleware.ts` rejects `/api/*` requests without
+  - `proxy.ts` rejects `/api/*` requests without
     `x-cf-origin-secret` matching `CF_ORIGIN_SECRET` (env-gated, off by default).
     Webhooks and `/api/version` exempted.
   - **`CLOUDFLARE_WAF.md`** — full runbook covering DNS, origin lockdown
@@ -130,7 +130,7 @@ refactor still left for a focused session with E2E tests.
 
 ## New files
 
-- `middleware.ts` — per-request CSP nonce + optional CF origin gate
+- `proxy.ts` — per-request CSP nonce + optional CF origin gate
 - `lib/csrf.ts` — origin / header gate
 - `lib/api-client.ts` — CSRF-safe fetch wrapper
 - `lib/client-ip.ts` — proxy-aware IP resolver
@@ -171,9 +171,9 @@ database is safe. The new objects are additive:
    - `SENTRY_DSN` (real-time exception capture; observability shim already wired)
    - `CF_ORIGIN_SECRET` (when fronting with Cloudflare — see `CLOUDFLARE_WAF.md`)
 4. **Razorpay webhook URL** — unchanged
-5. **CSP rollout** — middleware ships strict CSP. Any third-party scripts
+5. **CSP rollout** — proxy ships strict CSP. Any third-party scripts
    (analytics, chat widgets) not already in the allow-list need to be added
-   to `cspDirectives` in `middleware.ts`. Cloudflare Turnstile is allow-listed.
+   to `cspDirectives` in `proxy.ts`. Cloudflare Turnstile is allow-listed.
 
 ## Known follow-ups
 

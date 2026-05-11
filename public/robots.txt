@@ -3,8 +3,6 @@ Allow: /
 Disallow: /account
 Disallow: /checkout
 Disallow: /api/
-
-User-agent: Googlebot
-Allow: /
+Disallow: /refund
 
 Sitemap: https://www.verdebliss.com/sitemap.xml

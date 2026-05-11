@@ -230,9 +230,6 @@ export default function LegalModal({ type, onClose }: LegalModalProps) {
         exit={{ opacity: 0 }}
         onClick={onClose}
         className="fixed inset-0 z-[400] flex items-center justify-center bg-text/60 p-4"
-        role="dialog"
-        aria-modal="true"
-        aria-label={doc.title}
       >
         <motion.div
           ref={dialogRef}
@@ -241,10 +238,15 @@ export default function LegalModal({ type, onClose }: LegalModalProps) {
           exit={{ opacity: 0, scale: 0.96, y: 16 }}
           onClick={(e) => e.stopPropagation()}
           className="flex max-h-[90vh] w-full max-w-[680px] flex-col rounded-[20px] bg-warmWhite shadow-[0_20px_60px_rgba(0,0,0,0.2)]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="legal-modal-title"
         >
           <header className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 py-5">
             <div>
-              <h2 className="m-0 font-serif text-2xl font-normal text-text">{doc.title}</h2>
+              <h2 id="legal-modal-title" className="m-0 font-serif text-2xl font-normal text-text">
+                {doc.title}
+              </h2>
               <p className="mt-1 text-xs text-muted">{doc.updated}</p>
             </div>
             <button

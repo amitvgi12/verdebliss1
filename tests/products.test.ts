@@ -137,10 +137,34 @@ describe('server product filtering', () => {
     const sorted = filterAndSortProducts(PRODUCTS, {
       category: 'All',
       skinType: 'All',
-      sortBy: 'Price: Low to High',
+      sortBy: 'Price Low→High',
     })
     for (let i = 1; i < sorted.length; i++) {
       expect(sorted[i]?.price ?? 0).toBeGreaterThanOrEqual(sorted[i - 1]?.price ?? 0)
+    }
+  })
+
+  it('sorts server-rendered products from high to low price', async () => {
+    const { filterAndSortProducts } = await import('@/app/products/page')
+    const sorted = filterAndSortProducts(PRODUCTS, {
+      category: 'All',
+      skinType: 'All',
+      sortBy: 'Price High→Low',
+    })
+    for (let i = 1; i < sorted.length; i++) {
+      expect(sorted[i]?.price ?? 0).toBeLessThanOrEqual(sorted[i - 1]?.price ?? 0)
+    }
+  })
+
+  it('sorts server-rendered products by top rating', async () => {
+    const { filterAndSortProducts } = await import('@/app/products/page')
+    const sorted = filterAndSortProducts(PRODUCTS, {
+      category: 'All',
+      skinType: 'All',
+      sortBy: 'Top Rated',
+    })
+    for (let i = 1; i < sorted.length; i++) {
+      expect(sorted[i]?.rating ?? 0).toBeLessThanOrEqual(sorted[i - 1]?.rating ?? 0)
     }
   })
 })

@@ -50,14 +50,6 @@ function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
           transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 3, unitCode: 'DAY' },
         },
       },
-      hasMerchantReturnPolicy: {
-        '@type': 'MerchantReturnPolicy',
-        applicableCountry: 'IN',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 14,
-        returnMethod: 'https://schema.org/ReturnByMail',
-        returnFees: 'https://schema.org/FreeReturn',
-      },
     },
     // FREE_SHIPPING_THRESHOLD is surfaced at checkout, not in offer schema —
     // Google penalises offer schema that mismatches the on-page experience.

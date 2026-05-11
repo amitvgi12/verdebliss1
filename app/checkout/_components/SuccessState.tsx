@@ -9,6 +9,7 @@ interface SuccessStateProps {
   paymentId: string | null
   paymentMethod: string | null
   pointsToEarn: number
+  codVerificationRequired?: boolean
   onContinueShopping: () => void
   onViewAccount: () => void
 }
@@ -18,6 +19,7 @@ export default function SuccessState({
   paymentId,
   paymentMethod,
   pointsToEarn,
+  codVerificationRequired = false,
   onContinueShopping,
   onViewAccount,
 }: SuccessStateProps) {
@@ -78,6 +80,13 @@ export default function SuccessState({
             verification.
           </span>
         </div>
+
+        {codVerificationRequired && (
+          <div className="mb-7 rounded-xl border border-[#E4CFA7] bg-[#FFF8E8] px-4 py-3 text-left text-[12px] leading-relaxed text-olive">
+            This COD order has been placed in a verification queue. Our team may confirm
+            serviceability and address details before dispatch.
+          </div>
+        )}
 
         <div className="flex flex-col gap-2.5">
           <button

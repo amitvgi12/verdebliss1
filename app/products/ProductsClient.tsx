@@ -55,22 +55,30 @@ export default function ProductsClient({
 
   return (
     <div className="min-h-[80vh] bg-bg">
-      <div className="bg-forest px-4 pb-[60px] pt-12">
-        <div className="site-container">
-          <p className="mb-2 text-[10px] font-semibold tracking-[0.14em] text-sage">THE BOUTIQUE</p>
-          <h1 className="m-0 font-serif text-[clamp(32px,5vw,48px)] font-normal text-white">
-            {category !== 'All' ? `${category}s` : 'Shop All Products'}
-          </h1>
-          <p className="mt-3 max-w-[560px] text-sm text-white/65">
-            {totalProducts} botanically led formulas, server-rendered for fast browsing and honest
-            product discovery.
-          </p>
+      <div className="catalog-hero px-4">
+        <div className="site-container catalog-hero__inner">
+          <div>
+            <p className="premium-kicker">THE VERDEBLISS BOUTIQUE</p>
+            <h1>{category !== 'All' ? `${category}s` : 'Shop All Products'}</h1>
+            <p>
+              {totalProducts} botanical formulas with transparent ingredients, clear skin-fit
+              filters, and product-specific ritual guidance.
+            </p>
+          </div>
+          <div className="catalog-hero__card">
+            <span>COMMERCE STANDARD</span>
+            <strong>Server-rendered catalogue</strong>
+            <p>
+              Product content is available in first HTML response for faster discovery and stronger
+              SEO.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="site-container -mt-6 pb-20">
+      <div className="site-container -mt-10 pb-20">
         <div className="grid grid-cols-1 items-start gap-7 md:grid-cols-[clamp(160px,20%,230px)_1fr]">
-          <aside className="mt-6 rounded-2xl border border-border bg-card p-5 md:sticky md:top-[76px]">
+          <aside className="catalog-filter-panel mt-6 md:sticky md:top-[76px]">
             <FilterGroup
               label="CATEGORY"
               activeColor="text-forest"
@@ -100,7 +108,7 @@ export default function ProductsClient({
             )}
           </aside>
 
-          <div className="mt-6 min-w-0">
+          <div className="catalog-results-panel mt-6 min-w-0">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
               <div className="text-[13px] text-muted" aria-live="polite">
                 {products.length} product{products.length === 1 ? '' : 's'}

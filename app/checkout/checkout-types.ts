@@ -19,6 +19,7 @@ export interface CheckoutResult {
   paymentId?: string
   orderId?: string
   paymentMethod?: string
+  verificationRequired?: boolean
   [key: string]: unknown
 }
 

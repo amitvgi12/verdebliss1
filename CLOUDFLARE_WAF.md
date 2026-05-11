@@ -38,12 +38,12 @@ Vercel does not support IP allow-lists on the free / Pro plan. Two options:
 1. In Cloudflare dashboard → your zone → **Rules → Transform Rules → Modify
    Request Header**: add a static custom header to every request to your
    origin, e.g. `x-cf-origin-secret: <random 32+ char value>`.
-2. In `middleware.ts` (or a new middleware on the API routes), reject any
+2. In `proxy.ts` (or a new middleware on the API routes), reject any
    request to `/api/*` that does not carry the matching header. Treat the
    secret as a rotated env var:
 
 ```ts
-// Inside middleware.ts, before CSP processing:
+// Inside proxy.ts, before CSP processing:
 if (request.nextUrl.pathname.startsWith('/api/')) {
   const expected = process.env.CF_ORIGIN_SECRET
   if (expected && request.headers.get('x-cf-origin-secret') !== expected) {
@@ -193,6 +193,6 @@ curl -i https://verdebliss.com/api/webhooks/razorpay -H "x-razorpay-signature: x
 ## Rollback
 
 Cloudflare's "Pause Cloudflare on this site" is a single click. DNS still
-resolves to Vercel directly. The `CF_ORIGIN_SECRET` middleware check **must
+resolves to Vercel directly. The `CF_ORIGIN_SECRET` proxy check **must
 not** activate when Cloudflare is paused — keep `CF_ORIGIN_SECRET` unset in
 the rollback environment, or wrap the check in a feature flag (`process.env.CF_ENABLED === 'true'`).

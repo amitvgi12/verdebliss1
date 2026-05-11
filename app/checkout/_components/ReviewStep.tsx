@@ -168,7 +168,7 @@ export default function ReviewStep({
 
       <p className="mt-2 text-[11px] leading-relaxed text-muted">
         {codAvailable
-          ? 'COD orders are confirmed now and payable when your package arrives.'
+          ? 'COD orders may be held briefly for phone, pincode, and address verification before dispatch.'
           : `Please use online payment for orders above ₹${codMaxTotal.toLocaleString()}.`}
       </p>
 

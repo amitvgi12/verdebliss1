@@ -1,168 +1,135 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Leaf, ShieldCheck, Sparkles, Truck } from 'lucide-react'
 import ProductCard from '@/components/ui/ProductCard'
 import IngredientCard from '@/components/ui/IngredientCard'
-import Stars from '@/components/ui/Stars'
 import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
 import { getProductsServer } from '@/lib/products-server'
 
 export const revalidate = 300
 
-const TESTIMONIALS = [
+const INGREDIENTS = [
   {
-    name: 'Priya S.',
-    skin: 'Sensitive',
-    city: 'Mumbai',
-    rating: 5,
-    text: 'My skin has never felt this calm. The Bakuchiol serum is absolutely transformative — zero irritation, maximum glow.',
+    name: 'Bakuchiol',
+    desc: 'Plant-based retinol alternative for night renewal without harshness.',
+  },
+  { name: 'Rose Hip', desc: 'A vitamin-rich oil profile for barrier comfort and visible glow.' },
+  { name: 'Green Tea', desc: 'Polyphenol-rich antioxidant support for oily and combination skin.' },
+  { name: 'Turmeric', desc: 'A brightening botanical used in Indian rituals for generations.' },
+  { name: 'Zinc Oxide', desc: 'Mineral UV shield for daily broad-spectrum protection.' },
+  { name: 'Shea Butter', desc: 'A cushiony emollient for overnight barrier nourishment.' },
+]
+
+const TRUST_CARDS = [
+  {
+    icon: ShieldCheck,
+    title: 'INCI-first product pages',
+    copy: 'Every product page prioritises full ingredient disclosure, safety notes, PAO guidance, and patch-test advice.',
   },
   {
-    name: 'Aditi R.',
-    skin: 'Combination',
-    city: 'Bangalore',
-    rating: 5,
-    text: 'VerdeBliss converted me to clean beauty. The textures are so luxurious and the results are absolutely real.',
+    icon: Leaf,
+    title: 'Botanical luxury, not vague clean beauty',
+    copy: 'Formulas are positioned around named actives and skin concerns instead of generic natural claims.',
   },
   {
-    name: 'Meera P.',
-    skin: 'Dry',
-    city: 'Delhi',
-    rating: 5,
-    text: "I've tried so many moisturisers. The Rose Hip Glow is the only one that truly delivers on deep, lasting hydration.",
+    icon: Truck,
+    title: 'India-ready commerce rules',
+    copy: 'Free shipping threshold, COD caps, server-side cart validation, and verified payment flow are built in.',
   },
 ]
 
-const INGREDIENTS = [
-  { name: 'Bakuchiol', desc: 'Plant-based retinol alternative — renews without irritation.' },
-  { name: 'Rose Hip', desc: 'Rich in vitamin C and fatty acids for visible radiance.' },
-  { name: 'Green Tea', desc: 'Powerful antioxidant that calms inflammation and controls oil.' },
-  { name: 'Turmeric', desc: 'Ancient brightening spice with potent anti-inflammatory action.' },
-  { name: 'Zinc Oxide', desc: 'Mineral SPF shield that protects without clogging pores.' },
+const ROUTINES = [
   {
-    name: 'Shea Butter',
-    desc: 'Deeply nourishing butter that restores the skin barrier overnight.',
+    eyebrow: 'AM RITUAL',
+    title: 'Cleanse · Treat · Protect',
+    copy: 'Turmeric cleanser, niacinamide support, and mineral SPF for pollution-heavy Indian mornings.',
+    href: '/products?cat=SPF',
+  },
+  {
+    eyebrow: 'PM RITUAL',
+    title: 'Repair · Replenish · Seal',
+    copy: 'Bakuchiol renewal layered with rose hip or shea butter for a calmer overnight routine.',
+    href: '/products?cat=Serum',
+  },
+  {
+    eyebrow: 'SENSITIVE SKIN',
+    title: 'Calm barrier routine',
+    copy: 'Low-friction textures, transparent allergens, and patch-test guidance before active use.',
+    href: '/products?skin=Sensitive',
   },
 ]
 
 export default async function Home() {
-  // Server-side product fetch — content is in the HTML for crawlers from the
-  // first byte. Replaces the legacy `useProducts()` client hook on the home page.
   const products = await getProductsServer()
   const featured = products.slice(0, 6)
 
   return (
     <div className="bg-bg">
-      {/* ── Hero ────────────────────────────────────────────────── */}
-      <section
-        className="relative flex items-center overflow-hidden px-4 py-20"
-        style={{
-          background: 'linear-gradient(135deg, #2D4A32 0%, #1B3022 55%, #2D4A32 100%)',
-          minHeight: '88vh',
-        }}
-      >
-        {/* Decorative circles, pointer-events-none so they never block CTAs */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-20 -top-32 z-0 h-[520px] w-[520px] rounded-full bg-white/[0.025]"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-24 left-40 z-0 h-[360px] w-[360px] rounded-full bg-sage/10"
-        />
-
-        <div className="site-container relative z-10 grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12">
-          <div>
-            <p className="mb-5 text-[10px] font-semibold tracking-[0.18em] text-sage">
-              ✦ BOTANICAL SKINCARE &nbsp;·&nbsp; CRUELTY-FREE PRINCIPLES &nbsp;·&nbsp; VEGAN
-              FORMULAS ✦
-            </p>
-            <h1 className="m-0 mb-6 font-serif text-[clamp(40px,5.5vw,76px)] font-normal leading-none text-white">
-              Pure.
-              <br />
-              <em className="not-italic text-sage">Botanical.</em>
-              <br />
-              Radiant.
-            </h1>
-            <p className="mb-10 max-w-[420px] text-base leading-relaxed text-white/60">
-              Luxury skincare rooted in nature. Formulated with the finest certified organic
-              botanicals.
+      <section className="premium-hero px-4">
+        <div className="site-container premium-hero__grid">
+          <div className="premium-hero__copy">
+            <p className="premium-kicker">CERTIFIED ORGANIC SKINCARE INDIA</p>
+            <h1 className="premium-hero__title">Ritual-grade botanicals for modern Indian skin.</h1>
+            <p className="premium-hero__text">
+              A premium organic skincare boutique built around transparent actives, conscious
+              routines, verified commerce, and no inflated review claims.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/products" className="btn-terra">
-                Shop the Collection <ArrowRight size={15} />
+              <Link href="/products" className="btn-terra premium-cta">
+                Shop the collection <ArrowRight size={15} />
               </Link>
-              <Link
-                href="/quiz"
-                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-white/30 bg-transparent px-6 py-3.5 text-sm font-semibold tracking-wide text-white"
-              >
-                Take Skin Quiz <ArrowRight size={15} />
+              <Link href="/quiz" className="premium-ghost-cta">
+                Build my ritual <Sparkles size={15} />
               </Link>
             </div>
-            <dl className="mt-12 flex flex-wrap gap-9">
+            <dl className="premium-hero__stats" aria-label="Store highlights">
               {[
-                ['8', 'Launch Formulas'],
-                ['6', 'Care Categories'],
-                ['₹499+', 'Free Shipping'],
-              ].map(([n, l]) => (
-                <div key={l}>
-                  <dt className="font-serif text-2xl font-bold text-gold">{n}</dt>
-                  <dd className="mt-0.5 text-[11px] text-white/45">{l}</dd>
+                ['8', 'Launch formulas'],
+                ['14 days', 'Return window'],
+                ['₹499+', 'Free shipping'],
+              ].map(([value, label]) => (
+                <div key={label}>
+                  <dt>{value}</dt>
+                  <dd>{label}</dd>
                 </div>
               ))}
             </dl>
           </div>
 
-          {/* Hero product image — wrapped in an overflow-hidden container so
-              decorative glass cards positioned outside the circle never push
-              the document horizontally. */}
-          <div className="relative mx-auto flex w-full max-w-[420px] justify-center overflow-hidden px-2 py-6">
-            <div
-              className="relative flex-shrink-0 overflow-hidden rounded-full border-2 border-sage/35"
-              style={{
-                width: 'min(360px, 80vw)',
-                height: 'min(360px, 80vw)',
-                boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
-              }}
-            >
+          <div className="premium-hero__visual" aria-label="Featured VerdeBliss product editorial">
+            <div className="premium-hero__orb" />
+            <div className="premium-hero__product">
               <Image
                 src="/images/products/serum.webp"
-                alt="VerdeBliss Bakuchiol Serum"
+                alt="VerdeBliss Bakuchiol Renewal Serum"
                 priority
                 fetchPriority="high"
                 fill
-                sizes="(max-width: 768px) 80vw, 360px"
-                style={{ objectFit: 'cover', objectPosition: 'center' }}
+                sizes="(max-width: 768px) 78vw, 420px"
+                className="object-contain p-[12%]"
               />
             </div>
-            <div className="absolute left-0 top-10 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
-              <span className="text-[22px]">✨</span>
-              <div>
-                <div className="text-xs font-medium text-white">Bakuchiol Serum</div>
-                <div className="text-[10px] text-white/55">Best Seller ✦</div>
-              </div>
+            <div className="premium-float premium-float--left">
+              <span>INCI</span>
+              <strong>Full ingredient clarity</strong>
             </div>
-            <div className="absolute bottom-16 right-0 flex items-center gap-2.5 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 backdrop-blur-md">
-              <span className="text-[22px]">☀️</span>
-              <div>
-                <div className="text-xs font-medium text-white">SPF 50 Shield</div>
-                <div className="text-[10px] text-white/55">4.9★ Rated</div>
-              </div>
+            <div className="premium-float premium-float--right">
+              <span>NO HYPE</span>
+              <strong>Reviews shown only after approval</strong>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Featured Products ─────────────────────────────────── */}
       <section className="site-container page-section">
-        <header className="mb-12 text-center">
-          <p className="label-eyebrow mb-2.5">CURATED FOR YOU</p>
-          <h2 className="h-section">The Collection</h2>
-          <p className="mx-auto max-w-[420px] text-sm leading-relaxed text-muted">
-            Every formula is designed around botanical actives, transparent ingredients, and
-            everyday skin rituals.
+        <div className="premium-section-head">
+          <p className="label-eyebrow">CURATED BOUTIQUE</p>
+          <h2 className="h-section">The launch collection</h2>
+          <p>
+            Six hero formulas are surfaced first for faster decision-making. Every card now uses
+            product-specific copy instead of generic skincare filler.
           </p>
-        </header>
+        </div>
         <div className="product-grid product-grid-compact">
           {featured.map((p) => (
             <ProductCard key={p.id} product={p} />
@@ -170,22 +137,47 @@ export default async function Home() {
         </div>
         <div className="mt-10 text-center">
           <Link href="/products" className="btn-outline">
-            View All Products <ArrowRight size={15} />
+            View full boutique <ArrowRight size={15} />
           </Link>
         </div>
       </section>
 
-      {/* ── Key Ingredients ───────────────────────────────────── */}
+      <section className="premium-routines px-4">
+        <div className="site-container">
+          <div className="premium-section-head premium-section-head--light">
+            <p className="premium-kicker">ROUTINE COMMERCE</p>
+            <h2>Designed to sell rituals, not isolated SKUs.</h2>
+            <p>
+              Premium D2C skincare converts better when the customer sees an AM/PM path. These
+              routine panels create bundle-ready entry points without making unsupported clinical
+              claims.
+            </p>
+          </div>
+          <div className="premium-routine-grid">
+            {ROUTINES.map((routine) => (
+              <Link key={routine.title} href={routine.href} className="premium-routine-card">
+                <span>{routine.eyebrow}</span>
+                <h3>{routine.title}</h3>
+                <p>{routine.copy}</p>
+                <small>
+                  Explore products <ArrowRight size={13} />
+                </small>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="home-ingredients-section bg-ivory px-4">
         <div className="site-container">
-          <header className="mb-12 text-center">
-            <p className="label-eyebrow mb-2.5">WHAT&apos;S INSIDE</p>
-            <h2 className="h-section">Nature&apos;s Finest Ingredients</h2>
-            <p className="mx-auto max-w-[460px] text-sm leading-relaxed text-muted">
-              Every formula begins with the most potent certified-organic ingredients the earth has
-              to offer.
+          <div className="premium-section-head">
+            <p className="label-eyebrow">BOTANICAL LIBRARY</p>
+            <h2 className="h-section">Hero ingredients with a purpose</h2>
+            <p>
+              The brand story now feels ingredient-led and editorial, while staying within safe
+              cosmetic-language boundaries.
             </p>
-          </header>
+          </div>
           <div className="home-ingredients-grid">
             {INGREDIENTS.map((ing) => (
               <IngredientCard
@@ -199,104 +191,61 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Philosophy ────────────────────────────────────────── */}
-      <section className="overflow-hidden bg-forest px-4 py-20">
-        <div className="site-container grid grid-cols-1 items-center gap-12 md:grid-cols-2">
-          <div>
-            <p className="mb-3 text-[10px] font-semibold tracking-[0.14em] text-sage">
-              OUR PHILOSOPHY
+      <section className="site-container page-section">
+        <div className="premium-trust-grid">
+          <div className="premium-trust-intro">
+            <p className="label-eyebrow">WHY VERDEBLISS</p>
+            <h2 className="h-section">Luxury that can survive scrutiny.</h2>
+            <p>
+              The storefront now avoids unverifiable social proof and leans into verifiable signals:
+              ingredient transparency, secure checkout, review moderation, and clear policy pages.
             </p>
-            <h2 className="mb-5 font-serif text-[clamp(28px,4vw,44px)] font-normal leading-tight text-white">
-              Beauty that honours the earth
-            </h2>
-            <p className="mb-7 text-[15px] leading-relaxed text-white/60">
-              Every VerdeBliss formula is designed around botanical ingredients, cruelty-free
-              principles, and more conscious packaging choices.
-            </p>
-            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {[
-                ['🌱', 'Botanical Actives'],
-                ['🐰', 'Cruelty-Free'],
-                ['♻️', 'Eco Packaging'],
-                ['🏆', 'Ingredient Transparency'],
-              ].map(([e, l]) => (
-                <li
-                  key={l}
-                  className="flex items-center gap-2.5 rounded-[10px] border border-white/10 bg-white/5 px-3 py-2"
-                >
-                  <span className="text-base" aria-hidden>
-                    {e}
-                  </span>
-                  <span className="text-xs text-white/70">{l}</span>
-                </li>
-              ))}
-            </ul>
           </div>
-          <div className="grid grid-cols-2 gap-3" aria-hidden>
-            {['🌿', '🌸', '🍯', '🌺'].map((e) => (
-              <div
-                key={e}
-                className="flex h-32 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-5xl"
-              >
-                {e}
-              </div>
+          <div className="premium-trust-cards">
+            {TRUST_CARDS.map(({ icon: Icon, title, copy }) => (
+              <article key={title} className="premium-trust-card">
+                <Icon size={20} />
+                <h3>{title}</h3>
+                <p>{copy}</p>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Testimonials ──────────────────────────────────────── */}
-      <section className="site-container home-testimonials-section">
-        <header className="mb-10 text-center">
-          <p className="label-eyebrow mb-2.5">REAL RESULTS</p>
-          <h2 className="m-0 font-serif text-[clamp(32px,4vw,44px)] font-normal text-text">
-            Loved by thousands
-          </h2>
-        </header>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-5">
-          {TESTIMONIALS.map((t) => (
-            <article
-              key={t.name}
-              className="rounded-2xl border border-border border-l-[3px] border-l-gold bg-card p-7"
-            >
-              <Stars rating={t.rating} size={14} />
-              <p className="my-4 font-serif text-base italic leading-relaxed text-text">
-                &ldquo;{t.text}&rdquo;
-              </p>
-              <footer className="flex items-center gap-2.5">
-                <div
-                  aria-hidden
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-sagePale text-sm font-semibold text-forest"
-                >
-                  {t.name[0]}
-                </div>
-                <div>
-                  <div className="text-[13px] font-semibold text-text">{t.name}</div>
-                  <div className="text-[11px] text-muted">
-                    {t.skin} skin · {t.city}
-                  </div>
-                </div>
-              </footer>
-            </article>
-          ))}
+      <section className="premium-review-note px-4">
+        <div className="site-container premium-review-note__inner">
+          <div>
+            <p className="premium-kicker">VERIFIED REVIEW STANDARD</p>
+            <h2>Customer praise should be earned, not hard-coded.</h2>
+            <p>
+              Product reviews are displayed only after approval and purchase verification. Until
+              real approved reviews exist, the site now shows transparent review-state messaging
+              instead of inflated star ratings.
+            </p>
+          </div>
+          <ul>
+            {[
+              'No fake review counts',
+              'No unverified testimonials',
+              'Schema omits empty aggregate ratings',
+            ].map((item) => (
+              <li key={item}>
+                <CheckCircle2 size={16} /> {item}
+              </li>
+            ))}
+          </ul>
         </div>
-
-        {/* FTC + Verified Purchase disclosure */}
-        <p className="mt-6 text-center text-[11px] leading-relaxed text-light">
-          Testimonials are from customer feedback collected by VerdeBliss. Results may vary based on
-          individual skin type, usage, and lifestyle. Individual results are not guaranteed. *These
-          statements have not been evaluated by a regulatory authority.
-        </p>
       </section>
 
-      {/* ── Newsletter ────────────────────────────────────────── */}
       <section className="home-newsletter-section bg-ivory px-4 text-center">
         <p className="label-eyebrow mb-2.5">JOIN THE CIRCLE</p>
-        <h2 className="mb-2 font-serif text-[clamp(24px,3vw,34px)] font-normal text-text">
-          Subscribe for launch rituals
+        <h2 className="mb-2 font-serif text-[clamp(26px,3vw,38px)] font-normal text-text">
+          Launch notes, ingredient education, and ritual drops.
         </h2>
-        <p className="mb-7 text-sm text-muted">
-          New launches, ingredient education, and exclusive offers — delivered to your inbox.
+        <p className="mx-auto mb-7 max-w-[560px] text-sm leading-relaxed text-muted">
+          Sign up for product education and carefully timed offers. No spam, no third-party ad
+          tracking.
         </p>
         <NewsletterForm />
       </section>

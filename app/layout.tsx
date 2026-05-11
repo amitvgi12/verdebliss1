@@ -68,6 +68,14 @@ const organisationLd = {
     email: 'hello@verdebliss.com',
     contactType: 'customer service',
   },
+  hasMerchantReturnPolicy: {
+    '@type': 'MerchantReturnPolicy',
+    applicableCountry: 'IN',
+    returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+    merchantReturnDays: 14,
+    returnMethod: 'https://schema.org/ReturnByMail',
+    returnFees: 'https://schema.org/FreeReturn',
+  },
 }
 
 const websiteLd = {
@@ -89,7 +97,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Preconnect / DNS-prefetch for the payment iframe so first-checkout RTT is minimal */}
         <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
-        {/* JSON-LD with nonce — see middleware.ts + lib/seo.tsx */}
+        {/* JSON-LD with nonce — see proxy.ts + lib/structured-data.tsx */}
         <StructuredData data={organisationLd} />
         <StructuredData data={websiteLd} />
       </head>

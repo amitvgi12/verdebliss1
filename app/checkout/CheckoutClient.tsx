@@ -38,7 +38,7 @@ import type {
 
 /* ── Load Razorpay checkout script dynamically ─────────────────────────
  * Programmatic script injection. Razorpay's origin is allow-listed in the
- * CSP (see middleware.ts) so this works without a nonce. We keep the script
+ * CSP (see proxy.ts) so this works without a nonce. We keep the script
  * around across unmounts (re-loading on every checkout return is wasteful)
  * and silently no-op when the iframe API has already been registered.
  *
@@ -118,6 +118,7 @@ export default function Checkout() {
   const [paymentAction, setPaymentAction] = useState<PaymentAction>(null) // null | 'razorpay' | 'cod'
   const [errors, setErrors] = useState<CheckoutErrors>({})
   const [checkoutError, setCheckoutError] = useState('')
+  const [codVerificationRequired, setCodVerificationRequired] = useState(false)
 
   const [form, setForm] = useState<CheckoutForm>({
     name: profile?.full_name ?? user?.email?.split('@')[0] ?? '',
@@ -142,6 +143,7 @@ export default function Checkout() {
     setCheckoutError('')
     setPayId(result.paymentId || result.orderId || '')
     setPaymentMethod(result.paymentMethod || '')
+    setCodVerificationRequired(Boolean(result.verificationRequired))
     setStatus('success')
     clearCart()
     setLoading(false)
@@ -333,6 +335,7 @@ export default function Checkout() {
         paymentId={paymentId}
         paymentMethod={paymentMethod}
         pointsToEarn={pointsToEarn}
+        codVerificationRequired={codVerificationRequired}
         onContinueShopping={() => router.push('/products')}
         onViewAccount={() => router.push('/account')}
       />

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Heart, Minus, Plus } from 'lucide-react'
+import { ArrowRight, Heart, Minus, Plus } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
@@ -80,9 +80,12 @@ export default function ProductCard({ product: p }: { product: Product }) {
           {p.name}
         </Link>
 
-        <p className="vb-product-card__subcopy">
-          Botanical actives · transparent ingredients · everyday ritual
-        </p>
+        <p className="vb-product-card__subcopy">{p.description}</p>
+
+        <div className="vb-product-card__ritual" aria-label="Product highlights">
+          <span>{p.ingredient ?? 'Botanical active'}</span>
+          <span>{(p.skin_types ?? ['All Types']).slice(0, 2).join(' / ')}</span>
+        </div>
 
         <div className="vb-product-card__price-row">
           <div className="vb-product-card__prices">
@@ -122,9 +125,17 @@ export default function ProductCard({ product: p }: { product: Product }) {
             }}
             className="vb-product-card__add"
           >
-            {stockOut ? 'Sold Out' : 'Add to cart'}
+            {stockOut ? 'Sold Out' : 'Add to ritual'}
           </button>
         )}
+
+        <Link
+          href={href}
+          className="vb-product-card__details"
+          aria-label={`Read more about ${p.name}`}
+        >
+          View details <ArrowRight size={13} />
+        </Link>
       </div>
     </motion.article>
   )

@@ -44,10 +44,14 @@ export function filterAndSortProducts(
 
   return filtered.sort((a, b) => {
     switch (filters.sortBy) {
+      case 'Price Low→High':
       case 'Price: Low to High':
         return Number(a.price) - Number(b.price)
+      case 'Price High→Low':
       case 'Price: High to Low':
         return Number(b.price) - Number(a.price)
+      case 'Top Rated':
+        return Number(b.rating ?? 0) - Number(a.rating ?? 0)
       case 'Newest':
         return String(b.created_at ?? b.id).localeCompare(String(a.created_at ?? a.id))
       case 'Bestselling':
