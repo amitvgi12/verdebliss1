@@ -871,6 +871,95 @@ video {
   line-height: 1.7;
 }
 
+.home-philosophy-section {
+  padding-block: clamp(64px, 8vw, 104px);
+  background:
+    radial-gradient(circle at 88% 20%, rgba(191, 160, 106, 0.18), transparent 30%),
+    linear-gradient(135deg, #223828 0%, #122017 100%);
+  color: white;
+}
+
+.home-philosophy-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: clamp(32px, 6vw, 72px);
+  align-items: center;
+}
+
+.home-philosophy-copy h2 {
+  margin-block: 14px 18px;
+  color: white;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.home-philosophy-copy > p {
+  max-width: 520px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.home-philosophy-badges {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.home-philosophy-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(8px);
+}
+
+.home-philosophy-badge span:first-child {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.home-philosophy-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.home-philosophy-emoji-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  font-size: clamp(2.8rem, 5vw, 4rem);
+  background: rgba(255, 255, 255, 0.07);
+  transition: background 160ms ease;
+}
+
+.home-philosophy-emoji-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 900px) {
+  .home-philosophy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-philosophy-emoji-grid {
+    max-width: 380px;
+  }
+}
+
 .premium-review-note {
   padding-block: clamp(52px, 7vw, 88px);
   background: #efe6da;

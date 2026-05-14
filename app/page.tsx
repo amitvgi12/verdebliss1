@@ -170,11 +170,11 @@ export default async function Home() {
       <section className="home-ingredients-section bg-ivory px-4">
         <div className="site-container">
           <div className="premium-section-head">
-            <p className="label-eyebrow">BOTANICAL LIBRARY</p>
-            <h2 className="h-section">What&apos;s inside — and why</h2>
+            <p className="label-eyebrow">WHAT&apos;S INSIDE</p>
+            <h2 className="h-section">Nature&apos;s Finest Ingredients</h2>
             <p>
-              Every formula begins with a single named active chosen for a specific skin concern. No
-              vague "botanical complex" — just the ingredient and its purpose.
+              Every formula begins with the most potent certified-organic ingredients the earth has
+              to offer.
             </p>
           </div>
           <div className="home-ingredients-grid">
@@ -186,6 +186,41 @@ export default async function Home() {
                 imageHeight={140}
               />
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="home-philosophy-section px-4">
+        <div className="site-container">
+          <div className="home-philosophy-grid">
+            <div className="home-philosophy-copy">
+              <p className="premium-kicker">OUR PHILOSOPHY</p>
+              <h2>Beauty that honours the earth</h2>
+              <p>
+                Every VerdeBliss formula is crafted from certified organic botanicals, never tested
+                on animals, and packaged in eco-conscious materials.
+              </p>
+              <div className="home-philosophy-badges">
+                {[
+                  ['🌱', '95%+ Organic Ingredients'],
+                  ['🐰', 'Cruelty-Free'],
+                  ['♻️', 'Eco Packaging'],
+                  ['🏆', 'Dermatologist OK'],
+                ].map(([emoji, label]) => (
+                  <div key={label} className="home-philosophy-badge">
+                    <span>{emoji}</span>
+                    <span>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="home-philosophy-emoji-grid" aria-hidden="true">
+              {['🍃', '🌸', '🍯', '🌺'].map((emoji) => (
+                <div key={emoji} className="home-philosophy-emoji-card">
+                  {emoji}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
