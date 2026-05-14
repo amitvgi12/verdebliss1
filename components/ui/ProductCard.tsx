@@ -19,8 +19,7 @@ export default function ProductCard({ product: p }: { product: Product }) {
   const user = useAuthStore((s) => s.user)
 
   const price = p.price ?? 0
-  const mrp = Math.round(price * 1.2)
-  const discount = mrp > 0 ? Math.round(((mrp - price) / mrp) * 100) : 0
+  const mrp = typeof p.mrp === 'number' && p.mrp > price ? p.mrp : null
   const href = productPath(p)
   const inWishlist = has(p.id)
   const stockOut = p.stock === 0
@@ -90,8 +89,14 @@ export default function ProductCard({ product: p }: { product: Product }) {
         <div className="vb-product-card__price-row">
           <div className="vb-product-card__prices">
             <span className="vb-product-card__price">₹{price.toLocaleString()}</span>
-            <span className="vb-product-card__mrp">₹{mrp.toLocaleString()}</span>
-            {discount > 0 && <span className="vb-product-card__discount">-{discount}%</span>}
+            {mrp && (
+              <span
+                className="vb-product-card__mrp"
+                aria-label={`Original price ₹${mrp.toLocaleString()}`}
+              >
+                ₹{mrp.toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
 

@@ -34,6 +34,9 @@ export const useCartStore = create<CartState>()(
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
     }),
-    { name: 'verdebliss-cart' }
+    {
+      name: 'verdebliss-cart',
+      partialize: (state) => ({ items: state.items }),
+    }
   )
 )

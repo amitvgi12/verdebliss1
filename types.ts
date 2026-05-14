@@ -9,7 +9,8 @@ export interface Product {
   slug?: string
   category?: ProductCategory | string
   price: number
-  rating?: number
+  mrp?: number | null
+  rating?: number | null
   review_count?: number
   skin_types?: SkinType[] | string[]
   badges?: string[]

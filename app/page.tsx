@@ -123,11 +123,11 @@ export default async function Home() {
 
       <section className="site-container page-section">
         <div className="premium-section-head">
-          <p className="label-eyebrow">CURATED BOUTIQUE</p>
-          <h2 className="h-section">The launch collection</h2>
+          <p className="label-eyebrow">THE COLLECTION</p>
+          <h2 className="h-section">Eight formulas, one purpose</h2>
           <p>
-            Six hero formulas are surfaced first for faster decision-making. Every card now uses
-            product-specific copy instead of generic skincare filler.
+            Each product is built around a single named active. Start with the formula that solves
+            your most stubborn skin concern.
           </p>
         </div>
         <div className="product-grid product-grid-compact">
@@ -145,12 +145,11 @@ export default async function Home() {
       <section className="premium-routines px-4">
         <div className="site-container">
           <div className="premium-section-head premium-section-head--light">
-            <p className="premium-kicker">ROUTINE COMMERCE</p>
-            <h2>Designed to sell rituals, not isolated SKUs.</h2>
+            <p className="premium-kicker">BUILD YOUR RITUAL</p>
+            <h2>Morning, evening, or sensitive-skin care.</h2>
             <p>
-              Premium D2C skincare converts better when the customer sees an AM/PM path. These
-              routine panels create bundle-ready entry points without making unsupported clinical
-              claims.
+              Every skin concern has a routine. Start with the step that matters most to you — your
+              ritual, in the order that works for your skin.
             </p>
           </div>
           <div className="premium-routine-grid">
@@ -172,10 +171,10 @@ export default async function Home() {
         <div className="site-container">
           <div className="premium-section-head">
             <p className="label-eyebrow">BOTANICAL LIBRARY</p>
-            <h2 className="h-section">Hero ingredients with a purpose</h2>
+            <h2 className="h-section">What&apos;s inside — and why</h2>
             <p>
-              The brand story now feels ingredient-led and editorial, while staying within safe
-              cosmetic-language boundaries.
+              Every formula begins with a single named active chosen for a specific skin concern. No
+              vague "botanical complex" — just the ingredient and its purpose.
             </p>
           </div>
           <div className="home-ingredients-grid">
@@ -197,8 +196,8 @@ export default async function Home() {
             <p className="label-eyebrow">WHY VERDEBLISS</p>
             <h2 className="h-section">Luxury that can survive scrutiny.</h2>
             <p>
-              The storefront now avoids unverifiable social proof and leans into verifiable signals:
-              ingredient transparency, secure checkout, review moderation, and clear policy pages.
+              Ingredient transparency, verified reviews, secure checkout, and a clear returns policy
+              — the kind of trust that holds up to a second look.
             </p>
           </div>
           <div className="premium-trust-cards">
@@ -241,11 +240,10 @@ export default async function Home() {
       <section className="home-newsletter-section bg-ivory px-4 text-center">
         <p className="label-eyebrow mb-2.5">JOIN THE CIRCLE</p>
         <h2 className="mb-2 font-serif text-[clamp(26px,3vw,38px)] font-normal text-text">
-          Launch notes, ingredient education, and ritual drops.
+          Subscribe &amp; earn 50 bonus points
         </h2>
         <p className="mx-auto mb-7 max-w-[560px] text-sm leading-relaxed text-muted">
-          Sign up for product education and carefully timed offers. No spam, no third-party ad
-          tracking.
+          New launches, rituals, and exclusive offers — delivered to your inbox. No spam, ever.
         </p>
         <NewsletterForm />
       </section>

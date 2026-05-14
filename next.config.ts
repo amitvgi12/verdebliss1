@@ -10,10 +10,9 @@ import type { NextConfig } from 'next'
  */
 const nextConfig: NextConfig = {
   images: {
-    formats: ['image/webp', 'image/avif'],
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [{ protocol: 'https', hostname: '*.supabase.co' }],
   },
-  compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
 

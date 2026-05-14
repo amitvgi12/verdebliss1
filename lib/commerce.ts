@@ -314,21 +314,34 @@ export function verifyRazorpaySignature(
 ): boolean {
   const secret = process.env.RAZORPAY_KEY_SECRET
   if (!secret) throw new Error('Razorpay secret is not configured')
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(`${orderId}|${paymentId}`)
-    .digest('hex')
 
-  if (expected.length !== signature.length) return false
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+  // Razorpay signatures are 64-char lowercase hex of HMAC-SHA256.
+  if (!/^[0-9a-f]{64}$/i.test(signature)) return false
+
+  const expected = Buffer.from(
+    crypto.createHmac('sha256', secret).update(`${orderId}|${paymentId}`).digest('hex'),
+    'hex'
+  )
+  const provided = Buffer.from(signature, 'hex')
+
+  if (expected.length !== provided.length) return false
+  return crypto.timingSafeEqual(expected, provided)
 }
 
 export function verifyRazorpayWebhookSignature(rawBody: string, signature: string): boolean {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET
   if (!secret) throw new Error('Razorpay webhook secret is not configured')
-  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex')
-  if (expected.length !== signature.length) return false
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+
+  if (!/^[0-9a-f]{64}$/i.test(signature)) return false
+
+  const expected = Buffer.from(
+    crypto.createHmac('sha256', secret).update(rawBody).digest('hex'),
+    'hex'
+  )
+  const provided = Buffer.from(signature, 'hex')
+
+  if (expected.length !== provided.length) return false
+  return crypto.timingSafeEqual(expected, provided)
 }
 
 export async function createCheckoutSession(input: {
