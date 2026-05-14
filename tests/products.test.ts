@@ -50,11 +50,10 @@ describe('PRODUCTS catalogue', () => {
     expect(product?.category).toBe('Serum')
   })
 
-  it('Botanical SPF 50 Shield has the highest review count', () => {
-    const maxReviews = Math.max(...PRODUCTS.map((p) => p.review_count ?? 0))
-    const topProduct = PRODUCTS.find((p) => (p.review_count ?? 0) === maxReviews)
-    expect(topProduct).toBeDefined()
-    expect(topProduct?.name).toContain('SPF')
+  it('all products have review_count of 0 in the fallback constants', () => {
+    PRODUCTS.forEach((p) => {
+      expect(p.review_count ?? 0).toBe(0)
+    })
   })
 })
 
