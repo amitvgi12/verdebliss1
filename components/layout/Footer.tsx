@@ -35,12 +35,12 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
       <h3 className="mb-3.5 text-[11px] font-bold uppercase tracking-wider text-white/85">
         {title}
       </h3>
-      <ul className="space-y-0">
+      <ul className="space-y-0.5">
         {links.map(([label, path]) => (
           <li key={label}>
             <Link
               href={path}
-              className="block py-1 text-[13px] text-white/55 transition hover:text-white/90"
+              className="block py-[5px] text-[13px] text-white/55 transition hover:text-white/90"
             >
               {label}
             </Link>
@@ -54,7 +54,7 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
 export default function Footer() {
   return (
     <footer className="site-footer bg-forest px-4 text-white/55">
-      <div className="site-container grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-10">
+      <div className="site-container grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-8 lg:gap-12">
         {/* Brand column */}
         <div>
           <Link
