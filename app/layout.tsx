@@ -4,12 +4,10 @@ import CartDrawer from '@/components/features/cart/CartDrawer'
 import CookieConsent from '@/components/ui/CookieConsent'
 import AuthInitializer from '@/components/ui/AuthInitializer'
 import MotionProvider from '@/components/ui/MotionProvider'
+import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import { StructuredData } from '@/lib/structured-data'
-import dynamic from 'next/dynamic'
 import './globals.css'
 import type { ReactNode } from 'react'
-
-const ChatBot = dynamic(() => import('@/components/features/chat/ChatBot'), { ssr: false })
 
 export const metadata = {
   metadataBase: new URL('https://www.verdebliss.com'),
@@ -116,7 +114,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <CartDrawer />
           <main id="main-content">{children}</main>
           <Footer />
-          <ChatBot />
+          <ChatBotLoader />
           <CookieConsent />
         </MotionProvider>
       </body>
