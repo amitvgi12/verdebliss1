@@ -20,6 +20,8 @@ const POSTS = [
     category: 'Ingredient Science',
     readTime: 6,
     date: 'April 2026',
+    cardBg: 'linear-gradient(135deg, #2d4a32 0%, #122017 100%)',
+    accentColor: '#bfa06a',
   },
   {
     slug: 'skincare-routine-dry-skin',
@@ -29,6 +31,8 @@ const POSTS = [
     category: 'Routines',
     readTime: 8,
     date: 'March 2026',
+    cardBg: 'linear-gradient(135deg, #c07a5a 0%, #7a3e22 100%)',
+    accentColor: '#fdfaf6',
   },
   {
     slug: 'organic-skincare-india',
@@ -38,12 +42,15 @@ const POSTS = [
     category: 'Education',
     readTime: 7,
     date: 'February 2026',
+    cardBg: 'linear-gradient(135deg, #4a6844 0%, #2d4a32 100%)',
+    accentColor: '#bfa06a',
   },
 ]
 
 export default function BlogIndexPage() {
   return (
     <div className="bg-bg">
+      {/* Hero */}
       <section className="bg-forest px-4 py-14 text-center">
         <div className="site-container">
           <FadeIn>
@@ -60,40 +67,70 @@ export default function BlogIndexPage() {
         </div>
       </section>
 
+      {/* Post grid */}
       <section className="site-container py-14">
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6">
           {POSTS.map((post, i) => (
             <FadeIn key={post.slug} delay={i * 0.08}>
-              <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-[0_8px_28px_rgba(0,0,0,0.07)]">
-                <div className="flex h-36 items-center justify-center bg-sagePale">
-                  <span className="text-4xl" aria-hidden>
-                    📖
+              <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[0_2px_12px_rgba(45,74,50,0.06)] transition hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(45,74,50,0.12)]">
+                {/* Editorial card header */}
+                <div
+                  className="relative flex h-48 flex-col justify-between overflow-hidden p-6"
+                  style={{ background: post.cardBg }}
+                >
+                  {/* Big background number */}
+                  <span
+                    className="pointer-events-none absolute -right-3 -top-3 select-none font-serif text-[9rem] font-bold leading-none"
+                    style={{ color: 'rgba(255,255,255,0.06)' }}
+                    aria-hidden
+                  >
+                    {String(i + 1).padStart(2, '0')}
                   </span>
-                </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <div className="mb-2 flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wider text-terra">
-                    <span>{post.category}</span>
-                    <span aria-hidden>·</span>
-                    <span>{post.readTime} min read</span>
+
+                  {/* Top: read time */}
+                  <span
+                    className="relative z-10 self-start rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em]"
+                    style={{
+                      background: 'rgba(255,255,255,0.12)',
+                      color: post.accentColor,
+                      border: '1px solid rgba(255,255,255,0.16)',
+                      backdropFilter: 'blur(8px)',
+                    }}
+                  >
+                    {post.readTime} min read
+                  </span>
+
+                  {/* Bottom: category */}
+                  <div className="relative z-10">
+                    <p
+                      className="font-serif text-2xl font-normal leading-tight text-white"
+                      style={{ letterSpacing: '-0.02em' }}
+                    >
+                      {post.category}
+                    </p>
                   </div>
-                  <h2 className="mb-2 font-serif text-base font-semibold leading-snug text-text">
+                </div>
+
+                {/* Card body */}
+                <div className="flex flex-1 flex-col p-6">
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-terra">
+                    {post.date}
+                  </p>
+                  <h2 className="mb-3 font-serif text-base font-semibold leading-snug text-text">
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="text-text no-underline hover:text-forest"
+                      className="text-text no-underline transition hover:text-forest"
                     >
                       {post.title}
                     </Link>
                   </h2>
-                  <p className="mb-4 flex-1 text-xs leading-relaxed text-muted">{post.excerpt}</p>
-                  <div className="flex items-center justify-between text-[11px] text-light">
-                    <span>{post.date}</span>
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="inline-flex items-center gap-1 font-semibold text-forest hover:underline"
-                    >
-                      Read article <ArrowRight size={11} />
-                    </Link>
-                  </div>
+                  <p className="mb-5 flex-1 text-xs leading-relaxed text-muted">{post.excerpt}</p>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="inline-flex items-center gap-1.5 self-start text-[12px] font-semibold text-forest hover:underline"
+                  >
+                    Read article <ArrowRight size={12} />
+                  </Link>
                 </div>
               </article>
             </FadeIn>
@@ -101,11 +138,12 @@ export default function BlogIndexPage() {
         </div>
       </section>
 
+      {/* CTA */}
       <section className="bg-ivory px-4 py-14 text-center">
         <FadeIn>
           <p className="label-eyebrow mb-2.5">QUESTIONS?</p>
           <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-text">
-            Ask Verde, our AI advisor
+            Ask Verde, our AI skin advisor
           </h2>
           <p className="mx-auto mb-7 max-w-[440px] text-center text-sm text-muted">
             Skin-type-aware recommendations based on the science. Available on every page.

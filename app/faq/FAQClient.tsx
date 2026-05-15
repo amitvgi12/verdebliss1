@@ -14,7 +14,7 @@ export default function FAQClient({ items }: { items: FAQItem[] }) {
 
   return (
     <div style={{ background: C.bg, minHeight: '100vh' }}>
-      <div style={{ background: C.forest, padding: '56px 16px 40px' }}>
+      <div style={{ background: C.forest, padding: 'clamp(40px,5vw,64px) 16px clamp(40px,5vw,56px)' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
           <div
             style={{
@@ -30,11 +30,12 @@ export default function FAQClient({ items }: { items: FAQItem[] }) {
           <h1
             style={{
               fontFamily: FONT.serif,
-              fontSize: 'clamp(32px, 5vw, 48px)',
+              fontSize: 'clamp(2rem, 3.5vw, 3rem)',
               color: 'white',
               fontWeight: 400,
               margin: '0 0 12px',
-              lineHeight: 1.1,
+              lineHeight: 1.05,
+              letterSpacing: '-0.03em',
             }}
           >
             Frequently Asked Questions

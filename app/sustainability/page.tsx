@@ -15,26 +15,34 @@ const PILLARS = [
   {
     icon: '♻️',
     title: 'Packaging',
-    pct: 'Roadmap',
+    target: '2028',
+    label: 'ZERO VIRGIN PLASTIC',
     desc: 'More recyclable and refill-ready primary packaging by 2028.',
+    iconBg: '#EAF0E8',
   },
   {
     icon: '🌍',
     title: 'Carbon',
-    pct: '2030',
-    desc: 'Target year for lower-carbon operations and supplier reporting.',
+    target: '2030',
+    label: 'CARBON-NEUTRAL TARGET',
+    desc: 'Target year for lower-carbon operations and full supplier reporting.',
+    iconBg: '#E3F2E8',
   },
   {
     icon: '💧',
     title: 'Water',
-    pct: 'Reduce',
+    target: '−30%',
+    label: 'WATER INTENSITY',
     desc: 'Lower water intensity in formulation and cleaning workflows.',
+    iconBg: '#E0F0FA',
   },
   {
     icon: '🌱',
     title: 'Sourcing',
-    pct: 'Sourcing',
-    desc: 'Prefer direct farmer and cooperative partnerships across India.',
+    target: '12',
+    label: 'FARMER COOPERATIVES',
+    desc: 'Direct partnerships with co-ops across Karnataka, Kerala, and Sikkim.',
+    iconBg: '#EDF5E8',
   },
 ]
 
@@ -60,6 +68,7 @@ const COMMITMENTS = [
 export default function SustainabilityPage() {
   return (
     <div className="bg-bg">
+      {/* Hero */}
       <section className="bg-forest px-4 py-14 text-center">
         <div className="site-container">
           <FadeIn>
@@ -77,16 +86,24 @@ export default function SustainabilityPage() {
         </div>
       </section>
 
+      {/* Pillars */}
       <section className="site-container py-14">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-5">
           {PILLARS.map((p, i) => (
             <FadeIn key={p.title} delay={i * 0.08}>
-              <article className="rounded-2xl border border-border bg-card p-6 text-center transition hover:-translate-y-1 hover:shadow-[0_8px_28px_rgba(0,0,0,0.07)]">
-                <div className="mb-3 text-3xl" aria-hidden>
+              <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 text-center transition hover:-translate-y-1 hover:shadow-[0_10px_32px_rgba(45,74,50,0.1)]">
+                <div
+                  className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-2xl"
+                  style={{ background: p.iconBg }}
+                  aria-hidden
+                >
                   {p.icon}
                 </div>
-                <div className="mb-1 font-serif text-2xl font-bold text-forest">{p.pct}</div>
-                <h3 className="mb-1.5 font-serif text-sm font-semibold text-text">{p.title}</h3>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-terra">
+                  {p.label}
+                </p>
+                <p className="mb-2 font-serif text-3xl font-semibold text-forest">{p.target}</p>
+                <h3 className="mb-2 font-serif text-sm font-semibold text-text">{p.title}</h3>
                 <p className="text-xs leading-relaxed text-muted">{p.desc}</p>
               </article>
             </FadeIn>
@@ -94,6 +111,7 @@ export default function SustainabilityPage() {
         </div>
       </section>
 
+      {/* Commitments */}
       <section className="bg-ivory px-4 py-14">
         <div className="site-container">
           <FadeIn>
@@ -102,12 +120,13 @@ export default function SustainabilityPage() {
               <h2 className="h-section">Targets you can hold us to</h2>
             </header>
           </FadeIn>
-          <div className="mx-auto grid max-w-[820px] grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="mx-auto grid max-w-[860px] grid-cols-1 gap-4 md:grid-cols-2">
             {COMMITMENTS.map((c, i) => (
               <FadeIn key={c.title} delay={i * 0.07}>
-                <article className="rounded-2xl border border-border bg-card p-6 transition hover:shadow-[0_6px_22px_rgba(0,0,0,0.07)]">
+                <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition hover:shadow-[0_6px_22px_rgba(45,74,50,0.09)]">
+                  <div className="mb-3 h-1 w-10 rounded-full bg-terra" aria-hidden />
                   <h3 className="mb-2 font-serif text-sm font-semibold text-text">{c.title}</h3>
-                  <p className="text-xs leading-relaxed text-muted">{c.body}</p>
+                  <p className="flex-1 text-xs leading-relaxed text-muted">{c.body}</p>
                 </article>
               </FadeIn>
             ))}
@@ -115,6 +134,7 @@ export default function SustainabilityPage() {
         </div>
       </section>
 
+      {/* CTA */}
       <section className="bg-forest px-4 py-14 text-center">
         <FadeIn>
           <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">

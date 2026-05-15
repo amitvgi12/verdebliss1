@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import FadeIn from '@/components/ui/FadeIn'
 
 export const revalidate = 3600
 
@@ -69,75 +70,83 @@ const VALUES = [
 export default function OurStoryPage() {
   return (
     <div className="bg-bg">
-      {/* Hero */}
-      <section className="bg-forest px-4 py-16 text-center">
+      <section className="bg-forest px-4 py-14 text-center">
         <div className="container-content">
-          <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
-            FOUNDED IN PUNE — 2019
-          </p>
-          <h1 className="m-0 mb-4 font-serif text-[clamp(36px,5vw,56px)] font-normal leading-[1.05] text-white">
-            Our Story
-          </h1>
-          <p className="mx-auto max-w-[600px] text-sm leading-relaxed text-white/65">
-            VerdeBliss exists because skincare can be honest, beautiful, and free of greenwashing —
-            all at the same time.
-          </p>
+          <FadeIn>
+            <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
+              FOUNDED IN PUNE — 2019
+            </p>
+            <h1 className="m-0 mb-4 font-serif text-[clamp(2rem,3.5vw,3rem)] font-normal leading-[1.05] text-white">
+              Our Story
+            </h1>
+            <p className="mx-auto max-w-[600px] text-center text-sm leading-relaxed text-white/65">
+              VerdeBliss exists because skincare can be honest, beautiful, and free of greenwashing
+              — all at the same time.
+            </p>
+          </FadeIn>
         </div>
       </section>
 
-      {/* Timeline */}
-      <section className="container-content py-16">
-        <header className="mb-10 text-center">
-          <p className="label-eyebrow mb-2.5">THE JOURNEY</p>
-          <h2 className="h-section">From kitchen to 50,000 customers</h2>
-        </header>
+      <section className="container-content py-14">
+        <FadeIn>
+          <header className="mb-10 text-center">
+            <p className="label-eyebrow mb-2.5">THE JOURNEY</p>
+            <h2 className="h-section">From kitchen to 50,000 customers</h2>
+          </header>
+        </FadeIn>
         <ol className="relative mx-auto max-w-[680px] border-l-2 border-sagePale pl-6">
-          {TIMELINE.map((item) => (
-            <li key={item.year} className="mb-8 last:mb-0">
-              <span className="absolute -left-[7px] mt-1.5 block h-3 w-3 rounded-full bg-gold" />
-              <div className="font-serif text-xs font-semibold uppercase tracking-wider text-terra">
-                {item.year}
-              </div>
-              <h3 className="mb-1 font-serif text-lg font-semibold text-text">{item.title}</h3>
-              <p className="text-sm leading-relaxed text-muted">{item.body}</p>
-            </li>
+          {TIMELINE.map((item, i) => (
+            <FadeIn key={item.year} delay={i * 0.06}>
+              <li className="mb-8 last:mb-0">
+                <span className="absolute -left-[7px] mt-1.5 block h-3 w-3 rounded-full bg-gold" />
+                <div className="font-serif text-xs font-semibold uppercase tracking-wider text-terra">
+                  {item.year}
+                </div>
+                <h3 className="mb-1 font-serif text-lg font-semibold text-text">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{item.body}</p>
+              </li>
+            </FadeIn>
           ))}
         </ol>
       </section>
 
-      {/* Values */}
-      <section className="bg-ivory px-4 py-16">
+      <section className="bg-ivory px-4 py-14">
         <div className="container-content">
-          <header className="mb-10 text-center">
-            <p className="label-eyebrow mb-2.5">WHAT WE BELIEVE</p>
-            <h2 className="h-section">Four lines we won&apos;t cross</h2>
-          </header>
+          <FadeIn>
+            <header className="mb-10 text-center">
+              <p className="label-eyebrow mb-2.5">WHAT WE BELIEVE</p>
+              <h2 className="h-section">Four lines we won&apos;t cross</h2>
+            </header>
+          </FadeIn>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
-            {VALUES.map((value) => (
-              <article key={value.title} className="rounded-2xl border border-border bg-card p-6">
-                <div className="mb-3 text-3xl" aria-hidden>
-                  {value.icon}
-                </div>
-                <h3 className="mb-2 font-serif text-base font-semibold text-text">{value.title}</h3>
-                <p className="text-xs leading-relaxed text-muted">{value.body}</p>
-              </article>
+            {VALUES.map((value, i) => (
+              <FadeIn key={value.title} delay={i * 0.08}>
+                <article className="h-full rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:shadow-[0_8px_28px_rgba(0,0,0,0.07)]">
+                  <div className="mb-3 text-3xl" aria-hidden>
+                    {value.icon}
+                  </div>
+                  <h3 className="mb-2 font-serif text-sm font-semibold text-text">{value.title}</h3>
+                  <p className="text-xs leading-relaxed text-muted">{value.body}</p>
+                </article>
+              </FadeIn>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-forest px-4 py-16 text-center">
-        <h2 className="mb-3 font-serif text-[clamp(24px,3vw,32px)] font-normal text-white">
-          Try the formulas that started it all
-        </h2>
-        <p className="mx-auto mb-7 max-w-[440px] text-sm text-white/55">
-          Eight hero products. Every one of them rooted in the same five-year obsession with getting
-          it right.
-        </p>
-        <Link href="/products" className="btn-terra">
-          Shop the collection <ArrowRight size={15} />
-        </Link>
+      <section className="bg-forest px-4 py-14 text-center">
+        <FadeIn>
+          <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
+            Try the formulas that started it all
+          </h2>
+          <p className="mx-auto mb-7 max-w-[440px] text-center text-sm text-white/55">
+            Eight hero products. Every one of them rooted in the same five-year obsession with
+            getting it right.
+          </p>
+          <Link href="/products" className="btn-terra">
+            Shop the collection <ArrowRight size={15} />
+          </Link>
+        </FadeIn>
       </section>
     </div>
   )

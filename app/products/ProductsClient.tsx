@@ -66,11 +66,10 @@ export default function ProductsClient({
             </p>
           </div>
           <div className="catalog-hero__card">
-            <span>COMMERCE STANDARD</span>
-            <strong>Server-rendered catalogue</strong>
+            <span>FREE SHIPPING</span>
+            <strong>On all orders above ₹499</strong>
             <p>
-              Product content is available in first HTML response for faster discovery and stronger
-              SEO.
+              Certified organic · Cruelty-free · USDA &amp; Ecocert verified · 14-day easy returns
             </p>
           </div>
         </div>

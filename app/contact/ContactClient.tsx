@@ -142,29 +142,53 @@ export default function ContactClient() {
           >
             CONTACT CHANNELS
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {CHANNELS.map((ch) => (
               <div
                 key={ch.title}
                 style={{
-                  background: C.ivory,
-                  borderRadius: 14,
-                  padding: '18px 20px',
+                  background: C.card,
+                  borderRadius: 16,
+                  padding: '16px 18px',
                   border: `1px solid ${C.border}`,
                   display: 'flex',
-                  gap: 16,
+                  gap: 14,
                   alignItems: 'center',
+                  boxShadow: '0 2px 8px rgba(45,74,50,0.05)',
+                  transition: 'box-shadow 180ms ease, transform 180ms ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(45,74,50,0.1)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(45,74,50,0.05)'
+                  e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                <div style={{ fontSize: 28, flexShrink: 0 }}>{ch.icon}</div>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    background: C.sagePale,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 20,
+                    flexShrink: 0,
+                  }}
+                >
+                  {ch.icon}
+                </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 2 }}>
                     {ch.title}
                   </div>
-                  <div style={{ fontSize: 14, color: C.forest, fontWeight: 500, marginBottom: 2 }}>
+                  <div style={{ fontSize: 13, color: C.forest, fontWeight: 600, marginBottom: 2 }}>
                     {ch.value}
                   </div>
-                  <div style={{ fontSize: 12, color: C.muted }}>{ch.sub}</div>
+                  <div style={{ fontSize: 11, color: C.muted }}>{ch.sub}</div>
                 </div>
               </div>
             ))}

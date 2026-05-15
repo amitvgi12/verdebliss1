@@ -578,6 +578,33 @@ video {
   }
 }
 
+/* ── Hero entry animation ────────────────────────────────────── */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.premium-hero__copy {
+  animation: hero-rise 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.premium-hero__visual {
+  animation: hero-rise 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-hero__copy,
+  .premium-hero__visual {
+    animation: none;
+  }
+}
+
 /* ── X10 premium D2C upgrade ─────────────────────────────────── */
 .premium-kicker {
   color: var(--color-gold);

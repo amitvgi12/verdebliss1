@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { StructuredData } from '@/lib/structured-data'
 
 export const revalidate = 3600
@@ -186,12 +186,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           ))}
         </div>
 
-        <footer className="bg-ivory px-4 py-12 text-center">
-          <h2 className="mb-3 font-serif text-[clamp(20px,3vw,28px)] font-normal text-text">
-            Ready to put this routine into practice?
+        <footer className="bg-forest px-4 py-14 text-center">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-sage">
+            PUT IT INTO PRACTICE
+          </p>
+          <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
+            Ready to build your ritual?
           </h2>
-          <Link href="/products" className="btn-primary">
-            Shop the collection
+          <p className="mx-auto mb-7 max-w-[400px] text-center text-sm text-white/55">
+            Every formula built around the actives in this article.
+          </p>
+          <Link href="/products" className="btn-terra">
+            Shop the collection <ArrowRight size={15} />
           </Link>
         </footer>
       </article>
