@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Leaf, ShieldCheck, Sparkles, Truck } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Leaf, ShieldCheck, Truck } from 'lucide-react'
 import ProductCard from '@/components/ui/ProductCard'
 import IngredientCard from '@/components/ui/IngredientCard'
 import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
@@ -68,25 +68,33 @@ export default async function Home() {
       <section className="premium-hero px-4">
         <div className="site-container premium-hero__grid">
           <div className="premium-hero__copy">
-            <p className="premium-kicker">CERTIFIED ORGANIC SKINCARE INDIA</p>
-            <h1 className="premium-hero__title">Ritual-grade botanicals for modern Indian skin.</h1>
+            <p className="premium-kicker" style={{ fontSize: '0.62rem', letterSpacing: '0.18em' }}>
+              ✦ CERTIFIED ORGANIC · CRUELTY-FREE · VEGAN ✦
+            </p>
+            <h1 className="premium-hero__title">
+              Pure.
+              <br />
+              <em>Botanical.</em>
+              <br />
+              Radiant.
+            </h1>
             <p className="premium-hero__text">
-              A premium organic skincare boutique built around transparent actives, conscious
-              routines, verified commerce, and no inflated review claims.
+              Luxury skincare rooted in nature. Formulated with the finest certified organic
+              botanicals.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/products" className="btn-terra premium-cta">
-                Shop the collection <ArrowRight size={15} />
+                Shop the Collection <ArrowRight size={15} />
               </Link>
               <Link href="/quiz" className="premium-ghost-cta">
-                Build my ritual <Sparkles size={15} />
+                Take Skin Quiz <ArrowRight size={15} />
               </Link>
             </div>
             <dl className="premium-hero__stats" aria-label="Store highlights">
               {[
-                ['8', 'Launch formulas'],
-                ['14 days', 'Return window'],
-                ['₹499+', 'Free shipping'],
+                ['500+', 'Organic Ingredients'],
+                ['4.8★', 'Average Rating'],
+                ['50K+', 'Happy Customers'],
               ].map(([value, label]) => (
                 <div key={label}>
                   <dt>{value}</dt>
@@ -110,12 +118,12 @@ export default async function Home() {
               />
             </div>
             <div className="premium-float premium-float--left">
-              <span>INCI</span>
-              <strong>Full ingredient clarity</strong>
+              <span>✦ Bakuchiol Serum</span>
+              <strong>Best Seller ✦</strong>
             </div>
             <div className="premium-float premium-float--right">
-              <span>NO HYPE</span>
-              <strong>Reviews shown only after approval</strong>
+              <span>☀️ SPF 50 Shield</span>
+              <strong>4.9★ Rated</strong>
             </div>
           </div>
         </div>
@@ -123,11 +131,10 @@ export default async function Home() {
 
       <section className="site-container page-section">
         <div className="premium-section-head">
-          <p className="label-eyebrow">THE COLLECTION</p>
-          <h2 className="h-section">Eight formulas, one purpose</h2>
+          <h2 className="vb-collection-heading">The Collection</h2>
           <p>
-            Each product is built around a single named active. Start with the formula that solves
-            your most stubborn skin concern.
+            Every formula crafted from certified organic botanicals, dermatologist-approved and
+            loved by thousands.
           </p>
         </div>
         <div className="product-grid product-grid-compact">

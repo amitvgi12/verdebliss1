@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Heart, Minus, Plus } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
+import Stars from '@/components/ui/Stars'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
@@ -78,6 +79,15 @@ export default function ProductCard({ product: p }: { product: Product }) {
         <Link href={href} className="vb-product-card__title">
           {p.name}
         </Link>
+
+        {(p.rating != null || (p.review_count ?? 0) > 0) && (
+          <div className="vb-product-card__rating">
+            <Stars rating={p.rating} size={11} />
+            {(p.review_count ?? 0) > 0 && (
+              <span className="vb-product-card__review-count">({p.review_count})</span>
+            )}
+          </div>
+        )}
 
         <p className="vb-product-card__subcopy">{p.description}</p>
 

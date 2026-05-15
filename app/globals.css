@@ -191,7 +191,7 @@ video {
     @apply text-[10px] font-semibold uppercase tracking-[0.14em] text-terra;
   }
   .h-section {
-    @apply mb-3 font-serif text-[clamp(2rem,4vw,2.75rem)] font-normal text-text;
+    @apply mb-3 font-serif text-[clamp(1.6rem,2.8vw,2.2rem)] font-normal text-text;
   }
   .container-content {
     @apply mx-auto w-full max-w-[1200px] px-4;
@@ -278,6 +278,11 @@ video {
 .home-ingredients-section,
 .home-newsletter-section {
   padding-block: clamp(48px, 5vw, 72px);
+}
+
+.home-newsletter-section > * {
+  max-width: 720px;
+  margin-inline: auto;
 }
 
 .home-testimonials-section {
@@ -404,6 +409,18 @@ video {
 
 .vb-product-card__title:hover {
   color: var(--color-forest);
+}
+
+.vb-product-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.vb-product-card__review-count {
+  color: var(--color-muted);
+  font-size: 0.72rem;
 }
 
 .vb-product-card__subcopy {
@@ -593,21 +610,36 @@ video {
 
 .premium-hero__grid {
   display: grid;
-  min-height: clamp(520px, 74vh, 760px);
-  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-  gap: clamp(28px, 5vw, 72px);
+  min-height: clamp(460px, 56vh, 660px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: clamp(24px, 4vw, 60px);
   align-items: center;
-  padding-block: clamp(52px, 6vw, 88px);
+  padding-block: clamp(44px, 5vw, 72px);
 }
 
 .premium-hero__title {
   max-width: 680px;
   margin-block: 16px 22px;
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(2.8rem, 5.8vw, 6rem);
+  font-size: clamp(3.2rem, 7.8vw, 7.6rem);
   font-weight: 400;
   letter-spacing: -0.04em;
   line-height: 0.94;
+}
+
+.premium-hero__title em {
+  color: var(--color-gold);
+  font-style: italic;
+}
+
+.vb-collection-heading {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(2.4rem, 5.5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--color-text);
+  margin-bottom: 16px;
 }
 
 .premium-hero__text {
@@ -670,7 +702,7 @@ video {
 .premium-hero__orb {
   position: absolute;
   inset: 8% 8% auto auto;
-  width: min(470px, 88vw);
+  width: min(400px, 78vw);
   aspect-ratio: 1;
   border-radius: 999px;
   background:
@@ -684,7 +716,7 @@ video {
 .premium-hero__product {
   position: absolute;
   inset: 12% 10% auto auto;
-  width: min(430px, 80vw);
+  width: min(370px, 72vw);
   aspect-ratio: 1;
   border-radius: 999px;
   overflow: hidden;
@@ -748,10 +780,10 @@ video {
   margin: 10px auto 14px;
   color: white;
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: clamp(1.7rem, 2.8vw, 2.5rem);
   font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 1;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 .premium-section-head--light p:not(.premium-kicker) {
@@ -803,11 +835,11 @@ video {
 }
 
 .premium-routine-card h3 {
-  margin-block: 18px 12px;
+  margin-block: 14px 10px;
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-size: clamp(1.2rem, 1.9vw, 1.65rem);
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .premium-routine-card p {
@@ -893,10 +925,10 @@ video {
   margin-block: 14px 18px;
   color: white;
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+  font-size: clamp(1.9rem, 3.2vw, 2.8rem);
   font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 .home-philosophy-copy > p {
@@ -978,10 +1010,10 @@ video {
 .premium-review-note h2 {
   margin-block: 10px 14px;
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.7rem, 2.8vw, 2.4rem);
   font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 1;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 .premium-review-note p {
@@ -1099,7 +1131,7 @@ video {
   }
 
   .premium-hero__visual {
-    min-height: 380px;
+    min-height: 320px;
   }
 
   .premium-trust-intro {
@@ -1123,11 +1155,11 @@ video {
   }
 
   .premium-hero__title {
-    font-size: clamp(2.4rem, 12vw, 3.6rem);
+    font-size: clamp(3rem, 16vw, 4.8rem);
   }
 
   .premium-hero__visual {
-    min-height: 360px;
+    min-height: 300px;
   }
 
   .premium-float {
