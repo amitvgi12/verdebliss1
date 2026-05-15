@@ -71,11 +71,15 @@ export default function ContactClient() {
       <section
         style={{
           background: `linear-gradient(150deg, ${C.forest} 0%, #1A2E1E 100%)`,
-          padding: '100px 24px 80px',
+          padding: 'clamp(40px,5vw,64px) 24px clamp(44px,5vw,68px)',
           textAlign: 'center',
         }}
       >
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div
             style={{
               fontSize: 10,
@@ -90,21 +94,23 @@ export default function ContactClient() {
           <h1
             style={{
               fontFamily: FONT.serif,
-              fontSize: 'clamp(40px,6vw,80px)',
+              fontSize: 'clamp(2rem,3.5vw,3.2rem)',
               color: 'white',
               fontWeight: 400,
-              margin: '0 0 24px',
+              margin: '0 0 18px',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.05,
             }}
           >
             Get in Touch
           </h1>
           <p
             style={{
-              fontSize: 18,
+              fontSize: 15,
               color: 'rgba(255,255,255,0.6)',
-              maxWidth: 500,
+              maxWidth: 480,
               margin: '0 auto',
-              lineHeight: 1.8,
+              lineHeight: 1.75,
             }}
           >
             Our botanists, formulators, and customer experience team are here to help.

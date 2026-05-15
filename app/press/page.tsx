@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Mail, Download, ArrowRight } from 'lucide-react'
+import FadeIn from '@/components/ui/FadeIn'
 
 export const revalidate = 3600
 
@@ -44,18 +45,20 @@ const QUICK_FACTS = [
 export default function PressPage() {
   return (
     <div className="bg-bg">
-      <section className="bg-forest px-4 py-16 text-center">
+      <section className="bg-forest px-4 py-14 text-center">
         <div className="container-content">
-          <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
-            PRESS &amp; MEDIA
-          </p>
-          <h1 className="m-0 mb-4 font-serif text-[clamp(36px,5vw,56px)] font-normal leading-[1.05] text-white">
-            Press Centre
-          </h1>
-          <p className="mx-auto max-w-[600px] text-sm leading-relaxed text-white/65">
-            Media kit, brand assets, founder bios, and recent coverage — everything a journalist
-            needs.
-          </p>
+          <FadeIn>
+            <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
+              PRESS &amp; MEDIA
+            </p>
+            <h1 className="m-0 mb-4 font-serif text-[clamp(2rem,3.5vw,3rem)] font-normal leading-[1.05] text-white">
+              Press Centre
+            </h1>
+            <p className="mx-auto max-w-[600px] text-center text-sm leading-relaxed text-white/65">
+              Media kit, brand assets, founder bios, and recent coverage — everything a journalist
+              needs.
+            </p>
+          </FadeIn>
         </div>
       </section>
 
@@ -133,16 +136,18 @@ export default function PressPage() {
         </div>
       </section>
 
-      <section className="bg-forest px-4 py-16 text-center">
-        <h2 className="mb-3 font-serif text-[clamp(24px,3vw,32px)] font-normal text-white">
-          Working on a story?
-        </h2>
-        <p className="mx-auto mb-7 max-w-[440px] text-sm text-white/55">
-          We respond to every legitimate press enquiry within 24 hours.
-        </p>
-        <a href="mailto:press@verdebliss.com" className="btn-terra">
-          press@verdebliss.com <ArrowRight size={15} />
-        </a>
+      <section className="bg-forest px-4 py-14 text-center">
+        <FadeIn>
+          <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
+            Working on a story?
+          </h2>
+          <p className="mx-auto mb-7 max-w-[440px] text-center text-sm text-white/55">
+            We respond to every legitimate press enquiry within 24 hours.
+          </p>
+          <a href="mailto:press@verdebliss.com" className="btn-terra">
+            press@verdebliss.com <ArrowRight size={15} />
+          </a>
+        </FadeIn>
       </section>
     </div>
   )

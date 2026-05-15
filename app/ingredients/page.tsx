@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import IngredientCard from '@/components/ui/IngredientCard'
+import FadeIn from '@/components/ui/FadeIn'
 
 export const revalidate = 3600
 
@@ -65,18 +66,20 @@ const HERO_INGREDIENTS = [
 export default function IngredientsPage() {
   return (
     <div className="bg-bg">
-      <section className="bg-forest px-4 py-16 text-center">
+      <section className="bg-forest px-4 py-14 text-center">
         <div className="container-content">
-          <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
-            EVERY FORMULA. EVERY BOTANICAL.
-          </p>
-          <h1 className="m-0 mb-4 font-serif text-[clamp(36px,5vw,56px)] font-normal leading-[1.05] text-white">
-            Our Ingredients
-          </h1>
-          <p className="mx-auto max-w-[640px] text-sm leading-relaxed text-white/65">
-            Eight hero ingredients. We disclose source, role, and the actual science. No
-            proprietary-blend hide-and-seek.
-          </p>
+          <FadeIn>
+            <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
+              EVERY FORMULA. EVERY BOTANICAL.
+            </p>
+            <h1 className="m-0 mb-4 font-serif text-[clamp(2rem,3.5vw,3rem)] font-normal leading-[1.05] text-white">
+              Our Ingredients
+            </h1>
+            <p className="mx-auto max-w-[600px] text-center text-sm leading-relaxed text-white/65">
+              Eight hero ingredients. We disclose source, role, and the actual science. No
+              proprietary-blend hide-and-seek.
+            </p>
+          </FadeIn>
         </div>
       </section>
 
@@ -128,17 +131,19 @@ export default function IngredientsPage() {
         </div>
       </section>
 
-      <section className="bg-forest px-4 py-16 text-center">
-        <h2 className="mb-3 font-serif text-[clamp(24px,3vw,32px)] font-normal text-white">
-          Find a product built around these
-        </h2>
-        <p className="mx-auto mb-7 max-w-[440px] text-sm text-white/55">
-          Every product page lists the full INCI breakdown — no proprietary blends, no marketing
-          mystery.
-        </p>
-        <Link href="/products" className="btn-terra">
-          Shop the collection <ArrowRight size={15} />
-        </Link>
+      <section className="bg-forest px-4 py-14 text-center">
+        <FadeIn>
+          <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
+            Find a product built around these
+          </h2>
+          <p className="mx-auto mb-7 max-w-[440px] text-center text-sm text-white/55">
+            Every product page lists the full INCI breakdown — no proprietary blends, no marketing
+            mystery.
+          </p>
+          <Link href="/products" className="btn-terra">
+            Shop the collection <ArrowRight size={15} />
+          </Link>
+        </FadeIn>
       </section>
     </div>
   )
