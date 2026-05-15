@@ -215,36 +215,36 @@ export default async function Home() {
       <section className="home-philosophy-section px-4">
         <div className="site-container">
           <FadeIn>
-          <div className="home-philosophy-grid">
-            <div className="home-philosophy-copy">
-              <p className="premium-kicker">OUR PHILOSOPHY</p>
-              <h2>Beauty that honours the earth</h2>
-              <p>
-                Every VerdeBliss formula is crafted from certified organic botanicals, never tested
-                on animals, and packaged in eco-conscious materials.
-              </p>
-              <div className="home-philosophy-badges">
-                {[
-                  ['🌱', '95%+ Organic Ingredients'],
-                  ['🐰', 'Cruelty-Free'],
-                  ['♻️', 'Eco Packaging'],
-                  ['🏆', 'Dermatologist OK'],
-                ].map(([emoji, label]) => (
-                  <div key={label} className="home-philosophy-badge">
-                    <span>{emoji}</span>
-                    <span>{label}</span>
+            <div className="home-philosophy-grid">
+              <div className="home-philosophy-copy">
+                <p className="premium-kicker">OUR PHILOSOPHY</p>
+                <h2>Beauty that honours the earth</h2>
+                <p>
+                  Every VerdeBliss formula is crafted from certified organic botanicals, never
+                  tested on animals, and packaged in eco-conscious materials.
+                </p>
+                <div className="home-philosophy-badges">
+                  {[
+                    ['🌱', '95%+ Organic Ingredients'],
+                    ['🐰', 'Cruelty-Free'],
+                    ['♻️', 'Eco Packaging'],
+                    ['🏆', 'Dermatologist OK'],
+                  ].map(([emoji, label]) => (
+                    <div key={label} className="home-philosophy-badge">
+                      <span>{emoji}</span>
+                      <span>{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="home-philosophy-emoji-grid" aria-hidden="true">
+                {['🍃', '🌸', '🍯', '🌺'].map((emoji) => (
+                  <div key={emoji} className="home-philosophy-emoji-card">
+                    {emoji}
                   </div>
                 ))}
               </div>
             </div>
-            <div className="home-philosophy-emoji-grid" aria-hidden="true">
-              {['🍃', '🌸', '🍯', '🌺'].map((emoji) => (
-                <div key={emoji} className="home-philosophy-emoji-card">
-                  {emoji}
-                </div>
-              ))}
-            </div>
-          </div>
           </FadeIn>
         </div>
       </section>

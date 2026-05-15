@@ -110,11 +110,7 @@ export default function IngredientsPage() {
           {HERO_INGREDIENTS.map((ing, i) => (
             <FadeIn key={ing.name} delay={i * 0.05}>
               <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[0_2px_10px_rgba(45,74,50,0.05)] transition hover:-translate-y-1 hover:shadow-[0_10px_32px_rgba(45,74,50,0.1)]">
-                <IngredientCard
-                  ingredient={ing.name}
-                  description={ing.desc}
-                  imageHeight={160}
-                />
+                <IngredientCard ingredient={ing.name} description={ing.desc} imageHeight={160} />
                 <div className="border-t border-border bg-bg px-4 py-3">
                   <div
                     className="mb-1 text-[10px] font-bold uppercase tracking-wider"
@@ -140,8 +136,8 @@ export default function IngredientsPage() {
               <p className="label-eyebrow mb-2.5">WHAT YOU&apos;LL NEVER FIND</p>
               <h2 className="h-section">Our forever-no list</h2>
               <p className="mx-auto mt-2 max-w-[500px] text-center text-sm text-muted">
-                Every ingredient that will never appear in a VerdeBliss formula — no exceptions,
-                no matter what the trend.
+                Every ingredient that will never appear in a VerdeBliss formula — no exceptions, no
+                matter what the trend.
               </p>
             </header>
           </FadeIn>
