@@ -237,10 +237,16 @@ export default async function Home() {
                   ))}
                 </div>
               </div>
-              <div className="home-philosophy-emoji-grid" aria-hidden="true">
-                {['🍃', '🌸', '🍯', '🌺'].map((emoji) => (
-                  <div key={emoji} className="home-philosophy-emoji-card">
-                    {emoji}
+              <div className="home-philosophy-cert-grid">
+                {[
+                  { value: '2019', label: 'Founded in Pune', accent: '#bfa06a' },
+                  { value: '8', label: 'Hero Botanicals', accent: '#7d9b76' },
+                  { value: '12', label: 'Farmer Co-ops', accent: '#bfa06a' },
+                  { value: 'USDA', label: 'Organic Certified', accent: '#7d9b76' },
+                ].map((item) => (
+                  <div key={item.value} className="home-philosophy-cert-card">
+                    <strong style={{ color: item.accent }}>{item.value}</strong>
+                    <span>{item.label}</span>
                   </div>
                 ))}
               </div>

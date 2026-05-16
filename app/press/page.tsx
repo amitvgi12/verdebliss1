@@ -54,16 +54,16 @@ export default function PressPage() {
   return (
     <div className="bg-bg">
       {/* Hero */}
-      <section className="bg-forest px-4 py-14 text-center">
+      <section className="bg-forest px-4 py-20 text-center">
         <div className="container-content">
           <FadeIn>
-            <p className="mb-3 text-[10px] font-semibold tracking-[0.16em] text-sage">
+            <p className="mb-4 text-[10px] font-semibold tracking-[0.18em] text-sage">
               PRESS &amp; MEDIA
             </p>
-            <h1 className="m-0 mb-4 font-serif text-[clamp(2rem,3.5vw,3rem)] font-normal leading-[1.05] text-white">
+            <h1 className="m-0 mb-5 font-serif text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02] tracking-[-0.03em] text-white">
               Press Centre
             </h1>
-            <p className="mx-auto max-w-[600px] text-center text-sm leading-relaxed text-white/65">
+            <p className="mx-auto max-w-[560px] text-center text-[15px] leading-[1.75] text-white/60">
               Media kit, brand assets, founder bios, and recent coverage — everything a journalist
               needs.
             </p>
