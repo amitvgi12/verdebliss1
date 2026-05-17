@@ -19,9 +19,9 @@ export default function AddressStep({ form, errors, onChange, onContinue }: Addr
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="checkout-panel checkout-panel--form mb-4">
+      <div className="checkout-panel checkout-panel--form checkout-address-form">
         <h2 className="mb-5 font-serif text-[1.35rem] font-normal text-text">Delivery Address</h2>
-        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+        <div className="checkout-address-form__grid grid grid-cols-1 gap-x-4 sm:grid-cols-2">
           <Field id="checkout-name" label="Full Name" required error={errors.name} span>
             <input
               id="checkout-name"

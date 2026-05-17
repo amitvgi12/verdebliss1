@@ -119,6 +119,8 @@ export default function Checkout() {
   const razorReady = useRazorpayScript()
   const items = useCartStore((s) => s.items)
   const clearCart = useCartStore((s) => s.clearCart)
+  const removeItem = useCartStore((s) => s.removeItem)
+  const updateQty = useCartStore((s) => s.updateQty)
   const total = useCartStore(selectTotal)
   const itemCount = useCartStore(selectItemCount)
   const pointsToEarn = useCartStore(selectPointsToEarn)
@@ -389,6 +391,7 @@ export default function Checkout() {
               {step === 1 && (
                 <ReviewStep
                   form={form}
+                  items={items}
                   grandTotal={grandTotal}
                   codAvailable={codAvailable}
                   codMaxTotal={COD_MAX_TOTAL}
@@ -398,6 +401,9 @@ export default function Checkout() {
                   status={status}
                   checkoutError={checkoutError}
                   onEditAddress={() => setStep(0)}
+                  onIncreaseQty={(id) => updateQty(id, 1)}
+                  onDecreaseQty={(id) => updateQty(id, -1)}
+                  onRemoveItem={removeItem}
                   onLaunchRazorpay={launchRazorpay}
                   onPlaceCod={placeCodOrder}
                 />

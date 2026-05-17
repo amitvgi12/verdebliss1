@@ -1,10 +1,13 @@
 'use client'
 import { motion } from 'framer-motion'
-import { ShieldCheck, AlertCircle, Loader2, Banknote } from 'lucide-react'
+import { ShieldCheck, AlertCircle, Loader2, Banknote, Minus, Plus, Trash2 } from 'lucide-react'
+import ProductImage from '@/components/ui/ProductImage'
+import type { CartItem } from '@/types'
 import type { CheckoutForm, CheckoutStatus, PaymentAction } from '../checkout-types'
 
 interface ReviewStepProps {
   form: CheckoutForm
+  items: CartItem[]
   grandTotal: number
   codAvailable: boolean
   codMaxTotal: number
@@ -14,12 +17,16 @@ interface ReviewStepProps {
   status: CheckoutStatus
   checkoutError: string
   onEditAddress: () => void
+  onIncreaseQty: (id: string) => void
+  onDecreaseQty: (id: string) => void
+  onRemoveItem: (id: string) => void
   onLaunchRazorpay: () => void
   onPlaceCod: () => void
 }
 
 export default function ReviewStep({
   form,
+  items,
   grandTotal,
   codAvailable,
   codMaxTotal,
@@ -29,6 +36,9 @@ export default function ReviewStep({
   status,
   checkoutError,
   onEditAddress,
+  onIncreaseQty,
+  onDecreaseQty,
+  onRemoveItem,
   onLaunchRazorpay,
   onPlaceCod,
 }: ReviewStepProps) {
@@ -63,6 +73,73 @@ export default function ReviewStep({
               Edit
             </button>
           </div>
+        </div>
+
+        <div className="checkout-review-items">
+          <div className="checkout-review-items__header">
+            <span>ORDER ITEMS</span>
+            <span>
+              {items.length} item{items.length === 1 ? '' : 's'}
+            </span>
+          </div>
+
+          <ul className="checkout-review-items__list">
+            {items.map((item) => {
+              const maxQty = Math.min(item.stock ?? 10, 10)
+              const canIncrease = item.qty < maxQty
+
+              return (
+                <li key={item.id} className="checkout-review-item">
+                  <div className="checkout-review-item__image">
+                    <ProductImage product={item} />
+                  </div>
+
+                  <div className="checkout-review-item__copy">
+                    <div className="checkout-review-item__name">{item.name}</div>
+                    <div className="checkout-review-item__price">
+                      ₹{item.price.toLocaleString()} each
+                    </div>
+                  </div>
+
+                  <div
+                    className="checkout-review-item__qty"
+                    aria-label={`${item.name} quantity in cart`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => onDecreaseQty(item.id)}
+                      disabled={item.qty <= 1}
+                      aria-label={`Decrease ${item.name} quantity`}
+                    >
+                      <Minus size={13} />
+                    </button>
+                    <span>{item.qty}</span>
+                    <button
+                      type="button"
+                      onClick={() => onIncreaseQty(item.id)}
+                      disabled={!canIncrease}
+                      aria-label={`Increase ${item.name} quantity`}
+                    >
+                      <Plus size={13} />
+                    </button>
+                  </div>
+
+                  <div className="checkout-review-item__total">
+                    ₹{(item.price * item.qty).toLocaleString()}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onRemoveItem(item.id)}
+                    className="checkout-review-item__remove"
+                    aria-label={`Remove ${item.name} from cart`}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       </div>
 

@@ -72,7 +72,7 @@ export default function ProductsClient({
         </div>
       </div>
 
-      <div className="site-container catalog-shell -mt-10 pb-20">
+      <div className="site-container catalog-shell -mt-10">
         <div className="catalog-layout">
           <aside className="catalog-filter-panel mt-6 md:sticky md:top-[76px]">
             <FilterGroup
