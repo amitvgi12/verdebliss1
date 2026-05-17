@@ -114,6 +114,58 @@ function userFacingCheckoutError(error: unknown): string {
   return message || 'Checkout request failed. Please try again.'
 }
 
+const GUEST_CHECKOUT_ADDRESS_KEY = 'verdebliss-checkout-address'
+
+type SavedAddress = Pick<CheckoutForm, 'line1' | 'line2' | 'city' | 'state' | 'pincode'>
+
+function buildBaseCheckoutForm(profileName?: string | null, email?: string | null): CheckoutForm {
+  return {
+    name: profileName ?? email?.split('@')[0] ?? '',
+    email: email ?? '',
+    phone: '',
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    pincode: '',
+  }
+}
+
+function readGuestCheckoutForm(): CheckoutForm | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.sessionStorage.getItem(GUEST_CHECKOUT_ADDRESS_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<CheckoutForm>
+    return {
+      name: typeof parsed.name === 'string' ? parsed.name : '',
+      email: typeof parsed.email === 'string' ? parsed.email : '',
+      phone: typeof parsed.phone === 'string' ? parsed.phone : '',
+      line1: typeof parsed.line1 === 'string' ? parsed.line1 : '',
+      line2: typeof parsed.line2 === 'string' ? parsed.line2 : '',
+      city: typeof parsed.city === 'string' ? parsed.city : '',
+      state: typeof parsed.state === 'string' ? parsed.state : '',
+      pincode: typeof parsed.pincode === 'string' ? parsed.pincode : '',
+    }
+  } catch {
+    return null
+  }
+}
+
+function hasAddressDraft(form: CheckoutForm): boolean {
+  return Boolean(
+    form.name ||
+    form.email ||
+    form.phone ||
+    form.line1 ||
+    form.line2 ||
+    form.city ||
+    form.state ||
+    form.pincode
+  )
+}
+
 export default function Checkout() {
   const router = useRouter()
   const razorReady = useRazorpayScript()
@@ -137,21 +189,65 @@ export default function Checkout() {
   const [checkoutError, setCheckoutError] = useState('')
   const [codVerificationRequired, setCodVerificationRequired] = useState(false)
 
-  const [form, setForm] = useState<CheckoutForm>({
-    name: profile?.full_name ?? user?.email?.split('@')[0] ?? '',
-    email: user?.email ?? '',
-    phone: '',
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    pincode: '',
-  })
+  const [form, setForm] = useState<CheckoutForm>(() =>
+    buildBaseCheckoutForm(profile?.full_name, user?.email)
+  )
+  const [addressHydrated, setAddressHydrated] = useState(false)
 
   /* Redirect to products if cart is empty */
   useEffect(() => {
     if (items.length === 0 && status !== 'success') router.replace('/products')
   }, [items.length, router, status])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function hydrateAddress() {
+      if (user?.id) {
+        const { supabase } = await import('@/lib/supabase')
+        const { data } = await supabase
+          .from('addresses')
+          .select('line1, line2, city, state, pincode')
+          .eq('user_id', user.id)
+          .order('is_default', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (cancelled) return
+
+        const savedAddress = data as SavedAddress | null
+        setForm((current) => ({
+          ...current,
+          name: current.name || profile?.full_name || user.email?.split('@')[0] || '',
+          email: current.email || user.email || '',
+          ...(savedAddress ?? {}),
+        }))
+        setAddressHydrated(true)
+        return
+      }
+
+      const draft = readGuestCheckoutForm()
+      if (cancelled) return
+      setForm(draft ?? buildBaseCheckoutForm())
+      setAddressHydrated(true)
+    }
+
+    void hydrateAddress()
+    return () => {
+      cancelled = true
+    }
+  }, [profile?.full_name, user?.email, user?.id])
+
+  useEffect(() => {
+    if (!addressHydrated || user?.id || typeof window === 'undefined') return
+
+    if (hasAddressDraft(form)) {
+      window.sessionStorage.setItem(GUEST_CHECKOUT_ADDRESS_KEY, JSON.stringify(form))
+    } else {
+      window.sessionStorage.removeItem(GUEST_CHECKOUT_ADDRESS_KEY)
+    }
+  }, [addressHydrated, form, user?.id])
 
   const set_ = (k: keyof CheckoutForm) => (e: ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -163,6 +259,9 @@ export default function Checkout() {
     setCodVerificationRequired(Boolean(result.verificationRequired))
     setStatus('success')
     clearCart()
+    if (!user?.id && typeof window !== 'undefined') {
+      window.sessionStorage.removeItem(GUEST_CHECKOUT_ADDRESS_KEY)
+    }
     setLoading(false)
     setPaymentAction(null)
   }
@@ -401,6 +500,7 @@ export default function Checkout() {
                   status={status}
                   checkoutError={checkoutError}
                   onEditAddress={() => setStep(0)}
+                  onContinueShopping={() => router.push('/products')}
                   onIncreaseQty={(id) => updateQty(id, 1)}
                   onDecreaseQty={(id) => updateQty(id, -1)}
                   onRemoveItem={removeItem}

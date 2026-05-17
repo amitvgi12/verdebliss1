@@ -752,7 +752,9 @@ video {
 }
 
 .checkout-address-card {
+  min-height: 112px;
   border: 1px solid rgba(45, 74, 50, 0.08);
+  padding: clamp(16px, 2vw, 20px);
 }
 
 .checkout-address-card__layout {
@@ -773,6 +775,31 @@ video {
   border: 1px solid rgba(228, 218, 208, 0.92);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.56);
+}
+
+.checkout-review-panel {
+  margin-bottom: clamp(22px, 2.6vw, 30px);
+}
+
+.checkout-review-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.checkout-review-shop-link {
+  cursor: pointer;
+  border: 0;
+  color: var(--color-forest);
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.checkout-review-shop-link:hover {
+  color: var(--color-terra);
 }
 
 .checkout-review-items__header {

@@ -17,6 +17,7 @@ interface ReviewStepProps {
   status: CheckoutStatus
   checkoutError: string
   onEditAddress: () => void
+  onContinueShopping: () => void
   onIncreaseQty: (id: string) => void
   onDecreaseQty: (id: string) => void
   onRemoveItem: (id: string) => void
@@ -36,6 +37,7 @@ export default function ReviewStep({
   status,
   checkoutError,
   onEditAddress,
+  onContinueShopping,
   onIncreaseQty,
   onDecreaseQty,
   onRemoveItem,
@@ -49,11 +51,11 @@ export default function ReviewStep({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="checkout-panel checkout-panel--form mb-4">
+      <div className="checkout-panel checkout-panel--form checkout-review-panel">
         <h2 className="mb-5 font-serif text-[1.35rem] font-normal text-text">Review Your Order</h2>
 
         {/* Address summary */}
-        <div className="checkout-address-card rounded-2xl bg-sagePale px-4 py-4">
+        <div className="checkout-address-card rounded-2xl bg-sagePale">
           <div className="checkout-address-card__layout">
             <div className="min-w-0 flex-1">
               <div className="mb-1 text-xs font-bold tracking-wider text-forest">DELIVERING TO</div>
@@ -151,6 +153,12 @@ export default function ReviewStep({
           {checkoutError}
         </div>
       )}
+
+      <div className="checkout-review-actions">
+        <button type="button" onClick={onContinueShopping} className="checkout-review-shop-link">
+          Continue Shopping
+        </button>
+      </div>
 
       <div className="checkout-payment-stack">
         <button
