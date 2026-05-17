@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, PackageCheck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { C, FONT } from '@/constants/theme'
 import { useAuthStore } from '@/store/authStore'
@@ -16,41 +16,106 @@ interface RefundRow {
   created_at?: string | null
 }
 
+interface EligibleOrderItem {
+  id?: string
+  name?: string
+  qty?: number
+  price?: number
+}
+
+interface EligibleOrder {
+  id: string
+  status?: string | null
+  payment_status?: string | null
+  created_at?: string | null
+  total?: number | null
+  items?: EligibleOrderItem[] | null
+}
+
 export default function RefundClient() {
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
-  const [loading, setLoading] = useState(false)
+  const authLoading = useAuthStore((s) => s.loading)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [ordersLoading, setOrdersLoading] = useState(false)
+  const [ordersLoaded, setOrdersLoaded] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [refunds, setRefunds] = useState<RefundRow[]>([])
-  const [error, setError] = useState<string | null>(null)
+  const [eligibleOrders, setEligibleOrders] = useState<EligibleOrder[]>([])
+  const [selectedOrderId, setSelectedOrderId] = useState('')
+  const [historyError, setHistoryError] = useState<string | null>(null)
+  const [requestError, setRequestError] = useState<string | null>(null)
   const [reason, setReason] = useState('')
 
   useEffect(() => {
-    if (!user) return
+    if (authLoading) return
+    if (!user) {
+      setRefunds([])
+      setEligibleOrders([])
+      setSelectedOrderId('')
+      setOrdersLoaded(false)
+      return
+    }
+
     void fetchRefunds()
-  }, [user])
+    void fetchEligibleOrders()
+  }, [authLoading, user])
 
   async function fetchRefunds() {
     if (!user) return
-    setLoading(true)
-    setError(null)
+    setHistoryLoading(true)
+    setHistoryError(null)
     try {
-      const { data, error: err } = await supabase
+      const { data, error } = await supabase
         .from('refunds')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (err) {
-        // Table might not exist yet — handle gracefully
+      if (error) {
         setRefunds([])
-        setError(err.message)
+        setHistoryError(error.message)
       } else {
         setRefunds((data ?? []) as RefundRow[])
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+    } catch (error) {
+      setHistoryError(error instanceof Error ? error.message : String(error))
     } finally {
-      setLoading(false)
+      setHistoryLoading(false)
+    }
+  }
+
+  async function fetchEligibleOrders() {
+    if (!user) return
+    setOrdersLoading(true)
+    setOrdersLoaded(false)
+    setRequestError(null)
+    try {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      if (!token) throw new Error('Please sign in again to load eligible orders.')
+
+      const response = await fetch('/api/refunds/eligible-orders', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const payload = (await response.json().catch(() => ({}))) as {
+        orders?: EligibleOrder[]
+        error?: string
+      }
+      if (!response.ok) throw new Error(payload.error ?? 'Could not load eligible orders')
+
+      const orders = payload.orders ?? []
+      setEligibleOrders(orders)
+      setSelectedOrderId((current) =>
+        orders.some((order) => order.id === current) ? current : (orders[0]?.id ?? '')
+      )
+    } catch (error) {
+      setEligibleOrders([])
+      setSelectedOrderId('')
+      setRequestError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setOrdersLoading(false)
+      setOrdersLoaded(true)
     }
   }
 
@@ -59,34 +124,42 @@ export default function RefundClient() {
       router.push('/account')
       return
     }
-    if (!reason.trim()) {
-      setError('Please provide a reason for the refund request.')
+    if (!selectedOrderId) {
+      setRequestError('Please select an order for the refund request.')
       return
     }
-    setLoading(true)
-    setError(null)
+    if (!reason.trim()) {
+      setRequestError('Please provide a reason for the refund request.')
+      return
+    }
+
+    setSubmitting(true)
+    setRequestError(null)
     try {
       const { data } = await supabase.auth.getSession()
       const token = data.session?.access_token
-      const res = await fetch('/api/refunds/request', {
+      const response = await fetch('/api/refunds/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-vb-client': 'web',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ reason }),
+        body: JSON.stringify({ orderId: selectedOrderId, reason }),
       })
-      const payload = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(payload?.error ?? 'Could not submit refund request')
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload?.error ?? 'Could not submit refund request')
       setReason('')
-      void fetchRefunds()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      await Promise.all([fetchRefunds(), fetchEligibleOrders()])
+    } catch (error) {
+      setRequestError(error instanceof Error ? error.message : String(error))
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
+
+  const requestFormReady =
+    Boolean(user) && ordersLoaded && !ordersLoading && eligibleOrders.length > 0
 
   return (
     <div style={{ background: C.bg, minHeight: '100vh' }}>
@@ -122,14 +195,15 @@ export default function RefundClient() {
               Your Refund Requests
             </h2>
 
-            {loading && <div style={{ color: C.muted }}>Loading…</div>}
-            {error && (
+            {authLoading && <div style={{ color: C.muted }}>Checking account...</div>}
+            {historyLoading && <div style={{ color: C.muted }}>Loading refund history...</div>}
+            {historyError && (
               <div style={{ color: '#A32D2D', marginBottom: 12 }}>
-                Couldn't load refund history. {error}
+                Could not load refund history. {historyError}
               </div>
             )}
 
-            {!user && (
+            {!authLoading && !user && (
               <div style={{ color: C.muted, marginBottom: 12 }}>
                 Please{' '}
                 <a href="/account" style={{ color: C.forest }}>
@@ -139,15 +213,15 @@ export default function RefundClient() {
               </div>
             )}
 
-            {user && refunds.length === 0 && !loading && (
+            {user && refunds.length === 0 && !historyLoading && (
               <div style={{ color: C.muted, marginBottom: 12 }}>No refund requests yet.</div>
             )}
 
             {user && refunds.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-                {refunds.map((r) => (
+                {refunds.map((refund) => (
                   <div
-                    key={r.id}
+                    key={refund.id}
                     style={{
                       background: C.card,
                       padding: 12,
@@ -158,80 +232,198 @@ export default function RefundClient() {
                     <div
                       style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{r.reason}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>
+                        {refund.reason}
+                      </div>
                       <div style={{ fontSize: 12, color: C.muted }}>
-                        {r.created_at ? new Date(r.created_at).toLocaleString() : ''}
+                        {refund.created_at ? new Date(refund.created_at).toLocaleString() : ''}
                       </div>
                     </div>
-                    <div style={{ fontSize: 13, color: C.muted }}>Status: {r.status}</div>
+                    <div style={{ fontSize: 13, color: C.muted }}>Status: {refund.status}</div>
                   </div>
                 ))}
               </div>
             )}
           </section>
 
-          <section style={{ marginTop: 20 }}>
-            <h2 style={{ fontSize: 18, color: C.text, marginBottom: 8, fontWeight: 700 }}>
-              Request a Refund
-            </h2>
+          {!authLoading && user && (
+            <section style={{ marginTop: 28 }}>
+              <h2 style={{ fontSize: 18, color: C.text, marginBottom: 8, fontWeight: 700 }}>
+                Request a Refund
+              </h2>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 560 }}>
-              <label
-                htmlFor="refund-reason"
-                style={{ fontSize: 12, fontWeight: 600, color: C.text }}
-              >
-                Refund reason
-              </label>
-              <textarea
-                id="refund-reason"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Reason for refund (order number, item, issue)"
-                rows={4}
-                style={{
-                  padding: 12,
-                  borderRadius: 10,
-                  border: `1px solid ${C.border}`,
-                  fontFamily: 'inherit',
-                }}
-              />
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  onClick={requestRefund}
-                  disabled={loading || !user}
+              {(!ordersLoaded || ordersLoading) && (
+                <div style={{ color: C.muted }}>Loading eligible orders...</div>
+              )}
+
+              {ordersLoaded && !ordersLoading && eligibleOrders.length === 0 && (
+                <div
                   style={{
-                    background: C.forest,
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 10,
-                    padding: '10px 16px',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
+                    maxWidth: 620,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 14,
+                    background: C.card,
+                    color: C.muted,
+                    padding: '16px 18px',
                   }}
                 >
-                  {loading ? 'Submitting…' : 'Submit Refund Request'}
-                </button>
-                <button
-                  onClick={() => {
-                    setReason('')
-                  }}
+                  No eligible orders are available for a new refund request.
+                </div>
+              )}
+
+              {requestFormReady && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 620 }}>
+                  <fieldset
+                    style={{
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 14,
+                      background: C.card,
+                      display: 'grid',
+                      gap: 10,
+                      padding: 16,
+                    }}
+                  >
+                    <legend
+                      style={{
+                        color: C.text,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        paddingInline: 6,
+                      }}
+                    >
+                      Select an eligible order
+                    </legend>
+                    {eligibleOrders.map((order) => (
+                      <label
+                        key={order.id}
+                        style={{
+                          border:
+                            selectedOrderId === order.id
+                              ? `1px solid ${C.forest}`
+                              : `1px solid ${C.border}`,
+                          borderRadius: 12,
+                          background:
+                            selectedOrderId === order.id ? C.sagePale : C.bg,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 12,
+                          padding: '13px 14px',
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="refund-order"
+                          value={order.id}
+                          checked={selectedOrderId === order.id}
+                          onChange={() => setSelectedOrderId(order.id)}
+                          style={{ marginTop: 3 }}
+                        />
+                        <span style={{ display: 'grid', gap: 4 }}>
+                          <strong style={{ color: C.text, fontSize: 14 }}>
+                            Order #{order.id.slice(0, 8).toUpperCase()}
+                          </strong>
+                          <span style={{ color: C.muted, fontSize: 13 }}>
+                            {formatOrderDate(order.created_at)} · ₹
+                            {Number(order.total ?? 0).toLocaleString()}
+                          </span>
+                          <span style={{ color: C.muted, fontSize: 12 }}>
+                            {summariseOrderItems(order.items)}
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                  </fieldset>
+
+                  <label
+                    htmlFor="refund-reason"
+                    style={{ display: 'grid', gap: 8, fontSize: 12, fontWeight: 600, color: C.text }}
+                  >
+                    Refund reason
+                    <textarea
+                      id="refund-reason"
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      placeholder="Tell us what happened with this order"
+                      rows={4}
+                      style={{
+                        padding: 12,
+                        borderRadius: 10,
+                        border: `1px solid ${C.border}`,
+                        fontFamily: 'inherit',
+                      }}
+                    />
+                  </label>
+
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button
+                      onClick={requestRefund}
+                      disabled={submitting}
+                      style={{
+                        background: C.forest,
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: 10,
+                        padding: '10px 16px',
+                        cursor: submitting ? 'wait' : 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {submitting ? 'Submitting...' : 'Submit Refund Request'}
+                    </button>
+                    <button
+                      onClick={() => setReason('')}
+                      disabled={submitting}
+                      style={{
+                        background: 'none',
+                        border: '1px solid ' + C.border,
+                        borderRadius: 10,
+                        padding: '10px 16px',
+                        cursor: submitting ? 'wait' : 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {requestError && (
+                <div
                   style={{
-                    background: 'none',
-                    border: '1px solid ' + C.border,
-                    borderRadius: 10,
-                    padding: '10px 16px',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    color: '#A32D2D',
+                    marginTop: 12,
                   }}
                 >
-                  Clear
-                </button>
-              </div>
-              {error && <div style={{ color: '#A32D2D' }}>{error}</div>}
-            </div>
-          </section>
+                  <PackageCheck size={15} />
+                  {requestError}
+                </div>
+              )}
+            </section>
+          )}
         </motion.div>
       </div>
     </div>
   )
+}
+
+function formatOrderDate(value?: string | null) {
+  if (!value) return 'Date unavailable'
+  return new Date(value).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function summariseOrderItems(items?: EligibleOrderItem[] | null) {
+  if (!Array.isArray(items) || items.length === 0) return 'Order items available in history'
+  const names = items.map((item) => item.name).filter(Boolean)
+  if (!names.length) return `${items.length} item${items.length === 1 ? '' : 's'}`
+  if (names.length <= 2) return names.join(', ')
+  return `${names.slice(0, 2).join(', ')} +${names.length - 2} more`
 }

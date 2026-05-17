@@ -1,0 +1,92 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import RefundClient from '@/app/refund/RefundClient'
+import { useAuthStore } from '@/store/authStore'
+
+const supabaseMocks = vi.hoisted(() => ({
+  from: vi.fn(),
+  getSession: vi.fn(),
+}))
+
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: supabaseMocks.from,
+    auth: {
+      getSession: supabaseMocks.getSession,
+    },
+  },
+}))
+
+describe('RefundClient', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useAuthStore.setState({
+      user: { id: 'user-1', email: 'kavya@example.com' } as never,
+      profile: null,
+      loading: false,
+    })
+    supabaseMocks.from.mockReturnValue(makeRefundHistoryBuilder())
+    supabaseMocks.getSession.mockResolvedValue({
+      data: { session: { access_token: 'token' } },
+    })
+  })
+
+  it('submits the selected order ID with the refund reason', async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      if (String(input) === '/api/refunds/request') {
+        return Promise.resolve(jsonResponse({ ok: true }))
+      }
+
+      return Promise.resolve(
+        jsonResponse({
+          orders: [
+            {
+              id: 'order-1',
+              status: 'Delivered',
+              payment_status: 'paid',
+              created_at: '2026-05-16T10:00:00.000Z',
+              total: 429,
+              items: [{ name: 'Niacinamide Pore Serum', qty: 1, price: 350 }],
+            },
+          ],
+        })
+      )
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<RefundClient />)
+
+    expect(await screen.findByText('Order #ORDER-1')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Refund reason'), {
+      target: { value: 'The pump arrived broken and unusable.' },
+    })
+    fireEvent.click(screen.getByText('Submit Refund Request'))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/refunds/request',
+        expect.objectContaining({
+          body: JSON.stringify({
+            orderId: 'order-1',
+            reason: 'The pump arrived broken and unusable.',
+          }),
+        })
+      )
+    })
+  })
+})
+
+function makeRefundHistoryBuilder() {
+  return {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockResolvedValue({ data: [], error: null }),
+  }
+}
+
+function jsonResponse(body: unknown) {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  })
+}

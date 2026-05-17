@@ -115,9 +115,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <AuthInitializer />
         <MotionProvider>
           <Nav />
-          <CartDrawer />
           <main id="main-content">{children}</main>
           <Footer />
+          <CartDrawer />
           <ChatBotLoader />
           <CookieConsent />
         </MotionProvider>

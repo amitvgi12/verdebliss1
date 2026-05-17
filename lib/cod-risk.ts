@@ -29,6 +29,13 @@ function usesReviewPincodePrefix(pincode: string): boolean {
   return reviewPrefixes.some((prefix) => pincode.startsWith(prefix))
 }
 
+export function assessCodPincode(pincode: string): CodRiskDecision {
+  const blockedPincodes = new Set(csvEnv('COD_BLOCKED_PINCODES'))
+  if (blockedPincodes.has(pincode)) return 'block'
+  if (usesReviewPincodePrefix(pincode)) return 'manual_review'
+  return 'allow'
+}
+
 export function assessCodRisk(
   address: CheckoutAddress,
   totals: CartTotals,

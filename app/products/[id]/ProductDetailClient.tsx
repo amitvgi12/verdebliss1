@@ -10,6 +10,7 @@
  *   11.10 — PAO (Period After Opening) indicator
  */
 
+import Link from 'next/link'
 import { useState, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -25,6 +26,14 @@ import {
   Share2,
   Truck,
   AlertTriangle,
+  BadgeCheck,
+  Banknote,
+  CreditCard,
+  MapPin,
+  PackageCheck,
+  ShieldCheck,
+  Smartphone,
+  WalletCards,
 } from 'lucide-react'
 import Stars from '@/components/ui/Stars'
 import ProductImage from '@/components/ui/ProductImage'
@@ -39,6 +48,7 @@ import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
 import type { ApprovedReview, ReviewAggregate } from '@/lib/products-server'
 import type { Product } from '@/types'
+import { COD_MAX_TOTAL } from '@/constants/checkout'
 
 import PAOSymbol from './_components/PAOSymbol'
 import Accordion from './_components/Accordion'
@@ -107,20 +117,50 @@ export default function ProductDetailClient({
   const isLoading = !initialProduct && loading
   const { products: all } = useProducts({})
   const addItem = useCartStore((s) => s.addItem)
+  const openCart = useCartStore((s) => s.openCart)
   const { toggle, has } = useWishlistStore()
   const user = useAuthStore((s) => s.user)
 
   const [added, setAdded] = useState(false)
   const [qty, setQty] = useState(1)
   const [openSection, setSection] = useState('ingredients')
+  const [deliveryPin, setDeliveryPin] = useState('')
+  const [deliveryResult, setDeliveryResult] = useState<DeliveryEstimate | null>(null)
+  const [deliveryError, setDeliveryError] = useState('')
+  const [checkingDelivery, setCheckingDelivery] = useState(false)
 
   /* ── Dynamic SEO with Product JSON-LD ─── */
 
   const handleAdd = () => {
     if (!p) return
-    for (let i = 0; i < qty; i++) addItem(p)
+    const qtyToAdd = Math.min(qty, maxQty)
+    if (stockOut || qtyToAdd < 1) return
+    for (let i = 0; i < qtyToAdd; i++) addItem(p)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
+  }
+
+  const handleDeliveryCheck = async () => {
+    const pincode = deliveryPin.trim()
+    if (!/^\d{6}$/.test(pincode)) {
+      setDeliveryResult(null)
+      setDeliveryError('Enter a valid 6-digit PIN code')
+      return
+    }
+
+    setCheckingDelivery(true)
+    setDeliveryError('')
+    try {
+      const response = await fetch(`/api/delivery-estimate?pincode=${encodeURIComponent(pincode)}`)
+      const data = (await response.json()) as DeliveryEstimate | { error?: string }
+      if (!response.ok) throw new Error('error' in data ? data.error : 'Unable to check delivery')
+      setDeliveryResult(data as DeliveryEstimate)
+    } catch (error) {
+      setDeliveryResult(null)
+      setDeliveryError(error instanceof Error ? error.message : 'Unable to check delivery')
+    } finally {
+      setCheckingDelivery(false)
+    }
   }
 
   const toggleAcc = (secId: string) => setSection((prev) => (prev === secId ? '' : secId))
@@ -185,6 +225,17 @@ export default function ProductDetailClient({
   const discount = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
   const loyalPts = Math.floor((p.price ?? 0) / 10)
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
+  const stockCount = typeof p.stock === 'number' ? p.stock : null
+  const stockOut = stockCount === 0
+  const maxQty = Math.min(stockCount ?? 10, 10)
+  const stockTone =
+    stockCount == null ? null : stockCount <= 0 ? 'out' : stockCount <= 5 ? 'low' : 'in'
+  const amRoutine = buildRoutine(all, p, 'AM')
+  const pmRoutine = buildRoutine(all, p, 'PM')
+  const featuredRoutine =
+    p.category === 'SPF' || p.category === 'Cleanser' ? amRoutine : pmRoutine
+  const featuredBundle = uniqueProducts(featuredRoutine.products).filter((product) => product.stock !== 0)
+  const featuredBundleTotal = featuredBundle.reduce((sum, product) => sum + product.price, 0)
 
   const sectionPad = isMobile ? '20px 16px 48px' : '32px 24px 64px'
   const gridStyle: CSSProperties = isMobile
@@ -500,6 +551,7 @@ export default function ProductDetailClient({
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   style={qtyBtn}
                   aria-label="Decrease quantity"
+                  disabled={stockOut}
                 >
                   <Minus size={13} />
                 </button>
@@ -515,9 +567,10 @@ export default function ProductDetailClient({
                   {qty}
                 </span>
                 <button
-                  onClick={() => setQty((q) => q + 1)}
+                  onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
                   style={qtyBtn}
                   aria-label="Increase quantity"
+                  disabled={stockOut || qty >= maxQty}
                 >
                   <Plus size={13} />
                 </button>
@@ -526,13 +579,14 @@ export default function ProductDetailClient({
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleAdd}
+                disabled={stockOut}
                 style={{
                   flex: 1,
                   minWidth: 0,
                   height: 52,
                   borderRadius: 12,
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: stockOut ? 'not-allowed' : 'pointer',
                   fontFamily: 'inherit',
                   fontSize: 14,
                   fontWeight: 700,
@@ -541,13 +595,23 @@ export default function ProductDetailClient({
                   justifyContent: 'center',
                   gap: 6,
                   whiteSpace: 'nowrap',
-                  background: added ? C.sage : C.forest,
+                  background: stockOut ? C.light : added ? C.sage : C.forest,
                   color: 'white',
                   transition: 'background 0.25s',
                 }}
               >
                 <AnimatePresence mode="wait" initial={false}>
-                  {added ? (
+                  {stockOut ? (
+                    <motion.span
+                      key="sold-out"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <ShoppingBag size={15} /> Sold out
+                    </motion.span>
+                  ) : added ? (
                     <motion.span
                       key="done"
                       initial={{ opacity: 0, y: 6 }}
@@ -633,6 +697,101 @@ export default function ProductDetailClient({
               <Truck size={13} />
               Free shipping on orders above ₹499 · Ships in 2–3 business days
             </div>
+
+            <section className="product-conversion" aria-label="Purchase details">
+              <div className="product-conversion__signals">
+                {stockTone && (
+                  <div
+                    className={`product-conversion__signal product-conversion__signal--${stockTone}`}
+                  >
+                    <BadgeCheck size={15} />
+                    <span>
+                      {stockTone === 'out'
+                        ? 'Out of stock'
+                        : stockTone === 'low'
+                          ? `Low stock: ${stockCount} left`
+                          : 'In stock'}
+                    </span>
+                  </div>
+                )}
+                <div className="product-conversion__signal">
+                  <WalletCards size={15} />
+                  <span>Prepaid available</span>
+                </div>
+                <div className="product-conversion__signal">
+                  <Banknote size={15} />
+                  <span>COD up to ₹{COD_MAX_TOTAL.toLocaleString()}</span>
+                </div>
+                <Link href="/returns-refunds" className="product-conversion__signal">
+                  <PackageCheck size={15} />
+                  <span>14-day returns</span>
+                </Link>
+              </div>
+
+              <div className="product-conversion__delivery">
+                <div>
+                  <p>Check delivery</p>
+                  <span>ETA and COD status by PIN code</span>
+                </div>
+                <div className="product-conversion__delivery-form">
+                  <label className="sr-only" htmlFor="delivery-pincode">
+                    PIN code
+                  </label>
+                  <input
+                    id="delivery-pincode"
+                    value={deliveryPin}
+                    onChange={(event) =>
+                      setDeliveryPin(event.target.value.replace(/\D/g, '').slice(0, 6))
+                    }
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    placeholder="Enter PIN code"
+                  />
+                  <button type="button" onClick={handleDeliveryCheck} disabled={checkingDelivery}>
+                    {checkingDelivery ? 'Checking...' : 'Check'}
+                  </button>
+                </div>
+                {deliveryError && <small className="product-conversion__error">{deliveryError}</small>}
+                {deliveryResult && (
+                  <div className="product-conversion__delivery-result" aria-live="polite">
+                    <strong>
+                      <MapPin size={14} />
+                      {deliveryResult.deliveryEstimate} after dispatch
+                    </strong>
+                    <span>
+                      {deliveryResult.dispatchWindow}. {codCopy(deliveryResult.codDecision)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="product-conversion__payments" aria-label="Payment options">
+                <span>
+                  <Smartphone size={15} /> UPI
+                </span>
+                <span>
+                  <CreditCard size={15} /> Cards
+                </span>
+                <span>
+                  <WalletCards size={15} /> Wallets
+                </span>
+                <span>
+                  <ShieldCheck size={15} /> Secure checkout
+                </span>
+              </div>
+
+              <div className="product-conversion__aftercare">
+                <strong>What happens after purchase</strong>
+                <p>
+                  Confirmation is sent immediately. Orders are usually dispatched within 1 business
+                  day, then tracking is shared once the parcel is handed to the courier.
+                </p>
+              </div>
+
+              <button type="button" className="product-conversion__cart-link" onClick={openCart}>
+                <ShoppingBag size={15} /> Open mini cart
+              </button>
+            </section>
 
             {/* ── Accordions ─────────────────────────── */}
             <div style={{ borderTop: `1px solid ${C.border}` }}>
@@ -883,6 +1042,41 @@ export default function ProductDetailClient({
         </div>
 
         {/* You might also like */}
+        {(amRoutine.products.length > 0 || pmRoutine.products.length > 0) && (
+          <section className="ritual-recommendations" aria-label="Recommended routines">
+            <div className="ritual-bundle">
+              <div>
+                <p>Recommended ritual bundle</p>
+                <h2>{featuredRoutine.label}</h2>
+                <span>{featuredRoutine.description}</span>
+              </div>
+              <div className="ritual-bundle__items">
+                {featuredBundle.map((product) => (
+                  <div key={product.id} className="ritual-bundle__item">
+                    <ProductImage product={product} />
+                    <span>{product.name}</span>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                disabled={!featuredBundle.length}
+                onClick={() => {
+                  featuredBundle.forEach(addItem)
+                  openCart()
+                }}
+              >
+                Add {featuredRoutine.shortLabel} bundle · ₹{featuredBundleTotal.toLocaleString()}
+              </button>
+            </div>
+
+            <div className="ritual-routine-grid">
+              <RoutinePreview routine={amRoutine} />
+              <RoutinePreview routine={pmRoutine} />
+            </div>
+          </section>
+        )}
+
         {related.length > 0 && (
           <div
             style={{
@@ -942,4 +1136,98 @@ const qtyBtn = {
   alignItems: 'center',
   justifyContent: 'center',
   color: '#1C221E',
+}
+
+type RoutineKind = 'AM' | 'PM'
+
+interface Routine {
+  label: string
+  shortLabel: RoutineKind
+  description: string
+  products: Product[]
+}
+
+interface DeliveryEstimate {
+  pincode: string
+  dispatchWindow: string
+  deliveryEstimate: string
+  prepaidAvailable: boolean
+  codDecision: 'allow' | 'manual_review' | 'block'
+}
+
+const ROUTINE_CATEGORIES: Record<RoutineKind, string[]> = {
+  AM: ['Cleanser', 'Toner', 'Serum', 'SPF'],
+  PM: ['Cleanser', 'Serum', 'Moisturiser'],
+}
+
+function uniqueProducts(products: Product[]) {
+  return products.filter(
+    (product, index, source) => source.findIndex((candidate) => candidate.id === product.id) === index
+  )
+}
+
+function overlapsSkinTypes(a?: string[], b?: string[]) {
+  if (!a?.length || !b?.length) return false
+  if (a.includes('All Types') || b.includes('All Types')) return true
+  return a.some((skinType) => b.includes(skinType))
+}
+
+function pickRoutineProduct(products: Product[], current: Product, category: string) {
+  if (current.category === category) return current
+  return (
+    products.find(
+      (product) =>
+        product.id !== current.id &&
+        product.category === category &&
+        product.stock !== 0 &&
+        overlapsSkinTypes(product.skin_types, current.skin_types)
+    ) ??
+    products.find(
+      (product) =>
+        product.id !== current.id && product.category === category && product.stock !== 0
+    )
+  )
+}
+
+function buildRoutine(products: Product[], current: Product, kind: RoutineKind): Routine {
+  const routineProducts = ROUTINE_CATEGORIES[kind]
+    .map((category) => pickRoutineProduct(products, current, category))
+    .filter((product): product is Product => Boolean(product))
+
+  return {
+    label: kind === 'AM' ? 'Complete your AM routine' : 'Complete your PM routine',
+    shortLabel: kind,
+    description:
+      kind === 'AM'
+        ? 'Cleanse, treat, and protect before the day starts.'
+        : 'Cleanse, replenish, and seal in overnight recovery.',
+    products: uniqueProducts(routineProducts),
+  }
+}
+
+function codCopy(decision: DeliveryEstimate['codDecision']) {
+  if (decision === 'block') return 'COD is not available for this PIN code.'
+  if (decision === 'manual_review') return 'COD may need manual review at checkout.'
+  return 'COD is generally available after checkout verification.'
+}
+
+function RoutinePreview({ routine }: { routine: Routine }) {
+  if (!routine.products.length) return null
+
+  return (
+    <article className="ritual-preview">
+      <div>
+        <p>{routine.label}</p>
+        <span>{routine.description}</span>
+      </div>
+      <ul>
+        {routine.products.map((product) => (
+          <li key={product.id}>
+            <ProductImage product={product} />
+            <span>{product.name}</span>
+          </li>
+        ))}
+      </ul>
+    </article>
+  )
 }

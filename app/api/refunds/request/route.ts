@@ -6,9 +6,7 @@ import {
   getUserFromAuthorizationHeader,
   hasSupabaseAdminEnv,
 } from '@/lib/supabase-admin'
-
-const REFUND_WINDOW_DAYS = 14
-const OPEN_REFUND_STATUSES = ['requested', 'reviewing', 'approved']
+import { getRefundIneligibilityReason, OPEN_REFUND_STATUSES } from '@/lib/refunds'
 
 export async function POST(request: Request) {
   try {
@@ -49,20 +47,8 @@ export async function POST(request: Request) {
 
     if (orderError) throw new Error(orderError.message)
     if (!order) throw new Error('Order not found for your account')
-    if (!['paid', 'cod_pending'].includes(String(order.payment_status))) {
-      throw new Error('Refunds can be requested only for paid or confirmed COD orders')
-    }
-    if (['Cancelled', 'Refunded'].includes(String(order.status))) {
-      throw new Error('This order is not eligible for a new refund request')
-    }
-
-    const createdAt = new Date(String(order.created_at)).getTime()
-    const ageDays = (Date.now() - createdAt) / (24 * 60 * 60 * 1000)
-    if (Number.isFinite(ageDays) && ageDays > REFUND_WINDOW_DAYS) {
-      throw new Error(
-        `Refund window expired. Requests are accepted within ${REFUND_WINDOW_DAYS} days.`
-      )
-    }
+    const ineligibilityReason = getRefundIneligibilityReason(order)
+    if (ineligibilityReason) throw new Error(ineligibilityReason)
 
     const { data: existing, error: existingError } = await supabase
       .from('refunds')

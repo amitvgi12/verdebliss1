@@ -99,9 +99,11 @@ export default function Nav() {
               type="button"
               onClick={openCart}
               aria-label={`Cart, ${itemCount} items`}
-              className="relative flex cursor-pointer items-center rounded-lg border-none bg-transparent p-2"
+              title="Cart"
+              className="relative flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-transparent p-2"
             >
               <ShoppingBag size={18} className="text-text" />
+              <span className="sr-only">Cart</span>
               <AnimatePresence>
                 {itemCount > 0 && (
                   <motion.span
