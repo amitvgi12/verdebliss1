@@ -25,6 +25,9 @@
   --color-terra: #c07a5a;
   --color-terraPale: #f6ede8;
 
+  /* Editorial accent */
+  --color-aubergine: #573b46;
+
   /* Gold */
   --color-gold: #bfa06a;
   --color-goldText: #8b6914;
@@ -2096,12 +2099,11 @@ video {
 
 .editorial-cta {
   position: relative;
-  margin-bottom: clamp(18px, 2vw, 24px);
   padding: clamp(42px, 5vw, 60px) 16px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 72%),
-    var(--color-forest);
-  border-bottom: 1px solid rgba(238, 226, 210, 0.14);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 70%),
+    var(--color-aubergine);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   text-align: center;
 }
