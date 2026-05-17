@@ -2096,7 +2096,7 @@ video {
 
 .editorial-cta {
   padding: clamp(42px, 5vw, 60px) 16px;
-  background: var(--color-forest);
+  background: linear-gradient(135deg, #fffef9c2, #f2eae0fa), #efe6da;
   color: white;
   text-align: center;
 }
