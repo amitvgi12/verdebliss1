@@ -154,28 +154,28 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <>
       <StructuredData data={articleJsonLd(article, slug)} />
       <article className="bg-bg">
-        <header className="bg-forest px-4 py-12">
-          <div className="container-content max-w-[760px]">
+        <header className="editorial-hero text-left">
+          <div className="editorial-hero__inner max-w-[760px] text-left">
             <Link
               href="/blog"
               className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-sage hover:text-white"
             >
               <ArrowLeft size={13} aria-hidden /> Back to journal
             </Link>
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-sage">
+            <p className="editorial-hero__kicker mb-3 text-left">
               {article.category} · {article.readTime} min read
             </p>
-            <h1 className="m-0 mb-4 font-serif text-[clamp(28px,4vw,44px)] font-normal leading-tight text-white">
-              {article.title}
-            </h1>
-            <p className="text-sm leading-relaxed text-white/65">{article.description}</p>
+            <h1 className="editorial-hero__title max-w-[720px] text-left">{article.title}</h1>
+            <p className="editorial-hero__copy mx-0 max-w-[620px] text-left">
+              {article.description}
+            </p>
             <p className="mt-4 text-[11px] uppercase tracking-wider text-white/40">
               Published {article.date}
             </p>
           </div>
         </header>
 
-        <div className="container-content max-w-[760px] py-12">
+        <div className="site-container editorial-section max-w-[760px]">
           {article.sections.map((section, i) => (
             <section key={i} className="mb-9 last:mb-0">
               <h2 className="mb-3 font-serif text-xl font-semibold text-text">{section.heading}</h2>
@@ -186,7 +186,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           ))}
         </div>
 
-        <footer className="bg-forest px-4 py-14 text-center">
+        <footer className="editorial-cta">
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-sage">
             PUT IT INTO PRACTICE
           </p>

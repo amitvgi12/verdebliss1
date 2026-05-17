@@ -32,7 +32,7 @@ const SUPPORT_LINKS: Array<[string, string]> = [
 function LinkColumn({ title, links }: { title: string; links: Array<[string, string]> }) {
   return (
     <div>
-      <h3 className="mb-3.5 text-[11px] font-bold uppercase tracking-wider text-white/85">
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-white/85">
         {title}
       </h3>
       <ul className="space-y-0.5">
@@ -40,7 +40,7 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
           <li key={label}>
             <Link
               href={path}
-              className="block py-[5px] text-[13px] text-white/55 transition hover:text-white/90"
+              className="block py-[3px] text-[13px] text-white/55 transition hover:text-white/90"
             >
               {label}
             </Link>
@@ -54,9 +54,9 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
 export default function Footer() {
   return (
     <footer className="site-footer bg-forest px-4 text-white/55">
-      <div className="site-container grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-8 lg:gap-12">
+      <div className="site-container site-footer__grid">
         {/* Brand column */}
-        <div>
+        <div className="site-footer__brand">
           <Link
             href="/"
             aria-label="VerdeBliss home"
@@ -67,28 +67,30 @@ export default function Footer() {
               alt="VerdeBliss"
               width={102}
               height={34}
-              className="block h-[34px] w-auto object-contain"
+              className="block object-contain"
             />
           </Link>
 
-          <p className="mb-4 max-w-[240px] text-[13px] leading-relaxed">
+          <p className="mb-3 max-w-[240px] text-[13px] leading-relaxed">
             Where nature becomes luxury. Botanical skincare rituals for your most radiant skin.
           </p>
           <a
             href="mailto:hello@verdebliss.com"
-            className="mb-4 block text-[11px] font-semibold text-sage hover:underline"
+            className="mb-3 block text-[11px] font-semibold text-sage hover:underline"
           >
             📩 hello@verdebliss.com
           </a>
           <SocialButtons />
         </div>
 
-        <LinkColumn title="SHOP" links={SHOP_LINKS} />
-        <LinkColumn title="COMPANY" links={COMPANY_LINKS} />
-        <LinkColumn title="SUPPORT" links={SUPPORT_LINKS} />
+        <div className="site-footer__links">
+          <LinkColumn title="SHOP" links={SHOP_LINKS} />
+          <LinkColumn title="COMPANY" links={COMPANY_LINKS} />
+          <LinkColumn title="SUPPORT" links={SUPPORT_LINKS} />
+        </div>
       </div>
 
-      <div className="site-container mt-9 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-6 text-[11px]">
+      <div className="site-container site-footer__meta mt-6 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-4 text-[11px]">
         <span>© 2026 VerdeBliss Cosmetics Private Limited.</span>
         <LegalLinks />
       </div>

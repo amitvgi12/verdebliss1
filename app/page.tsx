@@ -106,7 +106,6 @@ export default async function Home() {
           </div>
 
           <div className="premium-hero__visual" aria-label="Featured VerdeBliss product editorial">
-            <div className="premium-hero__orb" />
             <div className="premium-hero__product">
               <Image
                 src="/images/products/serum.webp"
@@ -115,7 +114,7 @@ export default async function Home() {
                 fetchPriority="high"
                 fill
                 sizes="(max-width: 768px) 78vw, 420px"
-                className="object-contain p-[12%]"
+                className="object-cover"
               />
             </div>
             <div className="premium-float premium-float--left">
@@ -130,7 +129,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="site-container page-section">
+      <section className="site-container home-collection-section page-section">
         <FadeIn>
           <div className="premium-section-head">
             <h2 className="vb-collection-heading">The Collection</h2>
@@ -148,8 +147,8 @@ export default async function Home() {
           </div>
         </FadeIn>
         <FadeIn delay={0.18}>
-          <div className="mt-10 text-center">
-            <Link href="/products" className="btn-outline">
+          <div className="home-collection-cta-wrap">
+            <Link href="/products" className="home-collection-cta">
               View full boutique <ArrowRight size={15} />
             </Link>
           </div>
@@ -255,7 +254,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="site-container page-section">
+      <section className="site-container page-section premium-trust-section">
         <div className="premium-trust-grid">
           <div className="premium-trust-intro">
             <FadeIn>
@@ -311,7 +310,7 @@ export default async function Home() {
       </section>
 
       <section className="home-newsletter-section bg-ivory px-4 text-center">
-        <FadeIn>
+        <FadeIn className="home-newsletter-content">
           <p className="label-eyebrow mb-2.5">JOIN THE CIRCLE</p>
           <h2 className="mb-2 font-serif text-[clamp(1.5rem,2.5vw,2.2rem)] font-normal text-text">
             Subscribe &amp; earn 50 bonus points

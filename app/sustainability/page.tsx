@@ -77,16 +77,12 @@ export default function SustainabilityPage() {
   return (
     <div className="bg-bg">
       {/* Hero */}
-      <section className="bg-forest px-4 py-20 text-center">
-        <div className="site-container">
+      <section className="editorial-hero">
+        <div className="editorial-hero__inner">
           <FadeIn>
-            <p className="mb-4 text-[10px] font-semibold tracking-[0.18em] text-sage">
-              CLIMATE COMMITMENTS
-            </p>
-            <h1 className="m-0 mb-5 font-serif text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02] tracking-[-0.03em] text-white">
-              Sustainability
-            </h1>
-            <p className="mx-auto max-w-[580px] text-center text-[15px] leading-[1.75] text-white/60">
+            <p className="editorial-hero__kicker">CLIMATE COMMITMENTS</p>
+            <h1 className="editorial-hero__title">Sustainability</h1>
+            <p className="editorial-hero__copy">
               We measure what we change. What follows is our public roadmap. Evidence documents
               should be requested before relying on specific claims.
             </p>
@@ -95,14 +91,14 @@ export default function SustainabilityPage() {
       </section>
 
       {/* Pillars */}
-      <section className="site-container py-16">
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-5">
+      <section className="site-container editorial-section">
+        <div className="sustainability-grid">
           {PILLARS.map((p, i) => (
             <FadeIn key={p.title} delay={i * 0.08}>
-              <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[0_2px_12px_rgba(45,74,50,0.06)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_36px_rgba(45,74,50,0.11)]">
+              <article className="sustainability-card soft-card soft-card-hover">
                 {/* Accent bar */}
                 <div className="h-1 w-full" style={{ background: p.accentBar }} />
-                <div className="flex flex-1 flex-col p-6 text-center">
+                <div className="sustainability-card__body">
                   <div
                     className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
                     style={{ background: p.iconBg }}
@@ -129,18 +125,18 @@ export default function SustainabilityPage() {
       </section>
 
       {/* Commitments */}
-      <section className="bg-ivory px-4 py-16">
+      <section className="editorial-section editorial-section--tint px-4">
         <div className="site-container">
           <FadeIn>
-            <header className="mb-12 text-center">
+            <header className="editorial-section-head">
               <p className="label-eyebrow mb-3">SPECIFIC COMMITMENTS</p>
               <h2 className="h-section">Targets you can hold us to</h2>
             </header>
           </FadeIn>
-          <div className="mx-auto grid max-w-[860px] grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="commitment-grid">
             {COMMITMENTS.map((c, i) => (
               <FadeIn key={c.title} delay={i * 0.07}>
-                <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-7 transition duration-300 hover:shadow-[0_8px_24px_rgba(45,74,50,0.09)]">
+                <article className="sustainability-commitment-card soft-card soft-card-hover">
                   <div className="mb-4 h-[3px] w-10 rounded-full bg-terra" aria-hidden />
                   <h3 className="mb-2 font-serif text-[15px] font-semibold text-text">{c.title}</h3>
                   <p className="flex-1 text-[13px] leading-[1.75] text-muted">{c.body}</p>
@@ -152,7 +148,7 @@ export default function SustainabilityPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-forest px-4 py-16 text-center">
+      <section className="editorial-cta">
         <FadeIn>
           <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
             Request our sustainability roadmap

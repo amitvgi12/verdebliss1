@@ -5,8 +5,7 @@
  */
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
-import { C, FONT } from '@/constants/theme'
+import { Check, Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
 import TurnstileWidget from '@/components/ui/TurnstileWidget'
 
 const TOPICS = [
@@ -19,11 +18,16 @@ const TOPICS = [
 ]
 
 const CHANNELS = [
-  { icon: '📩', title: 'Email us', value: 'hello@verdebliss.com', sub: 'Response within 24 hours' },
-  { icon: '📞', title: 'Call us', value: '+91 20 6789 0123', sub: 'Mon–Sat, 9 AM–6 PM IST' },
-  { icon: '💬', title: 'Live Chat', value: 'Via the chat bubble', sub: 'Available 9 AM–9 PM IST' },
+  { Icon: Mail, title: 'Email us', value: 'hello@verdebliss.com', sub: 'Response within 24 hours' },
+  { Icon: Phone, title: 'Call us', value: '+91 20 6789 0123', sub: 'Mon–Sat, 9 AM–6 PM IST' },
   {
-    icon: '📍',
+    Icon: MessageCircle,
+    title: 'Live Chat',
+    value: 'Via the chat bubble',
+    sub: 'Available 9 AM–9 PM IST',
+  },
+  {
+    Icon: MapPin,
     title: 'Our lab',
     value: 'Kharadi, Pune 411014',
     sub: 'Visits by appointment only',
@@ -66,312 +70,137 @@ export default function ContactClient() {
   }
 
   return (
-    <div style={{ background: C.bg }}>
+    <div className="bg-bg">
       {/* Hero */}
-      <section
-        style={{
-          background: `linear-gradient(150deg, ${C.forest} 0%, #1A2E1E 100%)`,
-          padding: 'clamp(40px,5vw,64px) 24px clamp(44px,5vw,68px)',
-          textAlign: 'center',
-        }}
-      >
+      <section className="editorial-hero">
         <motion.div
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="editorial-hero__inner"
         >
-          <div
-            style={{
-              fontSize: 10,
-              color: C.sage,
-              letterSpacing: '0.16em',
-              marginBottom: 16,
-              fontWeight: 600,
-            }}
-          >
-            WE&apos;D LOVE TO HEAR FROM YOU
-          </div>
-          <h1
-            style={{
-              fontFamily: FONT.serif,
-              fontSize: 'clamp(2rem,3.5vw,3.2rem)',
-              color: 'white',
-              fontWeight: 400,
-              margin: '0 0 18px',
-              letterSpacing: '-0.03em',
-              lineHeight: 1.05,
-            }}
-          >
-            Get in Touch
-          </h1>
-          <p
-            style={{
-              fontSize: 15,
-              color: 'rgba(255,255,255,0.6)',
-              maxWidth: 480,
-              margin: '0 auto',
-              lineHeight: 1.75,
-            }}
-          >
+          <div className="editorial-hero__kicker">WE&apos;D LOVE TO HEAR FROM YOU</div>
+          <h1 className="editorial-hero__title">Get in Touch</h1>
+          <p className="editorial-hero__copy max-w-[480px]">
             Our botanists, formulators, and customer experience team are here to help.
           </p>
         </motion.div>
       </section>
 
-      <section
-        style={{
-          maxWidth: 1100,
-          margin: '0 auto',
-          padding: '72px 24px 80px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 56,
-          alignItems: 'start',
-        }}
-      >
+      <section className="site-container editorial-section contact-layout">
         {/* Contact channels */}
         <div>
-          <div
-            style={{
-              fontSize: 10,
-              color: C.terra,
-              letterSpacing: '0.14em',
-              marginBottom: 24,
-              fontWeight: 600,
-            }}
-          >
-            CONTACT CHANNELS
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {CHANNELS.map((ch) => (
-              <div
+          <div className="label-eyebrow mb-5">CONTACT CHANNELS</div>
+          <div className="contact-stack">
+            {CHANNELS.map(({ Icon, ...ch }, index) => (
+              <motion.article
                 key={ch.title}
-                style={{
-                  background: C.card,
-                  borderRadius: 16,
-                  padding: '16px 18px',
-                  border: `1px solid ${C.border}`,
-                  display: 'flex',
-                  gap: 14,
-                  alignItems: 'center',
-                  boxShadow: '0 2px 8px rgba(45,74,50,0.05)',
-                  transition: 'box-shadow 180ms ease, transform 180ms ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(45,74,50,0.1)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(45,74,50,0.05)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.06, duration: 0.35 }}
+                className="contact-channel soft-card soft-card-hover"
               >
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    background: C.sagePale,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 20,
-                    flexShrink: 0,
-                  }}
-                >
-                  {ch.icon}
+                <div className="contact-channel__icon">
+                  <Icon size={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 2 }}>
-                    {ch.title}
-                  </div>
-                  <div style={{ fontSize: 13, color: C.forest, fontWeight: 600, marginBottom: 2 }}>
-                    {ch.value}
-                  </div>
-                  <div style={{ fontSize: 11, color: C.muted }}>{ch.sub}</div>
+                  <div className="mb-0.5 text-xs font-bold text-text">{ch.title}</div>
+                  <div className="mb-0.5 text-sm font-semibold text-forest">{ch.value}</div>
+                  <div className="text-[11px] text-muted">{ch.sub}</div>
                 </div>
-              </div>
+              </motion.article>
             ))}
           </div>
         </div>
 
         {/* Form */}
         <div>
-          <div
-            style={{
-              fontSize: 10,
-              color: C.terra,
-              letterSpacing: '0.14em',
-              marginBottom: 24,
-              fontWeight: 600,
-            }}
-          >
-            SEND A MESSAGE
-          </div>
+          <div className="label-eyebrow mb-5">SEND A MESSAGE</div>
           {submitted ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              style={{
-                background: '#EBF0E9',
-                borderRadius: 16,
-                padding: '48px',
-                textAlign: 'center',
-              }}
+              className="contact-success rounded-[18px] bg-sagePale"
             >
-              <div
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: '50%',
-                  background: C.forest,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 20px',
-                }}
-              >
-                <Check size={28} color="white" />
+              <div className="contact-success__icon">
+                <Check size={26} />
               </div>
-              <div
-                style={{ fontFamily: FONT.serif, fontSize: 28, color: C.text, marginBottom: 10 }}
-              >
-                Message sent!
-              </div>
-              <div style={{ fontSize: 15, color: C.muted }}>
-                We&apos;ll get back to you within 24 hours.
-              </div>
+              <div className="mb-2 font-serif text-[28px] text-text">Message sent!</div>
+              <div className="text-sm text-muted">We&apos;ll get back to you within 24 hours.</div>
             </motion.div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <label
-                htmlFor="contact-name"
-                style={{ fontSize: 12, fontWeight: 600, color: C.text }}
-              >
-                Name *
-              </label>
-              <input
-                id="contact-name"
-                name="name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Your name *"
-                style={{
-                  padding: '12px 16px',
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 10,
-                  fontSize: 14,
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  background: C.warmWhite,
-                  color: C.text,
-                }}
-              />
-              <label
-                htmlFor="contact-email"
-                style={{ fontSize: 12, fontWeight: 600, color: C.text }}
-              >
-                Email *
-              </label>
-              <input
-                id="contact-email"
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="Email address *"
-                style={{
-                  padding: '12px 16px',
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 10,
-                  fontSize: 14,
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  background: C.warmWhite,
-                  color: C.text,
-                }}
-              />
-              <label
-                htmlFor="contact-topic"
-                style={{ fontSize: 12, fontWeight: 600, color: C.text }}
-              >
-                Topic
-              </label>
-              <select
-                id="contact-topic"
-                name="topic"
-                value={form.topic}
-                onChange={(e) => setForm({ ...form, topic: e.target.value })}
-                style={{
-                  padding: '12px 16px',
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 10,
-                  fontSize: 14,
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  background: C.warmWhite,
-                  color: C.text,
-                }}
-              >
-                <option value="">Select topic</option>
-                {TOPICS.map((t) => (
-                  <option key={t}>{t}</option>
-                ))}
-              </select>
-              <label
-                htmlFor="contact-message"
-                style={{ fontSize: 12, fontWeight: 600, color: C.text }}
-              >
-                Message *
-              </label>
-              <textarea
-                id="contact-message"
-                name="message"
-                value={form.message}
-                onChange={(e) => setForm({ ...form, message: e.target.value })}
-                placeholder="Your message *"
-                rows={5}
-                style={{
-                  padding: '12px 16px',
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 10,
-                  fontSize: 14,
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  background: C.warmWhite,
-                  color: C.text,
-                  resize: 'vertical',
-                }}
-              />
-              {error && (
-                <div role="alert" style={{ fontSize: 12, color: '#A32D2D' }}>
-                  {error}
+            <div className="contact-form-shell soft-card">
+              <div className="contact-form">
+                <label htmlFor="contact-name" className="text-xs font-semibold text-text">
+                  Name *
+                </label>
+                <input
+                  id="contact-name"
+                  name="name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Your name *"
+                  className="input-base"
+                />
+                <label htmlFor="contact-email" className="text-xs font-semibold text-text">
+                  Email *
+                </label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="Email address *"
+                  className="input-base"
+                />
+                <label htmlFor="contact-topic" className="text-xs font-semibold text-text">
+                  Topic
+                </label>
+                <select
+                  id="contact-topic"
+                  name="topic"
+                  value={form.topic}
+                  onChange={(e) => setForm({ ...form, topic: e.target.value })}
+                  className="input-base"
+                >
+                  <option value="">Select topic</option>
+                  {TOPICS.map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
+                </select>
+                <label htmlFor="contact-message" className="text-xs font-semibold text-text">
+                  Message *
+                </label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  placeholder="Your message *"
+                  rows={5}
+                  className="input-base resize-y"
+                />
+                {error && (
+                  <div role="alert" className="text-xs text-[#A32D2D]">
+                    {error}
+                  </div>
+                )}
+                <TurnstileWidget
+                  onToken={setTurnstileToken}
+                  onExpire={() => setTurnstileToken(null)}
+                />
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="btn-primary mt-1 w-full disabled:bg-sage"
+                >
+                  {loading ? 'Sending…' : 'Send Message'}
+                </motion.button>
+                <div className="text-center text-[11px] text-muted">
+                  We never share your data with third parties.
                 </div>
-              )}
-              <TurnstileWidget
-                onToken={setTurnstileToken}
-                onExpire={() => setTurnstileToken(null)}
-              />
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={handleSubmit}
-                disabled={loading}
-                style={{
-                  background: loading ? C.sage : C.forest,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 10,
-                  padding: '13px',
-                  fontSize: 15,
-                  fontWeight: 600,
-                  cursor: loading ? 'wait' : 'pointer',
-                  fontFamily: 'inherit',
-                }}
-              >
-                {loading ? 'Sending…' : 'Send Message'}
-              </motion.button>
-              <div style={{ fontSize: 11, color: C.muted, textAlign: 'center' }}>
-                We never share your data with third parties.
               </div>
             </div>
           )}

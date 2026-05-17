@@ -54,16 +54,12 @@ export default function PressPage() {
   return (
     <div className="bg-bg">
       {/* Hero */}
-      <section className="bg-forest px-4 py-20 text-center">
-        <div className="container-content">
+      <section className="editorial-hero press-hero">
+        <div className="editorial-hero__inner">
           <FadeIn>
-            <p className="mb-4 text-[10px] font-semibold tracking-[0.18em] text-sage">
-              PRESS &amp; MEDIA
-            </p>
-            <h1 className="m-0 mb-5 font-serif text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02] tracking-[-0.03em] text-white">
-              Press Centre
-            </h1>
-            <p className="mx-auto max-w-[560px] text-center text-[15px] leading-[1.75] text-white/60">
+            <p className="editorial-hero__kicker">PRESS &amp; MEDIA</p>
+            <h1 className="editorial-hero__title">Press Centre</h1>
+            <p className="editorial-hero__copy">
               Media kit, brand assets, founder bios, and recent coverage — everything a journalist
               needs.
             </p>
@@ -72,11 +68,11 @@ export default function PressPage() {
       </section>
 
       {/* Quick contact */}
-      <section className="container-content py-12">
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <section className="site-container editorial-section">
+        <div className="press-contact-grid">
           <FadeIn>
-            <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-7 transition hover:shadow-[0_8px_28px_rgba(45,74,50,0.08)]">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-sagePale">
+            <article className="press-card soft-card soft-card-hover">
+              <div className="press-card__icon bg-sagePale">
                 <Mail size={20} className="text-forest" />
               </div>
               <h2 className="mb-2 font-serif text-lg font-semibold text-text">Press enquiries</h2>
@@ -95,8 +91,8 @@ export default function PressPage() {
           </FadeIn>
 
           <FadeIn delay={0.08}>
-            <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-7 transition hover:shadow-[0_8px_28px_rgba(45,74,50,0.08)]">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-terraPale">
+            <article className="press-card soft-card soft-card-hover">
+              <div className="press-card__icon bg-terraPale">
                 <Download size={20} className="text-terra" />
               </div>
               <h2 className="mb-2 font-serif text-lg font-semibold text-text">Media kit</h2>
@@ -113,22 +109,19 @@ export default function PressPage() {
       </section>
 
       {/* Quick facts */}
-      <section className="bg-ivory px-4 py-14">
-        <div className="container-content">
+      <section className="editorial-section editorial-section--tint px-4">
+        <div className="site-container">
           <FadeIn>
-            <header className="mb-8 text-center">
+            <header className="editorial-section-head">
               <p className="label-eyebrow mb-2.5">QUICK FACTS</p>
               <h2 className="h-section">VerdeBliss at a glance</h2>
             </header>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <dl className="mx-auto grid max-w-[720px] grid-cols-1 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+            <dl className="press-facts soft-card divide-y divide-border">
               {QUICK_FACTS.map(([label, value]) => (
-                <div
-                  key={label}
-                  className="flex flex-col gap-1 px-6 py-4 transition hover:bg-ivory sm:flex-row sm:items-center"
-                >
-                  <dt className="text-[11px] font-bold uppercase tracking-wider text-terra sm:w-44">
+                <div key={label} className="transition hover:bg-ivory">
+                  <dt className="text-[11px] font-bold uppercase tracking-wider text-terra">
                     {label}
                   </dt>
                   <dd className="text-sm font-medium text-text">{value}</dd>
@@ -140,37 +133,31 @@ export default function PressPage() {
       </section>
 
       {/* Recent coverage */}
-      <section className="container-content py-14">
+      <section className="site-container editorial-section">
         <FadeIn>
-          <header className="mb-8 text-center">
+          <header className="editorial-section-head">
             <p className="label-eyebrow mb-2.5">RECENT COVERAGE</p>
             <h2 className="h-section">As featured in</h2>
           </header>
         </FadeIn>
-        <div className="mx-auto grid max-w-[860px] grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="press-coverage-grid">
           {COVERAGE.map((c, i) => (
             <FadeIn key={c.headline} delay={i * 0.07}>
-              <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-[0_2px_10px_rgba(45,74,50,0.05)] transition hover:-translate-y-1 hover:shadow-[0_10px_32px_rgba(45,74,50,0.1)]">
+              <article className="press-coverage-card overflow-hidden soft-card soft-card-hover">
                 {/* Outlet banner */}
-                <div
-                  className="flex items-center justify-between px-5 py-3"
-                  style={{ background: c.outletBg }}
-                >
-                  <span
-                    className="font-sans text-xs font-black uppercase tracking-[0.14em]"
-                    style={{ color: c.outletColor }}
-                  >
+                <div className="press-coverage-card__banner" style={{ background: c.outletBg }}>
+                  <span className="press-coverage-card__outlet" style={{ color: c.outletColor }}>
                     {c.outlet}
                   </span>
                   <span
-                    className="text-[10px] font-medium"
+                    className="press-coverage-card__date"
                     style={{ color: 'rgba(255,255,255,0.45)' }}
                   >
                     {c.date}
                   </span>
                 </div>
                 {/* Headline */}
-                <div className="p-5">
+                <div className="press-coverage-card__body">
                   <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-terra">
                     PRESS FEATURE
                   </p>
@@ -185,7 +172,7 @@ export default function PressPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-forest px-4 py-14 text-center">
+      <section className="editorial-cta">
         <FadeIn>
           <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
             Working on a story?

@@ -35,7 +35,7 @@ export default function IngredientCard({
   const bg = BG_MAP[ingredient] ?? '#EAF0E8' /* sagePale */
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-[0_8px_28px_rgba(0,0,0,0.09)]">
+    <div className="ingredient-card group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-[0_8px_28px_rgba(0,0,0,0.09)]">
       <div
         className="relative flex flex-shrink-0 items-center justify-center overflow-hidden"
         style={{ height: imageHeight, background: bg }}
@@ -57,7 +57,7 @@ export default function IngredientCard({
       </div>
 
       {(ingredient || description) && (
-        <div className="px-4 py-3.5">
+        <div className="ingredient-card__body px-4 py-3.5">
           {ingredient && (
             <h3
               className={`font-serif text-sm font-semibold text-text ${description ? 'mb-1' : ''}`}

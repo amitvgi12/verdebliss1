@@ -5,7 +5,7 @@ import type { LegalDocument } from '@/constants/legal'
 export default function LegalPage({ doc }: { doc: LegalDocument }) {
   return (
     <article className="bg-bg">
-      <header className="catalog-hero px-4">
+      <header className="legal-hero px-4">
         <div className="site-container-narrow">
           <Link
             href="/"

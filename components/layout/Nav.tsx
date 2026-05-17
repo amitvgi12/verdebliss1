@@ -52,7 +52,7 @@ export default function Nav() {
               width={120}
               height={40}
               priority
-              className="h-10 w-auto object-contain"
+              className="object-contain"
             />
           </Link>
 

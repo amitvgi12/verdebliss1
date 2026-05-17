@@ -9,6 +9,7 @@ export async function StructuredData({ data }: { data: unknown }) {
     <script
       type="application/ld+json"
       nonce={nonce}
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
     />
   )

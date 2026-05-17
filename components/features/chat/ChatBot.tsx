@@ -130,7 +130,7 @@ export default function ChatBot() {
         whileTap={{ scale: 0.94 }}
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? 'Close chat' : 'Chat with Verde'}
-        className="fixed bottom-5 right-4 z-[150] flex h-[52px] w-[52px] cursor-pointer items-center justify-center rounded-full border-none shadow-[0_2px_12px_rgba(45,74,50,0.35)] sm:bottom-7 sm:right-7 sm:shadow-[0_4px_20px_rgba(45,74,50,0.4)]"
+        className="chat-fab fixed bottom-5 right-4 z-[150] flex cursor-pointer items-center justify-center rounded-full border-none sm:bottom-6 sm:right-6"
         style={{ background: C.forest }}
       >
         <AnimatePresence mode="wait">

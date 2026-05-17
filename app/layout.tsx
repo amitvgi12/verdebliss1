@@ -93,7 +93,7 @@ const websiteLd = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         {/* Preconnect / DNS-prefetch for the payment iframe so first-checkout RTT is minimal */}
         <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="" />

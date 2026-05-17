@@ -75,8 +75,8 @@ export default function ProductsClient({
         </div>
       </div>
 
-      <div className="site-container -mt-10 pb-20">
-        <div className="grid grid-cols-1 items-start gap-7 md:grid-cols-[clamp(160px,20%,230px)_1fr]">
+      <div className="site-container catalog-shell -mt-10 pb-20">
+        <div className="catalog-layout">
           <aside className="catalog-filter-panel mt-6 md:sticky md:top-[76px]">
             <FilterGroup
               label="CATEGORY"
@@ -108,21 +108,19 @@ export default function ProductsClient({
           </aside>
 
           <div className="catalog-results-panel mt-6 min-w-0">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
-              <div className="text-[13px] text-muted" aria-live="polite">
+            <div className="catalog-toolbar">
+              <div className="catalog-count" aria-live="polite">
                 {products.length} product{products.length === 1 ? '' : 's'}
                 {isPending ? ' · updating…' : ''}
               </div>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="catalog-sort-group">
                 {SORT_OPTIONS.map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => setFilter('sort', s)}
-                    className={`cursor-pointer whitespace-nowrap rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition ${
-                      sortBy === s
-                        ? 'border-forest bg-forest text-white'
-                        : 'border-border bg-ivory text-muted hover:border-forest/50'
+                    className={`catalog-sort-button ${
+                      sortBy === s ? 'catalog-sort-button--active' : 'catalog-sort-button--idle'
                     }`}
                   >
                     {s}

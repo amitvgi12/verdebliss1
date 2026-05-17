@@ -79,16 +79,12 @@ export default function OurStoryPage() {
   return (
     <div className="bg-bg">
       {/* Hero */}
-      <section className="bg-forest px-4 py-20 text-center">
-        <div className="container-content">
+      <section className="editorial-hero story-hero">
+        <div className="editorial-hero__inner">
           <FadeIn>
-            <p className="mb-4 text-[10px] font-semibold tracking-[0.18em] text-sage">
-              FOUNDED IN PUNE — 2019
-            </p>
-            <h1 className="m-0 mb-5 font-serif text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02] tracking-[-0.03em] text-white">
-              Our Story
-            </h1>
-            <p className="mx-auto max-w-[600px] text-center text-[15px] leading-[1.75] text-white/60">
+            <p className="editorial-hero__kicker">FOUNDED IN PUNE — 2019</p>
+            <h1 className="editorial-hero__title">Our Story</h1>
+            <p className="editorial-hero__copy max-w-[600px]">
               VerdeBliss exists because skincare can be honest, beautiful, and free of greenwashing
               — all at the same time.
             </p>
@@ -97,23 +93,22 @@ export default function OurStoryPage() {
       </section>
 
       {/* Timeline */}
-      <section className="container-content py-16">
+      <section className="site-container editorial-section">
         <FadeIn>
-          <header className="mb-12 text-center">
+          <header className="editorial-section-head">
             <p className="label-eyebrow mb-3">THE JOURNEY</p>
             <h2 className="h-section">From kitchen to 50,000 customers</h2>
           </header>
         </FadeIn>
-        <ol className="relative mx-auto max-w-[680px] border-l-2 border-sagePale pl-8">
+        <ol className="story-timeline">
           {TIMELINE.map((item, i) => (
             <FadeIn key={item.year} delay={i * 0.06}>
-              <li className="mb-10 last:mb-0">
-                <span className="absolute -left-[9px] mt-[5px] block h-4 w-4 rounded-full border-2 border-gold bg-card" />
-                <div className="mb-1 font-serif text-[11px] font-bold uppercase tracking-[0.16em] text-terra">
-                  {item.year}
+              <li className="story-timeline__item soft-card soft-card-hover">
+                <div className="story-timeline__year">{item.year}</div>
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
                 </div>
-                <h3 className="mb-2 font-serif text-lg font-semibold text-text">{item.title}</h3>
-                <p className="text-[14px] leading-[1.8] text-muted">{item.body}</p>
               </li>
             </FadeIn>
           ))}
@@ -121,20 +116,20 @@ export default function OurStoryPage() {
       </section>
 
       {/* Values */}
-      <section className="bg-ivory px-4 py-16">
-        <div className="container-content">
+      <section className="editorial-section editorial-section--tint px-4">
+        <div className="site-container">
           <FadeIn>
-            <header className="mb-12 text-center">
+            <header className="editorial-section-head">
               <p className="label-eyebrow mb-3">WHAT WE BELIEVE</p>
               <h2 className="h-section">Four lines we won&apos;t cross</h2>
             </header>
           </FadeIn>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-5">
+          <div className="story-values-grid">
             {VALUES.map((value, i) => (
               <FadeIn key={value.title} delay={i * 0.08}>
-                <article className="h-full rounded-2xl border border-border bg-card p-7 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_10px_32px_rgba(45,74,50,0.09)]">
+                <article className="story-value-card soft-card soft-card-hover">
                   <div
-                    className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl"
+                    className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl"
                     style={{ background: value.iconBg }}
                   >
                     <value.Icon size={22} style={{ color: value.iconColor }} />
@@ -151,7 +146,7 @@ export default function OurStoryPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-forest px-4 py-16 text-center">
+      <section className="editorial-cta">
         <FadeIn>
           <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
             Try the formulas that started it all

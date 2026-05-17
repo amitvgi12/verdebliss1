@@ -1,21 +1,27 @@
 'use client'
 
+import { Instagram, Pin, Youtube } from 'lucide-react'
 import { useToastStore } from '@/store/toastStore'
 
-const SOCIALS = ['Instagram', 'Pinterest', 'YouTube'] as const
+const SOCIALS = [
+  { label: 'Instagram', Icon: Instagram },
+  { label: 'Pinterest', Icon: Pin },
+  { label: 'YouTube', Icon: Youtube },
+] as const
 
 export default function SocialButtons() {
   const toast = useToastStore((s) => s.push)
   return (
-    <div className="flex flex-wrap gap-2">
-      {SOCIALS.map((s) => (
+    <div className="footer-socials">
+      {SOCIALS.map(({ label, Icon }) => (
         <button
-          key={s}
+          key={label}
           type="button"
-          onClick={() => toast(`${s} — coming soon!`, 'info')}
-          className="cursor-pointer rounded-full border border-white/10 bg-transparent px-2.5 py-1 text-[11px] text-white/50 transition hover:text-white/80"
+          onClick={() => toast(`${label} — coming soon!`, 'info')}
+          className="footer-social-button"
         >
-          {s}
+          <Icon size={13} aria-hidden />
+          <span>{label}</span>
         </button>
       ))}
     </div>

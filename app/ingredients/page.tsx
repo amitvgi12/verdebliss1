@@ -87,16 +87,12 @@ export default function IngredientsPage() {
   return (
     <div className="bg-bg">
       {/* Hero */}
-      <section className="bg-forest px-4 py-20 text-center">
-        <div className="container-content">
+      <section className="editorial-hero">
+        <div className="editorial-hero__inner">
           <FadeIn>
-            <p className="mb-4 text-[10px] font-semibold tracking-[0.18em] text-sage">
-              EVERY FORMULA. EVERY BOTANICAL.
-            </p>
-            <h1 className="m-0 mb-5 font-serif text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02] tracking-[-0.03em] text-white">
-              Our Ingredients
-            </h1>
-            <p className="mx-auto max-w-[580px] text-center text-[15px] leading-[1.75] text-white/60">
+            <p className="editorial-hero__kicker">EVERY FORMULA. EVERY BOTANICAL.</p>
+            <h1 className="editorial-hero__title">Our Ingredients</h1>
+            <p className="editorial-hero__copy">
               Eight hero ingredients. We disclose source, role, and the actual science. No
               proprietary-blend hide-and-seek.
             </p>
@@ -105,13 +101,13 @@ export default function IngredientsPage() {
       </section>
 
       {/* Ingredient grid */}
-      <section className="container-content py-14">
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5">
+      <section className="site-container editorial-section">
+        <div className="ingredients-grid">
           {HERO_INGREDIENTS.map((ing, i) => (
             <FadeIn key={ing.name} delay={i * 0.05}>
-              <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[0_2px_10px_rgba(45,74,50,0.05)] transition hover:-translate-y-1 hover:shadow-[0_10px_32px_rgba(45,74,50,0.1)]">
-                <IngredientCard ingredient={ing.name} description={ing.desc} imageHeight={160} />
-                <div className="border-t border-border bg-bg px-4 py-3">
+              <article className="ingredient-shell soft-card soft-card-hover">
+                <IngredientCard ingredient={ing.name} description={ing.desc} imageHeight={150} />
+                <div className="ingredient-shell__meta">
                   <div
                     className="mb-1 text-[10px] font-bold uppercase tracking-wider"
                     style={{ color: ing.roleColor }}
@@ -129,10 +125,10 @@ export default function IngredientsPage() {
       </section>
 
       {/* Forever-no list */}
-      <section className="bg-ivory px-4 py-14">
-        <div className="container-content">
+      <section className="editorial-section editorial-section--tint px-4">
+        <div className="site-container">
           <FadeIn>
-            <header className="mb-10 text-center">
+            <header className="editorial-section-head">
               <p className="label-eyebrow mb-2.5">WHAT YOU&apos;LL NEVER FIND</p>
               <h2 className="h-section">Our forever-no list</h2>
               <p className="mx-auto mt-2 max-w-[500px] text-center text-sm text-muted">
@@ -142,12 +138,9 @@ export default function IngredientsPage() {
             </header>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <ul className="mx-auto grid max-w-[700px] grid-cols-2 gap-3 sm:grid-cols-3">
+            <ul className="never-grid">
               {NEVER_LIST.map((nope) => (
-                <li
-                  key={nope}
-                  className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-3 text-xs font-semibold text-muted transition hover:border-terra/30 hover:bg-terraPale/30"
-                >
+                <li key={nope} className="never-item">
                   <XCircle size={14} className="shrink-0 text-terra" />
                   {nope}
                 </li>
@@ -158,7 +151,7 @@ export default function IngredientsPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-forest px-4 py-14 text-center">
+      <section className="editorial-cta">
         <FadeIn>
           <h2 className="mb-3 font-serif text-[clamp(1.5rem,2.5vw,2rem)] font-normal text-white">
             Find a product built around these
