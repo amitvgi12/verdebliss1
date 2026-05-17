@@ -44,7 +44,7 @@ export default function Nav() {
             href="/"
             aria-label="VerdeBliss home"
             onClick={closeMenus}
-            className="flex flex-shrink-0 items-center"
+            className="flex flex-shrink-0 items-center pt-px"
           >
             <Image
               src="/images/logo.webp"

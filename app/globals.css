@@ -2095,8 +2095,13 @@ video {
 }
 
 .editorial-cta {
+  position: relative;
+  margin-bottom: clamp(18px, 2vw, 24px);
   padding: clamp(42px, 5vw, 60px) 16px;
-  background: var(--color-forest);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 72%),
+    var(--color-forest);
+  border-bottom: 1px solid rgba(238, 226, 210, 0.14);
   color: white;
   text-align: center;
 }
