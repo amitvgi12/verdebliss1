@@ -99,6 +99,21 @@ async function postCheckout<T = CheckoutResult>(url: string, payload: unknown): 
   return data
 }
 
+function userFacingCheckoutError(error: unknown): string {
+  const message = error instanceof Error ? error.message : ''
+  const lower = message.toLowerCase()
+
+  if (
+    lower.includes('commerce persistence') ||
+    lower.includes('supabase_service_role_key') ||
+    lower.includes('online payment is not enabled yet')
+  ) {
+    return 'Order placement is temporarily unavailable while checkout is being configured. Please contact hello@verdebliss.com for help.'
+  }
+
+  return message || 'Checkout request failed. Please try again.'
+}
+
 export default function Checkout() {
   const router = useRouter()
   const razorReady = useRazorpayScript()
@@ -290,9 +305,7 @@ export default function Checkout() {
       console.error('[Checkout] Could not create Razorpay order:', err)
       setLoading(false)
       setPaymentAction(null)
-      setCheckoutError(
-        err instanceof Error ? err.message : 'Could not start payment. Please try again.'
-      )
+      setCheckoutError(userFacingCheckoutError(err))
     }
   }
 
@@ -314,11 +327,7 @@ export default function Checkout() {
       console.error('[Checkout] COD order failed:', err)
       setLoading(false)
       setPaymentAction(null)
-      setCheckoutError(
-        err instanceof Error
-          ? err.message
-          : 'Could not place Cash on Delivery order. Please try again.'
-      )
+      setCheckoutError(userFacingCheckoutError(err))
     }
   }
 
@@ -354,7 +363,7 @@ export default function Checkout() {
           <ArrowLeft size={13} /> Back to Shopping
         </button>
 
-        <h1 className="mb-8 font-serif text-[clamp(24px,4vw,36px)] font-normal text-text">
+        <h1 className="checkout-title font-serif text-[clamp(24px,4vw,36px)] font-normal text-text">
           Checkout
         </h1>
 
@@ -380,9 +389,6 @@ export default function Checkout() {
               {step === 1 && (
                 <ReviewStep
                   form={form}
-                  items={items}
-                  total={total}
-                  shipping={shipping}
                   grandTotal={grandTotal}
                   codAvailable={codAvailable}
                   codMaxTotal={COD_MAX_TOTAL}

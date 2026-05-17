@@ -61,9 +61,16 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('[checkout/cod]', error)
+    const message = error instanceof Error ? error.message : 'Unable to place COD order'
+    const isPersistenceConfig = message.toLowerCase().includes('commerce persistence')
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unable to place COD order' },
-      { status: 400 }
+      {
+        error: isPersistenceConfig
+          ? 'Cash on Delivery is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+          : message,
+        code: isPersistenceConfig ? 'COMMERCE_PERSISTENCE_MISSING' : 'CHECKOUT_COD_FAILED',
+      },
+      { status: isPersistenceConfig ? 503 : 400 }
     )
   }
 }

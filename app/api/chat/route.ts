@@ -274,6 +274,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid messages array' }, { status: 400 })
   }
 
+  const needsOrderContext = conversationNeedsOrderContext(messages)
+  const hasAuthorization = Boolean(request.headers.get('authorization'))
+
+  if (needsOrderContext && hasAuthorization && !hasSupabaseAdminEnv()) {
+    return NextResponse.json({
+      content: [
+        {
+          type: 'text',
+          text: "I can't access live order records right now, so I don't want to guess at your order status. Please check My Account or contact hello@verdebliss.com for help with the latest update.",
+        },
+      ],
+    })
+  }
+
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     console.error('[chat] GEMINI_API_KEY not set')
@@ -283,7 +297,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const ctx = await buildTrustedContext(request, conversationNeedsOrderContext(messages))
+  const ctx = await buildTrustedContext(request, needsOrderContext)
   const products = await getProductsServer()
   const prompt = buildSystemPrompt(ctx, products)
 

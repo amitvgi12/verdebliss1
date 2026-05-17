@@ -11,6 +11,10 @@ import type { ReactNode } from 'react'
 
 export const metadata = {
   metadataBase: new URL('https://www.verdebliss.com'),
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    shortcut: ['/favicon.svg'],
+  },
   title: {
     default: 'VerdeBliss — Certified Organic Skincare India',
     template: '%s | VerdeBliss',

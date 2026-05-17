@@ -68,9 +68,6 @@ export default function ProductsClient({
           <div className="catalog-hero__card">
             <span>FREE SHIPPING</span>
             <strong>On all orders above ₹499</strong>
-            <p>
-              Certified organic · Cruelty-free · USDA &amp; Ecocert verified · 14-day easy returns
-            </p>
           </div>
         </div>
       </div>
@@ -184,10 +181,8 @@ function FilterGroup({
   activeBorder,
 }: FilterGroupProps) {
   return (
-    <div className="mb-6 last:mb-0">
-      <div className="mb-3 border-b border-gold/80 pb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-gold opacity-80">
-        {label}
-      </div>
+    <div className="catalog-filter-group last:mb-0">
+      <div className="catalog-filter-label uppercase">{label}</div>
       {options.map((opt) => {
         const active = value === opt
         return (
@@ -195,7 +190,7 @@ function FilterGroup({
             key={opt}
             type="button"
             onClick={() => onChange(opt)}
-            className={`block w-full cursor-pointer rounded-r-md border-l-2 px-2.5 py-1.5 text-left text-[13px] transition ${
+            className={`catalog-filter-option block w-full cursor-pointer border-l-2 text-left transition ${
               active
                 ? `${activeBorder} ${activeBg} ${activeColor} font-semibold`
                 : 'border-l-transparent font-normal text-muted hover:bg-bg'

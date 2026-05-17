@@ -19,8 +19,8 @@ export default function AddressStep({ form, errors, onChange, onContinue }: Addr
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
     >
-      <div className="mb-4 rounded-[20px] border border-border bg-card p-7">
-        <h2 className="mb-5 font-serif text-xl font-normal text-text">Delivery Address</h2>
+      <div className="checkout-panel checkout-panel--form mb-4">
+        <h2 className="mb-5 font-serif text-[1.35rem] font-normal text-text">Delivery Address</h2>
         <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
           <Field id="checkout-name" label="Full Name" required error={errors.name} span>
             <input
@@ -117,7 +117,7 @@ export default function AddressStep({ form, errors, onChange, onContinue }: Addr
           </Field>
         </div>
       </div>
-      <button onClick={onContinue} className="btn-primary w-full px-6 py-3.5 text-[15px]">
+      <button onClick={onContinue} className="btn-primary checkout-primary-action w-full px-6">
         Continue to Review →
       </button>
     </motion.div>
