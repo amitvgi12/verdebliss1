@@ -755,6 +755,18 @@ video {
   border: 1px solid rgba(45, 74, 50, 0.08);
 }
 
+.checkout-address-card__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: start;
+}
+
+.checkout-address-card__line {
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+
 .checkout-review-items {
   margin-top: clamp(16px, 2vw, 20px);
   overflow: hidden;
@@ -892,13 +904,9 @@ video {
   background: rgba(255, 247, 242, 1);
 }
 
-.checkout-payment-note {
-  border: 1px solid rgba(45, 74, 50, 0.08);
-}
-
 .checkout-payment-stack {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .checkout-summary-list {
@@ -1090,6 +1098,11 @@ video {
   .checkout-review-item__remove {
     grid-column: 3;
     grid-row: 1 / span 3;
+  }
+
+  .checkout-address-card__layout {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 }
 

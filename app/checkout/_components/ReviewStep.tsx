@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { ShieldCheck, AlertCircle, Loader2, Banknote, Minus, Plus, Trash2 } from 'lucide-react'
+import { AlertCircle, Loader2, Banknote, Minus, Plus, Trash2 } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
 import type { CartItem } from '@/types'
 import type { CheckoutForm, CheckoutStatus, PaymentAction } from '../checkout-types'
@@ -54,15 +54,15 @@ export default function ReviewStep({
 
         {/* Address summary */}
         <div className="checkout-address-card rounded-2xl bg-sagePale px-4 py-4">
-          <div className="flex items-start justify-between">
+          <div className="checkout-address-card__layout">
             <div className="min-w-0 flex-1">
               <div className="mb-1 text-xs font-bold tracking-wider text-forest">DELIVERING TO</div>
               <div className="text-[13px] font-medium text-text">{form.name}</div>
-              <div className="text-xs text-muted">
+              <div className="checkout-address-card__line text-xs text-muted">
                 {form.line1}
                 {form.line2 ? `, ${form.line2}` : ''}, {form.city}, {form.state} - {form.pincode}
               </div>
-              <div className="text-xs text-muted">
+              <div className="checkout-address-card__line text-xs text-muted">
                 {form.phone} · {form.email}
               </div>
             </div>
@@ -141,12 +141,6 @@ export default function ReviewStep({
             })}
           </ul>
         </div>
-      </div>
-
-      {/* Payment note */}
-      <div className="checkout-payment-note mb-4 flex items-center gap-2 rounded-2xl bg-sagePale px-4 py-3 text-xs text-forest">
-        <ShieldCheck size={14} />
-        Pay online with Razorpay, including UPI when enabled for your merchant account.
       </div>
 
       {checkoutError && (
