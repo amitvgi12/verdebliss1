@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
 
@@ -80,24 +80,18 @@ export default function FAQClient({ items }: { items: FAQItem[] }) {
                   <Plus size={20} color={C.muted} />
                 </motion.span>
               </button>
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    id={`faq-${i}`}
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22 }}
-                    style={{ overflow: 'hidden' }}
-                  >
-                    <p
-                      style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, padding: '0 0 24px' }}
-                    >
-                      {item.a}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <motion.div
+                id={`faq-${i}`}
+                hidden={!isOpen}
+                initial={false}
+                animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+                transition={{ duration: 0.22 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, padding: '0 0 24px' }}>
+                  {item.a}
+                </p>
+              </motion.div>
             </div>
           )
         })}
