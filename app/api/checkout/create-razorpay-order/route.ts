@@ -9,6 +9,7 @@ import {
 } from '@/lib/commerce'
 import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
 import { requireSameOriginRequest } from '@/lib/csrf'
+import { verifyTurnstileFromRequest } from '@/lib/turnstile'
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,16 @@ export async function POST(request: Request) {
         { status: 429 }
       )
     }
+
     const body = await request.json()
+    const turnstile = await verifyTurnstileFromRequest(request, body)
+    if (!turnstile.ok) {
+      return NextResponse.json(
+        { error: 'Verification failed', code: turnstile.reason },
+        { status: 400 }
+      )
+    }
+
     const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
     const address = validateAddress(body?.address)
     const { items, totals } = await normalizeCart(body?.items)

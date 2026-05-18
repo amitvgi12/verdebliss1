@@ -188,6 +188,8 @@ export default function Checkout() {
   const [errors, setErrors] = useState<CheckoutErrors>({})
   const [checkoutError, setCheckoutError] = useState('')
   const [codVerificationRequired, setCodVerificationRequired] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const requiresTurnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
   const [form, setForm] = useState<CheckoutForm>(() =>
     buildBaseCheckoutForm(profile?.full_name, user?.email)
@@ -270,7 +272,16 @@ export default function Checkout() {
     return {
       items: cartPayload(items),
       address: form,
+      turnstileToken,
     }
+  }
+
+  function requireCheckoutVerification() {
+    if (requiresTurnstile && !turnstileToken) {
+      setCheckoutError('Please complete the verification check before placing your order.')
+      return false
+    }
+    return true
   }
 
   /* ── Validate address step ───────────────────────────────────────── */
@@ -293,6 +304,8 @@ export default function Checkout() {
 
   /* ── Launch Razorpay ─────────────────────────────────────────────── */
   async function launchRazorpay() {
+    if (!requireCheckoutVerification()) return
+
     const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
     if (!publicKey) {
       setCheckoutError(
@@ -411,6 +424,8 @@ export default function Checkout() {
   }
 
   async function placeCodOrder() {
+    if (!requireCheckoutVerification()) return
+
     if (grandTotal > COD_MAX_TOTAL) {
       setCheckoutError(
         `Cash on Delivery is available only up to ₹${COD_MAX_TOTAL.toLocaleString()}.`
@@ -504,6 +519,9 @@ export default function Checkout() {
                   onIncreaseQty={(id) => updateQty(id, 1)}
                   onDecreaseQty={(id) => updateQty(id, -1)}
                   onRemoveItem={removeItem}
+                  turnstileToken={turnstileToken}
+                  requiresTurnstile={requiresTurnstile}
+                  onTurnstileToken={setTurnstileToken}
                   onLaunchRazorpay={launchRazorpay}
                   onPlaceCod={placeCodOrder}
                 />

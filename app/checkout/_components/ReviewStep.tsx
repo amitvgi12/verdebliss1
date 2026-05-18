@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion'
 import { AlertCircle, Loader2, Banknote, Minus, Plus, Trash2 } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
+import TurnstileWidget from '@/components/ui/TurnstileWidget'
 import type { CartItem } from '@/types'
 import type { CheckoutForm, CheckoutStatus, PaymentAction } from '../checkout-types'
 
@@ -16,11 +17,14 @@ interface ReviewStepProps {
   razorReady: boolean
   status: CheckoutStatus
   checkoutError: string
+  turnstileToken: string | null
+  requiresTurnstile: boolean
   onEditAddress: () => void
   onContinueShopping: () => void
   onIncreaseQty: (id: string) => void
   onDecreaseQty: (id: string) => void
   onRemoveItem: (id: string) => void
+  onTurnstileToken: (token: string | null) => void
   onLaunchRazorpay: () => void
   onPlaceCod: () => void
 }
@@ -36,11 +40,14 @@ export default function ReviewStep({
   razorReady,
   status,
   checkoutError,
+  turnstileToken,
+  requiresTurnstile,
   onEditAddress,
   onContinueShopping,
   onIncreaseQty,
   onDecreaseQty,
   onRemoveItem,
+  onTurnstileToken,
   onLaunchRazorpay,
   onPlaceCod,
 }: ReviewStepProps) {
@@ -159,6 +166,25 @@ export default function ReviewStep({
           Continue Shopping
         </button>
       </div>
+
+      {requiresTurnstile && (
+        <div className="checkout-turnstile-card">
+          <div>
+            <strong>Verify before checkout</strong>
+            <span>
+              Helps us block fake order floods before they reach payment or Cash on Delivery.
+            </span>
+          </div>
+          <TurnstileWidget
+            onToken={onTurnstileToken}
+            onExpire={() => onTurnstileToken(null)}
+            className="checkout-turnstile-widget"
+          />
+          <span className="checkout-turnstile-status">
+            {turnstileToken ? 'Verified' : 'Verification required'}
+          </span>
+        </div>
+      )}
 
       <div className="checkout-payment-stack">
         <button
