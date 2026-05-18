@@ -8,6 +8,20 @@ import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import { StructuredData } from '@/lib/structured-data'
 import './globals.css'
 import type { ReactNode } from 'react'
+import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
+
+const sans = DM_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+})
+
+const serif = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+  variable: '--font-serif',
+})
 
 export const metadata = {
   metadataBase: new URL('https://www.verdebliss.com'),
@@ -97,7 +111,7 @@ const websiteLd = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en" className={`${sans.variable} ${serif.variable}`} data-scroll-behavior="smooth">
       <head>
         {/* Preconnect / DNS-prefetch for the payment iframe so first-checkout RTT is minimal */}
         <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="" />

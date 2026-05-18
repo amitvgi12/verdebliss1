@@ -54,9 +54,9 @@ export function proxy(request: NextRequest) {
     // Tailwind v4 + Next.js inject style tags. 'unsafe-inline' here is widely
     // accepted because style-based exfiltration is much weaker than script
     // execution. Hashes/nonces for styles are possible but break Tailwind's JIT.
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' data: https://fonts.gstatic.com",
+    "style-src 'self' 'unsafe-inline'",
+    "style-src-elem 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
     "img-src 'self' data: blob: https://*.supabase.co",
     "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io",
     'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
