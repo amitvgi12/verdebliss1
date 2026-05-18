@@ -83,6 +83,7 @@ npm run build            PASS  (15 routes, middleware 114 kB)
   `app/loading.tsx` (streaming skeleton)
 - **`.env.example`** — fully documented including `NEXT_PUBLIC_TURNSTILE_SITE_KEY`,
   `TURNSTILE_SECRET_KEY`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `CF_ORIGIN_SECRET`
+- **Commerce-disclosure plumbing** — shared pre-launch business identity data now powers the footer and Organization JSON-LD, and PDPs expose product/seller details plus explicit inclusive-tax copy. Placeholder `DEMO` values are documented as a launch blocker.
 - **`useIsMobile` hook** — SSR-safe `useSyncExternalStore` + `matchMedia`,
   replaces all `useWindowWidth` usage. The legacy hook is deleted.
 - **Cloudflare WAF / origin gate**:

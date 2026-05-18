@@ -1,3 +1,5 @@
+import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
+
 /**
  * productCompliance.js
  * Per-product compliance data:
@@ -15,7 +17,16 @@ export interface ProductCompliance {
   patchTest: boolean
   agingNote: string | null
   freeFrom: string[]
+  countryOfOrigin: string
+  manufacturer: string
+  packer: string
+  importer: string | null
+  cdSCoImportLicence: string | null
 }
+
+const LOCAL_ENTITY_DETAILS = `${BUSINESS_COMPLIANCE.legalName}, ${formatPostalAddress()}`
+const LOCAL_MANUFACTURER = LOCAL_ENTITY_DETAILS
+const LOCAL_PACKER = LOCAL_ENTITY_DETAILS
 
 export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
   /* Bakuchiol Renewal Serum */
@@ -27,6 +38,11 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     patchTest: true,
     agingNote: null,
     freeFrom: ['Parabens', 'Sulphates', 'Synthetic Fragrance', 'Mineral Oil', 'Phthalates'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
   /* Rose Hip Glow Moisturiser */
   2: {
@@ -37,6 +53,11 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     patchTest: true,
     agingNote: null,
     freeFrom: ['Parabens', 'Sulphates', 'Synthetic Fragrance', 'Alcohol Denat'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
   /* Green Tea Clarity Toner */
   3: {
@@ -48,6 +69,11 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     agingNote:
       'Contains Salicylic Acid (BHA). Recommended for ages 12+. Consult a dermatologist before use during pregnancy.',
     freeFrom: ['Alcohol Denat', 'Parabens', 'Sulphates'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
   /* Turmeric Brightening Cleanser */
   4: {
@@ -58,6 +84,11 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     patchTest: true,
     agingNote: null,
     freeFrom: ['SLS', 'SLES', 'Parabens', 'Synthetic Fragrance'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
   /* Botanical SPF 50 Shield */
   5: {
@@ -69,6 +100,11 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     agingNote:
       'Suitable for all ages. Reapply every 2 hours when outdoors. For infants under 6 months, consult a paediatrician.',
     freeFrom: ['Oxybenzone', 'Octinoxate', 'Avobenzone', 'Parabens', 'Synthetic Fragrance'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
   /* Wild Berry Lip Elixir */
   6: {
@@ -79,6 +115,11 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     patchTest: false,
     agingNote: null,
     freeFrom: ['Parabens', 'Synthetic Fragrance', 'Mineral Oil'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
   /* Niacinamide Pore Serum */
   7: {
@@ -89,6 +130,11 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     patchTest: true,
     agingNote: null,
     freeFrom: ['Parabens', 'Sulphates', 'Synthetic Fragrance', 'Alcohol Denat', 'Mineral Oil'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
   /* Shea Butter Night Cream */
   8: {
@@ -99,5 +145,10 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     patchTest: true,
     agingNote: null,
     freeFrom: ['Parabens', 'Synthetic Fragrance', 'Mineral Oil', 'Alcohol Denat'],
+    countryOfOrigin: 'India',
+    manufacturer: LOCAL_MANUFACTURER,
+    packer: LOCAL_PACKER,
+    importer: null,
+    cdSCoImportLicence: null,
   },
 }

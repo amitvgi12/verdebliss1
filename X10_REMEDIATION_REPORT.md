@@ -32,6 +32,7 @@ This repo has been upgraded from the fresh audit findings with a focus on produc
   - `/shipping-policy`
 - Fixed `robots.txt` so account, checkout, API, and refund routes remain excluded without a broad Googlebot override.
 - Replaced always-now sitemap timestamps with stable fallback timestamps.
+- Added shared commerce-disclosure plumbing for footer identity data, Organization JSON-LD identifiers, and PDP seller/origin details. Current registrations are clearly marked pre-launch placeholders pending verified legal values.
 
 ### Accessibility
 

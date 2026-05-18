@@ -53,6 +53,7 @@ Supabase Postgres
 - Newsletter copy no longer promises points that the backend does not award.
 - UI containment helpers fix the edge-to-edge/misaligned layouts visible in the audit screenshots.
 - Sentry SDK imports were removed from app modules because they caused Next build-trace instability in this repo; structured log signatures remain for log-drain alerting.
+- Footer and PDP commerce disclosures now render from shared pre-launch compliance data.
 
 ## Required environment variables
 
@@ -151,6 +152,28 @@ project and requires these GitHub repository secrets: `SUPABASE_ACCESS_TOKEN`,
 - Do not restore hardcoded review counts; use approved review aggregates only.
 - Do not promise loyalty points unless a `loyalty_ledger` event is actually created.
 - Keep product catalogue DB-first; `constants/products.ts` is only fallback data.
+- Replace every `DEMO` commerce disclosure before accepting live orders. See `constants/businessCompliance.ts` and `constants/productCompliance.ts`.
+
+## Pre-launch compliance placeholders
+
+The app currently ships with deliberately fake disclosure values so layout, SEO, and PDP presentation can be tested before launch. They are not valid legal registrations.
+
+Update these files before accepting real consumer orders:
+
+- `constants/businessCompliance.ts`
+  - legal name
+  - `CIN`
+  - `GSTIN`
+  - full registered-office address
+  - principal place of business
+  - helpline and support hours
+  - grievance-officer name, designation, and email
+- `constants/productCompliance.ts`
+  - country of origin for each product
+  - manufacturer, packer, importer
+  - CDSCO import-licence number only where an imported cosmetic requires it
+
+After replacing those values, verify the footer, PDP “Product & Seller Details” accordion, Organization JSON-LD, and policy links in production.
 
 ### Legacy Sentry config cleanup
 

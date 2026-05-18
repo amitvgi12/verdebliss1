@@ -109,6 +109,7 @@ export default function ProductCard({ product: p }: { product: Product }) {
               </span>
             )}
           </div>
+          <span className="vb-product-card__tax-note">Inclusive of all taxes</span>
         </div>
 
         {cartItem ? (

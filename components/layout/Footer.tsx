@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import LegalLinks from '@/components/layout/LegalLinks'
 import SocialButtons from '@/components/layout/SocialButtons'
+import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
 
 const SHOP_LINKS: Array<[string, string]> = [
   ['Serums', '/products?cat=Serum'],
@@ -75,10 +76,10 @@ export default function Footer() {
             Where nature becomes luxury. Botanical skincare rituals for your most radiant skin.
           </p>
           <a
-            href="mailto:hello@verdebliss.com"
+            href={`mailto:${BUSINESS_COMPLIANCE.supportEmail}`}
             className="mb-3 block text-[11px] font-semibold text-sage hover:underline"
           >
-            📩 hello@verdebliss.com
+            📩 {BUSINESS_COMPLIANCE.supportEmail}
           </a>
           <SocialButtons />
         </div>
@@ -90,8 +91,38 @@ export default function Footer() {
         </div>
       </div>
 
+      <div className="site-container site-footer__compliance">
+        <p>
+          <strong>{BUSINESS_COMPLIANCE.legalName}</strong> CIN: {BUSINESS_COMPLIANCE.cin} | GSTIN:{' '}
+          {BUSINESS_COMPLIANCE.gstin}
+        </p>
+        <p>Registered office: {formatPostalAddress()}</p>
+        <p>Principal place of business: {BUSINESS_COMPLIANCE.principalPlaceOfBusiness}</p>
+        <p>
+          Helpline:{' '}
+          <a href={`tel:${BUSINESS_COMPLIANCE.helpline.href}`}>
+            {BUSINESS_COMPLIANCE.helpline.display}
+          </a>{' '}
+          ({BUSINESS_COMPLIANCE.helpline.hours})
+        </p>
+        <p>
+          Grievance Officer: <strong>{BUSINESS_COMPLIANCE.grievanceOfficer.name}</strong>,{' '}
+          {BUSINESS_COMPLIANCE.grievanceOfficer.designation} -{' '}
+          <a href={`mailto:${BUSINESS_COMPLIANCE.grievanceOfficer.email}`}>
+            {BUSINESS_COMPLIANCE.grievanceOfficer.email}
+          </a>
+          . Grievances acknowledged within{' '}
+          {BUSINESS_COMPLIANCE.grievanceOfficer.acknowledgementWindow} and resolved within{' '}
+          {BUSINESS_COMPLIANCE.grievanceOfficer.resolutionWindow}.
+        </p>
+        <p>
+          Returns, refunds, and cancellation timelines:{' '}
+          <Link href="/returns-refunds">view policy</Link>.
+        </p>
+      </div>
+
       <div className="site-container site-footer__meta mt-6 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-4 text-[11px]">
-        <span>© 2026 VerdeBliss Cosmetics Private Limited.</span>
+        <span>© 2026 {BUSINESS_COMPLIANCE.legalName}.</span>
         <LegalLinks />
       </div>
     </footer>

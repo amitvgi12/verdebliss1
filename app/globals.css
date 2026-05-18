@@ -528,6 +528,13 @@ video {
   gap: 5px;
 }
 
+.vb-product-card__tax-note {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-muted);
+  font-size: 0.68rem;
+}
+
 .vb-product-card__price {
   color: var(--color-text);
   font-family: var(--font-serif), Georgia, serif;
@@ -666,6 +673,20 @@ video {
   grid-template-columns: repeat(3, minmax(140px, 1fr));
   gap: clamp(24px, 4vw, 64px);
   align-items: start;
+}
+
+.site-footer__compliance {
+  margin-top: 24px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  padding-top: 16px;
+  color: rgb(255 255 255 / 70%);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.site-footer__compliance a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 @media (max-width: 900px) {
@@ -1881,6 +1902,28 @@ video {
 .ritual-bundle button:disabled {
   cursor: wait;
   opacity: 0.72;
+}
+
+.product-compliance-list {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 20px;
+  font-size: 12px;
+}
+
+.product-compliance-list div {
+  display: grid;
+  gap: 2px;
+}
+
+.product-compliance-list dt {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.product-compliance-list dd {
+  color: var(--color-muted);
+  line-height: 1.6;
 }
 
 .product-conversion__error {

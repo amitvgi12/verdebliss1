@@ -80,7 +80,12 @@ function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProductServer(id)
-  if (!p) return { title: 'Product Not Found' }
+  if (!p) {
+    return {
+      title: 'Product Not Found',
+      robots: { index: false, follow: false },
+    }
+  }
 
   const image = productImagePath(p)
   const canonical = absoluteUrl(productPath(p))

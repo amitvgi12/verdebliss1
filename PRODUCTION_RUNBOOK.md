@@ -10,6 +10,8 @@
 6. Run `supabase/schema.sql`
 7. Confirm Razorpay webhook secret and webhook URL
 8. Confirm `/api/version` returns current build metadata
+9. Replace pre-launch `DEMO` values in `constants/businessCompliance.ts`
+10. Verify per-product country-of-origin and manufacturer/packer/importer data in `constants/productCompliance.ts`
 
 ## Critical operational alerts
 
@@ -43,3 +45,7 @@ Reviews must be submitted through `/api/reviews`; direct browser inserts are not
 ## Claims governance
 
 Avoid publishing numeric certification, customer-count, dermatologist, or verified-review claims unless supporting evidence exists and is linked in an internal approval record. Until a `claim_evidence` table/admin workflow exists, keep copy conservative.
+
+## Commerce disclosure launch gate
+
+Before live orders are enabled, replace every placeholder in `constants/businessCompliance.ts` and verify every PDP row in `constants/productCompliance.ts`. The footer, Organization JSON-LD, and PDP “Product & Seller Details” accordion all consume those values directly.

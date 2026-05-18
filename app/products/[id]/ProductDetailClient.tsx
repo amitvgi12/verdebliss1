@@ -232,9 +232,10 @@ export default function ProductDetailClient({
     stockCount == null ? null : stockCount <= 0 ? 'out' : stockCount <= 5 ? 'low' : 'in'
   const amRoutine = buildRoutine(all, p, 'AM')
   const pmRoutine = buildRoutine(all, p, 'PM')
-  const featuredRoutine =
-    p.category === 'SPF' || p.category === 'Cleanser' ? amRoutine : pmRoutine
-  const featuredBundle = uniqueProducts(featuredRoutine.products).filter((product) => product.stock !== 0)
+  const featuredRoutine = p.category === 'SPF' || p.category === 'Cleanser' ? amRoutine : pmRoutine
+  const featuredBundle = uniqueProducts(featuredRoutine.products).filter(
+    (product) => product.stock !== 0
+  )
   const featuredBundleTotal = featuredBundle.reduce((sum, product) => sum + product.price, 0)
 
   const sectionPad = isMobile ? '20px 16px 48px' : '32px 24px 64px'
@@ -513,6 +514,9 @@ export default function ProductDetailClient({
                   {discount}% OFF
                 </span>
               </div>
+              <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>
+                MRP inclusive of all taxes
+              </div>
               <div
                 style={{
                   fontSize: 12,
@@ -751,7 +755,9 @@ export default function ProductDetailClient({
                     {checkingDelivery ? 'Checking...' : 'Check'}
                   </button>
                 </div>
-                {deliveryError && <small className="product-conversion__error">{deliveryError}</small>}
+                {deliveryError && (
+                  <small className="product-conversion__error">{deliveryError}</small>
+                )}
                 {deliveryResult && (
                   <div className="product-conversion__delivery-result" aria-live="polite">
                     <strong>
@@ -849,6 +855,38 @@ export default function ProductDetailClient({
                     </div>
                   )}
                 </div>
+              </Accordion>
+
+              <Accordion
+                id="commerce-disclosures"
+                label="Product & Seller Details"
+                open={openSection === 'commerce-disclosures'}
+                onToggle={() => toggleAcc('commerce-disclosures')}
+              >
+                <dl className="product-compliance-list">
+                  <div>
+                    <dt>Country of origin</dt>
+                    <dd>{compliance.countryOfOrigin}</dd>
+                  </div>
+                  <div>
+                    <dt>Manufacturer</dt>
+                    <dd>{compliance.manufacturer}</dd>
+                  </div>
+                  <div>
+                    <dt>Packer</dt>
+                    <dd>{compliance.packer}</dd>
+                  </div>
+                  <div>
+                    <dt>Importer</dt>
+                    <dd>{compliance.importer ?? 'Not applicable - manufactured in India'}</dd>
+                  </div>
+                  {compliance.cdSCoImportLicence && (
+                    <div>
+                      <dt>CDSCO import licence</dt>
+                      <dd>{compliance.cdSCoImportLicence}</dd>
+                    </div>
+                  )}
+                </dl>
               </Accordion>
 
               {/* 11.3 Allergen warnings */}
@@ -1162,7 +1200,8 @@ const ROUTINE_CATEGORIES: Record<RoutineKind, string[]> = {
 
 function uniqueProducts(products: Product[]) {
   return products.filter(
-    (product, index, source) => source.findIndex((candidate) => candidate.id === product.id) === index
+    (product, index, source) =>
+      source.findIndex((candidate) => candidate.id === product.id) === index
   )
 }
 
@@ -1183,8 +1222,7 @@ function pickRoutineProduct(products: Product[], current: Product, category: str
         overlapsSkinTypes(product.skin_types, current.skin_types)
     ) ??
     products.find(
-      (product) =>
-        product.id !== current.id && product.category === category && product.stock !== 0
+      (product) => product.id !== current.id && product.category === category && product.stock !== 0
     )
   )
 }

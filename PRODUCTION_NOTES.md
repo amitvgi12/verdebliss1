@@ -14,6 +14,7 @@ This repository includes the current audit-remediated architecture for the Verde
 - Product slug redirects and product JSON-LD through script tags.
 - Server-rendered first page of approved product reviews.
 - Semantic product cards using `article`, `Link`, and real buttons.
+- Shared commerce-disclosure source for footer, Organization JSON-LD, and PDP product/seller details.
 
 ## Required deployment environment variables
 
@@ -37,9 +38,11 @@ NEXT_PUBLIC_BUILD_TIME=
 3. Configure Razorpay webhook URL: `/api/webhooks/razorpay`.
 4. Deploy to Vercel with the environment variables above.
 5. Confirm `/api/version` returns the expected Git SHA after deployment.
+6. Replace all `DEMO` compliance values in `constants/businessCompliance.ts` and all per-product origin/manufacturer/importer declarations in `constants/productCompliance.ts`.
 
 ## Known follow-up items
 
 - `tsconfig.json` still uses `strict: false` to preserve the current UI migration without breaking production build. The code no longer uses `@ts-nocheck`; move to strict mode component-by-component.
 - Tailwind is installed, but much of the legacy UI still uses inline style objects. Migrate visual primitives gradually.
 - Admin dashboards for products, orders, refunds, review moderation, shipment tracking, and support tickets are not included in this customer storefront package.
+- Pre-launch compliance values are placeholders only; do not accept live orders until CIN, GSTIN, addresses, helpline, grievance officer, and PDP seller declarations are replaced with verified legal values.

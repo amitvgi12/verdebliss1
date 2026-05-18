@@ -9,6 +9,7 @@ import { StructuredData } from '@/lib/structured-data'
 import './globals.css'
 import type { ReactNode } from 'react'
 import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
 const sans = DM_Sans({
   subsets: ['latin'],
@@ -69,24 +70,34 @@ const organisationLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'VerdeBliss',
-  legalName: 'VerdeBliss Cosmetics Private Limited',
+  legalName: BUSINESS_COMPLIANCE.legalName,
   url: 'https://www.verdebliss.com',
   logo: 'https://www.verdebliss.com/images/logo.webp',
   description: 'Certified organic skincare brand from India.',
   foundingDate: '2019',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Kharadi',
-    addressLocality: 'Pune',
-    addressRegion: 'Maharashtra',
-    postalCode: '411014',
-    addressCountry: 'IN',
+    ...BUSINESS_COMPLIANCE.registeredOffice,
   },
-  contactPoint: {
-    '@type': 'ContactPoint',
-    email: 'hello@verdebliss.com',
-    contactType: 'customer service',
-  },
+  identifier: [
+    { '@type': 'PropertyValue', name: 'CIN', value: BUSINESS_COMPLIANCE.cin },
+    { '@type': 'PropertyValue', name: 'GSTIN', value: BUSINESS_COMPLIANCE.gstin },
+  ],
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      email: BUSINESS_COMPLIANCE.supportEmail,
+      telephone: BUSINESS_COMPLIANCE.helpline.display,
+      contactType: 'customer service',
+      availableLanguage: ['en'],
+      hoursAvailable: BUSINESS_COMPLIANCE.helpline.hours,
+    },
+    {
+      '@type': 'ContactPoint',
+      email: BUSINESS_COMPLIANCE.grievanceOfficer.email,
+      contactType: 'grievance officer',
+    },
+  ],
   hasMerchantReturnPolicy: {
     '@type': 'MerchantReturnPolicy',
     applicableCountry: 'IN',
