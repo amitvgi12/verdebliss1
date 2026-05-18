@@ -14,16 +14,16 @@ export const useWishlistStore = create<WishlistState>()(
         if (userId) {
           if (inList)
             await supabase
-              .from('wishlists')
+              .from('wishlist')
               .delete()
               .eq('user_id', userId)
               .eq('product_id', productId)
-          else await supabase.from('wishlists').insert({ user_id: userId, product_id: productId })
+          else await supabase.from('wishlist').insert({ user_id: userId, product_id: productId })
         }
       },
       load: async (userId) => {
         if (!userId) return
-        const { data } = await supabase.from('wishlists').select('product_id').eq('user_id', userId)
+        const { data } = await supabase.from('wishlist').select('product_id').eq('user_id', userId)
         if (data) set({ ids: data.map((x) => String(x.product_id)) })
       },
       has: (id) => get().ids.includes(id),
