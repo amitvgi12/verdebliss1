@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import pkg from '@/package.json'
+import { getEnvironmentCapabilities } from '@/lib/runtime-env'
 
 export async function GET() {
   return NextResponse.json({
@@ -9,5 +10,6 @@ export async function GET() {
     environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'development',
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
     schemaVersion: '2026-05-audit-remediated-v2',
+    capabilities: getEnvironmentCapabilities(),
   })
 }

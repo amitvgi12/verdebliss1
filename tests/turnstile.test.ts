@@ -35,6 +35,8 @@ describe('startup environment validation', () => {
 
   it('reports both required Turnstile variables when production config is absent', () => {
     vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co')
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon')
     vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '')
     vi.stubEnv('TURNSTILE_SECRET_KEY', '')
 

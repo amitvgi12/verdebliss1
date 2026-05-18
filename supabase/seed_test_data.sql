@@ -1,13 +1,13 @@
 -- ═══════════════════════════════════════════════════════════════════════
 --  VerdeBliss — Idempotent Test Data Seed Script
---  Source: uploaded product screenshot + current audit-fixed schema
+--  Source: current app catalogue + current audit-fixed schema
 --
 --  Run order:
 --    1. Run supabase/schema.sql first.
 --    2. Run this file in Supabase Dashboard → SQL Editor.
 --
 --  This script is safe to re-run. It refreshes only deterministic test data:
---    - the 8 VerdeBliss catalogue products from the screenshot
+--    - the 8 current VerdeBliss catalogue products
 --    - 3 test customers / profiles
 --    - test orders, order_items, payment_events, loyalty_ledger
 --    - wishlist, reviews, addresses, contact/newsletter consent test rows
@@ -40,7 +40,7 @@ create table if not exists public.products (
   emoji         text,
   bg_color      text default '#EBF0E9',
   image_url     text,
-  rating        numeric(3,2) default 4.5 check (rating between 0 and 5),
+  rating        numeric(3,2) check (rating between 0 and 5),
   review_count  int default 0 check (review_count >= 0),
   stock         int default 100 check (stock >= 0),
   active        boolean default true,
@@ -58,7 +58,8 @@ alter table public.products add column if not exists ingredient text;
 alter table public.products add column if not exists emoji text;
 alter table public.products add column if not exists bg_color text default '#EBF0E9';
 alter table public.products add column if not exists image_url text;
-alter table public.products add column if not exists rating numeric(3,2) default 4.5;
+alter table public.products add column if not exists rating numeric(3,2);
+alter table public.products alter column rating drop default;
 alter table public.products add column if not exists review_count int default 0;
 alter table public.products add column if not exists stock int default 100;
 alter table public.products add column if not exists active boolean default true;
@@ -97,7 +98,7 @@ begin
         'Plant-based retinol alternative for visible cell renewal without irritation.',
         250.00::numeric, 'Serum',
         array['Dry','Combination']::text[], array['Vegan','Organic Certified']::text[],
-        'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', 4.8::numeric, 124, 100
+        'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null::numeric, 0, 100
       ),
       (
         '2', '2d40699e-80f0-4779-b3d9-577c2f75fb84',
@@ -106,7 +107,7 @@ begin
         'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.',
         390.00::numeric, 'Moisturiser',
         array['Dry','Sensitive']::text[], array['Cruelty-Free','Vegan']::text[],
-        'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', 4.7::numeric, 89, 100
+        'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null::numeric, 0, 100
       ),
       (
         '3', '3d40699e-80f0-4779-b3d9-577c2f75fb84',
@@ -115,7 +116,7 @@ begin
         'Balance oil and refine pores with antioxidant-rich green tea extract.',
         450.00::numeric, 'Toner',
         array['Oily','Combination']::text[], array['Vegan','Organic Certified']::text[],
-        'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', 4.5::numeric, 67, 100
+        'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null::numeric, 0, 100
       ),
       (
         '4', '4d40699e-80f0-4779-b3d9-577c2f75fb84',
@@ -124,7 +125,7 @@ begin
         'Gentle foam cleanser with turmeric and neem for a luminous complexion.',
         250.00::numeric, 'Cleanser',
         array['All Types']::text[], array['Cruelty-Free','Organic Certified']::text[],
-        'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', 4.6::numeric, 103, 100
+        'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null::numeric, 0, 100
       ),
       (
         '5', '5d40699e-80f0-4779-b3d9-577c2f75fb84',
@@ -133,7 +134,7 @@ begin
         'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.',
         220.00::numeric, 'SPF',
         array['All Types']::text[], array['Vegan','Cruelty-Free']::text[],
-        'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', 4.9::numeric, 215, 100
+        'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null::numeric, 0, 100
       ),
       (
         '6', '6d40699e-80f0-4779-b3d9-577c2f75fb84',
@@ -142,7 +143,7 @@ begin
         'Nourishing lip treatment with acai berry and shea for pillowy softness.',
         490.00::numeric, 'Lip Care',
         array['All Types']::text[], array['Vegan','Organic Certified']::text[],
-        'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', 4.4::numeric, 58, 100
+        'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null::numeric, 0, 100
       ),
       (
         '7', '7d40699e-80f0-4779-b3d9-577c2f75fb84',
@@ -151,7 +152,7 @@ begin
         'Minimise pores and control sebum with a 10% niacinamide complex.',
         350.00::numeric, 'Serum',
         array['Oily','Combination']::text[], array['Vegan','Cruelty-Free']::text[],
-        'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', 4.7::numeric, 142, 100
+        'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null::numeric, 0, 100
       ),
       (
         '8', '8d40699e-80f0-4779-b3d9-577c2f75fb84',
@@ -160,7 +161,7 @@ begin
         'Intensive overnight repair with shea butter and vitamin E for morning glow.',
         550.00::numeric, 'Moisturiser',
         array['Dry','Sensitive']::text[], array['Organic Certified','Cruelty-Free']::text[],
-        'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', 4.8::numeric, 76, 100
+        'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null::numeric, 0, 100
       )
     ) as product_seed(
       id_text, id_uuid, slug, name, description, price, category,
@@ -263,6 +264,11 @@ declare
     "phone": "9123456789"
   }'::jsonb;
 begin
+  -- This seed is an admin maintenance script. The app correctly protects
+  -- points/tier/staff writes from customer sessions, so mark only this block
+  -- as service-role scoped for the deterministic loyalty recompute below.
+  perform set_config('request.jwt.claim.role', 'service_role', true);
+
   -- Reuse already-created auth users if these test emails exist.
   select id into uid_kavya from auth.users where lower(email) = 'kavya@verdebliss.test' limit 1;
   if uid_kavya is null then
@@ -318,17 +324,14 @@ begin
     );
   end if;
 
-  insert into public.profiles (id, full_name, skin_type, points, tier, is_staff, created_at, updated_at)
+  insert into public.profiles (id, full_name, skin_type, created_at, updated_at)
   values
-    (uid_kavya, 'Kavya Menon', 'Dry', 233, 'Gold Botanist', false, now() - interval '90 days', now()),
-    (uid_rahul, 'Rahul Sharma', 'Oily', 80, 'Green Leaf', false, now() - interval '30 days', now()),
-    (uid_priya, 'Priya Nair', 'Combination', 415, 'Green Leaf', false, now() - interval '180 days', now())
+    (uid_kavya, 'Kavya Menon', 'Dry', now() - interval '90 days', now()),
+    (uid_rahul, 'Rahul Sharma', 'Oily', now() - interval '30 days', now()),
+    (uid_priya, 'Priya Nair', 'Combination', now() - interval '180 days', now())
   on conflict (id) do update
     set full_name = excluded.full_name,
         skin_type = excluded.skin_type,
-        points = excluded.points,
-        tier = excluded.tier,
-        is_staff = excluded.is_staff,
         updated_at = now();
 
   -- Fetch actual product IDs, whether this project stores text IDs or uuid IDs.
@@ -370,7 +373,7 @@ begin
     (uid_rahul, 'Home', '12, MG Road', null, 'Bangalore', 'Karnataka', '560001', true, now() - interval '25 days'),
     (uid_priya, 'Home', 'C-302, Sea View Apartments', 'Bandra West', 'Mumbai', 'Maharashtra', '400050', true, now() - interval '160 days');
 
-  -- Orders use screenshot prices and the app shipping rule: free shipping at ₹499+; otherwise ₹79.
+  -- Orders use current catalogue prices and the app shipping rule: free shipping at ₹499+; otherwise ₹79.
   insert into public.orders (
     user_id, status, subtotal, shipping, total, points_earned, items, address,
     payment_id, payment_order_id, payment_status, created_at, updated_at
@@ -513,6 +516,43 @@ begin
     (pid_spf, uid_priya, 5, 'No heavy white cast', 'Comfortable mineral SPF for daily wear.', true, now() - interval '8 days', now() - interval '8 days'),
     (pid_cleanser, uid_priya, 4, 'Gentle cleanser', 'Good morning cleanser and does not feel harsh.', false, now() - interval '2 days', now() - interval '2 days');
 
+  -- Product-card review summaries must mirror real approved reviews, never
+  -- screenshot-era marketing numbers.
+  update public.products p
+     set rating = aggregates.rating,
+         review_count = aggregates.review_count,
+         updated_at = now()
+    from (
+      select
+        product_id::text as product_id,
+        round(avg(rating)::numeric, 2) as rating,
+        count(*)::int as review_count
+      from public.reviews
+      where approved = true
+      group by product_id
+    ) aggregates
+   where p.id::text = aggregates.product_id;
+
+  update public.products
+     set rating = null,
+         review_count = 0,
+         updated_at = now()
+   where id::text = any(array[
+     pid_bakuchiol,
+     pid_rosehip,
+     pid_toner,
+     pid_cleanser,
+     pid_spf,
+     pid_lip,
+     pid_niacinamide,
+     pid_nightcream
+   ])
+     and id::text not in (
+       select product_id::text
+       from public.reviews
+       where approved = true
+     );
+
   insert into public.refunds (user_id, order_id, reason, details, status, response, created_at, updated_at)
   select
     uid_priya,
@@ -542,7 +582,7 @@ begin
         revoked_at = null;
 
   -- Tier calibration bonus entries keep account-dashboard tests meaningful even
-  -- with the screenshot's low demo product prices.
+  -- with the current catalogue's low demo product prices.
   insert into public.loyalty_ledger (user_id, order_id, event_type, points_delta, reason, created_at) values
     (uid_kavya, null, 'seed_tier_calibration', 454, 'Seed bonus to exercise Gold Botanist UI state', now() - interval '44 days'),
     (uid_priya, null, 'seed_tier_calibration', 1450, 'Seed bonus to exercise Platinum Alchemist UI state', now() - interval '119 days');
@@ -559,6 +599,7 @@ begin
            when coalesce((select sum(points_delta)::int from public.loyalty_ledger l where l.user_id = p.id), 0) >= 500 then 'Gold Botanist'
            else 'Green Leaf'
          end,
+         is_staff = false,
          updated_at = now()
    where p.id = any(array[uid_kavya, uid_rahul, uid_priya]);
 
@@ -575,6 +616,8 @@ select
   price,
   category,
   slug,
+  rating,
+  review_count,
   active
 from public.products
 where name in (

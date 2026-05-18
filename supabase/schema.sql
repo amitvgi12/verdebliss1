@@ -28,7 +28,7 @@ create table if not exists public.products (
   emoji         text,
   bg_color      text default '#EBF0E9',
   image_url     text,
-  rating        numeric(3,2) default 4.5 check (rating between 0 and 5),
+  rating        numeric(3,2) check (rating between 0 and 5),
   review_count  int default 0 check (review_count >= 0),
   stock         int default 100 check (stock >= 0),
   active        boolean default true,
@@ -46,7 +46,8 @@ alter table public.products add column if not exists ingredient text;
 alter table public.products add column if not exists emoji text;
 alter table public.products add column if not exists bg_color text default '#EBF0E9';
 alter table public.products add column if not exists image_url text;
-alter table public.products add column if not exists rating numeric(3,2) default 4.5;
+alter table public.products add column if not exists rating numeric(3,2);
+alter table public.products alter column rating drop default;
 alter table public.products add column if not exists review_count int default 0;
 alter table public.products add column if not exists stock int default 100;
 alter table public.products add column if not exists active boolean default true;
@@ -882,14 +883,14 @@ begin
 
   if product_id_type in ('text', 'character varying') then
     insert into public.products (id, slug, name, description, price, category, skin_types, badges, ingredient, emoji, bg_color, image_url, rating, review_count, stock) values
-    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for visible cell renewal without irritation.', 250, 'Serum', array['Dry','Combination'], array['Vegan','Organic Certified'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', 4.8, 124, 100),
-    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 390, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-Free','Vegan'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', 4.7, 89, 100),
-    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Balance oil and refine pores with antioxidant-rich green tea extract.', 450, 'Toner', array['Oily','Combination'], array['Vegan','Organic Certified'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', 4.5, 67, 100),
-    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a luminous complexion.', 250, 'Cleanser', array['All Types'], array['Cruelty-Free','Organic Certified'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', 4.6, 103, 100),
-    ('5', 'botanical-spf-50-shield', 'Botanical SPF 50 Shield', 'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.', 220, 'SPF', array['All Types'], array['Vegan','Cruelty-Free'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', 4.9, 215, 100),
-    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with acai berry and shea for pillowy softness.', 490, 'Lip Care', array['All Types'], array['Vegan','Organic Certified'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', 4.4, 58, 100),
-    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Minimise pores and control sebum with a 10% niacinamide complex.', 350, 'Serum', array['Oily','Combination'], array['Vegan','Cruelty-Free'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', 4.7, 142, 100),
-    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Intensive overnight repair with shea butter and vitamin E for morning glow.', 550, 'Moisturiser', array['Dry','Sensitive'], array['Organic Certified','Cruelty-Free'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', 4.8, 76, 100)
+    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for visible cell renewal without irritation.', 250, 'Serum', array['Dry','Combination'], array['Vegan','Organic Certified'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null, 0, 100),
+    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 390, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-Free','Vegan'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null, 0, 100),
+    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Balance oil and refine pores with antioxidant-rich green tea extract.', 450, 'Toner', array['Oily','Combination'], array['Vegan','Organic Certified'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null, 0, 100),
+    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a luminous complexion.', 250, 'Cleanser', array['All Types'], array['Cruelty-Free','Organic Certified'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null, 0, 100),
+    ('5', 'botanical-spf-50-shield', 'Botanical SPF 50 Shield', 'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.', 220, 'SPF', array['All Types'], array['Vegan','Cruelty-Free'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null, 0, 100),
+    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with acai berry and shea for pillowy softness.', 490, 'Lip Care', array['All Types'], array['Vegan','Organic Certified'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null, 0, 100),
+    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Minimise pores and control sebum with a 10% niacinamide complex.', 350, 'Serum', array['Oily','Combination'], array['Vegan','Cruelty-Free'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null, 0, 100),
+    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Intensive overnight repair with shea butter and vitamin E for morning glow.', 550, 'Moisturiser', array['Dry','Sensitive'], array['Organic Certified','Cruelty-Free'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null, 0, 100)
     on conflict (id) do update set
       slug = excluded.slug,
       name = excluded.name,

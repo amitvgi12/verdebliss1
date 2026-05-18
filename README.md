@@ -81,6 +81,10 @@ NEXT_PUBLIC_APP_VERSION=
 CF_ORIGIN_SECRET=
 ```
 
+`/api/version` returns deployment metadata plus boolean capability flags for
+public Supabase, Supabase admin, Razorpay, Turnstile, and static-fallback mode.
+It confirms runtime readiness without exposing secret values.
+
 ## Local setup
 
 ```bash
