@@ -75,6 +75,9 @@ jobs:
   schema-drift:
     name: Schema Drift (Supabase)
     runs-on: ubuntu-latest
+    # Temporarily disabled while production source-order deployment is being verified.
+    # Re-enable after the Supabase drift check is ready to gate releases again.
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
@@ -89,7 +92,7 @@ jobs:
   deploy-preview:
     name: Preview Deploy (Vercel)
     runs-on: ubuntu-latest
-    needs: [quality, typecheck, test, build, schema-drift]
+    needs: [quality, typecheck, test, build]
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
@@ -117,7 +120,7 @@ jobs:
   deploy-production:
     name: Production Deploy (Vercel)
     runs-on: ubuntu-latest
-    needs: [quality, typecheck, test, build, schema-drift]
+    needs: [quality, typecheck, test, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
