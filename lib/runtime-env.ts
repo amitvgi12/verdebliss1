@@ -19,7 +19,10 @@ export function canUseStaticSupabaseFallback(): boolean {
 }
 
 export function hasPublicSupabaseEnv(): boolean {
-  return REQUIRED_PUBLIC_SUPABASE_ENV.every((key) => Boolean(process.env[key]))
+  // Client bundles only inline statically referenced NEXT_PUBLIC_* variables.
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
 }
 
 export function assertPublicSupabaseEnv(): void {
