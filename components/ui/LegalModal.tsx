@@ -29,30 +29,34 @@ const CONTENT: Record<LegalModalType, Doc> = {
     sections: [
       {
         heading: '1. Information We Collect',
-        body: 'We collect information you provide directly to us, including name, email address, shipping address, and skin type when you create an account or make a purchase. We also collect payment information, though we never store raw card details — all payment data is handled by Razorpay under its PCI-DSS compliance framework. We collect usage data including pages visited, products viewed, and interactions with our AI advisor (Verde), used solely to improve your experience.',
+        body: 'We collect information you provide directly to us, including name, email address, shipping address, and skin type when you create an account or make a purchase. We also collect payment information, though we never store raw card details — all payment data is handled by Razorpay under its PCI-DSS compliance framework. We collect usage data including pages visited, products viewed, and interactions with our AI advisor (Verde), including chat messages you send.',
       },
       {
         heading: '2. How We Use Your Information',
-        body: 'We use your information to: (a) process and fulfil orders; (b) send transactional emails regarding your purchases; (c) personalise product recommendations based on your skin type; (d) administer our loyalty points programme; (e) send marketing communications if you have opted in. We do not sell, rent, or share your personal data with third parties for their own marketing purposes.',
+        body: 'We use your information to: (a) process and fulfil orders; (b) send transactional emails regarding your purchases; (c) personalise product recommendations based on your skin type; (d) administer our loyalty points programme; (e) provide AI-assisted help when you use Verde; (f) send marketing communications if you have opted in. We do not sell, rent, or share your personal data with third parties for their own marketing purposes.',
       },
       {
-        heading: '3. Cookies',
+        heading: '3. AI Service Providers',
+        body: 'When you use Verde, your chat messages may be processed by our AI service provider to generate a response. For order-related questions, we may also send limited recent-order context needed to answer the request, such as order status, payment status, total, date, and item names.',
+      },
+      {
+        heading: '4. Cookies',
         body: 'We use essential cookies to maintain your session and cart. We use analytical cookies (first-party only) to understand how customers use our website. We do not use third-party advertising or tracking cookies.',
       },
       {
-        heading: '4. Data Retention',
+        heading: '5. Data Retention',
         body: 'We retain your personal data for as long as your account is active. If you request account deletion, we will delete your personal data within 30 days, except where we are legally required to retain it (e.g. financial records for 7 years under Indian tax law).',
       },
       {
-        heading: '5. Your Rights',
+        heading: '6. Your Rights',
         body: 'You have the right to access, correct, delete, or port your personal data. To exercise these rights, contact privacy@verdebliss.com.',
       },
       {
-        heading: '6. Data Security',
+        heading: '7. Data Security',
         body: 'We implement TLS 1.3 encryption in transit, AES-256 encryption at rest in Supabase, and regular third-party security audits.',
       },
       {
-        heading: '7. Contact',
+        heading: '8. Contact',
         body: 'For privacy-related queries, contact privacy@verdebliss.com or write to VerdeBliss Cosmetics Private Limited, Kharadi, Pune 411014, Maharashtra, India.',
       },
     ],

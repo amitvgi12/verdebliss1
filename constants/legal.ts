@@ -16,20 +16,20 @@ export const LEGAL_DOCUMENTS = {
     slug: 'privacy-policy',
     title: 'Privacy Policy',
     description:
-      'How VerdeBliss collects, uses, protects, and retains customer information for orders, accounts, loyalty, support, and optional marketing.',
+      'How VerdeBliss collects, uses, protects, and retains customer information for orders, accounts, loyalty, support, AI-assisted help, and optional marketing.',
     updated: '1 April 2026',
     sections: [
       {
         heading: 'Information we collect',
-        body: 'We collect information required to operate the storefront: name, email, phone number, delivery address, account profile, skin-type preferences, cart and order details, support requests, and consent choices. Payment card, UPI, wallet, and net-banking details are processed by Razorpay; VerdeBliss does not store raw card data.',
+        body: 'We collect information required to operate the storefront: name, email, phone number, delivery address, account profile, skin-type preferences, cart and order details, support requests, AI chat messages, and consent choices. Payment card, UPI, wallet, and net-banking details are processed by Razorpay; VerdeBliss does not store raw card data.',
       },
       {
         heading: 'How we use information',
-        body: 'We use customer data to fulfil orders, prevent checkout abuse, provide account and loyalty features, respond to support requests, improve product recommendations, and send marketing only where consent has been provided.',
+        body: 'We use customer data to fulfil orders, prevent checkout abuse, provide account and loyalty features, respond to support requests, provide AI-assisted help when customers use Verde, improve product recommendations, and send marketing only where consent has been provided.',
       },
       {
         heading: 'Sharing and processors',
-        body: 'We share the minimum data needed with operational processors such as payment, hosting, analytics, logistics, and support providers. We do not sell customer data or share it with third parties for their own advertising databases.',
+        body: 'We share the minimum data needed with operational processors such as payment, hosting, analytics, logistics, support, and AI service providers. When a customer uses Verde, chat messages may be processed by our AI provider; for order-related questions, we may also provide limited recent-order context needed to answer the request, such as order status, payment status, total, date, and item names. We do not sell customer data or share it with third parties for their own advertising databases.',
       },
       {
         heading: 'Retention and rights',
