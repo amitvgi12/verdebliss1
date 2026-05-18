@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type FormEvent, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { LogOut, Heart, Leaf, Check } from 'lucide-react'
 import LoyaltyPanel from '@/components/features/loyalty/LoyaltyPanel'
@@ -10,52 +10,63 @@ import { PRODUCTS } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
 
 // ── Login / Register ───────────────────────────────────
-function AuthForm() {
+function AuthForm({
+  bootstrapLoading = false,
+  bootstrapError = null,
+}: {
+  bootstrapLoading?: boolean
+  bootstrapError?: string | null
+}) {
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [pass, setPass] = useState('')
   const [name, setName] = useState('')
   const [skin, setSkin] = useState('')
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { signIn, signUp, signInWithGoogle } = useAuthStore()
+  const [notice, setNotice] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [resetting, setResetting] = useState(false)
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuthStore()
+  const displayedError = error || bootstrapError || ''
+  const busy = bootstrapLoading || submitting || resetting
 
-  const submit = async () => {
+  const submit = async (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault()
     setError('')
-    setLoading(true)
+    setNotice('')
+    setSubmitting(true)
     try {
       if (mode === 'login') await signIn(email, pass)
       else await signUp(email, pass, name, skin)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSubmitting(false)
     }
-    setLoading(false)
+  }
+
+  const requestPasswordReset = async () => {
+    if (!email.trim()) {
+      setError('Enter your email address first so we can send the reset link.')
+      return
+    }
+
+    setError('')
+    setNotice('')
+    setResetting(true)
+    try {
+      await resetPassword(email)
+      setNotice('Password reset email sent. Check your inbox for the secure reset link.')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setResetting(false)
+    }
   }
 
   return (
-    <div
-      style={{
-        minHeight: '82vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px 24px',
-        background: C.bg,
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{
-          background: C.card,
-          border: `1px solid ${C.border}`,
-          borderRadius: 24,
-          padding: 48,
-          width: '100%',
-          maxWidth: 420,
-          boxShadow: '0 4px 40px rgba(0,0,0,0.05)',
-        }}
-      >
+    <AuthShell>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div
             style={{
@@ -89,8 +100,27 @@ function AuthForm() {
           </p>
         </div>
 
-        {error && (
+        {bootstrapLoading && (
           <div
+            aria-live="polite"
+            style={{
+              background: C.sagePale,
+              border: `1px solid ${C.border}`,
+              borderRadius: 10,
+              padding: '10px 14px',
+              fontSize: 13,
+              color: C.forest,
+              marginBottom: 16,
+            }}
+          >
+            Checking your account status...
+          </div>
+        )}
+
+        {displayedError && (
+          <div
+            role="alert"
+            aria-live="assertive"
             style={{
               background: '#FCEBEB',
               border: '1px solid #F7C1C1',
@@ -101,125 +131,133 @@ function AuthForm() {
               marginBottom: 16,
             }}
           >
-            {error}
+            {displayedError}
           </div>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {notice && (
+          <div
+            aria-live="polite"
+            style={{
+              background: C.sagePale,
+              border: `1px solid ${C.border}`,
+              borderRadius: 10,
+              padding: '10px 14px',
+              fontSize: 13,
+              color: C.forest,
+              marginBottom: 16,
+            }}
+          >
+            {notice}
+          </div>
+        )}
+
+        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'register' && (
-            <input
-              id="account-full-name"
-              name="full_name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full name"
-              style={{
-                padding: '12px 16px',
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                fontSize: 14,
-                outline: 'none',
-                fontFamily: 'inherit',
-                background: C.bg,
-                color: C.text,
-              }}
-            />
+            <Field label="Full name" htmlFor="account-full-name">
+              <input
+                id="account-full-name"
+                name="full_name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full name"
+                autoComplete="name"
+                disabled={busy}
+                style={fieldControlStyle}
+              />
+            </Field>
           )}
-          <input
-            id="account-email"
-            name="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            style={{
-              padding: '12px 16px',
-              border: `1px solid ${C.border}`,
-              borderRadius: 10,
-              fontSize: 14,
-              outline: 'none',
-              fontFamily: 'inherit',
-              background: C.bg,
-              color: C.text,
-            }}
-          />
-          <input
-            id="account-password"
-            name="password"
-            type="password"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            placeholder="Password"
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            style={{
-              padding: '12px 16px',
-              border: `1px solid ${C.border}`,
-              borderRadius: 10,
-              fontSize: 14,
-              outline: 'none',
-              fontFamily: 'inherit',
-              background: C.bg,
-              color: C.text,
-            }}
-          />
+          <Field label="Email address" htmlFor="account-email">
+            <input
+              id="account-email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              autoComplete="email"
+              disabled={busy}
+              required
+              style={fieldControlStyle}
+            />
+          </Field>
+          <Field label="Password" htmlFor="account-password">
+            <input
+              id="account-password"
+              name="password"
+              type="password"
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
+              placeholder="Password"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              disabled={busy}
+              required
+              style={fieldControlStyle}
+            />
+          </Field>
           {mode === 'register' && (
-            <select
-              id="account-skin-type"
-              name="skin_type"
-              value={skin}
-              onChange={(e) => setSkin(e.target.value)}
-              style={{
-                padding: '12px 16px',
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                fontSize: 14,
-                outline: 'none',
-                fontFamily: 'inherit',
-                background: C.bg,
-                color: C.text,
-              }}
-            >
-              <option value="">Your skin type (personalised picks)</option>
-              {['Dry', 'Oily', 'Combination', 'Sensitive'].map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
+            <Field label="Skin type" htmlFor="account-skin-type">
+              <select
+                id="account-skin-type"
+                name="skin_type"
+                value={skin}
+                onChange={(e) => setSkin(e.target.value)}
+                disabled={busy}
+                style={fieldControlStyle}
+              >
+                <option value="">Choose your skin type</option>
+                {['Dry', 'Oily', 'Combination', 'Sensitive'].map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
+            </Field>
           )}
 
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={submit}
-            disabled={loading}
+            type="submit"
+            disabled={busy}
             style={{
-              background: loading ? C.sage : C.forest,
+              background: busy ? C.sage : C.forest,
               color: 'white',
               border: 'none',
               borderRadius: 10,
               padding: 13,
               fontSize: 15,
               fontWeight: 600,
-              cursor: loading ? 'wait' : 'pointer',
+              cursor: busy ? 'wait' : 'pointer',
               fontFamily: 'inherit',
               marginTop: 4,
             }}
           >
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
+            {submitting ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </motion.button>
 
           {mode === 'login' && (
-            <div style={{ textAlign: 'center', fontSize: 13, color: C.terra, cursor: 'pointer' }}>
-              Forgot your password?
-            </div>
+            <button
+              type="button"
+              onClick={requestPasswordReset}
+              disabled={busy}
+              style={inlineActionStyle}
+            >
+              {resetting ? 'Sending reset link...' : 'Forgot your password?'}
+            </button>
           )}
 
           <div style={{ textAlign: 'center', fontSize: 13, color: C.muted }}>
             {mode === 'login' ? "Don't have an account? " : 'Already a member? '}
-            <span
-              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-              style={{ color: C.forest, fontWeight: 600, cursor: 'pointer' }}
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === 'login' ? 'register' : 'login')
+                setError('')
+                setNotice('')
+              }}
+              disabled={busy}
+              style={textButtonStyle}
             >
               {mode === 'login' ? 'Sign up free' : 'Sign in'}
-            </span>
+            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -229,7 +267,9 @@ function AuthForm() {
           </div>
 
           <button
+            type="button"
             onClick={signInWithGoogle}
+            disabled={busy}
             style={{
               border: `1px solid ${C.border}`,
               borderRadius: 10,
@@ -248,10 +288,229 @@ function AuthForm() {
           >
             🌐 Continue with Google
           </button>
-        </div>
+        </form>
       </motion.div>
+    </AuthShell>
+  )
+}
+
+function PasswordRecoveryForm() {
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const updatePassword = useAuthStore((s) => s.updatePassword)
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError('')
+
+    if (password.length < 8) {
+      setError('Use at least 8 characters for your new password.')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      await updatePassword(password)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <AuthShell>
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <div
+          style={{
+            width: 52,
+            height: 52,
+            borderRadius: '50%',
+            background: C.sagePale,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+          }}
+        >
+          <Leaf size={24} color={C.forest} />
+        </div>
+        <h2
+          style={{
+            fontFamily: FONT.serif,
+            fontSize: 34,
+            color: C.text,
+            margin: 0,
+            fontWeight: 400,
+          }}
+        >
+          Set a new password
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, marginTop: 6 }}>
+          Choose a fresh password for your VerdeBliss account.
+        </p>
+      </div>
+
+      {error && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          style={{
+            background: '#FCEBEB',
+            border: '1px solid #F7C1C1',
+            borderRadius: 10,
+            padding: '10px 14px',
+            fontSize: 13,
+            color: '#A32D2D',
+            marginBottom: 16,
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <Field label="New password" htmlFor="account-new-password">
+          <input
+            id="account-new-password"
+            name="new_password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="new-password"
+            disabled={submitting}
+            required
+            style={fieldControlStyle}
+          />
+        </Field>
+        <Field label="Confirm new password" htmlFor="account-confirm-password">
+          <input
+            id="account-confirm-password"
+            name="confirm_password"
+            type="password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            autoComplete="new-password"
+            disabled={submitting}
+            required
+            style={fieldControlStyle}
+          />
+        </Field>
+        <button
+          type="submit"
+          disabled={submitting}
+          style={{
+            background: submitting ? C.sage : C.forest,
+            color: 'white',
+            border: 'none',
+            borderRadius: 10,
+            padding: 13,
+            fontSize: 15,
+            fontWeight: 600,
+            cursor: submitting ? 'wait' : 'pointer',
+            fontFamily: 'inherit',
+            marginTop: 4,
+          }}
+        >
+          {submitting ? 'Updating password...' : 'Update Password'}
+        </button>
+      </form>
+    </AuthShell>
+  )
+}
+
+function AuthShell({ children }: { children: ReactNode }) {
+  return (
+    <div
+      style={{
+        minHeight: '82vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '48px 24px',
+        background: C.bg,
+      }}
+    >
+      <div
+        style={{
+          background: C.card,
+          border: `1px solid ${C.border}`,
+          borderRadius: 24,
+          padding: 48,
+          width: '100%',
+          maxWidth: 420,
+          boxShadow: '0 4px 40px rgba(0,0,0,0.05)',
+        }}
+      >
+        {children}
+      </div>
     </div>
   )
+}
+
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string
+  htmlFor: string
+  children: ReactNode
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      style={{
+        display: 'grid',
+        gap: 6,
+        color: C.text,
+        fontSize: 12,
+        fontWeight: 700,
+      }}
+    >
+      {label}
+      {children}
+    </label>
+  )
+}
+
+const fieldControlStyle = {
+  padding: '12px 16px',
+  border: `1px solid ${C.border}`,
+  borderRadius: 10,
+  fontSize: 14,
+  outline: 'none',
+  fontFamily: 'inherit',
+  background: C.bg,
+  color: C.text,
+}
+
+const inlineActionStyle = {
+  border: 'none',
+  background: 'none',
+  color: C.terra,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  fontSize: 13,
+  justifySelf: 'center',
+  padding: 0,
+}
+
+const textButtonStyle = {
+  border: 'none',
+  background: 'none',
+  color: C.forest,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  fontSize: 13,
+  fontWeight: 600,
+  padding: 0,
 }
 
 // ── Dashboard ──────────────────────────────────────────
@@ -588,9 +847,9 @@ function Dashboard({
 
 // ── Page export ────────────────────────────────────────
 export default function Account() {
-  const { user, profile, loading } = useAuthStore()
-  if (loading)
-    return <div style={{ textAlign: 'center', padding: 80, color: C.muted }}>Loading…</div>
-  if (!user) return <AuthForm />
+  const { user, profile, loading, initializationError, recoveryMode } = useAuthStore()
+  if (recoveryMode) return <PasswordRecoveryForm />
+  if (loading) return <AuthForm bootstrapLoading />
+  if (!user) return <AuthForm bootstrapError={initializationError} />
   return <Dashboard user={user} profile={profile} />
 }

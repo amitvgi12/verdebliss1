@@ -42,6 +42,8 @@ export interface AuthState {
   user: User | null
   profile: CustomerProfile | null
   loading: boolean
+  initializationError: string | null
+  recoveryMode: boolean
   init: () => Promise<void>
   fetchProfile: (id: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<unknown>
@@ -51,6 +53,9 @@ export interface AuthState {
     fullName?: string,
     skinType?: string
   ) => Promise<unknown>
+  resetPassword: (email: string) => Promise<unknown>
+  updatePassword: (password: string) => Promise<unknown>
+  clearRecoveryMode: () => void
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
