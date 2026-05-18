@@ -2,7 +2,7 @@
  * CookieConsent — GDPR/CCPA banner.
  *
  * - Shown on first visit (no localStorage entry).
- * - Granular preferences: essential (always on), analytics, marketing.
+ * - Granular preferences: essential (always on), analytics, marketing, optional third-party AI.
  * - Stores decision in `vb_cookie_consent` (timestamp, version, prefs).
  * - Accessible: role="dialog", focus on render, ESC dismisses.
  * - CSS-driven responsive (no useWindowWidth → no hydration mismatch).
@@ -12,72 +12,38 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, X, ChevronDown } from 'lucide-react'
 import LegalModal, { type LegalModalType } from '@/components/ui/LegalModal'
-
-const STORAGE_KEY = 'vb_cookie_consent'
-const VERSION = '1.0'
-
-interface ConsentPrefs {
-  analytics: boolean
-  marketing: boolean
-}
-
-interface StoredConsent extends ConsentPrefs {
-  timestamp: string
-  version: string
-  essential: true
-}
-
-function loadStored(): StoredConsent | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as StoredConsent) : null
-  } catch {
-    return null
-  }
-}
-
-function persist(prefs: ConsentPrefs) {
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        timestamp: new Date().toISOString(),
-        version: VERSION,
-        essential: true,
-        analytics: prefs.analytics,
-        marketing: prefs.marketing,
-      } satisfies StoredConsent)
-    )
-  } catch {
-    /* storage unavailable */
-  }
-}
+import { loadStoredConsent, persistConsent } from '@/lib/consent'
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [analytics, setAnalytics] = useState(false)
   const [marketing, setMarketing] = useState(false)
+  const [functionalThirdParty, setFunctionalThirdParty] = useState(false)
   const [modal, setModal] = useState<LegalModalType | null>(null)
   const acceptRef = useRef<HTMLButtonElement | null>(null)
 
   const acceptAll = () => {
-    persist({ analytics: true, marketing: true })
+    persistConsent({ analytics: true, marketing: true, functional_third_party: true })
     setVisible(false)
   }
 
   const acceptSelected = () => {
-    persist({ analytics, marketing })
+    persistConsent({
+      analytics,
+      marketing,
+      functional_third_party: functionalThirdParty,
+    })
     setVisible(false)
   }
 
   const decline = () => {
-    persist({ analytics: false, marketing: false })
+    persistConsent({ analytics: false, marketing: false, functional_third_party: false })
     setVisible(false)
   }
 
   useEffect(() => {
-    if (loadStored()) return
+    if (loadStoredConsent()) return
     const t = setTimeout(() => setVisible(true), 1200)
     return () => clearTimeout(t)
   }, [])
@@ -90,7 +56,7 @@ export default function CookieConsent() {
     if (!visible) return
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        persist({ analytics: false, marketing: false })
+        persistConsent({ analytics: false, marketing: false, functional_third_party: false })
         setVisible(false)
       }
     }
@@ -122,8 +88,8 @@ export default function CookieConsent() {
                   Your privacy matters
                 </h2>
                 <p className="max-w-[490px] text-[13px] leading-relaxed text-muted">
-                  We use essential cookies to keep the site working and optional cookies for
-                  analytics and personalisation. You&apos;re in control.{' '}
+                  We use essential cookies to keep the site working. Optional analytics, marketing,
+                  and AI support stay off unless you choose them. You&apos;re in control.{' '}
                   <button
                     type="button"
                     onClick={() => setModal('cookie')}
@@ -136,7 +102,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={decline}
-                aria-label="Reject optional cookies and dismiss"
+                aria-label="Reject optional cookies and services and dismiss"
                 className="flex-shrink-0 cursor-pointer rounded-full border-none bg-transparent p-1.5 text-muted transition hover:bg-bg hover:text-text"
               >
                 <X size={16} />
@@ -175,6 +141,12 @@ export default function CookieConsent() {
                   desc="Personalised offers and product recommendations."
                   on={marketing}
                   onChange={setMarketing}
+                />
+                <ConsentRow
+                  title="AI support (Google Gemini)"
+                  desc="Allows Verde to send chat messages and, for signed-in order questions, limited account and order context to Google Gemini."
+                  on={functionalThirdParty}
+                  onChange={setFunctionalThirdParty}
                 />
               </div>
             )}
@@ -221,6 +193,8 @@ interface ConsentRowProps {
 }
 
 function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowProps) {
+  const descId = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-desc`
+
   return (
     <label className="flex cursor-pointer items-start gap-3 rounded-lg px-1 py-1">
       <input
@@ -229,11 +203,11 @@ function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowPro
         disabled={locked}
         onChange={(e) => onChange?.(e.target.checked)}
         className="mt-0.5 h-4 w-4 cursor-pointer accent-forest disabled:cursor-not-allowed"
-        aria-describedby={`${title}-desc`}
+        aria-describedby={descId}
       />
       <span className="flex-1">
         <span className="block text-[13px] font-semibold text-text">{title}</span>
-        <span id={`${title}-desc`} className="block text-xs leading-relaxed text-muted">
+        <span id={descId} className="block text-xs leading-relaxed text-muted">
           {desc}
           {locked && <span className="ml-1 text-forest">(always on)</span>}
         </span>

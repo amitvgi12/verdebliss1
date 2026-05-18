@@ -17,7 +17,7 @@ export const LEGAL_DOCUMENTS = {
     title: 'Privacy Policy',
     description:
       'How VerdeBliss collects, uses, protects, and retains customer information for orders, accounts, loyalty, support, AI-assisted help, and optional marketing.',
-    updated: '1 April 2026',
+    updated: '18 May 2026',
     sections: [
       {
         heading: 'Information we collect',
@@ -25,11 +25,11 @@ export const LEGAL_DOCUMENTS = {
       },
       {
         heading: 'How we use information',
-        body: 'We use customer data to fulfil orders, prevent checkout abuse, provide account and loyalty features, respond to support requests, provide AI-assisted help when customers use Verde, improve product recommendations, and send marketing only where consent has been provided.',
+        body: 'We use customer data to fulfil orders, prevent checkout abuse, provide account and loyalty features, respond to support requests, provide AI-assisted help when customers explicitly enable Verde, improve product recommendations, and send marketing only where consent has been provided.',
       },
       {
         heading: 'Sharing and processors',
-        body: 'We share the minimum data needed with operational processors such as payment, hosting, analytics, logistics, support, and AI service providers. When a customer uses Verde, chat messages may be processed by our AI provider; for order-related questions, we may also provide limited recent-order context needed to answer the request, such as order status, payment status, total, date, and item names. We do not sell customer data or share it with third parties for their own advertising databases.',
+        body: 'We share the minimum data needed with operational processors such as payment, hosting, analytics, logistics, and support providers. Verde uses Google Gemini as an AI sub-processor only when the customer explicitly enables AI support. With that consent, Gemini may receive chat messages and, for signed-in order-related questions, limited account and order context needed to answer the request: name, email, skin type, loyalty tier, points balance, recent order IDs, order status, payment status, totals, dates, and item names. The lawful basis for this AI processing is consent. We do not sell customer data or share it with third parties for their own advertising databases.',
       },
       {
         heading: 'Retention and rights',
@@ -116,8 +116,8 @@ export const LEGAL_DOCUMENTS = {
     slug: 'cookie-policy',
     title: 'Cookie Policy',
     description:
-      'How VerdeBliss uses essential, analytics, and preference cookies while avoiding third-party advertising trackers.',
-    updated: '1 April 2026',
+      'How VerdeBliss uses essential cookies and optional preferences while avoiding third-party advertising trackers.',
+    updated: '18 May 2026',
     sections: [
       {
         heading: 'Essential cookies',
@@ -125,7 +125,7 @@ export const LEGAL_DOCUMENTS = {
       },
       {
         heading: 'Optional cookies',
-        body: 'Optional analytics and preference cookies help us understand website performance and remember choices. They are disabled unless the customer accepts or saves preferences.',
+        body: 'Optional analytics and preference cookies help us understand website performance and remember choices. They are disabled unless the customer accepts or saves preferences. The same preference centre also controls optional third-party AI support separately from cookies.',
       },
       {
         heading: 'What we do not use',

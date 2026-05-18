@@ -4,7 +4,7 @@
  *
  * When a user is logged in the bot receives:
  *   - profile (name, skin type, tier, points)
- *   - last 5 orders (id, status, total, items, created_at, payment_id)
+ *   - limited recent order context when needed for an order-related request
  *
  * This lets Gemini answer:
  *   "Where is my order?"  "Can I get a refund?"  "How many points do I have?"
@@ -88,6 +88,7 @@ export default function ChatBot() {
         headers: {
           'Content-Type': 'application/json',
           'x-vb-client': 'web',
+          'x-vb-ai-consent': 'granted',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ messages: next }),

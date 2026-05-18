@@ -25,7 +25,7 @@ interface Doc {
 const CONTENT: Record<LegalModalType, Doc> = {
   privacy: {
     title: 'Privacy Policy',
-    updated: 'Last updated: 1 April 2026',
+    updated: 'Last updated: 18 May 2026',
     sections: [
       {
         heading: '1. Information We Collect',
@@ -33,11 +33,11 @@ const CONTENT: Record<LegalModalType, Doc> = {
       },
       {
         heading: '2. How We Use Your Information',
-        body: 'We use your information to: (a) process and fulfil orders; (b) send transactional emails regarding your purchases; (c) personalise product recommendations based on your skin type; (d) administer our loyalty points programme; (e) provide AI-assisted help when you use Verde; (f) send marketing communications if you have opted in. We do not sell, rent, or share your personal data with third parties for their own marketing purposes.',
+        body: 'We use your information to: (a) process and fulfil orders; (b) send transactional emails regarding your purchases; (c) personalise product recommendations based on your skin type; (d) administer our loyalty points programme; (e) provide AI-assisted help only when you explicitly enable Verde; (f) send marketing communications if you have opted in. We do not sell, rent, or share your personal data with third parties for their own marketing purposes.',
       },
       {
         heading: '3. AI Service Providers',
-        body: 'When you use Verde, your chat messages may be processed by our AI service provider to generate a response. For order-related questions, we may also send limited recent-order context needed to answer the request, such as order status, payment status, total, date, and item names.',
+        body: 'Verde uses Google Gemini as an AI sub-processor only when you explicitly enable AI support. With that consent, Google Gemini may receive chat messages and, for signed-in order-related questions, limited account and order context needed to answer the request: name, email, skin type, loyalty tier, points balance, recent order IDs, order status, payment status, totals, dates, and item names. The lawful basis for this AI processing is consent.',
       },
       {
         heading: '4. Cookies',
@@ -105,7 +105,7 @@ const CONTENT: Record<LegalModalType, Doc> = {
   },
   cookie: {
     title: 'Cookie Policy',
-    updated: 'Last updated: 1 April 2026',
+    updated: 'Last updated: 18 May 2026',
     sections: [
       {
         heading: 'What are cookies?',
@@ -113,7 +113,7 @@ const CONTENT: Record<LegalModalType, Doc> = {
       },
       {
         heading: 'Cookies we use',
-        body: 'Essential cookies: Required for cart and login sessions.\n\nAnalytical cookies (first-party): Anonymous data about which pages are visited — no third-party data sharing.\n\nPreference cookies: Remember your skin type and display preferences.',
+        body: 'Essential cookies: Required for cart and login sessions.\n\nAnalytical cookies (first-party): Anonymous data about which pages are visited — no third-party data sharing.\n\nPreference cookies: Remember your skin type and display preferences.\n\nOptional third-party AI support is controlled separately in the same preference centre and stays off unless you opt in.',
       },
       {
         heading: 'Cookies we do NOT use',

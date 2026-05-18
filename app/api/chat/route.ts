@@ -256,6 +256,10 @@ export async function POST(request: Request) {
   const csrfFailure = requireSameOriginRequest(request)
   if (csrfFailure) return csrfFailure
 
+  if (request.headers.get('x-vb-ai-consent') !== 'granted') {
+    return NextResponse.json({ error: 'AI support consent is required.' }, { status: 403 })
+  }
+
   // Look up user *before* rate-limit so we can throttle by identity too.
   const user = await getUserFromAuthorizationHeader(request.headers.get('authorization'))
   if (await isRateLimited(request, 'chat', 20, 60, user?.id ?? null)) {
