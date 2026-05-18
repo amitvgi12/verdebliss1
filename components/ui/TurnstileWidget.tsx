@@ -34,8 +34,8 @@ const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render
 
 /**
  * Cloudflare Turnstile widget. Renders nothing if NEXT_PUBLIC_TURNSTILE_SITE_KEY
- * is not set, so dev environments still work — the server-side verifier
- * matches this behaviour.
+ * is not set. Production startup validation reports that misconfiguration and
+ * protected APIs fail closed server-side.
  */
 export default function TurnstileWidget({ onToken, onExpire, className }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)

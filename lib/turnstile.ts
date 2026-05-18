@@ -12,9 +12,9 @@
  *   3. Render the widget on the page (see TurnstileWidget.tsx).
  *   4. Send the resulting token in the request body as `turnstileToken`.
  *
- * If TURNSTILE_SECRET_KEY is not configured, this helper allows the request
- * through (so dev / preview environments don't break). Production should set
- * the env var.
+ * If TURNSTILE_SECRET_KEY is not configured, this helper allows requests only
+ * outside production so dev / preview environments don't break. Production
+ * fails closed.
  */
 
 import { getClientIp } from '@/lib/client-ip'
@@ -35,6 +35,9 @@ export async function verifyTurnstileToken(
   remoteIp?: string | null
 ): Promise<TurnstileVerifyResult> {
   if (!isTurnstileConfigured()) {
+    if (process.env.NODE_ENV === 'production') {
+      return { ok: false, reason: 'turnstile_not_configured' }
+    }
     // Dev / preview convenience: silently pass when not configured.
     return { ok: true, reason: 'turnstile_not_configured' }
   }

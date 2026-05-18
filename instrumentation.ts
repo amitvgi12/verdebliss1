@@ -7,8 +7,10 @@
  * log events from `lib/observability.ts` plus platform log drains/alerts.
  * Re-introduce a vendor SDK only after verifying `next build` completes cleanly.
  */
+import { validateStartupEnv } from '@/lib/runtime-env'
+
 export async function register() {
-  // Intentionally no-op.
+  validateStartupEnv()
 }
 
 export async function onRequestError(err: unknown) {
