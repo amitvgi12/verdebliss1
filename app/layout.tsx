@@ -26,9 +26,11 @@ const serif = Cormorant_Garamond({
 
 export const metadata = {
   metadataBase: new URL('https://www.verdebliss.com'),
+  manifest: '/manifest.json',
   icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
-    shortcut: ['/favicon.svg'],
+    icon: [{ url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' }],
+    shortcut: ['/favicon.ico'],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   title: {
     default: 'VerdeBliss — Certified Organic Skincare India',
