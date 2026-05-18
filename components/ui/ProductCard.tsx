@@ -24,6 +24,7 @@ export default function ProductCard({ product: p }: { product: Product }) {
   const href = productPath(p)
   const inWishlist = has(p.id)
   const stockOut = p.stock === 0
+  const hasApprovedReviews = p.rating != null && (p.review_count ?? 0) > 0
 
   const decreaseQty = () => {
     if (!cartItem) return
@@ -80,13 +81,13 @@ export default function ProductCard({ product: p }: { product: Product }) {
           {p.name}
         </Link>
 
-        {(p.rating != null || (p.review_count ?? 0) > 0) && (
+        {hasApprovedReviews ? (
           <div className="vb-product-card__rating">
             <Stars rating={p.rating} size={11} />
-            {(p.review_count ?? 0) > 0 && (
-              <span className="vb-product-card__review-count">({p.review_count})</span>
-            )}
+            <span className="vb-product-card__review-count">({p.review_count})</span>
           </div>
+        ) : (
+          <div className="vb-product-card__review-state">Verified reviews after purchase</div>
         )}
 
         <p className="vb-product-card__subcopy">{p.description}</p>

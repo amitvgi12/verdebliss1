@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { PRODUCTS, CATEGORIES, SKIN_TYPES, SORT_OPTIONS, TIERS } from '@/constants/products'
+import { applyApprovedReviewMetrics } from '@/lib/products-server'
 
 describe('PRODUCTS catalogue', () => {
   it('has 8 products', () => {
@@ -178,5 +179,22 @@ describe('server product filtering', () => {
 
     expect(results).toHaveLength(1)
     expect(results[0]?.name).toBe('Niacinamide Pore Serum')
+  })
+})
+
+describe('approved review metrics', () => {
+  it('replaces stale product-card counters with approved review aggregates', () => {
+    const products = [
+      { ...PRODUCTS[0], rating: 4.8, review_count: 215 },
+      { ...PRODUCTS[1], rating: 4.7, review_count: 142 },
+    ]
+
+    const metrics = applyApprovedReviewMetrics(products, [
+      { product_id: '1', rating: 5 },
+      { product_id: '1', rating: 4 },
+    ])
+
+    expect(metrics[0]).toMatchObject({ rating: 4.5, review_count: 2 })
+    expect(metrics[1]).toMatchObject({ rating: null, review_count: 0 })
   })
 })

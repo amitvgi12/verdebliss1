@@ -501,6 +501,12 @@ video {
   font-size: 0.72rem;
 }
 
+.vb-product-card__review-state {
+  margin-top: 5px;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+}
+
 .vb-product-card__subcopy {
   margin-top: 6px;
   min-height: 2.6em;
@@ -1290,27 +1296,23 @@ video {
   backdrop-filter: blur(16px);
 }
 
-.premium-hero__stats {
+.premium-hero__proofs {
   display: flex;
   flex-wrap: wrap;
-  gap: clamp(16px, 2vw, 28px);
+  gap: 10px;
   margin-top: 26px;
+  padding: 0;
+  list-style: none;
 }
 
-.premium-hero__stats dt {
-  color: var(--color-gold);
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(1.5rem, 2vw, 2.1rem);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.premium-hero__stats dd {
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.72);
+.premium-hero__proofs li {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.07);
   font-size: 0.72rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  font-weight: 700;
 }
 
 .premium-hero__visual {
@@ -1320,8 +1322,8 @@ video {
 
 .premium-hero__product {
   position: absolute;
-  inset: 10% 12% auto auto;
-  width: min(360px, 74vw);
+  inset: 6% 8% auto auto;
+  width: min(390px, 78vw);
   aspect-ratio: 1;
   border-radius: 999px;
   overflow: hidden;
@@ -1552,29 +1554,26 @@ video {
   line-height: 1.75;
 }
 
-.home-philosophy-badges {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.home-philosophy-links {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 22px;
 }
 
-.home-philosophy-badge {
-  display: flex;
+.home-philosophy-links a {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  padding: 11px 14px;
-  font-size: 0.86rem;
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: white;
+  font-size: 0.82rem;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(8px);
-}
-
-.home-philosophy-badge span:first-child {
-  font-size: 1.25rem;
-  flex-shrink: 0;
+  text-decoration: none;
 }
 
 .home-philosophy-cert-grid {
@@ -1970,8 +1969,7 @@ video {
   border: 1px solid rgba(228, 218, 208, 0.94);
   border-radius: 18px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(242, 234, 224, 0.85)),
-    var(--color-card);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(242, 234, 224, 0.85)), var(--color-card);
   padding: clamp(16px, 2.4vw, 22px);
 }
 
@@ -2395,8 +2393,7 @@ video {
   position: relative;
   padding: clamp(42px, 5vw, 60px) 16px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 70%),
-    var(--color-aubergine);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 70%), var(--color-aubergine);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   text-align: center;

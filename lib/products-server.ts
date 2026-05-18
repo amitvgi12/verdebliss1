@@ -18,6 +18,11 @@ export interface ReviewAggregate {
   average: number
 }
 
+interface ApprovedReviewMetricRow {
+  product_id: string
+  rating: number
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function staticProductByIdOrSlug(idOrSlug: string): Product | null {
@@ -28,16 +33,54 @@ async function fetchProductsFromDb(): Promise<Product[]> {
   if (!hasSupabaseAdminEnv()) return PRODUCTS
   try {
     const supabase = createSupabaseAdmin()
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('active', true)
-      .order('review_count', { ascending: false })
+    const { data, error } = await supabase.from('products').select('*').eq('active', true)
     if (error || !data?.length) return PRODUCTS
-    return data as Product[]
+
+    const products = data as Product[]
+    const productIds = products.map((product) => product.id)
+    const { data: approvedReviews, error: reviewsError } = await supabase
+      .from('reviews')
+      .select('product_id, rating')
+      .eq('approved', true)
+      .in('product_id', productIds)
+
+    const productsWithReviewMetrics = applyApprovedReviewMetrics(
+      products,
+      reviewsError ? [] : ((approvedReviews ?? []) as ApprovedReviewMetricRow[])
+    )
+
+    return productsWithReviewMetrics.sort((a, b) => (b.review_count ?? 0) - (a.review_count ?? 0))
   } catch {
     return PRODUCTS
   }
+}
+
+export function applyApprovedReviewMetrics(
+  products: Product[],
+  reviews: ApprovedReviewMetricRow[]
+): Product[] {
+  const aggregates = new Map<string, { total: number; count: number }>()
+
+  reviews.forEach((review) => {
+    const rating = Number(review.rating)
+    if (!Number.isFinite(rating) || rating <= 0) return
+    const current = aggregates.get(review.product_id) ?? { total: 0, count: 0 }
+    aggregates.set(review.product_id, {
+      total: current.total + rating,
+      count: current.count + 1,
+    })
+  })
+
+  return products.map((product) => {
+    const aggregate = aggregates.get(product.id)
+    if (!aggregate) return { ...product, rating: null, review_count: 0 }
+
+    return {
+      ...product,
+      rating: Number((aggregate.total / aggregate.count).toFixed(2)),
+      review_count: aggregate.count,
+    }
+  })
 }
 
 // Cache the catalogue for 5 min. Catalogue is read on every product page,

@@ -6,6 +6,7 @@ import IngredientCard from '@/components/ui/IngredientCard'
 import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
 import FadeIn from '@/components/ui/FadeIn'
 import { getProductsServer } from '@/lib/products-server'
+import { TRUST_METRICS } from '@/constants/trust'
 
 export const revalidate = 300
 
@@ -70,7 +71,7 @@ export default async function Home() {
         <div className="site-container premium-hero__grid">
           <div className="premium-hero__copy">
             <p className="premium-kicker" style={{ fontSize: '0.62rem', letterSpacing: '0.18em' }}>
-              ✦ CERTIFIED ORGANIC · CRUELTY-FREE · VEGAN ✦
+              INCI-FIRST BOTANICAL SKINCARE
             </p>
             <h1 className="premium-hero__title">
               Pure.
@@ -91,18 +92,11 @@ export default async function Home() {
                 Take Skin Quiz <ArrowRight size={15} />
               </Link>
             </div>
-            <dl className="premium-hero__stats" aria-label="Store highlights">
-              {[
-                ['500+', 'Organic Ingredients'],
-                ['4.8★', 'Average Rating'],
-                ['50K+', 'Happy Customers'],
-              ].map(([value, label]) => (
-                <div key={label}>
-                  <dt>{value}</dt>
-                  <dd>{label}</dd>
-                </div>
+            <ul className="premium-hero__proofs" aria-label="Trust highlights">
+              {TRUST_METRICS.heroProofs.map((proof) => (
+                <li key={proof}>{proof}</li>
               ))}
-            </dl>
+            </ul>
           </div>
 
           <div className="premium-hero__visual" aria-label="Featured VerdeBliss product editorial">
@@ -118,12 +112,12 @@ export default async function Home() {
               />
             </div>
             <div className="premium-float premium-float--left">
-              <span>✦ Bakuchiol Serum</span>
-              <strong>Best Seller ✦</strong>
+              <span>Bakuchiol Serum</span>
+              <strong>Full INCI listed</strong>
             </div>
             <div className="premium-float premium-float--right">
-              <span>☀️ SPF 50 Shield</span>
-              <strong>4.9★ Rated</strong>
+              <span>SPF 50 Shield</span>
+              <strong>Mineral UV filter</strong>
             </div>
           </div>
         </div>
@@ -133,10 +127,7 @@ export default async function Home() {
         <FadeIn>
           <div className="premium-section-head">
             <h2 className="vb-collection-heading">The Collection</h2>
-            <p>
-              Every formula crafted from certified organic botanicals, dermatologist-approved and
-              loved by thousands.
-            </p>
+            <p>{TRUST_METRICS.collectionCopy}</p>
           </div>
         </FadeIn>
         <FadeIn delay={0.1}>
@@ -218,30 +209,21 @@ export default async function Home() {
               <div className="home-philosophy-copy">
                 <p className="premium-kicker">OUR PHILOSOPHY</p>
                 <h2>Beauty that honours the earth</h2>
-                <p>
-                  Every VerdeBliss formula is crafted from certified organic botanicals, never
-                  tested on animals, and packaged in eco-conscious materials.
-                </p>
-                <div className="home-philosophy-badges">
-                  {[
-                    ['🌱', '95%+ Organic Ingredients'],
-                    ['🐰', 'Cruelty-Free'],
-                    ['♻️', 'Eco Packaging'],
-                    ['🏆', 'Dermatologist OK'],
-                  ].map(([emoji, label]) => (
-                    <div key={label} className="home-philosophy-badge">
-                      <span>{emoji}</span>
-                      <span>{label}</span>
-                    </div>
+                <p>{TRUST_METRICS.philosophyCopy}</p>
+                <div className="home-philosophy-links" aria-label="Proof pages">
+                  {TRUST_METRICS.proofLinks.map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      {item.label} <ArrowRight size={14} />
+                    </Link>
                   ))}
                 </div>
               </div>
               <div className="home-philosophy-cert-grid">
                 {[
-                  { value: '2019', label: 'Founded in Pune', accent: '#bfa06a' },
-                  { value: '8', label: 'Hero Botanicals', accent: '#7d9b76' },
-                  { value: '12', label: 'Farmer Co-ops', accent: '#bfa06a' },
-                  { value: 'USDA', label: 'Organic Certified', accent: '#7d9b76' },
+                  { value: 'INCI', label: 'Full disclosure', accent: '#bfa06a' },
+                  { value: String(products.length), label: 'Current formulas', accent: '#7d9b76' },
+                  { value: '14 days', label: 'Return window', accent: '#bfa06a' },
+                  { value: 'Verified', label: 'Review standard', accent: '#7d9b76' },
                 ].map((item) => (
                   <div key={item.value} className="home-philosophy-cert-card">
                     <strong style={{ color: item.accent }}>{item.value}</strong>
@@ -295,11 +277,7 @@ export default async function Home() {
           </FadeIn>
           <FadeIn delay={0.12}>
             <ul>
-              {[
-                'No fake review counts',
-                'No unverified testimonials',
-                'Schema omits empty aggregate ratings',
-              ].map((item) => (
+              {[...TRUST_METRICS.reviewStandards].map((item) => (
                 <li key={item}>
                   <CheckCircle2 size={16} /> {item}
                 </li>
