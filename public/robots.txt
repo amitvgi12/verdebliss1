@@ -1,8 +1,11 @@
 User-agent: *
 Allow: /
+Allow: /returns-refunds
+Allow: /shipping-policy
+Disallow: /refund/
+Disallow: /refund$
 Disallow: /account
 Disallow: /checkout
 Disallow: /api/
-Disallow: /refund
 
 Sitemap: https://www.verdebliss.com/sitemap.xml

@@ -1,13 +1,13 @@
 export const revalidate = 300
 
-import { permanentRedirect } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import {
   getApprovedReviewsServer,
   getProductServer,
   getReviewAggregatesServer,
 } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
-import { absoluteUrl, productImagePath, productPath } from '@/lib/seo'
+import { absoluteUrl, breadcrumbJsonLd, productImagePath, productPath } from '@/lib/seo'
 import { StructuredData } from '@/lib/structured-data'
 import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from '@/constants/shipping'
 import type { Product } from '@/types'
@@ -101,6 +101,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { id } = await params
   const product = await getProductServer(id)
 
+  if (!product) {
+    notFound()
+  }
+
   if (product?.slug && product.slug !== id) {
     permanentRedirect(productPath(product))
   }
@@ -114,7 +118,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <>
-      {product && <StructuredData data={productJsonLd(product, aggregate)} />}
+      <StructuredData data={productJsonLd(product, aggregate)} />
+      <StructuredData
+        data={breadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Shop', path: '/products' },
+          { name: product.name, path: productPath(product) },
+        ])}
+      />
       <ProductDetailClient
         id={id}
         initialProduct={product}

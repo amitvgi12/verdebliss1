@@ -6,6 +6,7 @@
 import { describe, it, expect } from 'vitest'
 import { PRODUCTS, CATEGORIES, SKIN_TYPES, SORT_OPTIONS, TIERS } from '@/constants/products'
 import { applyApprovedReviewMetrics } from '@/lib/products-server'
+import { breadcrumbJsonLd } from '@/lib/seo'
 
 describe('PRODUCTS catalogue', () => {
   it('has 8 products', () => {
@@ -196,5 +197,40 @@ describe('approved review metrics', () => {
 
     expect(metrics[0]).toMatchObject({ rating: 4.5, review_count: 2 })
     expect(metrics[1]).toMatchObject({ rating: null, review_count: 0 })
+  })
+})
+
+describe('product breadcrumb schema', () => {
+  it('builds canonical PDP breadcrumbs for search engines', () => {
+    expect(
+      breadcrumbJsonLd([
+        { name: 'Home', path: '/' },
+        { name: 'Shop', path: '/products' },
+        { name: 'Bakuchiol Renewal Serum', path: '/products/bakuchiol-renewal-serum' },
+      ])
+    ).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: 'https://www.verdebliss.com/',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Shop',
+          item: 'https://www.verdebliss.com/products',
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: 'Bakuchiol Renewal Serum',
+          item: 'https://www.verdebliss.com/products/bakuchiol-renewal-serum',
+        },
+      ],
+    })
   })
 })

@@ -29,6 +29,24 @@ export function productImagePath(product?: Pick<Product, 'id' | 'image_url'> | n
   )
 }
 
+export interface BreadcrumbItem {
+  name: string
+  path: string
+}
+
+export function breadcrumbJsonLd(items: readonly BreadcrumbItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: absoluteUrl(item.path),
+    })),
+  }
+}
+
 export function safeJsonLd(data: unknown): string {
   // Escape characters that can break out of <script> tags or HTML context.
   return JSON.stringify(data)
