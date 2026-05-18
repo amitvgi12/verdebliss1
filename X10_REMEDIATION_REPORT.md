@@ -10,7 +10,7 @@ This repo has been upgraded from the fresh audit findings with a focus on produc
 
 - Upgraded Next.js and eslint-config-next to the current project-compatible 16.x line.
 - Added `npm run typecheck` and `npm run verify` so CI runs lint, TypeScript, tests, and production build as explicit gates.
-- Fixed the production build stall by forcing a deterministic Next build worker count with `experimental.cpus = 1`.
+- Removed the old TypeScript build bypass so `next build` fails on compile/type errors again.
 - Migrated the edge request handler from `middleware.ts` to Next 16-compatible `proxy.ts`.
 
 ### Security
@@ -73,7 +73,7 @@ npm audit --omit=dev         # PASS — 0 vulnerabilities
 npm run build                # PASS — Next.js 16.2.6, 29 static pages generated
 ```
 
-Note: `next build` intentionally skips Next's integrated type validation because the earlier audit found the build worker could stall there. Type safety is still enforced by the explicit `npm run typecheck` CI gate before `npm run build`.
+`next build` now keeps its integrated TypeScript validation enabled, and `npm run typecheck` remains an explicit CI gate before deployment.
 
 ## Self-evaluation
 

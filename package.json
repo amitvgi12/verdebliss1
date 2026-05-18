@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prebuild": "node scripts/cleanup-legacy-sentry.mjs",
+    "schema:drift": "bash scripts/check-schema-drift.sh",
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build"
   },

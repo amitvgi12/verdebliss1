@@ -16,13 +16,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
 
-  // Build determinism fix: this project previously stalled in the Next build
-  // worker phase even though standalone ESLint and `tsc --noEmit` completed.
-  // CI now runs lint/type/test explicitly via `npm run verify`; the artifact
-  // step is limited to compiling and prerendering with one stable worker.
-  typescript: { ignoreBuildErrors: true },
-  experimental: { cpus: 1 },
-
   async headers() {
     return [
       {

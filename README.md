@@ -18,6 +18,7 @@ Next.js API boundary
   ├─ /api/checkout/cod
   ├─ /api/webhooks/razorpay
   ├─ /api/reviews
+  ├─ /api/refunds/eligible-orders
   ├─ /api/refunds/request
   ├─ /api/contact
   ├─ /api/newsletter
@@ -59,6 +60,11 @@ Supabase Postgres
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+
+# GitHub Actions only: required for remote schema drift detection
+SUPABASE_ACCESS_TOKEN=
+SUPABASE_PROJECT_REF=
+SUPABASE_DB_PASSWORD=
 
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 RAZORPAY_KEY_ID=
@@ -115,19 +121,24 @@ https://www.verdebliss.com/api/webhooks/razorpay
 ```bash
 npm run format:check
 npm run lint
-npx tsc --noEmit
-npm test -- --run
+npm run typecheck
+npm test
 npm run build
 ```
 
-In this sandbox, `next build` completed compilation/static generation but did not exit after build-trace collection. The two-phase Next build completed successfully:
+CI treats these as mandatory failing gates before deployment:
 
 ```bash
-npx next build --experimental-build-mode compile
-npx next build --experimental-build-mode generate
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run schema:drift
 ```
 
-Validate the standard `npm run build` on Vercel/GitHub Actions before deployment.
+`npm run schema:drift` compares the canonical `supabase/schema.sql` against the linked Supabase
+project and requires these GitHub repository secrets: `SUPABASE_ACCESS_TOKEN`,
+`SUPABASE_PROJECT_REF`, and `SUPABASE_DB_PASSWORD`.
 
 ## Production runbook summary
 
