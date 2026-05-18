@@ -20,6 +20,7 @@ interface ProductsClientProps {
   category: string
   skinType: string
   sortBy: string
+  query: string
 }
 
 export default function ProductsClient({
@@ -28,6 +29,7 @@ export default function ProductsClient({
   category,
   skinType,
   sortBy,
+  query,
 }: ProductsClientProps) {
   const params = useSearchParams()
   const pathname = usePathname()
@@ -51,7 +53,7 @@ export default function ProductsClient({
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [category, skinType, sortBy])
+  }, [category, skinType, sortBy, query])
 
   return (
     <div className="min-h-[80vh] bg-bg">
@@ -59,7 +61,13 @@ export default function ProductsClient({
         <div className="site-container catalog-hero__inner">
           <div>
             <p className="premium-kicker">THE VERDEBLISS BOUTIQUE</p>
-            <h1>{category !== 'All' ? `${category}s` : 'Shop All Products'}</h1>
+            <h1>
+              {query
+                ? `Search results for "${query}"`
+                : category !== 'All'
+                  ? `${category}s`
+                  : 'Shop All Products'}
+            </h1>
             <p>
               {totalProducts} botanical formulas with transparent ingredients, clear skin-fit
               filters, and product-specific ritual guidance.
@@ -93,7 +101,7 @@ export default function ProductsClient({
               value={skinType}
               onChange={(v) => setFilter('skin', v)}
             />
-            {(category !== 'All' || skinType !== 'All') && (
+            {(category !== 'All' || skinType !== 'All' || query) && (
               <button
                 type="button"
                 onClick={clearFilters}

@@ -69,10 +69,23 @@ export default function SearchBar() {
     router.push(productPath(product))
   }
 
+  const goToSearchResults = (term: string) => {
+    const normalizedTerm = term.trim()
+    if (!normalizedTerm) return
+    saveRecent(normalizedTerm)
+    setQ('')
+    setFocused(false)
+    router.push(`/products?q=${encodeURIComponent(normalizedTerm)}`)
+  }
+
   const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') setCursor((c) => Math.min(c + 1, results.length - 1))
     if (e.key === 'ArrowUp') setCursor((c) => Math.max(c - 1, -1))
-    if (e.key === 'Enter' && cursor >= 0 && results[cursor]) go(results[cursor])
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (cursor >= 0 && results[cursor]) go(results[cursor])
+      else goToSearchResults(q)
+    }
     if (e.key === 'Escape') {
       setFocused(false)
       setQ('')

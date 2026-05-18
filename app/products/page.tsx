@@ -30,8 +30,10 @@ function validOption(value: string | undefined, options: readonly string[], fall
 
 export function filterAndSortProducts(
   products: Product[],
-  filters: { category: string; skinType: string; sortBy: string }
+  filters: { category: string; skinType: string; sortBy: string; query?: string }
 ): Product[] {
+  const normalizedQuery = filters.query?.trim().toLowerCase()
+
   const filtered = products.filter((product) => {
     const categoryMatch = filters.category === 'All' || product.category === filters.category
     const skinTypes = product.skin_types ?? []
@@ -39,7 +41,20 @@ export function filterAndSortProducts(
       filters.skinType === 'All' ||
       skinTypes.includes(filters.skinType) ||
       skinTypes.includes('All Types')
-    return categoryMatch && skinMatch
+    const searchHaystack = [
+      product.name,
+      product.category,
+      product.ingredient,
+      product.description,
+      ...(product.badges ?? []),
+      ...skinTypes,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+    const queryMatch = !normalizedQuery || searchHaystack.includes(normalizedQuery)
+
+    return categoryMatch && skinMatch && queryMatch
   })
 
   return filtered.sort((a, b) => {
@@ -66,8 +81,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const category = validOption(firstParam(params.cat), CATEGORIES, 'All')
   const skinType = validOption(firstParam(params.skin), SKIN_TYPES, 'All')
   const sortBy = validOption(firstParam(params.sort), SORT_OPTIONS, 'Bestselling')
+  const query = firstParam(params.q)?.trim() ?? ''
   const allProducts = await getProductsServer()
-  const products = filterAndSortProducts(allProducts, { category, skinType, sortBy })
+  const products = filterAndSortProducts(allProducts, { category, skinType, sortBy, query })
 
   return (
     <ProductsClient
@@ -76,6 +92,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       category={category}
       skinType={skinType}
       sortBy={sortBy}
+      query={query}
     />
   )
 }

@@ -166,4 +166,17 @@ describe('server product filtering', () => {
       expect(sorted[i]?.rating ?? 0).toBeLessThanOrEqual(sorted[i - 1]?.rating ?? 0)
     }
   })
+
+  it('filters server-rendered products by search query', async () => {
+    const { filterAndSortProducts } = await import('@/app/products/page')
+    const results = filterAndSortProducts(PRODUCTS, {
+      category: 'All',
+      skinType: 'All',
+      sortBy: 'Bestselling',
+      query: 'niacinamide',
+    })
+
+    expect(results).toHaveLength(1)
+    expect(results[0]?.name).toBe('Niacinamide Pore Serum')
+  })
 })
