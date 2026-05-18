@@ -111,21 +111,23 @@ export default function CookieConsent() {
             role="dialog"
             aria-modal="false"
             aria-label="Cookie preferences"
-            className="fixed bottom-0 left-0 right-0 z-[300] border-t border-border bg-warmWhite p-4 shadow-[0_-8px_28px_rgba(0,0,0,0.08)] sm:bottom-4 sm:left-1/2 sm:max-w-[640px] sm:-translate-x-1/2 sm:rounded-2xl sm:border"
+            className="fixed bottom-0 left-0 right-0 z-[300] border-t border-border bg-warmWhite p-4 shadow-[0_-10px_30px_rgba(28,34,30,0.12)] sm:bottom-5 sm:left-1/2 sm:right-auto sm:w-[min(calc(100vw-2rem),620px)] sm:-translate-x-1/2 sm:rounded-2xl sm:border sm:p-5"
           >
-            <div className="mb-3 flex items-start gap-3">
-              <Shield size={20} aria-hidden className="flex-shrink-0 text-forest" />
-              <div className="flex-1">
-                <h2 className="mb-1 font-serif text-base font-semibold text-text">
+            <div className="mb-4 flex items-start gap-3">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-sagePale">
+                <Shield size={19} aria-hidden className="text-forest" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="mb-1 font-serif text-[1.15rem] font-semibold leading-tight text-text">
                   Your privacy matters
                 </h2>
-                <p className="text-xs leading-relaxed text-muted">
+                <p className="max-w-[490px] text-[13px] leading-relaxed text-muted">
                   We use essential cookies to keep the site working and optional cookies for
                   analytics and personalisation. You&apos;re in control.{' '}
                   <button
                     type="button"
                     onClick={() => setModal('cookie')}
-                    className="border-none bg-transparent p-0 font-medium text-forest underline"
+                    className="border-none bg-transparent p-0 font-medium text-forest underline decoration-forest/40 underline-offset-2"
                   >
                     Read our cookie policy
                   </button>
@@ -135,7 +137,7 @@ export default function CookieConsent() {
                 type="button"
                 onClick={decline}
                 aria-label="Reject optional cookies and dismiss"
-                className="flex-shrink-0 cursor-pointer rounded-lg border-none bg-transparent p-1 text-muted hover:text-text"
+                className="flex-shrink-0 cursor-pointer rounded-full border-none bg-transparent p-1.5 text-muted transition hover:bg-bg hover:text-text"
               >
                 <X size={16} />
               </button>
@@ -145,7 +147,7 @@ export default function CookieConsent() {
               type="button"
               onClick={() => setExpanded((s) => !s)}
               aria-expanded={expanded}
-              className="mb-2 flex w-full cursor-pointer items-center justify-between gap-2 border-none bg-transparent text-left text-xs font-semibold text-forest"
+              className="mb-3 flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-bg px-3 py-2.5 text-left text-[13px] font-semibold text-forest transition hover:border-forest/30"
             >
               <span>Customise preferences</span>
               <ChevronDown
@@ -155,7 +157,7 @@ export default function CookieConsent() {
             </button>
 
             {expanded && (
-              <div className="mb-3 flex flex-col gap-2 rounded-[10px] bg-bg p-3">
+              <div className="mb-4 grid gap-2 rounded-xl border border-border bg-bg p-3.5">
                 <ConsentRow
                   title="Essential"
                   desc="Required for cart, login, and checkout."
@@ -177,11 +179,11 @@ export default function CookieConsent() {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2">
+            <div className={`grid gap-2 ${expanded ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
               <button
                 type="button"
                 onClick={decline}
-                className="flex-1 cursor-pointer rounded-[10px] border border-border bg-transparent px-3 py-2.5 text-xs font-semibold text-muted"
+                className="min-h-11 cursor-pointer rounded-xl border border-border bg-transparent px-4 py-2.5 text-sm font-semibold text-muted transition hover:border-forest/30 hover:text-forest"
               >
                 Reject optional
               </button>
@@ -189,7 +191,7 @@ export default function CookieConsent() {
                 <button
                   type="button"
                   onClick={acceptSelected}
-                  className="flex-1 cursor-pointer rounded-[10px] border border-forest bg-transparent px-3 py-2.5 text-xs font-semibold text-forest"
+                  className="min-h-11 cursor-pointer rounded-xl border border-forest bg-transparent px-4 py-2.5 text-sm font-semibold text-forest transition hover:bg-sagePale"
                 >
                   Save preferences
                 </button>
@@ -198,7 +200,7 @@ export default function CookieConsent() {
                 ref={acceptRef}
                 type="button"
                 onClick={acceptAll}
-                className="flex-1 cursor-pointer rounded-[10px] border-none bg-forest px-3 py-2.5 text-xs font-semibold text-white"
+                className="min-h-11 cursor-pointer rounded-xl border-none bg-forest px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(45,74,50,0.18)] transition hover:bg-[#203927]"
               >
                 Accept all
               </button>
@@ -220,7 +222,7 @@ interface ConsentRowProps {
 
 function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowProps) {
   return (
-    <label className="flex cursor-pointer items-start gap-3">
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg px-1 py-1">
       <input
         type="checkbox"
         checked={on}
@@ -230,8 +232,8 @@ function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowPro
         aria-describedby={`${title}-desc`}
       />
       <span className="flex-1">
-        <span className="block text-xs font-semibold text-text">{title}</span>
-        <span id={`${title}-desc`} className="block text-[11px] leading-relaxed text-muted">
+        <span className="block text-[13px] font-semibold text-text">{title}</span>
+        <span id={`${title}-desc`} className="block text-xs leading-relaxed text-muted">
           {desc}
           {locked && <span className="ml-1 text-forest">(always on)</span>}
         </span>
