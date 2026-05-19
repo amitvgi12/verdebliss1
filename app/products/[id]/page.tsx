@@ -98,6 +98,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       images: [image],
       url: canonical,
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${p.name} | VerdeBliss`,
+      description: `${p.description} Shop ${p.name} at VerdeBliss. Free shipping above ₹499.`,
+      images: [image],
+    },
     alternates: { canonical },
   }
 }

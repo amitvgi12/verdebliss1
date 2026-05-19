@@ -141,6 +141,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: article.description,
       url: `https://www.verdebliss.com/blog/${slug}`,
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.description,
+    },
     alternates: { canonical: `https://www.verdebliss.com/blog/${slug}` },
   }
 }

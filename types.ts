@@ -10,6 +10,7 @@ export interface Product {
   category?: ProductCategory | string
   price: number
   mrp?: number | null
+  compliance_flags?: string[] | null
   rating?: number | null
   review_count?: number
   skin_types?: SkinType[] | string[]

@@ -61,7 +61,7 @@ export default function ProductCard({ product: p }: { product: Product }) {
 
         <div className="vb-product-card__badges">
           {stockOut && <ProductBadge label="SOLD OUT" tone="danger" />}
-          {p.ingredient === 'Green Tea' && (
+          {(p.compliance_flags ?? []).includes('age_restricted_12plus') && (
             <ProductBadge
               label="12+ ONLY"
               tone="warning"
