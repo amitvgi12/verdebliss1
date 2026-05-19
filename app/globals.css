@@ -3022,6 +3022,34 @@ video {
   font-weight: 800;
 }
 
+.legal-section-card--cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--color-sage-pale);
+  border-color: var(--color-sage);
+}
+
+.legal-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-forest);
+  text-decoration: underline;
+  text-decoration-color: #2d4a3266;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.legal-cta-link:hover {
+  color: var(--color-olive);
+}
+
 /* ── Footer + floating support ─────────────────────────────── */
 .footer-socials {
   display: flex;

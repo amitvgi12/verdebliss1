@@ -221,8 +221,8 @@ export default function ProductDetailClient({
     PRODUCT_COMPLIANCE[id] ??
     null
   const related = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
-  const mrp = Math.round((p.price ?? 0) * 1.25)
-  const discount = Math.round(((mrp - (p.price ?? 0)) / mrp) * 100)
+  const mrp = typeof p.mrp === 'number' && p.mrp > (p.price ?? 0) ? p.mrp : null
+  const discount = mrp ? Math.round(((mrp - (p.price ?? 0)) / mrp) * 100) : null
   const loyalPts = Math.floor((p.price ?? 0) / 10)
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
   const stockCount = typeof p.stock === 'number' ? p.stock : null
@@ -498,21 +498,25 @@ export default function ProductDetailClient({
                 >
                   ₹{(p.price ?? 0).toLocaleString()}
                 </span>
-                <span style={{ fontSize: 14, color: C.light, textDecoration: 'line-through' }}>
-                  ₹{mrp.toLocaleString()}
-                </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    background: C.gold,
-                    color: 'white',
-                    padding: '3px 10px',
-                    borderRadius: 99,
-                  }}
-                >
-                  {discount}% OFF
-                </span>
+                {mrp !== null && (
+                  <span style={{ fontSize: 14, color: C.light, textDecoration: 'line-through' }}>
+                    ₹{mrp.toLocaleString()}
+                  </span>
+                )}
+                {discount !== null && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      background: C.gold,
+                      color: 'white',
+                      padding: '3px 10px',
+                      borderRadius: 99,
+                    }}
+                  >
+                    {discount}% OFF
+                  </span>
+                )}
               </div>
               <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>
                 MRP inclusive of all taxes

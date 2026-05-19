@@ -2,7 +2,13 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { LegalDocument } from '@/constants/legal'
 
-export default function LegalPage({ doc }: { doc: LegalDocument }) {
+export default function LegalPage({
+  doc,
+  cta,
+}: {
+  doc: LegalDocument
+  cta?: React.ReactNode
+}) {
   return (
     <article className="bg-bg">
       <header className="legal-hero px-4">
@@ -28,6 +34,7 @@ export default function LegalPage({ doc }: { doc: LegalDocument }) {
             <p>{section.body}</p>
           </section>
         ))}
+        {cta}
         <div className="legal-contact-card">
           <h2>Questions?</h2>
           <p>

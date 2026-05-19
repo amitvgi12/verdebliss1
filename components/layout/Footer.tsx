@@ -27,7 +27,8 @@ const SUPPORT_LINKS: Array<[string, string]> = [
   ['FAQ', '/faq'],
   ['My Account', '/account'],
   ['Orders', '/account'],
-  ['Returns & Refund', '/refund'],
+  ['Returns & Refund Policy', '/returns-refunds'],
+  ['Request a Refund', '/refund'],
   ['Contact', '/contact'],
 ]
 
