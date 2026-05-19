@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   requireSameOriginRequest: vi.fn(),
   getUserFromAuthorizationHeader: vi.fn(),
   isRateLimited: vi.fn(),
+  getProductsServer: vi.fn(),
 }))
 
 vi.mock('@/lib/csrf', () => ({
@@ -21,15 +22,38 @@ vi.mock('@/lib/rate-limit', () => ({
 }))
 
 vi.mock('@/lib/products-server', () => ({
-  getProductsServer: vi.fn(async () => []),
+  getProductsServer: mocks.getProductsServer,
 }))
 
 import { POST } from '@/app/api/chat/route'
+
+function chatRequest(message: string) {
+  return new Request('http://localhost/api/chat', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-vb-ai-consent': 'granted',
+    },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: message }],
+    }),
+  })
+}
 
 describe('chat API consent gate', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.requireSameOriginRequest.mockReturnValue(null)
+    mocks.getUserFromAuthorizationHeader.mockResolvedValue(null)
+    mocks.isRateLimited.mockResolvedValue(false)
+    mocks.getProductsServer.mockResolvedValue([])
+    vi.stubEnv('GEMINI_API_KEY', 'gemini-test-key')
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
   })
 
   it('rejects requests before optional third-party AI consent is granted', async () => {
@@ -50,5 +74,49 @@ describe('chat API consent gate', () => {
     await expect(response.json()).resolves.toEqual({ error: 'AI support consent is required.' })
     expect(mocks.getUserFromAuthorizationHeader).not.toHaveBeenCalled()
     expect(mocks.isRateLimited).not.toHaveBeenCalled()
+  })
+
+  it('keeps Gemini thinking enabled and reuses the formatted catalogue within the TTL', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(1_000)
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'Here is a refined ritual.' }] } }],
+        })
+      ),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    mocks.getProductsServer
+      .mockResolvedValueOnce([
+        {
+          id: '1',
+          name: 'Bakuchiol Renewal Serum',
+          price: 250,
+          skin_types: ['Dry', 'Combination'],
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: '2',
+          name: 'Rose Hip Glow Moisturiser',
+          price: 390,
+          skin_types: ['Dry', 'Sensitive'],
+        },
+      ])
+
+    await POST(chatRequest('Suggest a serum'))
+    await POST(chatRequest('Suggest a moisturiser'))
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    const firstPayload = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string)
+    const secondPayload = JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string)
+    const secondPrompt = secondPayload.system_instruction.parts[0].text as string
+
+    expect(firstPayload.generationConfig.thinkingConfig.thinkingBudget).toBe(512)
+    expect(secondPrompt).toContain('Bakuchiol Renewal Serum')
+    expect(secondPrompt).not.toContain('Rose Hip Glow Moisturiser')
   })
 })

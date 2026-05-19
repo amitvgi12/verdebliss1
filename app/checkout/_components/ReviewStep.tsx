@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { AlertCircle, Loader2, Banknote, Minus, Plus, Trash2 } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
 import TurnstileWidget from '@/components/ui/TurnstileWidget'
+import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import type { CartItem } from '@/types'
 import type { CheckoutForm, CheckoutStatus, PaymentAction } from '../checkout-types'
 
@@ -94,7 +95,7 @@ export default function ReviewStep({
 
           <ul className="checkout-review-items__list">
             {items.map((item) => {
-              const maxQty = Math.min(item.stock ?? 10, 10)
+              const maxQty = Math.min(item.stock ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
               const canIncrease = item.qty < maxQty
 
               return (

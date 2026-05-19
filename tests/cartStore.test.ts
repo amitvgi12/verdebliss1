@@ -1,16 +1,20 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { useCartStore, CART_MAX_QTY } from '@/store/cartStore'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { MAX_CART_ITEM_QTY } from '@/constants/cart'
+import { useCartStore } from '@/store/cartStore'
+import { useToastStore } from '@/store/toastStore'
 import type { CartItem } from '@/types'
-
-vi.mock('@/store/toastStore', () => ({
-  useToastStore: { getState: () => ({ push: () => undefined }) },
-}))
 
 const sumTotal = (items: CartItem[]) => items.reduce((s, i) => s + i.price * i.qty, 0)
 const sumCount = (items: CartItem[]) => items.reduce((s, i) => s + i.qty, 0)
 
 beforeEach(() => {
+  vi.useFakeTimers()
   useCartStore.setState({ items: [], isOpen: false })
+  useToastStore.setState({ toasts: [] })
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 const SERUM = { id: '7', name: 'Niacinamide Pore Serum', price: 2450 }
@@ -167,24 +171,32 @@ describe('cartStore — clearCart', () => {
 })
 
 describe('cartStore — qty ceiling', () => {
-  it(`addItem caps qty at CART_MAX_QTY (${CART_MAX_QTY})`, () => {
+  it(`addItem caps qty at MAX_CART_ITEM_QTY (${MAX_CART_ITEM_QTY}) and warns`, () => {
     const { addItem } = useCartStore.getState()
-    for (let i = 0; i < CART_MAX_QTY + 1; i++) addItem(SERUM)
-    expect(useCartStore.getState().items[0]?.qty).toBe(CART_MAX_QTY)
+    for (let i = 0; i < MAX_CART_ITEM_QTY + 1; i++) addItem(SERUM)
+    expect(useCartStore.getState().items[0]?.qty).toBe(MAX_CART_ITEM_QTY)
+    expect(useToastStore.getState().toasts.at(-1)).toMatchObject({
+      msg: `Maximum ${MAX_CART_ITEM_QTY} per order for ${SERUM.name}.`,
+      type: 'warning',
+    })
   })
 
-  it('addItem respects stock ceiling when stock < CART_MAX_QTY', () => {
+  it('addItem respects stock ceiling when stock < MAX_CART_ITEM_QTY', () => {
     const { addItem } = useCartStore.getState()
     const lowStock = { ...SERUM, stock: 3 }
     for (let i = 0; i < 5; i++) addItem(lowStock)
     expect(useCartStore.getState().items[0]?.qty).toBe(3)
   })
 
-  it('updateQty does not increment past CART_MAX_QTY', () => {
+  it('updateQty does not increment past MAX_CART_ITEM_QTY and warns', () => {
     const { addItem, updateQty } = useCartStore.getState()
-    for (let i = 0; i < CART_MAX_QTY; i++) addItem(SERUM)
+    for (let i = 0; i < MAX_CART_ITEM_QTY; i++) addItem(SERUM)
     updateQty(SERUM.id, 1)
-    expect(useCartStore.getState().items[0]?.qty).toBe(CART_MAX_QTY)
+    expect(useCartStore.getState().items[0]?.qty).toBe(MAX_CART_ITEM_QTY)
+    expect(useToastStore.getState().toasts.at(-1)).toMatchObject({
+      msg: `Maximum ${MAX_CART_ITEM_QTY} per order for ${SERUM.name}.`,
+      type: 'warning',
+    })
   })
 
   it('updateQty still decrements normally below the ceiling', () => {

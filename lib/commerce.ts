@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import { PRODUCTS } from '@/constants/products'
 import { getShippingCost } from '@/constants/shipping'
 import { COD_MAX_TOTAL } from '@/constants/checkout'
+import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import { pointsForSubtotal } from '@/lib/loyalty'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
@@ -144,7 +145,7 @@ export function validateCartItems(raw: unknown): IncomingCartItem[] {
     const id = asText(source.id)
     const qty = Number(source.qty)
     if (!id) throw new Error('Invalid product in cart')
-    if (!Number.isInteger(qty) || qty < 1 || qty > 10) {
+    if (!Number.isInteger(qty) || qty < 1 || qty > MAX_CART_ITEM_QTY) {
       throw new Error(`Invalid quantity for product ${id}`)
     }
     return { id, qty }

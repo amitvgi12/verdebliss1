@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import type { ReactNode } from 'react'
 
 interface FadeInProps {
@@ -11,6 +11,15 @@ interface FadeInProps {
 }
 
 export default function FadeIn({ children, delay = 0, direction = 'up', className }: FadeInProps) {
+  const shouldReduce = useReducedMotion()
+
+  // When the user prefers reduced motion, skip the whileInView pattern entirely.
+  // motion.div with whileInView starts at opacity:0 and only snaps visible on
+  // scroll entry — still jarring for vestibular disorders even with skipAnimations.
+  if (shouldReduce) {
+    return <div className={className}>{children}</div>
+  }
+
   const y = direction === 'up' ? 24 : 0
   const x = direction === 'left' ? -24 : 0
 

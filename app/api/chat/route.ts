@@ -36,6 +36,10 @@ interface TrustedContext {
   orders: string
 }
 
+const CATALOGUE_CACHE_TTL_MS = 60_000
+const GEMINI_THINKING_BUDGET = 512
+let catalogueCache: { value: string; expiresAt: number } | null = null
+
 /**
  * Strips characters that can break out of system-prompt context. Crucially,
  * this runs on every DB-sourced string before concatenation into the system
@@ -172,8 +176,18 @@ function buildCatalogue(products: Product[]): string {
   ].join('\n')
 }
 
+function getCachedCatalogue(products: Product[]): string {
+  const now = Date.now()
+  if (catalogueCache && catalogueCache.expiresAt > now) {
+    return catalogueCache.value
+  }
+  const value = buildCatalogue(products)
+  catalogueCache = { value, expiresAt: now + CATALOGUE_CACHE_TTL_MS }
+  return value
+}
+
 function buildSystemPrompt(ctx: TrustedContext, products: Product[]): string {
-  const catalogue = buildCatalogue(products)
+  const catalogue = getCachedCatalogue(products)
 
   const policies = `
 Key policies: Free shipping ₹499+. Returns within 14 days (unopened). Refund 3–7 business days.
@@ -228,7 +242,7 @@ async function callGemini(
   // thinkingConfig is only valid on Gemini 2.5+ — omit for the 2.0-flash fallback
   // to avoid a 400 on API versions that reject unknown keys.
   if (model.startsWith('gemini-2.5')) {
-    generationConfig.thinkingConfig = { thinkingBudget: 512 }
+    generationConfig.thinkingConfig = { thinkingBudget: GEMINI_THINKING_BUDGET }
   }
   const res = await fetch(url, {
     method: 'POST',

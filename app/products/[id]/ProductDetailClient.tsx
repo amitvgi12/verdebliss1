@@ -46,6 +46,7 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
+import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import type { ApprovedReview, ReviewAggregate } from '@/lib/products-server'
 import type { Product } from '@/types'
 import { COD_MAX_TOTAL } from '@/constants/checkout'
@@ -227,7 +228,7 @@ export default function ProductDetailClient({
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
   const stockCount = typeof p.stock === 'number' ? p.stock : null
   const stockOut = stockCount === 0
-  const maxQty = Math.min(stockCount ?? 10, 10)
+  const maxQty = Math.min(stockCount ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
   const stockTone =
     stockCount == null ? null : stockCount <= 0 ? 'out' : stockCount <= 5 ? 'low' : 'in'
   const amRoutine = buildRoutine(all, p, 'AM')

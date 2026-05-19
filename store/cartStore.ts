@@ -1,10 +1,9 @@
 'use client'
 import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
-import type { CartItem, CartState } from '@/types'
+import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import { useToastStore } from '@/store/toastStore'
-
-export const CART_MAX_QTY = 10
+import type { CartItem, CartState } from '@/types'
 
 const noopStorage: StateStorage = {
   getItem: () => null,
@@ -25,9 +24,11 @@ export const useCartStore = create<CartState>()(
       isOpen: false,
       addItem: (product) => {
         const existing = get().items.find((i) => i.id === product.id)
-        const ceiling = Math.min(product.stock ?? CART_MAX_QTY, CART_MAX_QTY)
+        const ceiling = Math.min(product.stock ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
         if (existing && existing.qty >= ceiling) {
-          useToastStore.getState().push(`Maximum ${ceiling} per order`, 'info')
+          useToastStore
+            .getState()
+            .push(`Maximum ${ceiling} per order for ${existing.name}.`, 'warning')
           return
         }
         set((state) => ({
@@ -40,9 +41,9 @@ export const useCartStore = create<CartState>()(
       updateQty: (id, delta) => {
         const item = get().items.find((i) => i.id === id)
         if (!item) return
-        const ceiling = Math.min(item.stock ?? CART_MAX_QTY, CART_MAX_QTY)
+        const ceiling = Math.min(item.stock ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
         if (delta > 0 && item.qty >= ceiling) {
-          useToastStore.getState().push(`Maximum ${ceiling} per order`, 'info')
+          useToastStore.getState().push(`Maximum ${ceiling} per order for ${item.name}.`, 'warning')
           return
         }
         set((state) => ({
