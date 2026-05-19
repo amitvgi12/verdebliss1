@@ -2,6 +2,9 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import type { CartItem, CartState } from '@/types'
+import { useToastStore } from '@/store/toastStore'
+
+export const CART_MAX_QTY = 10
 
 const noopStorage: StateStorage = {
   getItem: () => null,
@@ -17,25 +20,37 @@ export const selectPointsToEarn = (s: CartState): number => Math.floor(selectTot
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
       isOpen: false,
-      addItem: (product) =>
-        set((state) => {
-          const existing = state.items.find((i) => i.id === product.id)
-          return {
-            items: existing
-              ? state.items.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i))
-              : [...state.items, { ...product, qty: 1 }],
-          }
-        }),
+      addItem: (product) => {
+        const existing = get().items.find((i) => i.id === product.id)
+        const ceiling = Math.min(product.stock ?? CART_MAX_QTY, CART_MAX_QTY)
+        if (existing && existing.qty >= ceiling) {
+          useToastStore.getState().push(`Maximum ${ceiling} per order`, 'info')
+          return
+        }
+        set((state) => ({
+          items: existing
+            ? state.items.map((i) => (i.id === product.id ? { ...i, qty: i.qty + 1 } : i))
+            : [...state.items, { ...product, qty: 1 }],
+        }))
+      },
       removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
-      updateQty: (id, delta) =>
+      updateQty: (id, delta) => {
+        const item = get().items.find((i) => i.id === id)
+        if (!item) return
+        const ceiling = Math.min(item.stock ?? CART_MAX_QTY, CART_MAX_QTY)
+        if (delta > 0 && item.qty >= ceiling) {
+          useToastStore.getState().push(`Maximum ${ceiling} per order`, 'info')
+          return
+        }
         set((state) => ({
           items: state.items.map((i) =>
-            i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i
+            i.id === id ? { ...i, qty: Math.min(ceiling, Math.max(1, i.qty + delta)) } : i
           ),
-        })),
+        }))
+      },
       clearCart: () => set({ items: [] }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),

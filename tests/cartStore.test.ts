@@ -1,6 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { useCartStore } from '@/store/cartStore'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { useCartStore, CART_MAX_QTY } from '@/store/cartStore'
 import type { CartItem } from '@/types'
+
+vi.mock('@/store/toastStore', () => ({
+  useToastStore: { getState: () => ({ push: () => undefined }) },
+}))
 
 const sumTotal = (items: CartItem[]) => items.reduce((s, i) => s + i.price * i.qty, 0)
 const sumCount = (items: CartItem[]) => items.reduce((s, i) => s + i.qty, 0)
@@ -159,5 +163,42 @@ describe('cartStore — clearCart', () => {
     addItem(TONER)
     clearCart()
     expect(sumTotal(useCartStore.getState().items)).toBe(0)
+  })
+})
+
+describe('cartStore — qty ceiling', () => {
+  it(`addItem caps qty at CART_MAX_QTY (${CART_MAX_QTY})`, () => {
+    const { addItem } = useCartStore.getState()
+    for (let i = 0; i < CART_MAX_QTY + 1; i++) addItem(SERUM)
+    expect(useCartStore.getState().items[0]?.qty).toBe(CART_MAX_QTY)
+  })
+
+  it('addItem respects stock ceiling when stock < CART_MAX_QTY', () => {
+    const { addItem } = useCartStore.getState()
+    const lowStock = { ...SERUM, stock: 3 }
+    for (let i = 0; i < 5; i++) addItem(lowStock)
+    expect(useCartStore.getState().items[0]?.qty).toBe(3)
+  })
+
+  it('updateQty does not increment past CART_MAX_QTY', () => {
+    const { addItem, updateQty } = useCartStore.getState()
+    for (let i = 0; i < CART_MAX_QTY; i++) addItem(SERUM)
+    updateQty(SERUM.id, 1)
+    expect(useCartStore.getState().items[0]?.qty).toBe(CART_MAX_QTY)
+  })
+
+  it('updateQty still decrements normally below the ceiling', () => {
+    const { addItem, updateQty } = useCartStore.getState()
+    addItem(SERUM)
+    addItem(SERUM)
+    updateQty(SERUM.id, -1)
+    expect(useCartStore.getState().items[0]?.qty).toBe(1)
+  })
+
+  it('updateQty floor stays at 1', () => {
+    const { addItem, updateQty } = useCartStore.getState()
+    addItem(SERUM)
+    updateQty(SERUM.id, -1)
+    expect(useCartStore.getState().items[0]?.qty).toBe(1)
   })
 })
