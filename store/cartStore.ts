@@ -1,7 +1,13 @@
 'use client'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import type { CartItem, CartState } from '@/types'
+
+const noopStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined,
+}
 
 export const selectTotal = (s: CartState): number =>
   s.items.reduce((sum: number, i: CartItem) => sum + i.price * i.qty, 0)
@@ -36,6 +42,9 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'verdebliss-cart',
+      storage: createJSONStorage(() =>
+        typeof window === 'undefined' ? noopStorage : window.localStorage
+      ),
       partialize: (state) => ({ items: state.items }),
     }
   )

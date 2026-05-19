@@ -36,6 +36,29 @@ import type {
   RazorpaySuccess,
 } from './checkout-types'
 
+type CartPersistApi = {
+  hasHydrated?: () => boolean
+  onFinishHydration?: (callback: () => void) => () => void
+}
+
+function getCartPersist(): CartPersistApi | undefined {
+  return (useCartStore as typeof useCartStore & { persist?: CartPersistApi }).persist
+}
+
+function readPersistedCartItems(): CartItem[] {
+  if (typeof window === 'undefined') return []
+
+  try {
+    const raw = window.localStorage.getItem('verdebliss-cart')
+    if (!raw) return []
+
+    const parsed = JSON.parse(raw) as { state?: { items?: CartItem[] } } | null
+    return Array.isArray(parsed?.state?.items) ? parsed.state.items : []
+  } catch {
+    return []
+  }
+}
+
 /* ── Load Razorpay checkout script dynamically ─────────────────────────
  * Programmatic script injection. Razorpay's origin is allow-listed in the
  * CSP (see proxy.ts) so this works without a nonce. We keep the script
@@ -189,6 +212,7 @@ export default function Checkout() {
   const [checkoutError, setCheckoutError] = useState('')
   const [codVerificationRequired, setCodVerificationRequired] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [cartHydrated, setCartHydrated] = useState(() => getCartPersist()?.hasHydrated?.() ?? true)
   const requiresTurnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
   const [form, setForm] = useState<CheckoutForm>(() =>
@@ -196,10 +220,34 @@ export default function Checkout() {
   )
   const [addressHydrated, setAddressHydrated] = useState(false)
 
-  /* Redirect to products if cart is empty */
   useEffect(() => {
-    if (items.length === 0 && status !== 'success') router.replace('/products')
-  }, [items.length, router, status])
+    const persist = getCartPersist()
+    if (!persist) {
+      setCartHydrated(true)
+      return
+    }
+
+    const unsubscribe = persist.onFinishHydration?.(() => setCartHydrated(true))
+    setCartHydrated(persist.hasHydrated?.() ?? true)
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    if (items.length > 0) return
+
+    const persistedItems = readPersistedCartItems()
+    if (persistedItems.length > 0) {
+      useCartStore.setState({ items: persistedItems })
+    }
+  }, [items.length])
+
+  /* Redirect to products if cart is empty after persisted cart state is ready. */
+  useEffect(() => {
+    if (!cartHydrated) return
+    if (items.length === 0 && readPersistedCartItems().length === 0 && status !== 'success') {
+      router.replace('/products')
+    }
+  }, [cartHydrated, items.length, router, status])
 
   useEffect(() => {
     let cancelled = false

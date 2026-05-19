@@ -32,13 +32,13 @@ const config: Config = {
         terraPale: '#F6EDE8',
         // Gold
         gold: '#BFA06A',
-        goldText: '#8B6914',
+        goldText: '#7A5A0F',
         goldPale: '#F5EDD8',
         // Ivory
         ivory: '#F2EAE0',
         // Text
         text: '#1C221E',
-        muted: '#6B7A5E',
+        muted: '#5C6C4D',
         light: '#A8BAA9',
         // Structure
         border: '#E4DAD0',

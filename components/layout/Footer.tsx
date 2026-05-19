@@ -41,7 +41,7 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
           <li key={label}>
             <Link
               href={path}
-              className="block py-[3px] text-[13px] text-white/55 transition hover:text-white/90"
+              className="block py-[3px] text-[13px] text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
             >
               {label}
             </Link>
@@ -54,7 +54,7 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
 
 export default function Footer() {
   return (
-    <footer className="site-footer bg-forest px-4 text-white/55">
+    <footer className="site-footer bg-forest px-4 text-white/75">
       <div className="site-container site-footer__grid">
         {/* Brand column */}
         <div className="site-footer__brand">
@@ -72,12 +72,12 @@ export default function Footer() {
             />
           </Link>
 
-          <p className="mb-3 max-w-[240px] text-[13px] leading-relaxed">
+          <p className="mb-3 max-w-[240px] text-[13px] leading-relaxed text-white/80">
             Where nature becomes luxury. Botanical skincare rituals for your most radiant skin.
           </p>
           <a
             href={`mailto:${BUSINESS_COMPLIANCE.supportEmail}`}
-            className="mb-3 block text-[11px] font-semibold text-sage hover:underline"
+            className="mb-3 block text-[11px] font-semibold text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
           >
             📩 {BUSINESS_COMPLIANCE.supportEmail}
           </a>

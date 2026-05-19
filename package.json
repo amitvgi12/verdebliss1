@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:a11y": "playwright test --config=playwright.config.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
@@ -15,7 +16,7 @@
     "prebuild": "node scripts/cleanup-legacy-sentry.mjs",
     "schema:drift": "bash scripts/check-schema-drift.sh",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run lint && npm run typecheck && npm test && npm run build"
+    "verify": "npm run lint && npm run typecheck && npm test && npm run test:a11y && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
@@ -28,6 +29,8 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.1.17",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",

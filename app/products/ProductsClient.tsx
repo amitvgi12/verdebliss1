@@ -94,7 +94,7 @@ export default function ProductsClient({
             />
             <FilterGroup
               label="SKIN TYPE"
-              activeColor="text-terra"
+              activeColor="text-text"
               activeBg="bg-terraPale"
               activeBorder="border-l-terra"
               options={SKIN_TYPES}

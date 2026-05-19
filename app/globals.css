@@ -30,7 +30,7 @@
 
   /* Gold */
   --color-gold: #bfa06a;
-  --color-goldText: #8b6914;
+  --color-goldText: #7a5a0f;
   --color-goldPale: #f5edd8;
 
   /* Ivory */
@@ -38,7 +38,7 @@
 
   /* Text */
   --color-text: #1c221e;
-  --color-muted: #6b7a5e;
+  --color-muted: #5c6c4d;
   --color-light: #a8baa9;
 
   /* Structure */
@@ -679,14 +679,19 @@ video {
   margin-top: 24px;
   border-top: 1px solid rgb(255 255 255 / 10%);
   padding-top: 16px;
-  color: rgb(255 255 255 / 70%);
+  color: rgb(255 255 255 / 78%);
   font-size: 11px;
   line-height: 1.7;
 }
 
 .site-footer__compliance a {
+  color: rgb(255 255 255);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.site-footer__compliance a:hover {
+  color: var(--color-gold);
 }
 
 @media (max-width: 900px) {
@@ -3032,7 +3037,7 @@ video {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   padding: 6px 9px;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 0.7rem;
   background: rgba(255, 255, 255, 0.04);
   transition:
@@ -3043,7 +3048,7 @@ video {
 
 .footer-social-button:hover {
   border-color: rgba(255, 255, 255, 0.24);
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--color-gold);
   background: rgba(255, 255, 255, 0.08);
 }
 
