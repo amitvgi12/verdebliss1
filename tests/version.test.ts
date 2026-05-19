@@ -17,6 +17,8 @@ describe('version API', () => {
     vi.stubEnv('RAZORPAY_WEBHOOK_SECRET', 'webhook')
     vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'site')
     vi.stubEnv('TURNSTILE_SECRET_KEY', 'turnstile-secret')
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com')
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'redis-token')
 
     const response = await GET()
     const body = await response.json()
@@ -26,9 +28,11 @@ describe('version API', () => {
       supabaseAdmin: true,
       razorpay: true,
       turnstile: true,
+      distributedRateLimiter: true,
       staticSupabaseFallback: false,
     })
     expect(JSON.stringify(body)).not.toContain('turnstile-secret')
+    expect(JSON.stringify(body)).not.toContain('redis-token')
     expect(JSON.stringify(body)).not.toContain('rzp_server')
   })
 })

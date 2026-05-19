@@ -31,7 +31,7 @@ const POSTS = [
     category: 'Routines',
     readTime: 8,
     date: 'March 2026',
-    image: '/images/products/shea.webp',
+    image: '/images/ingredients/shea.webp',
   },
   {
     slug: 'organic-skincare-india',

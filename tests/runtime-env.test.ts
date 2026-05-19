@@ -59,13 +59,30 @@ describe('runtime environment policy', () => {
     vi.stubEnv('RAZORPAY_WEBHOOK_SECRET', 'webhook')
     vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', 'site')
     vi.stubEnv('TURNSTILE_SECRET_KEY', 'secret')
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://redis.example.com')
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'redis-token')
 
     expect(getEnvironmentCapabilities()).toEqual({
       publicSupabase: true,
       supabaseAdmin: true,
       razorpay: true,
       turnstile: true,
+      distributedRateLimiter: true,
       staticSupabaseFallback: false,
     })
+  })
+
+  it('recognises Vercel KV Redis aliases for distributed rate limiting', () => {
+    vi.stubEnv('KV_REST_API_REDIS_URL', 'https://vercel-kv.example.com')
+    vi.stubEnv('KV_REST_API_TOKEN', 'kv-write-token')
+
+    expect(getEnvironmentCapabilities().distributedRateLimiter).toBe(true)
+  })
+
+  it('does not report distributed rate limiting for raw redis URLs', () => {
+    vi.stubEnv('KV_REST_API_REDIS_URL', 'redis://default:token@example.upstash.io:6379')
+    vi.stubEnv('KV_REST_API_TOKEN', 'kv-write-token')
+
+    expect(getEnvironmentCapabilities().distributedRateLimiter).toBe(false)
   })
 })

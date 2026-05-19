@@ -20,9 +20,7 @@ export function canUseStaticSupabaseFallback(): boolean {
 
 export function hasPublicSupabaseEnv(): boolean {
   // Client bundles only inline statically referenced NEXT_PUBLIC_* variables.
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 }
 
 export function assertPublicSupabaseEnv(): void {
@@ -52,6 +50,18 @@ export function validateStartupEnv(): void {
   })
 }
 
+function hasDistributedRateLimiterEnv(): boolean {
+  const url = [
+    process.env.UPSTASH_REDIS_REST_URL,
+    process.env.KV_REST_API_URL,
+    process.env.KV_REST_API_REDIS_URL,
+    process.env.KV_REST_API_KV_URL,
+  ].find((value) => Boolean(value && /^https?:\/\//i.test(value)))
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN
+
+  return Boolean(url && token)
+}
+
 export function getEnvironmentCapabilities() {
   return {
     publicSupabase: hasPublicSupabaseEnv(),
@@ -65,6 +75,7 @@ export function getEnvironmentCapabilities() {
       process.env.RAZORPAY_WEBHOOK_SECRET
     ),
     turnstile: REQUIRED_PRODUCTION_TURNSTILE_ENV.every((key) => Boolean(process.env[key])),
+    distributedRateLimiter: hasDistributedRateLimiterEnv(),
     staticSupabaseFallback: !hasPublicSupabaseEnv() && canUseStaticSupabaseFallback(),
   }
 }

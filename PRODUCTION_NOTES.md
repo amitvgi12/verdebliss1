@@ -10,7 +10,8 @@ This repository includes the current audit-remediated architecture for the Verde
 - Atomic order finalisation through `public.finalize_commerce_order(...)` in Postgres.
 - Service-role-only order, payment, inventory, and loyalty mutation paths.
 - Supabase RLS for customer data isolation.
-- DB-backed public API rate limiting with local in-memory fallback for development.
+- Redis/KV-first public API rate limiting with Supabase durable fallback and
+  local in-memory fallback only as an emergency/development floor.
 - Product slug redirects and product JSON-LD through script tags.
 - Server-rendered first page of approved product reviews.
 - Semantic product cards using `article`, `Link`, and real buttons.
@@ -22,6 +23,14 @@ This repository includes the current audit-remediated architecture for the Verde
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+# Or, with Vercel KV / Upstash integration aliases:
+# KV_REST_API_URL=
+# KV_REST_API_REDIS_URL=
+# KV_REST_API_KV_URL=
+# KV_REST_API_TOKEN=
+# KV_REST_API_READ_ONLY_TOKEN= # optional for read-only code paths; not enough for rate limiting
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
@@ -31,6 +40,9 @@ NEXT_PUBLIC_GIT_SHA=
 NEXT_PUBLIC_BUILD_TIME=
 ```
 
+Use REST HTTPS URLs for the Redis/KV rate limiter. Raw `redis://` connection
+strings are not accepted by the storefront runtime.
+
 ## Required deployment steps
 
 1. Run `supabase/schema.sql` in Supabase SQL Editor.
@@ -38,7 +50,9 @@ NEXT_PUBLIC_BUILD_TIME=
 3. Configure Razorpay webhook URL: `/api/webhooks/razorpay`.
 4. Deploy to Vercel with the environment variables above.
 5. Confirm `/api/version` returns the expected Git SHA after deployment.
-6. Replace all `DEMO` compliance values in `constants/businessCompliance.ts` and all per-product origin/manufacturer/importer declarations in `constants/productCompliance.ts`.
+6. Confirm `/api/version` reports `distributedRateLimiter: true` before enabling
+   COD in production traffic.
+7. Replace all `DEMO` compliance values in `constants/businessCompliance.ts` and all per-product origin/manufacturer/importer declarations in `constants/productCompliance.ts`.
 
 ## Known follow-up items
 

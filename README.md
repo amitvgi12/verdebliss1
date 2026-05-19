@@ -43,7 +43,7 @@ Supabase Postgres
 - Raw-body Razorpay webhook verification.
 - Atomic order finalisation through `public.finalize_commerce_order(...)`.
 - Inventory and loyalty updates happen inside the database transaction.
-- DB-backed API rate limiting.
+- Distributed Redis/KV-first API rate limiting with Supabase durable fallback.
 - Strict TypeScript enabled.
 - Homepage is server-rendered.
 - `/products` now server-renders product cards instead of shipping an empty client shell.
@@ -67,6 +67,17 @@ SUPABASE_ACCESS_TOKEN=
 SUPABASE_PROJECT_REF=
 SUPABASE_DB_PASSWORD=
 
+# Runtime rate limiter: use Upstash Redis REST or Vercel KV REST aliases.
+# URLs must be REST HTTPS endpoints, not redis:// connection strings.
+# A writable token is required; KV_REST_API_READ_ONLY_TOKEN is not used here.
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+# KV_REST_API_URL=
+# KV_REST_API_REDIS_URL=
+# KV_REST_API_KV_URL=
+# KV_REST_API_TOKEN=
+# KV_REST_API_READ_ONLY_TOKEN=
+
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 RAZORPAY_KEY_ID=
 RAZORPAY_KEY_SECRET=
@@ -83,8 +94,9 @@ CF_ORIGIN_SECRET=
 ```
 
 `/api/version` returns deployment metadata plus boolean capability flags for
-public Supabase, Supabase admin, Razorpay, Turnstile, and static-fallback mode.
-It confirms runtime readiness without exposing secret values.
+public Supabase, Supabase admin, Razorpay, Turnstile, distributed rate limiting,
+and static-fallback mode. It confirms runtime readiness without exposing secret
+values.
 
 ## Local setup
 

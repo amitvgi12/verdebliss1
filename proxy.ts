@@ -23,7 +23,7 @@ const CF_ORIGIN_GATE_ENABLED = Boolean(CF_ORIGIN_SECRET)
 // IP so app-level gating is unnecessary. We still want them to work even if
 // Cloudflare's header rewrite ever lags behind a deploy.
 const CF_ORIGIN_GATE_EXEMPT = (path: string) =>
-  path.startsWith('/api/webhooks/') || path === '/api/version'
+  path.startsWith('/api/webhooks/') || path === '/api/version' || path === '/api/csp-report'
 
 export function proxy(request: NextRequest) {
   // 1) Optional Cloudflare origin gate — runs before any other work so direct
@@ -66,6 +66,8 @@ export function proxy(request: NextRequest) {
     "form-action 'self'",
     "manifest-src 'self'",
     'upgrade-insecure-requests',
+    'report-to csp-endpoint',
+    'report-uri /api/csp-report',
   ].join('; ')
 
   // Forward nonce to Server Components.
@@ -75,6 +77,15 @@ export function proxy(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
   response.headers.set('Content-Security-Policy', cspDirectives)
+  response.headers.set('Reporting-Endpoints', 'csp-endpoint="/api/csp-report"')
+  response.headers.set(
+    'Report-To',
+    JSON.stringify({
+      group: 'csp-endpoint',
+      max_age: 10886400,
+      endpoints: [{ url: '/api/csp-report' }],
+    })
+  )
   return response
 }
 
