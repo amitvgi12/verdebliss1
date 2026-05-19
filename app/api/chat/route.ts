@@ -256,6 +256,12 @@ export async function POST(request: Request) {
   const csrfFailure = requireSameOriginRequest(request)
   if (csrfFailure) return csrfFailure
 
+  // Official-UI consent tripwire: the ChatBot component sets this header only
+  // after the user clicks "I consent" in the chat UI. It prevents the official
+  // UI from sending data without the user's explicit action, satisfying the
+  // DPDP Act 2023 consent requirement from the consumer's perspective.
+  // This is NOT a security boundary — anyone can set this header manually.
+  // The actual privacy guarantee is: the official UI won't send without consent.
   if (request.headers.get('x-vb-ai-consent') !== 'granted') {
     return NextResponse.json({ error: 'AI support consent is required.' }, { status: 403 })
   }

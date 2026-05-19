@@ -531,7 +531,25 @@ export default function ProductDetailClient({
                   marginTop: 6,
                 }}
               >
-                <Award size={12} /> Earn {loyalPts} loyalty points with this purchase
+                <Award size={12} />
+                {user ? (
+                  <span>Earn {loyalPts} loyalty points with this purchase</span>
+                ) : (
+                  <span>
+                    <Link
+                      href="/account"
+                      style={{
+                        color: C.gold,
+                        fontWeight: 600,
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '2px',
+                      }}
+                    >
+                      Sign in
+                    </Link>{' '}
+                    to earn {loyalPts} loyalty points with this purchase
+                  </span>
+                )}
               </div>
             </div>
 
