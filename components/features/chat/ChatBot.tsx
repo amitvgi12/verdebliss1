@@ -13,10 +13,16 @@
  */
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, X, Send, LogIn } from 'lucide-react'
+import { MessageCircle, X, Send, LogIn, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { C } from '@/constants/theme'
+import {
+  CONSENT_UPDATED_EVENT,
+  loadStoredConsent,
+  persistConsent,
+  type StoredConsent,
+} from '@/lib/consent'
 import { useAuthStore } from '@/store/authStore'
 
 interface ChatTurn {
@@ -40,6 +46,68 @@ const MEMBER_REPLIES = [
   'Track my latest order',
 ]
 
+const AI_CONSENT_REQUEST =
+  'I can help with that through Verde AI support, but I need your permission first. If you agree, your chat message may be sent to Google Gemini. For signed-in order questions, limited account and recent order context may also be included.'
+
+const AI_CONSENT_DECLINED =
+  "No problem. I can't continue with AI support without that consent. You can still use the FAQ, account page, or contact form, and you can change this later from Cookie preferences in the footer."
+
+function needsPersonalAiContext(message: string) {
+  return /\b(where is my order|track my|latest order|order status|my order|how many loyalty points|how many points|my points|my loyalty|my account|my refund|refund status)\b/i.test(
+    message
+  )
+}
+
+function consentSafeReply(message: string): string | null {
+  const text = message.toLowerCase()
+
+  if (needsPersonalAiContext(message)) return null
+
+  if (/^(hi|hello|hey)\b/.test(text) || text.includes('what can you do')) {
+    return 'I can help with general ingredient basics, routines, shipping, COD, returns, and support links without AI consent. For personalised order help or a richer skin-advisor chat, I will ask before using AI support.'
+  }
+
+  if (text.includes('bakuchiol')) {
+    return 'Bakuchiol is a plant-based retinol alternative used for visible renewal without the usual retinoid harshness. On VerdeBliss, it anchors the Bakuchiol Renewal Serum.'
+  }
+
+  if (text.includes('niacinamide')) {
+    return 'Niacinamide is a calming, barrier-friendly active often used for visible pores, excess oil, and uneven tone. Our Niacinamide Pore Serum is the serum-family option for oily or combination skin.'
+  }
+
+  if (text.includes('spf') || text.includes('sunscreen')) {
+    return 'For daily sun protection, look at Botanical SPF 50 Shield. It is positioned as a featherlight mineral sunscreen with zinc oxide and soothing aloe vera.'
+  }
+
+  if (text.includes('shipping') || text.includes('delivery')) {
+    return 'Shipping is calculated at checkout. Orders above Rs 499 qualify for free shipping; smaller orders show the delivery charge before payment.'
+  }
+
+  if (text.includes('cod') || text.includes('cash on delivery')) {
+    return 'Cash on Delivery is available where the order passes address, phone, PIN-code, and value checks. You will see COD eligibility during checkout.'
+  }
+
+  if (text.includes('refund') || text.includes('return')) {
+    return 'Refunds and returns are handled through the Returns & Refunds policy and the refund request page. Sign in first so eligible orders can be shown before you submit a request.'
+  }
+
+  if (text.includes('contact') || text.includes('support') || text.includes('email')) {
+    return 'You can reach VerdeBliss support through the Contact page or email hello@verdebliss.com. For order history, the Account page is the safest non-AI route.'
+  }
+
+  if (
+    text.includes('routine') ||
+    text.includes('dry skin') ||
+    text.includes('oily skin') ||
+    text.includes('sensitive skin') ||
+    text.includes('combination skin')
+  ) {
+    return 'A simple routine is cleanser, targeted serum, moisturiser, and SPF in the morning. Use the Skin Quiz for a non-AI product path, or allow AI support here for a more tailored chat.'
+  }
+
+  return null
+}
+
 export default function ChatBot() {
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
@@ -49,6 +117,10 @@ export default function ChatBot() {
   const [msgs, setMsgs] = useState<ChatTurn[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [aiConsent, setAiConsent] = useState(false)
+  const [aiConsentDeclined, setAiConsentDeclined] = useState(false)
+  const [awaitingAiConsent, setAwaitingAiConsent] = useState(false)
+  const [pendingAiMessages, setPendingAiMessages] = useState<ChatTurn[] | null>(null)
   const endRef = useRef<HTMLDivElement | null>(null)
 
   /* ── Welcome message depends on auth state ─────────────────────── */
@@ -62,12 +134,117 @@ export default function ChatBot() {
   /* Reset messages when auth state changes */
   useEffect(() => {
     setMsgs([{ role: 'assistant' as const, content: welcomeMsg() }])
+    setAwaitingAiConsent(false)
+    setPendingAiMessages(null)
   }, [user?.id, welcomeMsg])
+
+  useEffect(() => {
+    setAiConsent(loadStoredConsent()?.functional_third_party === true)
+
+    const handleConsentUpdate = (event: Event) => {
+      const consent = (event as CustomEvent<StoredConsent>).detail
+      setAiConsent(consent?.functional_third_party === true)
+      if (consent?.functional_third_party === true) {
+        setAiConsentDeclined(false)
+        setAwaitingAiConsent(false)
+      }
+    }
+
+    window.addEventListener(CONSENT_UPDATED_EVENT, handleConsentUpdate)
+    return () => window.removeEventListener(CONSENT_UPDATED_EVENT, handleConsentUpdate)
+  }, [])
 
   /* Scroll to bottom on new messages */
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [msgs, loading])
+
+  const requestAiReply = useCallback(
+    async (conversation: ChatTurn[], visibleBase: ChatTurn[] = conversation) => {
+      setLoading(true)
+
+      try {
+        const { supabase } = await import('@/lib/supabase')
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData.session?.access_token
+
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-vb-client': 'web',
+            'x-vb-ai-consent': 'granted',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ messages: conversation }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          console.error('[ChatBot] API error', res.status, data)
+          setMsgs([
+            ...visibleBase,
+            {
+              role: 'assistant' as const,
+              content: `${data?.error ?? `Server error ${res.status}`}`,
+            },
+          ])
+        } else {
+          const reply = data.content?.[0]?.text ?? 'Let me help you find the perfect match.'
+          setMsgs([...visibleBase, { role: 'assistant' as const, content: reply }])
+        }
+      } catch (err) {
+        console.error('[ChatBot] Network error', err)
+        setMsgs([
+          ...visibleBase,
+          {
+            role: 'assistant' as const,
+            content: "Couldn't reach the server. Please check your connection and try again.",
+          },
+        ])
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
+
+  const grantAiConsent = async () => {
+    const stored = loadStoredConsent()
+    persistConsent({
+      analytics: stored?.analytics ?? false,
+      marketing: stored?.marketing ?? false,
+      functional_third_party: true,
+    })
+    setAiConsent(true)
+    setAiConsentDeclined(false)
+    setAwaitingAiConsent(false)
+
+    const conversation = pendingAiMessages
+    setPendingAiMessages(null)
+
+    if (conversation) {
+      await requestAiReply(conversation, [
+        ...msgs,
+        { role: 'assistant' as const, content: 'Thanks. I can use AI support for this reply now.' },
+      ])
+    }
+  }
+
+  const declineAiConsent = () => {
+    const stored = loadStoredConsent()
+    persistConsent({
+      analytics: stored?.analytics ?? false,
+      marketing: stored?.marketing ?? false,
+      functional_third_party: false,
+    })
+    setAiConsent(false)
+    setAiConsentDeclined(true)
+    setAwaitingAiConsent(false)
+    setPendingAiMessages(null)
+    setMsgs((current) => [...current, { role: 'assistant' as const, content: AI_CONSENT_DECLINED }])
+  }
 
   /* ── Send message ───────────────────────────────────────────────── */
   const send = async (text?: string) => {
@@ -76,50 +253,27 @@ export default function ChatBot() {
     setInput('')
     const next: ChatTurn[] = [...msgs, { role: 'user' as const, content: msg }]
     setMsgs(next)
-    setLoading(true)
 
-    try {
-      const { supabase } = await import('@/lib/supabase')
-      const { data: sessionData } = await supabase.auth.getSession()
-      const token = sessionData.session?.access_token
+    if (!aiConsent) {
+      const localReply = consentSafeReply(msg)
 
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-vb-client': 'web',
-          'x-vb-ai-consent': 'granted',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ messages: next }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        console.error('[ChatBot] API error', res.status, data)
-        setMsgs([
-          ...next,
-          {
-            role: 'assistant' as const,
-            content: `⚠️ ${data?.error ?? `Server error ${res.status}`}`,
-          },
-        ])
-      } else {
-        const reply = data.content?.[0]?.text ?? 'Let me help you find the perfect match! 🌿'
-        setMsgs([...next, { role: 'assistant' as const, content: reply }])
+      if (localReply) {
+        setMsgs([...next, { role: 'assistant' as const, content: localReply }])
+        return
       }
-    } catch (err) {
-      console.error('[ChatBot] Network error', err)
-      setMsgs([
-        ...next,
-        {
-          role: 'assistant' as const,
-          content: "Couldn't reach the server — please check your connection.",
-        },
-      ])
+
+      if (aiConsentDeclined) {
+        setMsgs([...next, { role: 'assistant' as const, content: AI_CONSENT_DECLINED }])
+        return
+      }
+
+      setPendingAiMessages(next)
+      setAwaitingAiConsent(true)
+      setMsgs([...next, { role: 'assistant' as const, content: AI_CONSENT_REQUEST }])
+      return
     }
-    setLoading(false)
+
+    await requestAiReply(next)
   }
 
   const quickReplies = user ? MEMBER_REPLIES : GUEST_REPLIES
@@ -345,11 +499,76 @@ export default function ChatBot() {
                   </div>
                 </div>
               )}
+
+              {awaitingAiConsent && (
+                <div
+                  role="group"
+                  aria-label="AI support consent"
+                  style={{
+                    marginLeft: 32,
+                    border: `1px solid ${C.border}`,
+                    borderRadius: 14,
+                    background: C.goldPale,
+                    padding: '10px 12px',
+                    display: 'grid',
+                    gap: 9,
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <ShieldCheck size={15} color={C.forest} aria-hidden="true" />
+                    <strong style={{ fontSize: 12, color: C.forest }}>
+                      Allow AI support for this chat?
+                    </strong>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 11, lineHeight: 1.55, color: C.olive }}>
+                    This enables Google Gemini for richer support. Without it, Verde can still
+                    answer general policy and ingredient questions locally.
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={grantAiConsent}
+                      style={{
+                        minHeight: 34,
+                        borderRadius: 999,
+                        border: 'none',
+                        background: C.forest,
+                        color: 'white',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: '7px 13px',
+                      }}
+                    >
+                      Allow AI support
+                    </button>
+                    <button
+                      type="button"
+                      onClick={declineAiConsent}
+                      style={{
+                        minHeight: 34,
+                        borderRadius: 999,
+                        border: `1px solid ${C.border}`,
+                        background: C.warmWhite,
+                        color: C.forest,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: '7px 13px',
+                      }}
+                    >
+                      Not now
+                    </button>
+                  </div>
+                </div>
+              )}
               <div ref={endRef} />
             </div>
 
             {/* Quick replies — show after welcome only */}
-            {msgs.length <= 1 && (
+            {msgs.length <= 1 && !awaitingAiConsent && (
               <div
                 style={{
                   padding: '0 14px 10px',

@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import LegalLinks from '@/components/layout/LegalLinks'
 import SocialButtons from '@/components/layout/SocialButtons'
+import CookiePreferencesButton from '@/components/ui/CookiePreferencesButton'
 import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
 
 const SHOP_LINKS: Array<[string, string]> = [
@@ -123,7 +124,10 @@ export default function Footer() {
 
       <div className="site-container site-footer__meta mt-6 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-4 text-[11px]">
         <span>© 2026 {BUSINESS_COMPLIANCE.legalName}.</span>
-        <LegalLinks />
+        <div className="flex flex-wrap items-center gap-5">
+          <LegalLinks />
+          <CookiePreferencesButton />
+        </div>
       </div>
     </footer>
   )

@@ -1,9 +1,11 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  COOKIE_PREFERENCES_EVENT,
   CONSENT_STORAGE_KEY,
   CONSENT_VERSION,
   hasFunctionalThirdPartyConsent,
   loadStoredConsent,
+  openCookiePreferences,
   persistConsent,
 } from '@/lib/consent'
 
@@ -43,5 +45,15 @@ describe('consent storage', () => {
       functional_third_party: true,
     })
     expect(hasFunctionalThirdPartyConsent()).toBe(true)
+  })
+
+  it('dispatches an event so footer links can reopen cookie preferences', () => {
+    const listener = vi.fn()
+    window.addEventListener(COOKIE_PREFERENCES_EVENT, listener)
+
+    openCookiePreferences()
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    window.removeEventListener(COOKIE_PREFERENCES_EVENT, listener)
   })
 })

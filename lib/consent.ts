@@ -1,6 +1,7 @@
 export const CONSENT_STORAGE_KEY = 'vb_cookie_consent'
 export const CONSENT_VERSION = '1.1'
 export const CONSENT_UPDATED_EVENT = 'vb:consent-updated'
+export const COOKIE_PREFERENCES_EVENT = 'vb:cookie-preferences'
 
 export interface ConsentPrefs {
   analytics: boolean
@@ -61,4 +62,9 @@ export function persistConsent(prefs: ConsentPrefs): StoredConsent | null {
 
 export function hasFunctionalThirdPartyConsent(): boolean {
   return loadStoredConsent()?.functional_third_party === true
+}
+
+export function openCookiePreferences() {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))
 }

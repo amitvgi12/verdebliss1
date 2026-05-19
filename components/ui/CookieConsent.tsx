@@ -8,20 +8,37 @@
  * - CSS-driven responsive (no useWindowWidth → no hydration mismatch).
  */
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, X, ChevronDown } from 'lucide-react'
 import LegalModal, { type LegalModalType } from '@/components/ui/LegalModal'
-import { loadStoredConsent, persistConsent } from '@/lib/consent'
+import { COOKIE_PREFERENCES_EVENT, loadStoredConsent, persistConsent } from '@/lib/consent'
 
-export default function CookieConsent() {
-  const [visible, setVisible] = useState(false)
+interface CookieConsentProps {
+  initialOpen?: boolean
+}
+
+export default function CookieConsent({ initialOpen = false }: CookieConsentProps) {
+  const [visible, setVisible] = useState(initialOpen)
   const [expanded, setExpanded] = useState(false)
   const [analytics, setAnalytics] = useState(false)
   const [marketing, setMarketing] = useState(false)
   const [functionalThirdParty, setFunctionalThirdParty] = useState(false)
   const [modal, setModal] = useState<LegalModalType | null>(null)
   const acceptRef = useRef<HTMLButtonElement | null>(null)
+
+  const syncFromStored = useCallback(() => {
+    const stored = loadStoredConsent()
+    setAnalytics(stored?.analytics ?? false)
+    setMarketing(stored?.marketing ?? false)
+    setFunctionalThirdParty(stored?.functional_third_party ?? false)
+  }, [])
+
+  const openPreferences = useCallback(() => {
+    syncFromStored()
+    setExpanded(true)
+    setVisible(true)
+  }, [syncFromStored])
 
   const acceptAll = () => {
     persistConsent({ analytics: true, marketing: true, functional_third_party: true })
@@ -43,10 +60,20 @@ export default function CookieConsent() {
   }
 
   useEffect(() => {
+    if (initialOpen) {
+      openPreferences()
+      return
+    }
+
     if (loadStoredConsent()) return
     const t = setTimeout(() => setVisible(true), 1200)
     return () => clearTimeout(t)
-  }, [])
+  }, [initialOpen, openPreferences])
+
+  useEffect(() => {
+    window.addEventListener(COOKIE_PREFERENCES_EVENT, openPreferences)
+    return () => window.removeEventListener(COOKIE_PREFERENCES_EVENT, openPreferences)
+  }, [openPreferences])
 
   useEffect(() => {
     if (visible) acceptRef.current?.focus()
