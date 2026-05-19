@@ -58,20 +58,24 @@ export default function Nav() {
 
           {/* Desktop nav links — md+ only via Tailwind, CSS-driven (no JS hydration mismatch) */}
           <div className="ml-2 hidden flex-shrink-0 gap-5 md:flex">
-            {LINKS.map(({ path, label }) => (
-              <Link
-                key={path}
-                href={path}
-                onClick={closeMenus}
-                className={`whitespace-nowrap py-1 text-[13px] transition ${
-                  isActive(path)
-                    ? 'border-b-2 border-gold font-semibold text-forest'
-                    : 'border-b-2 border-transparent font-normal text-muted hover:text-forest'
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            {LINKS.map(({ path, label }) => {
+              const active = isActive(path)
+              return (
+                <Link
+                  key={path}
+                  href={path}
+                  aria-current={active ? 'page' : undefined}
+                  onClick={closeMenus}
+                  className={`whitespace-nowrap py-1 text-[13px] transition ${
+                    active
+                      ? 'border-b-2 border-gold font-semibold text-forest'
+                      : 'border-b-2 border-transparent font-normal text-muted hover:text-forest'
+                  }`}
+                >
+                  {label}
+                </Link>
+              )
+            })}
           </div>
 
           {/* Desktop search */}
@@ -170,20 +174,22 @@ export default function Nav() {
               transition={{ type: 'spring', damping: 26 }}
               className="fixed bottom-0 right-0 top-0 z-[99] flex w-60 flex-col gap-1 bg-card px-5 pb-5 pt-20 md:hidden"
             >
-              {LINKS.map(({ path, label }) => (
-                <Link
-                  key={path}
-                  href={path}
-                  onClick={closeMenus}
-                  className={`block w-full rounded-[10px] px-4 py-3 text-left font-serif text-base ${
-                    isActive(path)
-                      ? 'bg-sagePale font-semibold text-forest'
-                      : 'font-normal text-text'
-                  }`}
-                >
-                  {label}
-                </Link>
-              ))}
+              {LINKS.map(({ path, label }) => {
+                const active = isActive(path)
+                return (
+                  <Link
+                    key={path}
+                    href={path}
+                    aria-current={active ? 'page' : undefined}
+                    onClick={closeMenus}
+                    className={`block w-full rounded-[10px] px-4 py-3 text-left font-serif text-base ${
+                      active ? 'bg-sagePale font-semibold text-forest' : 'font-normal text-text'
+                    }`}
+                  >
+                    {label}
+                  </Link>
+                )
+              })}
             </motion.aside>
           </>
         )}

@@ -1,13 +1,23 @@
 import type { MetadataRoute } from 'next'
 import { getProductsServer } from '@/lib/products-server'
 import { productPath } from '@/lib/seo'
+import routeModified from './route-modified.json'
 
 const BASE_URL = 'https://www.verdebliss.com'
+const fallbackModified = new Date('2026-04-01T00:00:00.000Z')
+const routeModifiedByPath = routeModified as Record<string, string>
 
 export const revalidate = 3600
 
+function routeLastModified(route: string) {
+  const modified = routeModifiedByPath[route]
+  if (!modified) return fallbackModified
+
+  const date = new Date(modified)
+  return Number.isNaN(date.getTime()) ? fallbackModified : date
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const fallbackModified = new Date('2026-04-01T00:00:00.000Z')
   const staticRoutes = [
     '',
     '/products',
@@ -28,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const routes: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${BASE_URL}${route}`,
-    lastModified: fallbackModified,
+    lastModified: routeLastModified(route),
     changeFrequency: route === '' ? 'daily' : 'weekly',
     priority: route === '' ? 1 : 0.7,
   }))
