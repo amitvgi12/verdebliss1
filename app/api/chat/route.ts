@@ -2,7 +2,7 @@
  * app/api/chat/route.ts — Next.js App Router Route Handler
  *
  *   - GEMINI_API_KEY server-only (no NEXT_PUBLIC_ prefix)
- *   - thinkingBudget: 0 (prevents Gemini 2.5 Flash timeout)
+ *   - thinkingBudget: 512 (Gemini 2.5 Flash only; omitted for 2.0-flash fallback)
  *   - x-goog-api-key header auth
  *   - gemini-2.0-flash fallback on 5xx
  *   - Rate limiting per IP AND per user id (defence vs IP rotation)
@@ -221,17 +221,22 @@ async function callGemini(
   messages: ChatMessage[]
 ): Promise<GeminiResult> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
+  const generationConfig: Record<string, unknown> = {
+    maxOutputTokens: 400,
+    temperature: 0.65,
+  }
+  // thinkingConfig is only valid on Gemini 2.5+ — omit for the 2.0-flash fallback
+  // to avoid a 400 on API versions that reject unknown keys.
+  if (model.startsWith('gemini-2.5')) {
+    generationConfig.thinkingConfig = { thinkingBudget: 512 }
+  }
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       system_instruction: { parts: [{ text: systemPrompt }] },
       contents: toGeminiContents(messages),
-      generationConfig: {
-        maxOutputTokens: 400,
-        temperature: 0.65,
-        thinkingConfig: { thinkingBudget: 0 },
-      },
+      generationConfig,
     }),
   })
   const text = await res.text()

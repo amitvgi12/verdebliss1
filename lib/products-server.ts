@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
 import { PRODUCTS } from '@/constants/products'
 import type { Product } from '@/types'
@@ -83,12 +84,15 @@ export function applyApprovedReviewMetrics(
   })
 }
 
-// Cache the catalogue for 5 min. Catalogue is read on every product page,
-// homepage, and chat call — uncached this becomes a per-request DB hit.
-export const getProductsServer = unstable_cache(
-  async (): Promise<Product[]> => fetchProductsFromDb(),
-  ['products-catalogue-v1'],
-  { revalidate: 300, tags: ['products'] }
+// unstable_cache: cross-request persistence, 5-min revalidation.
+// cache(): intra-render deduplication — multiple callers in the same render
+// (homepage, sitemap, chat route) share one resolved promise.
+export const getProductsServer = cache(
+  unstable_cache(
+    async (): Promise<Product[]> => fetchProductsFromDb(),
+    ['products-catalogue-v1'],
+    { revalidate: 300, tags: ['products'] }
+  )
 )
 
 async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {

@@ -8,18 +8,27 @@ import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import { StructuredData } from '@/lib/structured-data'
 import './globals.css'
 import type { ReactNode } from 'react'
-import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
+import localFont from 'next/font/local'
 import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
-const sans = DM_Sans({
-  subsets: ['latin'],
+const sans = localFont({
+  src: [
+    { path: './fonts/dm-sans-latin.woff2', style: 'normal', weight: '100 900' },
+    { path: './fonts/dm-sans-italic-latin.woff2', style: 'italic', weight: '100 900' },
+  ],
   display: 'swap',
   variable: '--font-sans',
 })
 
-const serif = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+const serif = localFont({
+  src: [
+    { path: './fonts/cormorant-garamond-latin.woff2', style: 'normal', weight: '300 600' },
+    {
+      path: './fonts/cormorant-garamond-italic-latin.woff2',
+      style: 'italic',
+      weight: '300 600',
+    },
+  ],
   display: 'swap',
   variable: '--font-serif',
 })

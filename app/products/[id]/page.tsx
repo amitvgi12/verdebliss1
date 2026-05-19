@@ -112,20 +112,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { id } = await params
   const product = await getProductServer(id)
 
-  if (!product) {
-    notFound()
-  }
+  if (!product) notFound()
 
-  if (product?.slug && product.slug !== id) {
+  if (product.slug && product.slug !== id) {
     permanentRedirect(productPath(product))
   }
 
-  const [initialReviews, aggregate] = product
-    ? await Promise.all([
-        getApprovedReviewsServer(product.id),
-        getReviewAggregatesServer(product.id),
-      ])
-    : [[], null]
+  const [initialReviews, aggregate] = await Promise.all([
+    getApprovedReviewsServer(product.id),
+    getReviewAggregatesServer(product.id),
+  ])
 
   return (
     <>
