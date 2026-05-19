@@ -42,7 +42,7 @@ export default function ProductCard({ product: p }: { product: Product }) {
         <Link href={href} aria-label={`View ${p.name}, ₹${price.toLocaleString()}`}>
           <ProductImage
             product={p}
-            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 42vw, 280px"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
           />
         </Link>
 

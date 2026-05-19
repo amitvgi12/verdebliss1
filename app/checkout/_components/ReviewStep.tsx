@@ -100,7 +100,7 @@ export default function ReviewStep({
               return (
                 <li key={item.id} className="checkout-review-item">
                   <div className="checkout-review-item__image">
-                    <ProductImage product={item} />
+                    <ProductImage product={item} sizes="60px" />
                   </div>
 
                   <div className="checkout-review-item__copy">

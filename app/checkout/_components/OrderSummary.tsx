@@ -33,7 +33,7 @@ export default function OrderSummary({
           {items.map((item) => (
             <li key={item.id} className="checkout-summary-item flex items-center gap-3">
               <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl">
-                <ProductImage product={item} />
+                <ProductImage product={item} sizes="48px" />
                 <span
                   className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-forest text-[9px] font-bold text-white"
                   aria-label={`Quantity ${item.qty}`}

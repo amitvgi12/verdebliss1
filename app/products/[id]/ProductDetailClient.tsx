@@ -321,7 +321,10 @@ export default function ProductDetailClient({
               }}
             >
               <div style={{ position: 'absolute', inset: 0 }}>
-                <ProductImage product={p} />
+                <ProductImage
+                  product={p}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                />
               </div>
             </div>
 
@@ -1113,7 +1116,7 @@ export default function ProductDetailClient({
               <div className="ritual-bundle__items">
                 {featuredBundle.map((product) => (
                   <div key={product.id} className="ritual-bundle__item">
-                    <ProductImage product={product} />
+                    <ProductImage product={product} sizes="42px" />
                     <span>{product.name}</span>
                   </div>
                 ))}
@@ -1283,7 +1286,7 @@ function RoutinePreview({ routine }: { routine: Routine }) {
       <ul>
         {routine.products.map((product) => (
           <li key={product.id}>
-            <ProductImage product={product} />
+            <ProductImage product={product} sizes="42px" />
             <span>{product.name}</span>
           </li>
         ))}

@@ -233,7 +233,7 @@ export default function CartDrawer() {
                         border: `1px solid ${C.border}`,
                       }}
                     >
-                      <ProductImage product={item} />
+                      <ProductImage product={item} sizes="68px" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div
