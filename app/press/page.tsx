@@ -7,7 +7,7 @@ export const revalidate = 3600
 export const metadata = {
   title: 'Press & Media',
   description:
-    'Press resources, media kit, founder bios, and press coverage for VerdeBliss — certified organic skincare brand from India.',
+    'Press resources, media kit, founder bios, and press coverage for VerdeBliss — organic botanical skincare brand from India.',
   alternates: { canonical: 'https://www.verdebliss.com/press' },
 }
 
@@ -44,7 +44,7 @@ const COVERAGE = [
 
 const QUICK_FACTS = [
   ['Founded', '2019, Pune'],
-  ['Certifications', 'USDA Organic · Ecocert · Cruelty-Free International'],
+  ['Certifications', 'In progress — see verdebliss.com/certifications'],
   ['Markets', 'India, UK, UAE, Singapore'],
   ['Customers', '50,000+'],
   ['Team', '34 (Pune R&D + Bangalore HQ)'],

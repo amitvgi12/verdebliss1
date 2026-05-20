@@ -42,11 +42,11 @@ export const metadata = {
     apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   title: {
-    default: 'VerdeBliss — Certified Organic Skincare India',
+    default: 'VerdeBliss — Botanical Skincare India',
     template: '%s | VerdeBliss',
   },
   description:
-    'Premium certified organic skincare from India. Vegan, cruelty-free botanicals for every skin type. Free shipping above ₹499.',
+    'Premium organic botanical skincare from India. INCI-first formulas for every skin type. Free shipping above ₹499.',
   keywords: [
     'organic skincare India',
     'natural skincare',
@@ -61,16 +61,16 @@ export const metadata = {
     locale: 'en_IN',
     url: 'https://www.verdebliss.com',
     siteName: 'VerdeBliss',
-    title: 'VerdeBliss — Certified Organic Skincare India',
+    title: 'VerdeBliss — Botanical Skincare India',
     description:
-      'Premium certified organic skincare. Vegan, cruelty-free botanicals for every skin type.',
+      'Premium organic botanical skincare. INCI-first formulas for every skin type.',
     images: [{ url: '/images/products/serum.webp', width: 800, height: 800 }],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@verdebliss',
-    title: 'VerdeBliss — Certified Organic Skincare India',
-    description: 'Premium certified organic skincare. Vegan, cruelty-free botanicals.',
+    title: 'VerdeBliss — Botanical Skincare India',
+    description: 'Premium organic botanical skincare. INCI-first formulas.',
     images: ['/images/products/serum.webp'],
   },
   robots: { index: true, follow: true },
@@ -84,7 +84,7 @@ const organisationLd = {
   legalName: BUSINESS_COMPLIANCE.legalName,
   url: 'https://www.verdebliss.com',
   logo: 'https://www.verdebliss.com/images/logo.webp',
-  description: 'Certified organic skincare brand from India.',
+  description: 'Organic botanical skincare brand from India.',
   foundingDate: '2019',
   address: {
     '@type': 'PostalAddress',

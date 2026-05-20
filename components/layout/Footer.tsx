@@ -18,6 +18,7 @@ const COMPANY_LINKS: Array<[string, string]> = [
   ['Our Story', '/our-story'],
   ['Ingredients', '/ingredients'],
   ['Sustainability', '/sustainability'],
+  ['Certifications', '/certifications'],
   ['Press', '/press'],
   ['Journal', '/blog'],
 ]

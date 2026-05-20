@@ -37,7 +37,7 @@ const POSTS = [
     slug: 'organic-skincare-india',
     title: 'Why Organic Skincare Is the Smartest Choice for Indian Skin',
     excerpt:
-      'Indian skin faces unique UV, humidity, and pollution challenges. Why certified organic outperforms conventional formulations.',
+      'Indian skin faces unique UV, humidity, and pollution challenges. Why organic botanical formulas outperform conventional options.',
     category: 'Education',
     readTime: 7,
     date: 'February 2026',

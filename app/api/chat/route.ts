@@ -194,7 +194,7 @@ Key policies: Free shipping ₹499+. Returns within 14 days (unopened). Refund 3
 Loyalty: 1 point per ₹10. Green Leaf → Gold Botanist → Platinum Alchemist.
 Contact: returns@verdebliss.com | reactions@verdebliss.com | hello@verdebliss.com`
 
-  const base = `You are Verde, the AI support advisor for VerdeBliss — certified organic skincare from India.
+  const base = `You are Verde, the AI support advisor for VerdeBliss — organic botanical skincare from India.
 Help with skincare advice AND order support (status, refunds, returns, loyalty points).
 Be warm, knowledgeable, concise — 2 to 4 sentences max.
 Never make medical or clinical diagnostic claims.

@@ -7,7 +7,7 @@ export const revalidate = 3600
 export const metadata = {
   title: 'Our Story — Founded in Pune, 2019',
   description:
-    'How VerdeBliss went from a Pune kitchen to 50,000 customers — without compromising on organic integrity.',
+    'How VerdeBliss went from a Pune kitchen to 50,000 customers — built on botanical formulas and full ingredient disclosure.',
   alternates: { canonical: 'https://www.verdebliss.com/our-story' },
 }
 
@@ -24,8 +24,8 @@ const TIMELINE = [
   },
   {
     year: '2021',
-    title: 'Certified Organic',
-    body: 'VerdeBliss received USDA Organic and Ecocert certifications — one of the first Indian skincare brands to achieve both in the same year.',
+    title: 'Organic Commitment',
+    body: 'VerdeBliss formalised its organic ingredient sourcing standards and began the process of pursuing third-party certification. Certification scope and issuers are published at /certifications as each is confirmed.',
   },
   {
     year: '2022',
@@ -50,14 +50,14 @@ const VALUES = [
     iconBg: '#EAF0E8',
     iconColor: '#2d4a32',
     title: 'Organic Integrity',
-    body: 'Every ingredient certified organic at source. No exceptions, no shortcuts.',
+    body: 'Formulas built around named organic botanical ingredients with full INCI disclosure. Certification status is published at /certifications.',
   },
   {
     Icon: Heart,
     iconBg: '#F6EDE8',
     iconColor: '#c07a5a',
-    title: 'Cruelty-Free Forever',
-    body: 'Zero animal testing — every formula validated on dermatologist-supervised human panels.',
+    title: 'Cruelty-Free',
+    body: 'No animal testing at any stage. We do not commission animal tests and are pursuing formal cruelty-free certification.',
   },
   {
     Icon: RefreshCw,

@@ -1,16 +1,25 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const sharedEnv = {
-  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'http://localhost:54321',
+  NEXT_PUBLIC_SUPABASE_URL:
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co',
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'anon-key',
-  NEXT_PUBLIC_RAZORPAY_KEY_ID:
-    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? 'rzp_test_accessibility',
+  NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? 'rzp_test_accessibility',
+  RAZORPAY_WEBHOOK_SECRET:
+    process.env.RAZORPAY_WEBHOOK_SECRET ?? process.env.E2E_RAZORPAY_WEBHOOK_SECRET ?? '',
 }
 
 export default defineConfig({
-  testDir: './tests/a11y',
+  testDir: './tests',
+  testMatch: ['a11y/**/*.spec.ts', 'e2e/**/*.spec.ts', 'visual/**/*.spec.ts'],
   timeout: 60_000,
-  expect: { timeout: 10_000 },
+  expect: {
+    timeout: 10_000,
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.01,
+      threshold: 0.2,
+    },
+  },
   fullyParallel: true,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {

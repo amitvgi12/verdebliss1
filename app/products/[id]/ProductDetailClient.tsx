@@ -80,22 +80,22 @@ const BENEFITS = [
   },
 ]
 
-/* ── Certification data with external verification links ──────── */
+/* ── Positioning labels — not third-party certification claims ── */
 const CERTIFICATIONS = [
   {
     label: 'Cruelty-Free',
     emoji: '🐰',
-    url: 'https://www.leapingbunny.org/',
-    org: 'Leaping Bunny',
+    url: '/certifications',
+    org: 'Cruelty-free positioning',
   },
   {
-    label: 'Vegan',
+    label: 'Vegan-Friendly',
     emoji: '🌱',
-    url: 'https://www.peta.org/living/personal-care-fashion/beauty-without-bunnies/',
-    org: 'PETA',
+    url: '/certifications',
+    org: 'Where formulation permits',
   },
-  { label: 'Derma-Tested', emoji: '🏥', url: null, org: 'In-house Tested' },
-  { label: 'Eco Packaging', emoji: '♻️', url: null, org: 'FSC-Certified Packaging' },
+  { label: 'Skin-Tested', emoji: '🏥', url: '/certifications', org: 'Dermatologist-reviewed' },
+  { label: 'Recyclable Packaging', emoji: '♻️', url: '/certifications', org: 'Eco-friendly packaging' },
 ]
 
 export default function ProductDetailClient({
@@ -244,10 +244,10 @@ export default function ProductDetailClient({
     ? { display: 'flex', flexDirection: 'column', gap: 0 }
     : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }
 
-  /* Applicable certs based on product badges */
+  /* Applicable certs — Skin-Tested and Recyclable Packaging show on all products */
   const prodCerts = CERTIFICATIONS.filter((c) => {
-    if (c.label === 'Derma-Tested') return true
-    if (c.label === 'Eco Packaging') return true
+    if (c.label === 'Skin-Tested') return true
+    if (c.label === 'Recyclable Packaging') return true
     return (p.badges ?? []).some((b: string) =>
       b.toLowerCase().includes(c.label.toLowerCase().split('-')[0] ?? '')
     )
@@ -348,7 +348,7 @@ export default function ProductDetailClient({
               </div>
             )}
 
-            {/* 11.4 Certification badges with external verification links */}
+            {/* Positioning labels — see /certifications for evidence status */}
             <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {prodCerts.map((cert) =>
                 cert.url ? (

@@ -81,8 +81,8 @@ export default async function Home() {
               Radiant.
             </h1>
             <p className="premium-hero__text">
-              Luxury skincare rooted in nature. Formulated with the finest certified organic
-              botanicals.
+              Luxury skincare rooted in nature. Formulated with organic botanical
+              ingredients.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/products" className="btn-terra premium-cta">

@@ -83,7 +83,7 @@ const ARTICLES: Record<string, Article> = {
   'organic-skincare-india': {
     title: 'Why Organic Skincare Is the Smartest Choice for Indian Skin',
     description:
-      'Indian skin faces unique UV, humidity and pollution challenges. Learn why certified organic skincare outperforms conventional products.',
+      'Indian skin faces unique UV, humidity and pollution challenges. Learn why organic botanical skincare outperforms conventional products.',
     category: 'Education',
     date: 'February 2026',
     readTime: 7,

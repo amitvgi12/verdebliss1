@@ -5,8 +5,8 @@ import { StructuredData } from '@/lib/structured-data'
 
 const FAQ_DATA = [
   {
-    q: 'Are VerdeBliss products certified organic?',
-    a: 'Yes — all formulations contain 95%+ certified organic ingredients. We are Leaping Bunny certified cruelty-free and PETA certified vegan. Certificates are verifiable directly with each issuing body.',
+    q: 'Are VerdeBliss products organic?',
+    a: 'Our formulas are built around organic botanical ingredients. Full INCI lists are published on every product page so you can verify what is in each formula. We are working toward third-party certification and will publish issuer names, licence IDs, and scope at /certifications as each is confirmed.',
   },
   {
     q: 'Do you ship across India?',
@@ -38,7 +38,7 @@ const FAQ_DATA = [
   },
   {
     q: 'Do you test on animals?',
-    a: 'Never. We are Leaping Bunny certified — neither we, our suppliers, nor our laboratories test on animals at any stage. This is verifiable on leapingbunny.org.',
+    a: 'No. We do not conduct or commission animal testing at any stage of formulation or manufacture. We are pursuing cruelty-free certification and will link the verified listing at /certifications once confirmed.',
   },
   {
     q: 'How do I track my order?',
@@ -57,7 +57,7 @@ const FAQ_DATA = [
 export const metadata = {
   title: 'Frequently Asked Questions',
   description:
-    'Answers about VerdeBliss organic skincare: shipping, returns, ingredients, certifications, pregnancy safety, loyalty points, and more.',
+    'Answers about VerdeBliss botanical skincare: shipping, returns, ingredients, formulation standards, pregnancy safety, loyalty points, and more.',
   alternates: { canonical: 'https://www.verdebliss.com/faq' },
 }
 
