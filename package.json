@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
-    "@supabase/supabase-js": "^2.106.0",
+    "@supabase/supabase-js": "^2.106.1",
     "@upstash/redis": "^1.38.0",
     "framer-motion": "^11.2.0",
     "lucide-react": "^0.460.0",
