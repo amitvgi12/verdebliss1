@@ -81,7 +81,7 @@ export default function Footer() {
             href={`mailto:${BUSINESS_COMPLIANCE.supportEmail}`}
             className="mb-3 block text-[11px] font-semibold text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
           >
-            📩 {BUSINESS_COMPLIANCE.supportEmail}
+            <span aria-hidden="true">📩</span> {BUSINESS_COMPLIANCE.supportEmail}
           </a>
           <SocialButtons />
         </div>

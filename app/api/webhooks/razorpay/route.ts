@@ -13,6 +13,7 @@ interface RazorpayWebhookEntity {
   amount?: number
   currency?: string
   status?: string
+  method?: string | null
 }
 
 function pickPaymentEntity(payload: Record<string, unknown>): RazorpayWebhookEntity | null {
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
           currency: payment?.currency ?? 'INR',
           status: payment?.status ?? 'captured',
           captured: payment?.status === 'captured',
+          method: payment?.method ?? null,
         },
         rawPaymentPayload: event,
       })

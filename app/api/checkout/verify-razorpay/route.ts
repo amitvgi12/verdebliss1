@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       orderId: completed.orderId,
       paymentId: razorpayPaymentId,
-      paymentMethod: 'Razorpay',
+      paymentMethod: completed.paymentMethod,
       pointsAwarded: completed.pointsAwarded,
       totals: completed.totals,
       idempotent: completed.idempotent,

@@ -81,6 +81,16 @@ interface RazorpayPayment {
   order_id: string
   status: string
   captured?: boolean
+  method?: string | null
+}
+
+const RAZORPAY_METHOD_LABELS: Record<string, string> = {
+  upi: 'UPI',
+  card: 'Card',
+  netbanking: 'Net Banking',
+  wallet: 'Wallet',
+  emi: 'EMI',
+  paylater: 'Pay Later',
 }
 
 const EMAIL_RE = /\S+@\S+\.\S+/
@@ -134,6 +144,12 @@ export function validateAddress(raw: unknown): CheckoutAddress {
   if (!PIN_RE.test(address.pincode)) throw new Error('A valid 6-digit PIN code is required')
 
   return address
+}
+
+export function formatRazorpayPaymentMethod(method: unknown): string {
+  const value = asText(method).toLowerCase()
+  if (!value) return 'Razorpay'
+  return `Razorpay · ${RAZORPAY_METHOD_LABELS[value] ?? value}`
 }
 
 export function validateCartItems(raw: unknown): IncomingCartItem[] {
@@ -423,6 +439,7 @@ export interface PersistedOrderResult {
   pointsAwarded: boolean
   storage: 'supabase'
   idempotent?: boolean
+  paymentMethod?: string | null
 }
 
 async function getExistingOrderByPaymentId(paymentId: string) {
@@ -430,7 +447,7 @@ async function getExistingOrderByPaymentId(paymentId: string) {
   const supabase = createSupabaseAdmin()
   const { data, error } = await supabase
     .from('orders')
-    .select('id, points_earned, subtotal, shipping, total')
+    .select('id, points_earned, subtotal, shipping, total, payment_method')
     .eq('payment_id', paymentId)
     .maybeSingle()
   if (error) return null
@@ -440,6 +457,7 @@ async function getExistingOrderByPaymentId(paymentId: string) {
     subtotal?: number
     shipping?: number
     total?: number
+    payment_method?: string | null
   } | null
 }
 
@@ -463,6 +481,7 @@ export async function persistOrder(input: {
       pointsAwarded: Boolean(existing.points_earned),
       storage: 'supabase',
       idempotent: true,
+      paymentMethod: existing.payment_method ?? null,
     }
   }
 
@@ -503,6 +522,7 @@ export async function persistOrder(input: {
         pointsAwarded: Boolean(duplicate.points_earned),
         storage: 'supabase',
         idempotent: true,
+        paymentMethod: duplicate.payment_method ?? null,
       }
     }
     throw new Error(error.message)
@@ -528,6 +548,7 @@ export async function completeRazorpayCheckout(input: {
   const session = await getCheckoutSessionByRazorpayOrderId(input.razorpayOrderId)
 
   if (session.completed_order_id) {
+    const existing = await getExistingOrderByPaymentId(input.razorpayPaymentId)
     return {
       orderId: session.completed_order_id,
       pointsAwarded: false,
@@ -538,6 +559,7 @@ export async function completeRazorpayCheckout(input: {
         pointsToEarn: pointsForSubtotal(session.subtotal),
       },
       idempotent: true,
+      paymentMethod: existing?.payment_method ?? 'Razorpay',
     }
   }
 
@@ -562,19 +584,20 @@ export async function completeRazorpayCheckout(input: {
     total: session.total,
     pointsToEarn: pointsForSubtotal(session.subtotal),
   }
+  const paymentMethod = formatRazorpayPaymentMethod(payment.method)
 
   const order = await persistOrder({
     userId: session.user_id,
     status: 'Processing',
     paymentStatus: 'paid',
-    paymentMethod: 'Razorpay',
+    paymentMethod,
     paymentId: input.razorpayPaymentId,
     paymentOrderId: input.razorpayOrderId,
     address: session.address,
     items: session.cart_snapshot,
     totals,
     awardPoints: Boolean(session.user_id),
-    rawPaymentPayload: input.rawPaymentPayload ?? { payment },
+    rawPaymentPayload: { ...(input.rawPaymentPayload ?? {}), payment },
   })
 
   const supabase = requireSupabaseAdmin()
@@ -592,6 +615,7 @@ export async function completeRazorpayCheckout(input: {
     pointsAwarded: order.pointsAwarded,
     totals,
     idempotent: Boolean(order.idempotent),
+    paymentMethod: order.paymentMethod ?? paymentMethod,
   }
 }
 

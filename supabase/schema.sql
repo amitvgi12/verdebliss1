@@ -92,6 +92,7 @@ create table if not exists public.orders (
   address           jsonb,
   payment_id        text,
   payment_order_id  text,
+  payment_method    text,
   payment_status    text default 'pending',
   created_at        timestamptz default now(),
   updated_at        timestamptz default now()
@@ -107,6 +108,7 @@ alter table public.orders add column if not exists items jsonb not null default 
 alter table public.orders add column if not exists address jsonb;
 alter table public.orders add column if not exists payment_id text;
 alter table public.orders add column if not exists payment_order_id text;
+alter table public.orders add column if not exists payment_method text;
 alter table public.orders add column if not exists payment_status text default 'pending';
 alter table public.orders add column if not exists created_at timestamptz default now();
 alter table public.orders add column if not exists updated_at timestamptz default now();
@@ -687,7 +689,7 @@ begin
 
   insert into public.orders (
     user_id, status, subtotal, shipping, total, points_earned, items, address,
-    payment_id, payment_order_id, payment_status
+    payment_id, payment_order_id, payment_method, payment_status
   ) values (
     p_user_id,
     coalesce(nullif(trim(p_status), ''), 'Processing'),
@@ -699,6 +701,7 @@ begin
     coalesce(p_address, '{}'::jsonb),
     p_payment_id,
     nullif(trim(coalesce(p_payment_order_id, '')), ''),
+    nullif(trim(coalesce(p_payment_method, '')), ''),
     coalesce(nullif(trim(p_payment_status), ''), 'pending')
   ) returning id into v_order_id;
 

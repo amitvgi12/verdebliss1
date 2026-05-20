@@ -376,7 +376,7 @@ begin
   -- Orders use current catalogue prices and the app shipping rule: free shipping at ₹499+; otherwise ₹79.
   insert into public.orders (
     user_id, status, subtotal, shipping, total, points_earned, items, address,
-    payment_id, payment_order_id, payment_status, created_at, updated_at
+    payment_id, payment_order_id, payment_method, payment_status, created_at, updated_at
   ) values
   (
     uid_kavya, 'Delivered', 640, 0, 640, 64,
@@ -385,7 +385,7 @@ begin
       jsonb_build_object('id', pid_rosehip, 'name', 'Rose Hip Glow Moisturiser', 'price', 390, 'qty', 1, 'ingredient', 'Rose Hip', 'emoji', '🌹', 'bg_color', '#F6EDE8', 'image_url', '/images/products/moisturiser.webp')
     ),
     kavya_addr || '{"payment_method":"Razorpay"}'::jsonb,
-    'pay_test_Kav001Delivered', 'order_test_Kav001', 'paid', now() - interval '45 days', now() - interval '38 days'
+    'pay_test_Kav001Delivered', 'order_test_Kav001', 'Razorpay · UPI', 'paid', now() - interval '45 days', now() - interval '38 days'
   ),
   (
     uid_kavya, 'Shipped', 350, 79, 429, 35,
@@ -393,7 +393,7 @@ begin
       jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 350, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp')
     ),
     kavya_addr || '{"payment_method":"Razorpay"}'::jsonb,
-    'pay_test_Kav002Shipped', 'order_test_Kav002', 'paid', now() - interval '5 days', now() - interval '3 days'
+    'pay_test_Kav002Shipped', 'order_test_Kav002', 'Razorpay · Card', 'paid', now() - interval '5 days', now() - interval '3 days'
   ),
   (
     uid_kavya, 'Processing', 670, 0, 670, 67,
@@ -402,7 +402,7 @@ begin
       jsonb_build_object('id', pid_toner, 'name', 'Green Tea Clarity Toner', 'price', 450, 'qty', 1, 'ingredient', 'Green Tea', 'emoji', '🍃', 'bg_color', '#E8F2EA', 'image_url', '/images/products/toner.webp')
     ),
     kavya_addr || '{"payment_method":"Razorpay"}'::jsonb,
-    'pay_test_Kav003Processing', 'order_test_Kav003', 'paid', now() - interval '1 day', now() - interval '1 day'
+    'pay_test_Kav003Processing', 'order_test_Kav003', 'Razorpay · Net Banking', 'paid', now() - interval '1 day', now() - interval '1 day'
   ),
   (
     uid_rahul, 'Processing', 800, 0, 800, 80,
@@ -411,7 +411,7 @@ begin
       jsonb_build_object('id', pid_toner, 'name', 'Green Tea Clarity Toner', 'price', 450, 'qty', 1, 'ingredient', 'Green Tea', 'emoji', '🍃', 'bg_color', '#E8F2EA', 'image_url', '/images/products/toner.webp')
     ),
     rahul_addr || '{"payment_method":"Razorpay"}'::jsonb,
-    'pay_test_Rah001Processing', 'order_test_Rah001', 'paid', now() - interval '2 days', now() - interval '2 days'
+    'pay_test_Rah001Processing', 'order_test_Rah001', 'Razorpay · Wallet', 'paid', now() - interval '2 days', now() - interval '2 days'
   ),
   (
     uid_priya, 'Delivered', 1290, 0, 1290, 129,
@@ -421,7 +421,7 @@ begin
       jsonb_build_object('id', pid_lip, 'name', 'Wild Berry Lip Elixir', 'price', 490, 'qty', 1, 'ingredient', 'Acai Berry', 'emoji', '🫐', 'bg_color', '#F0E8F5', 'image_url', '/images/products/lip-elixir.webp')
     ),
     priya_addr || '{"payment_method":"Razorpay"}'::jsonb,
-    'pay_test_Pri001Delivered', 'order_test_Pri001', 'paid', now() - interval '120 days', now() - interval '115 days'
+    'pay_test_Pri001Delivered', 'order_test_Pri001', 'Razorpay · UPI', 'paid', now() - interval '120 days', now() - interval '115 days'
   ),
   (
     uid_priya, 'Delivered', 640, 0, 640, 64,
@@ -430,7 +430,7 @@ begin
       jsonb_build_object('id', pid_rosehip, 'name', 'Rose Hip Glow Moisturiser', 'price', 390, 'qty', 1, 'ingredient', 'Rose Hip', 'emoji', '🌹', 'bg_color', '#F6EDE8', 'image_url', '/images/products/moisturiser.webp')
     ),
     priya_addr || '{"payment_method":"Razorpay"}'::jsonb,
-    'pay_test_Pri002Delivered', 'order_test_Pri002', 'paid', now() - interval '90 days', now() - interval '83 days'
+    'pay_test_Pri002Delivered', 'order_test_Pri002', 'Razorpay · Card', 'paid', now() - interval '90 days', now() - interval '83 days'
   ),
   (
     uid_priya, 'Delivered', 220, 79, 299, 22,
@@ -438,7 +438,7 @@ begin
       jsonb_build_object('id', pid_spf, 'name', 'Botanical SPF 50 Shield', 'price', 220, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp')
     ),
     priya_addr || '{"payment_method":"Cash on Delivery"}'::jsonb,
-    'pay_test_Pri003Delivered', 'order_test_Pri003', 'cod_pending', now() - interval '60 days', now() - interval '54 days'
+    'pay_test_Pri003Delivered', 'order_test_Pri003', 'Cash on Delivery', 'cod_pending', now() - interval '60 days', now() - interval '54 days'
   ),
   (
     uid_priya, 'Shipped', 600, 0, 600, 60,
@@ -447,7 +447,7 @@ begin
       jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 350, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp')
     ),
     priya_addr || '{"payment_method":"Razorpay"}'::jsonb,
-    'pay_test_Pri004Shipped', 'order_test_Pri004', 'paid', now() - interval '8 days', now() - interval '6 days'
+    'pay_test_Pri004Shipped', 'order_test_Pri004', 'Razorpay · UPI', 'paid', now() - interval '8 days', now() - interval '6 days'
   ),
   (
     uid_priya, 'Processing', 250, 79, 329, 25,
@@ -455,7 +455,7 @@ begin
       jsonb_build_object('id', pid_cleanser, 'name', 'Turmeric Brightening Cleanser', 'price', 250, 'qty', 1, 'ingredient', 'Turmeric', 'emoji', '✨', 'bg_color', '#F5F0E4', 'image_url', '/images/products/cleanser.webp')
     ),
     priya_addr || '{"payment_method":"Cash on Delivery"}'::jsonb,
-    'pay_test_Pri005Processing', 'order_test_Pri005', 'cod_pending', now() - interval '6 hours', now() - interval '6 hours'
+    'pay_test_Pri005Processing', 'order_test_Pri005', 'Cash on Delivery', 'cod_pending', now() - interval '6 hours', now() - interval '6 hours'
   );
 
   -- Normalized order items used by admin/reporting/payment reconciliation tests.
