@@ -1,12 +1,12 @@
 'use client'
 
-import { Instagram, Pin, Youtube } from 'lucide-react'
+import { Camera, CirclePlay, Pin } from 'lucide-react'
 import { useToastStore } from '@/store/toastStore'
 
 const SOCIALS = [
-  { label: 'Instagram', Icon: Instagram },
+  { label: 'Instagram', Icon: Camera },
   { label: 'Pinterest', Icon: Pin },
-  { label: 'YouTube', Icon: Youtube },
+  { label: 'YouTube', Icon: CirclePlay },
 ] as const
 
 export default function SocialButtons() {
