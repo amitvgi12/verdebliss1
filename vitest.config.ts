@@ -12,7 +12,14 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**', 'tests/a11y/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      'tests/a11y/**',
+      'tests/e2e/**',
+      'tests/live/**',
+      'tests/visual/**',
+    ],
     css: false,
     coverage: {
       provider: 'v8',
