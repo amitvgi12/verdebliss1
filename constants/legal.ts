@@ -66,7 +66,7 @@ export const LEGAL_DOCUMENTS = {
     slug: 'returns-refunds',
     title: 'Returns & Refunds Policy',
     description:
-      'Return eligibility, refund timing, damaged-item handling, adverse reaction support, and refund request process for VerdeBliss orders.',
+      'Return eligibility, cancellation timing, refund timing, damaged-item handling, adverse reaction support, and refund request process for VerdeBliss orders.',
     updated: '1 April 2026',
     sections: [
       {
@@ -76,6 +76,10 @@ export const LEGAL_DOCUMENTS = {
       {
         heading: 'How to request a return',
         body: 'Email returns@verdebliss.com or use the refund request page with your order ID, contact email, product details, and reason. Our team will review eligibility before issuing return instructions.',
+      },
+      {
+        heading: 'Order cancellation before delivery',
+        body: 'Orders can be cancelled from My Account before they are delivered. Cash on Delivery orders are cancelled immediately where fulfilment has not completed. Prepaid orders move to cancellation review so the team can stop dispatch where possible and process the eligible refund to the original payment method.',
       },
       {
         heading: 'Refund timing',

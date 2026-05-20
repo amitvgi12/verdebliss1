@@ -22,6 +22,7 @@ const POSTS = [
     readTime: 6,
     date: 'April 2026',
     image: '/images/ingredients/bakuchiol.webp',
+    imageAlt: 'Bakuchiol ingredient for retinol-alternative skincare article',
   },
   {
     slug: 'skincare-routine-dry-skin',
@@ -32,6 +33,7 @@ const POSTS = [
     readTime: 8,
     date: 'March 2026',
     image: '/images/ingredients/shea.webp',
+    imageAlt: 'Shea butter ingredient for dry skin skincare routine article',
   },
   {
     slug: 'organic-skincare-india',
@@ -42,6 +44,7 @@ const POSTS = [
     readTime: 7,
     date: 'February 2026',
     image: '/images/ingredients/greentealeaves.webp',
+    imageAlt: 'Green tea leaves for organic skincare in Indian climate article',
   },
 ]
 
@@ -70,7 +73,7 @@ export default function BlogIndexPage() {
                 <div className="journal-card__media">
                   <Image
                     src={post.image}
-                    alt=""
+                    alt={post.imageAlt}
                     fill
                     sizes="(max-width: 800px) 100vw, 33vw"
                     className="object-cover"

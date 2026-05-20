@@ -6,6 +6,7 @@ import LoyaltyPanel from '@/components/features/loyalty/LoyaltyPanel'
 import { useAuthStore } from '@/store/authStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { supabase } from '@/lib/supabase'
+import { apiPost } from '@/lib/api-client'
 import { PRODUCTS } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
 
@@ -517,10 +518,21 @@ const textButtonStyle = {
 interface OrderRow {
   id: string
   status?: string
+  payment_status?: string
   total?: number
   points_earned?: number
   created_at?: string
   items?: Array<{ id: string; name: string; qty: number; price: number }>
+}
+
+function canCancelOrder(status?: string | null) {
+  const normalised = String(status ?? '').toLowerCase()
+  return (
+    Boolean(normalised) &&
+    !normalised.includes('delivered') &&
+    !normalised.includes('cancel') &&
+    !normalised.includes('refunded')
+  )
 }
 
 function Dashboard({
@@ -533,6 +545,10 @@ function Dashboard({
   const signOut = useAuthStore((s) => s.signOut)
   const { ids: wishIds } = useWishlistStore()
   const [orders, setOrders] = useState<OrderRow[]>([])
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
+  const [orderNotice, setOrderNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(
+    null
+  )
 
   useEffect(() => {
     supabase
@@ -544,6 +560,39 @@ function Dashboard({
         if (Array.isArray(data)) setOrders(data as OrderRow[])
       })
   }, [user.id])
+
+  const cancelOrder = async (orderId: string) => {
+    if (!window.confirm('Cancel this order before delivery?')) return
+
+    setCancellingOrderId(orderId)
+    setOrderNotice(null)
+    try {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      const result = await apiPost<{ status: string; message?: string }>(
+        '/api/orders/cancel',
+        { orderId },
+        { authToken: token }
+      )
+
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === orderId ? { ...order, status: result.status } : order
+        )
+      )
+      setOrderNotice({
+        type: 'success',
+        text: result.message ?? 'Cancellation request received.',
+      })
+    } catch (error) {
+      setOrderNotice({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Unable to cancel order.',
+      })
+    } finally {
+      setCancellingOrderId(null)
+    }
+  }
 
   const wishProducts = PRODUCTS.filter((p) => wishIds.includes(p.id))
 
@@ -720,6 +769,23 @@ function Dashboard({
             <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 20 }}>
               Order History
             </div>
+            {orderNotice && (
+              <div
+                role={orderNotice.type === 'error' ? 'alert' : 'status'}
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 12,
+                  border: `1px solid ${orderNotice.type === 'error' ? '#F1B8A5' : '#CADCCA'}`,
+                  background: orderNotice.type === 'error' ? '#FFF2EC' : '#EFF6EE',
+                  color: orderNotice.type === 'error' ? '#8B3A24' : C.forest,
+                  padding: '10px 12px',
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                }}
+              >
+                {orderNotice.text}
+              </div>
+            )}
             {orders.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '28px 0', color: C.muted, fontSize: 13 }}>
                 No orders yet — time to shop! 🌿
@@ -776,6 +842,28 @@ function Dashboard({
                   <div style={{ fontSize: 12, color: C.sage, marginTop: 4 }}>
                     +{o.points_earned} points earned
                   </div>
+                  {canCancelOrder(o.status) && (
+                    <button
+                      type="button"
+                      onClick={() => void cancelOrder(o.id)}
+                      disabled={cancellingOrderId === o.id}
+                      style={{
+                        marginTop: 10,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 999,
+                        background: '#FAF4EE',
+                        color: C.forest,
+                        cursor: cancellingOrderId === o.id ? 'not-allowed' : 'pointer',
+                        fontFamily: 'inherit',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: '7px 14px',
+                        opacity: cancellingOrderId === o.id ? 0.65 : 1,
+                      }}
+                    >
+                      {cancellingOrderId === o.id ? 'Cancelling...' : 'Cancel order'}
+                    </button>
+                  )}
                 </div>
               ))
             )}

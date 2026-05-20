@@ -2,12 +2,14 @@ version: 2
 updates:
   - package-ecosystem: npm
     directory: /
+    # Temporarily disabled by request. Restore to 10 when automated
+    # dependency PRs should resume.
+    open-pull-requests-limit: 0
     schedule:
       interval: weekly
       day: monday
       time: "09:00"
       timezone: Asia/Kolkata
-    open-pull-requests-limit: 10
     groups:
       frontend-runtime:
         patterns:
@@ -27,6 +29,9 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    # Temporarily disabled by request. Restore to 5 when automated
+    # workflow action PRs should resume.
+    open-pull-requests-limit: 0
     schedule:
       interval: weekly
       day: monday

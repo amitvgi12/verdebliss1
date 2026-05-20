@@ -82,8 +82,8 @@ const CONTENT: Record<LegalModalType, Doc> = {
         body: 'We ship across India within 3–5 business days and internationally within 7–14 business days. Risk of loss passes to you upon delivery to the carrier.',
       },
       {
-        heading: '5. Returns & Refunds',
-        body: 'Please see our full Returns & Refund Policy for details. In summary: unopened products can be returned within 14 days; opened products are eligible for exchange if you experience an adverse reaction.',
+        heading: '5. Returns, Refunds & Cancellations',
+        body: 'Please see our full Return and Refund Policy for details. In summary: unopened products can be returned within 14 days; eligible orders can be cancelled before delivery; opened products are eligible for exchange if you experience an adverse reaction.',
       },
       {
         heading: '6. Loyalty Points',
@@ -127,7 +127,7 @@ const CONTENT: Record<LegalModalType, Doc> = {
     ],
   },
   refund: {
-    title: 'Returns & Refund Policy',
+    title: 'Return and Refund Policy',
     updated: 'Last updated: 1 April 2026',
     sections: [
       {
@@ -143,27 +143,31 @@ const CONTENT: Record<LegalModalType, Doc> = {
         body: 'Step 1: Email returns@verdebliss.com within 14 days of delivery with your order number, the product(s) you wish to return, and the reason for return.\n\nStep 2: Our team will respond within 2 business days with a Return Merchandise Authorisation (RMA) number and a prepaid return shipping label.\n\nStep 3: Pack the product securely in its original packaging. Write your RMA number on the outside of the parcel.\n\nStep 4: Drop the parcel at the nearest courier partner location. Do not send returns without an RMA number — they will not be accepted.',
       },
       {
-        heading: '4. Adverse Skin Reactions',
+        heading: '4. Order Cancellation Before Delivery',
+        body: 'Eligible orders can be cancelled from My Account before delivery. Cash on Delivery orders are cancelled immediately where fulfilment has not completed. Prepaid orders move to cancellation review so we can stop dispatch where possible and process the eligible refund to the original payment method.',
+      },
+      {
+        heading: '5. Adverse Skin Reactions',
         body: 'All VerdeBliss products are dermatologist tested. However, if you experience an unexpected adverse reaction, we will offer a full exchange or store credit even if the product has been opened.\n\nTo claim: email reactions@verdebliss.com with your order number, the product name, a brief description of the reaction, and (optionally) a photo. We may refer you to our dermatologist partner for a complimentary skin assessment.',
       },
       {
-        heading: '5. Damaged or Incorrect Items',
+        heading: '6. Damaged or Incorrect Items',
         body: 'If your order arrives damaged or you receive an incorrect item, contact us within 48 hours of delivery at support@verdebliss.com. Attach a photo of the damage or incorrect item. We will ship a replacement at no cost within 3–5 business days, or issue a full refund — your choice.',
       },
       {
-        heading: '6. Refund Processing',
+        heading: '7. Refund Processing',
         body: 'Once we receive and inspect your returned item, we will notify you by email within 2 business days.\n\nApproved refunds are credited to your original payment method:\n• UPI / Net Banking: 3–5 business days\n• Credit / Debit card: 5–7 business days (depending on your bank)\n• VerdeBliss Store Credit: credited within 24 hours\n\nShipping charges are non-refundable unless the return is due to our error.',
       },
       {
-        heading: '7. Exchange Policy',
+        heading: '8. Exchange Policy',
         body: 'We offer exchanges for products of equal or lesser value. If you wish to exchange for a higher-value item, you will be charged the difference. Exchanges are subject to product availability. To request an exchange, follow the return process in Section 3 and specify the replacement product in your email.',
       },
       {
-        heading: '8. Loyalty Points',
+        heading: '9. Loyalty Points',
         body: 'Loyalty points earned on the original purchase will be deducted upon a successful return. If you used loyalty points towards a purchase, the points value will be refunded as store credit.',
       },
       {
-        heading: '9. Contact Us',
+        heading: '10. Contact Us',
         body: 'Returns: returns@verdebliss.com\nAdverse reactions: reactions@verdebliss.com\nDamaged / incorrect items: support@verdebliss.com\nGeneral: hello@verdebliss.com\n\nVerdeBliss Cosmetics Private Limited\nKharadi, Pune 411014, Maharashtra, India',
       },
     ],

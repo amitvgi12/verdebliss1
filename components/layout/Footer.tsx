@@ -28,7 +28,6 @@ const SUPPORT_LINKS: Array<[string, string]> = [
   ['FAQ', '/faq'],
   ['My Account', '/account'],
   ['Orders', '/account'],
-  ['Returns & Refund Policy', '/returns-refunds'],
   ['Request a Refund', '/refund'],
   ['Contact', '/contact'],
 ]
@@ -118,10 +117,7 @@ export default function Footer() {
           {BUSINESS_COMPLIANCE.grievanceOfficer.acknowledgementWindow} and resolved within{' '}
           {BUSINESS_COMPLIANCE.grievanceOfficer.resolutionWindow}.
         </p>
-        <p>
-          Returns, refunds, and cancellation timelines:{' '}
-          <Link href="/returns-refunds">view policy</Link>.
-        </p>
+        <p>Return, refund, and cancellation timelines are published in the policy link below.</p>
       </div>
 
       <div className="site-container site-footer__meta mt-6 flex flex-wrap justify-between gap-2 border-t border-white/10 pt-4 text-[11px]">

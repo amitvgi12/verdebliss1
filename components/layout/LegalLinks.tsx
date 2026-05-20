@@ -4,7 +4,7 @@ const LEGAL_LINKS: Array<[string, string]> = [
   ['Privacy Policy', '/privacy-policy'],
   ['Terms', '/terms'],
   ['Cookie Policy', '/cookie-policy'],
-  ['Returns & Refunds', '/returns-refunds'],
+  ['Return and Refund Policy', '/returns-refunds'],
   ['Shipping Policy', '/shipping-policy'],
 ]
 

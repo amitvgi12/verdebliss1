@@ -100,7 +100,10 @@ export default function PressPage() {
                 Logos, product photography, founder headshots, and brand guidelines — all in one
                 download.
               </p>
-              <Link href="/contact" className="btn-outline self-start px-5 py-2 text-xs">
+              <Link
+                href="/contact"
+                className="btn-outline self-start whitespace-nowrap rounded-full px-6 py-2.5 text-sm leading-none"
+              >
                 Request media kit
               </Link>
             </article>
