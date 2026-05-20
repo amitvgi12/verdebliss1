@@ -31,7 +31,3 @@ export function reportException(error: unknown, context: ErrorContext = {}): voi
 export function reportMetric(name: string, value: number, context: ErrorContext = {}): void {
   logSignal('log', `[METRIC] ${name}=${value}`, context)
 }
-
-export function isSentryEnabled(): boolean {
-  return Boolean(process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN)
-}

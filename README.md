@@ -96,7 +96,8 @@ CF_ORIGIN_SECRET=
 `/api/version` returns deployment metadata plus boolean capability flags for
 public Supabase, Supabase admin, Razorpay, Turnstile, distributed rate limiting,
 and static-fallback mode. It confirms runtime readiness without exposing secret
-values.
+values. Production responses redact the Git revision unless
+`EXPOSE_BUILD_METADATA=true` is set for a controlled diagnostic window.
 
 ## Local setup
 

@@ -8,6 +8,7 @@ describe('version API', () => {
 
   it('exposes environment capability flags without secret values', async () => {
     vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_GIT_COMMIT_SHA', '1234567890abcdef1234567890abcdef12345678')
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co')
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon')
     vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service')
@@ -34,5 +35,17 @@ describe('version API', () => {
     expect(JSON.stringify(body)).not.toContain('turnstile-secret')
     expect(JSON.stringify(body)).not.toContain('redis-token')
     expect(JSON.stringify(body)).not.toContain('rzp_server')
+    expect(body.gitSha).toBe('redacted')
+    expect(JSON.stringify(body)).not.toContain('1234567890abcdef')
+  })
+
+  it('can expose a short build revision outside production diagnostics', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv('VERCEL_GIT_COMMIT_SHA', 'abcdef1234567890abcdef1234567890abcdef12')
+
+    const response = await GET()
+    const body = await response.json()
+
+    expect(body.gitSha).toBe('abcdef123456')
   })
 })

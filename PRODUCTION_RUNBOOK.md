@@ -9,7 +9,9 @@
 5. `npm run build` in CI/Vercel with real environment variables
 6. Run `supabase/schema.sql`
 7. Confirm Razorpay webhook secret and webhook URL
-8. Confirm `/api/version` returns current build metadata
+8. Confirm `/api/version` returns current capability flags. Leave Git revision
+   redacted in production unless `EXPOSE_BUILD_METADATA=true` is temporarily
+   enabled for diagnostics.
 9. Replace pre-launch `DEMO` values in `constants/businessCompliance.ts`
 10. Verify per-product country-of-origin and manufacturer/packer/importer data in `constants/productCompliance.ts`
 

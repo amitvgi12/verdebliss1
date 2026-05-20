@@ -58,7 +58,7 @@ export function proxy(request: NextRequest) {
     "style-src-elem 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob: https://*.supabase.co",
-    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io",
+    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com",
     'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
     "frame-ancestors 'none'",
     "object-src 'none'",
@@ -101,8 +101,8 @@ function generateNonce(): string {
 
 export const config = {
   // Skip static assets, image optimisation, the Razorpay webhook (raw body!),
-  // and the favicon/manifest. Everything else gets CSP + nonce.
+  // and metadata files. Everything else gets CSP + nonce.
   matcher: [
-    '/((?!_next/static|_next/image|api/webhooks|favicon.ico|favicon.svg|manifest.json|robots.txt|images/).*)',
+    '/((?!_next/static|_next/image|api/webhooks|favicon.ico|favicon.svg|manifest.json|robots.txt|sitemap.xml|images/).*)',
   ],
 }

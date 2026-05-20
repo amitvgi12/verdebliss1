@@ -49,7 +49,9 @@ strings are not accepted by the storefront runtime.
 2. Run `supabase/seed_test_data.sql` only for test/demo data.
 3. Configure Razorpay webhook URL: `/api/webhooks/razorpay`.
 4. Deploy to Vercel with the environment variables above.
-5. Confirm `/api/version` returns the expected Git SHA after deployment.
+5. Confirm `/api/version` returns the expected capability flags after deployment.
+   Production redacts Git revision unless `EXPOSE_BUILD_METADATA=true` is set for
+   a controlled diagnostic window.
 6. Confirm `/api/version` reports `distributedRateLimiter: true` before enabling
    COD in production traffic.
 7. Replace all `DEMO` compliance values in `constants/businessCompliance.ts` and all per-product origin/manufacturer/importer declarations in `constants/productCompliance.ts`.
