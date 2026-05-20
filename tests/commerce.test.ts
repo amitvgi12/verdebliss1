@@ -1,13 +1,18 @@
 import crypto from 'node:crypto'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   amountInPaise,
   validateAddress,
   validateCartItems,
   verifyRazorpaySignature,
+  verifyRazorpayWebhookSignature,
 } from '@/lib/commerce'
 
 describe('commerce validation and payment helpers', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   it('normalises INR totals to Razorpay paise', () => {
     expect(amountInPaise(390)).toBe(39000)
     expect(amountInPaise(390.49)).toBe(39049)
@@ -49,5 +54,28 @@ describe('commerce validation and payment helpers', () => {
 
     expect(verifyRazorpaySignature(orderId, paymentId, signature)).toBe(true)
     expect(verifyRazorpaySignature(orderId, paymentId, 'bad')).toBe(false)
+    expect(verifyRazorpaySignature(orderId, paymentId, 'short')).toBe(false)
+    expect(verifyRazorpaySignature('', paymentId, signature)).toBe(false)
+    expect(verifyRazorpaySignature(orderId, '', signature)).toBe(false)
+    expect(verifyRazorpaySignature(orderId, paymentId, '')).toBe(false)
+  })
+
+  it('verifies Razorpay webhook signatures against the raw body', () => {
+    vi.stubEnv('RAZORPAY_WEBHOOK_SECRET', 'webhook_secret')
+    const rawBody = JSON.stringify({
+      event: 'payment.captured',
+      payload: { payment: { entity: { id: 'pay_456' } } },
+    })
+    const signature = crypto
+      .createHmac('sha256', 'webhook_secret')
+      .update(rawBody)
+      .digest('hex')
+
+    expect(verifyRazorpayWebhookSignature(rawBody, signature)).toBe(true)
+    expect(verifyRazorpayWebhookSignature(rawBody.replace('captured', 'failed'), signature)).toBe(
+      false
+    )
+    expect(verifyRazorpayWebhookSignature(rawBody, 'short')).toBe(false)
+    expect(verifyRazorpayWebhookSignature('', signature)).toBe(false)
   })
 })

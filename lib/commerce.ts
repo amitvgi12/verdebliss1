@@ -332,6 +332,8 @@ export function verifyRazorpaySignature(
   const secret = process.env.RAZORPAY_KEY_SECRET
   if (!secret) throw new Error('Razorpay secret is not configured')
 
+  if (!orderId || !paymentId || !signature) return false
+
   // Razorpay signatures are 64-char lowercase hex of HMAC-SHA256.
   if (!/^[0-9a-f]{64}$/i.test(signature)) return false
 
@@ -348,6 +350,8 @@ export function verifyRazorpaySignature(
 export function verifyRazorpayWebhookSignature(rawBody: string, signature: string): boolean {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET
   if (!secret) throw new Error('Razorpay webhook secret is not configured')
+
+  if (!rawBody || !signature) return false
 
   if (!/^[0-9a-f]{64}$/i.test(signature)) return false
 

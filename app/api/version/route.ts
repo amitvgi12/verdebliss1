@@ -12,6 +12,10 @@ export async function GET() {
     gitSha: getPublicRevision(isProduction),
     environment,
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
+    deployedAt:
+      process.env.VERCEL_DEPLOYMENT_CREATED_AT ??
+      process.env.NEXT_PUBLIC_BUILD_TIME ??
+      'unknown',
     schemaVersion: '2026-05-audit-remediated-v2',
     capabilities: getEnvironmentCapabilities(),
   })

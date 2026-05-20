@@ -9,6 +9,7 @@ describe('version API', () => {
   it('exposes environment capability flags without secret values', async () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('VERCEL_GIT_COMMIT_SHA', '1234567890abcdef1234567890abcdef12345678')
+    vi.stubEnv('VERCEL_DEPLOYMENT_CREATED_AT', '2026-05-20T08:00:00.000Z')
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co')
     vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon')
     vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'service')
@@ -36,6 +37,7 @@ describe('version API', () => {
     expect(JSON.stringify(body)).not.toContain('redis-token')
     expect(JSON.stringify(body)).not.toContain('rzp_server')
     expect(body.gitSha).toBe('redacted')
+    expect(body.deployedAt).toBe('2026-05-20T08:00:00.000Z')
     expect(JSON.stringify(body)).not.toContain('1234567890abcdef')
   })
 

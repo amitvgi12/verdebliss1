@@ -38,6 +38,8 @@ RAZORPAY_WEBHOOK_SECRET=
 GEMINI_API_KEY=
 NEXT_PUBLIC_GIT_SHA=
 NEXT_PUBLIC_BUILD_TIME=
+CRON_SECRET=
+OPS_ALERT_WEBHOOK_URL=
 ```
 
 Use REST HTTPS URLs for the Redis/KV rate limiter. Raw `redis://` connection
@@ -54,7 +56,9 @@ strings are not accepted by the storefront runtime.
    a controlled diagnostic window.
 6. Confirm `/api/version` reports `distributedRateLimiter: true` before enabling
    COD in production traffic.
-7. Replace all `DEMO` compliance values in `constants/businessCompliance.ts` and all per-product origin/manufacturer/importer declarations in `constants/productCompliance.ts`.
+7. Configure `CRON_SECRET` and `OPS_ALERT_WEBHOOK_URL`; confirm
+   `/api/cron/reconciliation-alert` is running hourly from `vercel.json`.
+8. Replace all `DEMO` compliance values in `constants/businessCompliance.ts` and all per-product origin/manufacturer/importer declarations in `constants/productCompliance.ts`.
 
 ## Known follow-up items
 
@@ -62,3 +66,6 @@ strings are not accepted by the storefront runtime.
 - Tailwind is installed, but much of the legacy UI still uses inline style objects. Migrate visual primitives gradually.
 - Admin dashboards for products, orders, refunds, review moderation, shipment tracking, and support tickets are not included in this customer storefront package.
 - Pre-launch compliance values are placeholders only; do not accept live orders until CIN, GSTIN, addresses, helpline, grievance officer, and PDP seller declarations are replaced with verified legal values.
+- Keep `LAUNCH_MODE=true` out of preview/local environments. Add it only to the
+  final production launch gate after all placeholder compliance values and seed
+  review rows have been removed.

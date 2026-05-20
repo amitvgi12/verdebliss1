@@ -57,6 +57,10 @@ function sanitiseForPrompt(input: string, maxLen: number): string {
         /\b(ignore (?:all|any|previous|the above) instructions?|system prompt|developer mode)\b/gi,
         '[redacted]'
       )
+      // Do not echo env-secret-shaped tokens from user-controlled DB fields
+      // into the LLM context. This keeps adversarial order/profile text from
+      // turning support answers into a secret-name oracle.
+      .replace(/\b[A-Z][A-Z0-9_]{5,}\b/g, '[redacted]')
       .slice(0, maxLen)
       .trim()
   )
