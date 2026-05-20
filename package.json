@@ -35,7 +35,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "^1.60.0",
-    "@tailwindcss/postcss": "^4.1.17",
+    "@tailwindcss/postcss": "^4.3.0",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
     "@types/node": "^22.19.17",
@@ -45,14 +45,14 @@
     "@typescript-eslint/parser": "^8.59.2",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitest/coverage-v8": "^4.1.5",
-    "eslint": "^9.39.4",
+    "eslint": "^10.4.0",
     "eslint-config-next": "^16.2.6",
     "globals": "^15.15.0",
     "jsdom": "^24.1.0",
     "prettier": "^3.3.3",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5.8.3",
-    "vitest": "^4.1.5"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
   },
   "overrides": {
     "postcss": "8.5.14"
