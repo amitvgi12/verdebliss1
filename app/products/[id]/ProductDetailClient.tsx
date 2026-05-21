@@ -47,6 +47,7 @@ import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
 import { MAX_CART_ITEM_QTY } from '@/constants/cart'
+import { formatPriceValidUntil, getVerifiablePriceOffer } from '@/lib/pricing'
 import type { ApprovedReview, ReviewAggregate } from '@/lib/products-server'
 import type { Product } from '@/types'
 import { COD_MAX_TOTAL } from '@/constants/checkout'
@@ -222,8 +223,9 @@ export default function ProductDetailClient({
     PRODUCT_COMPLIANCE[id] ??
     null
   const related = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
-  const mrp = typeof p.mrp === 'number' && p.mrp > (p.price ?? 0) ? p.mrp : null
-  const discount = mrp ? Math.round(((mrp - (p.price ?? 0)) / mrp) * 100) : null
+  const priceOffer = getVerifiablePriceOffer(p)
+  const mrp = priceOffer.mrp
+  const discount = priceOffer.discountPercent
   const loyalPts = Math.floor((p.price ?? 0) / 10)
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
   const stockCount = typeof p.stock === 'number' ? p.stock : null
@@ -500,11 +502,11 @@ export default function ProductDetailClient({
                     color: C.text,
                   }}
                 >
-                  ₹{(p.price ?? 0).toLocaleString()}
+                  ₹{priceOffer.price.toLocaleString()}
                 </span>
                 {mrp !== null && (
                   <span style={{ fontSize: 14, color: C.light, textDecoration: 'line-through' }}>
-                    ₹{mrp.toLocaleString()}
+                    MRP ₹{mrp.toLocaleString()}
                   </span>
                 )}
                 {discount !== null && (
@@ -525,6 +527,11 @@ export default function ProductDetailClient({
               <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>
                 MRP inclusive of all taxes
               </div>
+              {priceOffer.priceValidUntil && (
+                <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>
+                  Launch price valid until {formatPriceValidUntil(priceOffer.priceValidUntil)}.
+                </div>
+              )}
               <div
                 style={{
                   fontSize: 12,

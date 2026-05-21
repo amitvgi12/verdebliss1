@@ -8,6 +8,7 @@ import Stars from '@/components/ui/Stars'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
+import { getVerifiablePriceOffer } from '@/lib/pricing'
 import { productPath } from '@/lib/seo'
 import type { Product } from '@/types'
 
@@ -19,8 +20,9 @@ export default function ProductCard({ product: p }: { product: Product }) {
   const { toggle, has } = useWishlistStore()
   const user = useAuthStore((s) => s.user)
 
-  const price = p.price ?? 0
-  const mrp = typeof p.mrp === 'number' && p.mrp > price ? p.mrp : null
+  const priceOffer = getVerifiablePriceOffer(p)
+  const price = priceOffer.price
+  const mrp = priceOffer.mrp
   const href = productPath(p)
   const inWishlist = has(p.id)
   const stockOut = p.stock === 0
@@ -103,9 +105,9 @@ export default function ProductCard({ product: p }: { product: Product }) {
             {mrp && (
               <span
                 className="vb-product-card__mrp"
-                aria-label={`Original price ₹${mrp.toLocaleString()}`}
+                aria-label={`MRP ₹${mrp.toLocaleString()}`}
               >
-                ₹{mrp.toLocaleString()}
+                MRP ₹{mrp.toLocaleString()}
               </span>
             )}
           </div>

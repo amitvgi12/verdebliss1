@@ -97,6 +97,8 @@ const EMAIL_RE = /\S+@\S+\.\S+/
 const PHONE_RE = /^\d{10}$/
 const PIN_RE = /^\d{6}$/
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+export const PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE =
+  'Product catalogue unavailable. Please try again shortly.'
 
 function asText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
@@ -186,7 +188,9 @@ async function queryProductsByIds(ids: string[]): Promise<Product[]> {
 
 async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
   const staticProducts = PRODUCTS.filter((product) => ids.includes(product.id))
-  if (!hasSupabaseAdminEnv()) return staticProducts
+  const hasAdminCatalogue = hasSupabaseAdminEnv()
+  const isProductionCheckout = process.env.NODE_ENV === 'production'
+  if (!hasAdminCatalogue) return staticProducts
 
   const dbProducts: Product[] = []
   const found = new Set<string>()
@@ -214,8 +218,13 @@ async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
       }
     }
   } catch (error) {
+    if (isProductionCheckout) {
+      throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE)
+    }
     console.warn('[commerce] Product DB lookup fell back where possible:', error)
   }
+
+  if (isProductionCheckout) return dbProducts
 
   const merged = new Map<string, Product>()
   for (const product of staticProducts) merged.set(product.id, product)

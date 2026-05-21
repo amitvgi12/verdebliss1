@@ -33,6 +33,8 @@ create table if not exists public.products (
   name          text not null,
   description   text,
   price         numeric(10,2) not null check (price >= 0),
+  mrp           numeric(10,2),
+  price_valid_until timestamptz,
   category      text not null,
   skin_types    text[] default '{}',
   badges        text[] default '{}',
@@ -45,12 +47,15 @@ create table if not exists public.products (
   stock         int default 100 check (stock >= 0),
   active        boolean default true,
   created_at    timestamptz default now(),
-  updated_at    timestamptz default now()
+  updated_at    timestamptz default now(),
+  constraint products_mrp_gt_price_check check (mrp is null or mrp > price)
 );
 
 alter table public.products add column if not exists slug text;
 alter table public.products add column if not exists description text;
 alter table public.products add column if not exists price numeric(10,2);
+alter table public.products add column if not exists mrp numeric(10,2);
+alter table public.products add column if not exists price_valid_until timestamptz;
 alter table public.products add column if not exists category text;
 alter table public.products add column if not exists skin_types text[] default '{}';
 alter table public.products add column if not exists badges text[] default '{}';
@@ -65,6 +70,21 @@ alter table public.products add column if not exists stock int default 100;
 alter table public.products add column if not exists active boolean default true;
 alter table public.products add column if not exists created_at timestamptz default now();
 alter table public.products add column if not exists updated_at timestamptz default now();
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.products'::regclass
+      and conname = 'products_mrp_gt_price_check'
+  ) then
+    alter table public.products
+      add constraint products_mrp_gt_price_check
+      check (mrp is null or mrp > price)
+      not valid;
+  end if;
+end $$;
 
 create unique index if not exists products_slug_unique_idx on public.products (slug) where slug is not null;
 create index if not exists products_active_idx on public.products (active);
@@ -96,7 +116,7 @@ begin
         'bakuchiol-renewal-serum',
         'Bakuchiol Renewal Serum',
         'Plant-based retinol alternative for visible cell renewal without irritation.',
-        250.00::numeric, 'Serum',
+        250.00::numeric, null::numeric, null::timestamptz, 'Serum',
         array['Dry','Combination']::text[], array['Vegan','Organic Certified']::text[],
         'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null::numeric, 0, 100
       ),
@@ -105,7 +125,7 @@ begin
         'rose-hip-glow-moisturiser',
         'Rose Hip Glow Moisturiser',
         'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.',
-        390.00::numeric, 'Moisturiser',
+        390.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
         array['Dry','Sensitive']::text[], array['Cruelty-Free','Vegan']::text[],
         'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null::numeric, 0, 100
       ),
@@ -114,7 +134,7 @@ begin
         'green-tea-clarity-toner',
         'Green Tea Clarity Toner',
         'Balance oil and refine pores with antioxidant-rich green tea extract.',
-        450.00::numeric, 'Toner',
+        450.00::numeric, null::numeric, null::timestamptz, 'Toner',
         array['Oily','Combination']::text[], array['Vegan','Organic Certified']::text[],
         'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null::numeric, 0, 100
       ),
@@ -123,7 +143,7 @@ begin
         'turmeric-brightening-cleanser',
         'Turmeric Brightening Cleanser',
         'Gentle foam cleanser with turmeric and neem for a luminous complexion.',
-        250.00::numeric, 'Cleanser',
+        250.00::numeric, null::numeric, null::timestamptz, 'Cleanser',
         array['All Types']::text[], array['Cruelty-Free','Organic Certified']::text[],
         'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null::numeric, 0, 100
       ),
@@ -132,7 +152,7 @@ begin
         'botanical-spf-50-shield',
         'Botanical SPF 50 Shield',
         'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.',
-        220.00::numeric, 'SPF',
+        220.00::numeric, null::numeric, null::timestamptz, 'SPF',
         array['All Types']::text[], array['Vegan','Cruelty-Free']::text[],
         'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null::numeric, 0, 100
       ),
@@ -141,7 +161,7 @@ begin
         'wild-berry-lip-elixir',
         'Wild Berry Lip Elixir',
         'Nourishing lip treatment with acai berry and shea for pillowy softness.',
-        490.00::numeric, 'Lip Care',
+        490.00::numeric, null::numeric, null::timestamptz, 'Lip Care',
         array['All Types']::text[], array['Vegan','Organic Certified']::text[],
         'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null::numeric, 0, 100
       ),
@@ -150,7 +170,7 @@ begin
         'niacinamide-pore-serum',
         'Niacinamide Pore Serum',
         'Minimise pores and control sebum with a 10% niacinamide complex.',
-        350.00::numeric, 'Serum',
+        350.00::numeric, null::numeric, null::timestamptz, 'Serum',
         array['Oily','Combination']::text[], array['Vegan','Cruelty-Free']::text[],
         'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null::numeric, 0, 100
       ),
@@ -159,12 +179,12 @@ begin
         'shea-butter-night-cream',
         'Shea Butter Night Cream',
         'Intensive overnight repair with shea butter and vitamin E for morning glow.',
-        550.00::numeric, 'Moisturiser',
+        550.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
         array['Dry','Sensitive']::text[], array['Organic Certified','Cruelty-Free']::text[],
         'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null::numeric, 0, 100
       )
     ) as product_seed(
-      id_text, id_uuid, slug, name, description, price, category,
+      id_text, id_uuid, slug, name, description, price, mrp, price_valid_until, category,
       skin_types, badges, ingredient, emoji, bg_color, image_url,
       rating, review_count, stock
     )
@@ -174,6 +194,8 @@ begin
        set slug = p.slug,
            description = p.description,
            price = p.price,
+           mrp = p.mrp,
+           price_valid_until = p.price_valid_until,
            category = p.category,
            skin_types = p.skin_types,
            badges = p.badges,
@@ -195,18 +217,18 @@ begin
 
       execute format(
         'insert into public.products (
-           id, slug, name, description, price, category, skin_types, badges,
+           id, slug, name, description, price, mrp, price_valid_until, category, skin_types, badges,
            ingredient, emoji, bg_color, image_url, rating, review_count, stock,
            active, created_at, updated_at
          ) values (
-           $1::%s, $2, $3, $4, $5, $6, $7, $8,
-           $9, $10, $11, $12, $13, $14, $15,
+           $1::%s, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+           $11, $12, $13, $14, $15, $16, $17,
            true, now(), now()
          )',
         product_id_cast_type
       ) using
-        chosen_id, p.slug, p.name, p.description, p.price, p.category,
-        p.skin_types, p.badges, p.ingredient, p.emoji, p.bg_color,
+        chosen_id, p.slug, p.name, p.description, p.price, p.mrp, p.price_valid_until,
+        p.category, p.skin_types, p.badges, p.ingredient, p.emoji, p.bg_color,
         p.image_url, p.rating, p.review_count, p.stock;
     end if;
   end loop;

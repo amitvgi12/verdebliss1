@@ -1,7 +1,12 @@
 import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
-import { normalizeCart, persistOrder, validateAddress } from '@/lib/commerce'
+import {
+  PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE,
+  normalizeCart,
+  persistOrder,
+  validateAddress,
+} from '@/lib/commerce'
 import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
 import { requireSameOriginRequest } from '@/lib/csrf'
 import { assessCodRisk } from '@/lib/cod-risk'
@@ -73,14 +78,29 @@ export async function POST(request: Request) {
     console.error('[checkout/cod]', error)
     const message = error instanceof Error ? error.message : 'Unable to place COD order'
     const isPersistenceConfig = message.toLowerCase().includes('commerce persistence')
+    const isCatalogueUnavailable = message === PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
+
+    let responseError = message
+    let code = 'CHECKOUT_COD_FAILED'
+    let status = 400
+
+    if (isCatalogueUnavailable) {
+      responseError = PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
+      code = 'PRODUCT_CATALOGUE_UNAVAILABLE'
+      status = 503
+    } else if (isPersistenceConfig) {
+      responseError =
+        'Cash on Delivery is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+      code = 'COMMERCE_PERSISTENCE_MISSING'
+      status = 503
+    }
+
     return NextResponse.json(
       {
-        error: isPersistenceConfig
-          ? 'Cash on Delivery is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
-          : message,
-        code: isPersistenceConfig ? 'COMMERCE_PERSISTENCE_MISSING' : 'CHECKOUT_COD_FAILED',
+        error: responseError,
+        code,
       },
-      { status: isPersistenceConfig ? 503 : 400 }
+      { status }
     )
   }
 }

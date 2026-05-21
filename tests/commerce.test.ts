@@ -1,16 +1,44 @@
 import crypto from 'node:crypto'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('@/lib/supabase-admin', () => ({
+  createSupabaseAdmin: vi.fn(() => {
+    throw new Error('Unexpected Supabase admin client')
+  }),
+  hasSupabaseAdminEnv: vi.fn(() => false),
+}))
+
+import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 import {
+  PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE,
   amountInPaise,
+  normalizeCart,
   validateAddress,
   validateCartItems,
   verifyRazorpaySignature,
   verifyRazorpayWebhookSignature,
 } from '@/lib/commerce'
 
+function mockProductLookup(response: { data?: unknown[] | null; error?: unknown }) {
+  vi.mocked(createSupabaseAdmin).mockReturnValue({
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        in: vi.fn(async () => ({
+          data: response.data ?? null,
+          error: response.error ?? null,
+        })),
+      })),
+    })),
+  } as never)
+}
+
 describe('commerce validation and payment helpers', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(false)
+    vi.mocked(createSupabaseAdmin).mockImplementation(() => {
+      throw new Error('Unexpected Supabase admin client')
+    })
   })
 
   it('normalises INR totals to Razorpay paise', () => {
@@ -41,6 +69,45 @@ describe('commerce validation and payment helpers', () => {
     ).toEqual([{ id: '2', qty: 3 }])
 
     expect(() => validateCartItems([{ id: '2', qty: 99 }])).toThrow('Invalid quantity')
+  })
+
+  it('allows static catalogue fallback outside production when product lookup fails', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true)
+    mockProductLookup({ error: { message: 'database unavailable' } })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const result = await normalizeCart([{ id: '1', qty: 1 }])
+
+    expect(result.items[0]).toMatchObject({
+      id: '1',
+      name: 'Bakuchiol Renewal Serum',
+      price: 250,
+      qty: 1,
+    })
+    expect(warn).toHaveBeenCalledWith(
+      '[commerce] Product DB lookup fell back where possible:',
+      expect.anything()
+    )
+    warn.mockRestore()
+  })
+
+  it('fails closed in production when the configured product catalogue is unavailable', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true)
+    mockProductLookup({ error: { message: 'database unavailable' } })
+
+    await expect(normalizeCart([{ id: '1', qty: 1 }])).rejects.toThrow(
+      PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
+    )
+  })
+
+  it('does not merge static catalogue rows into production checkout results', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true)
+    mockProductLookup({ data: [] })
+
+    await expect(normalizeCart([{ id: '1', qty: 1 }])).rejects.toThrow('Product not found: 1')
   })
 
   it('verifies Razorpay HMAC signatures server-side', () => {

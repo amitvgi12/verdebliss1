@@ -21,6 +21,8 @@ create table if not exists public.products (
   name          text not null,
   description   text,
   price         numeric(10,2) not null check (price >= 0),
+  mrp           numeric(10,2),
+  price_valid_until timestamptz,
   category      text not null,
   skin_types    text[] default '{}',
   badges        text[] default '{}',
@@ -34,12 +36,15 @@ create table if not exists public.products (
   active           boolean default true,
   created_at       timestamptz default now(),
   updated_at       timestamptz default now(),
-  compliance_flags text[] default '{}'
+  compliance_flags text[] default '{}',
+  constraint products_mrp_gt_price_check check (mrp is null or mrp > price)
 );
 
 alter table public.products add column if not exists slug text;
 alter table public.products add column if not exists description text;
 alter table public.products add column if not exists price numeric(10,2);
+alter table public.products add column if not exists mrp numeric(10,2);
+alter table public.products add column if not exists price_valid_until timestamptz;
 alter table public.products add column if not exists category text;
 alter table public.products add column if not exists skin_types text[] default '{}';
 alter table public.products add column if not exists badges text[] default '{}';
@@ -55,6 +60,21 @@ alter table public.products add column if not exists active boolean default true
 alter table public.products add column if not exists created_at timestamptz default now();
 alter table public.products add column if not exists updated_at timestamptz default now();
 alter table public.products add column if not exists compliance_flags text[] default '{}';
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.products'::regclass
+      and conname = 'products_mrp_gt_price_check'
+  ) then
+    alter table public.products
+      add constraint products_mrp_gt_price_check
+      check (mrp is null or mrp > price)
+      not valid;
+  end if;
+end $$;
 
 create unique index if not exists products_slug_unique_idx on public.products (slug) where slug is not null;
 create index if not exists products_active_idx on public.products (active);
@@ -887,20 +907,22 @@ begin
     and column_name = 'id';
 
   if product_id_type in ('text', 'character varying') then
-    insert into public.products (id, slug, name, description, price, category, skin_types, badges, ingredient, emoji, bg_color, image_url, rating, review_count, stock, compliance_flags) values
-    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for visible cell renewal without irritation.', 250, 'Serum', array['Dry','Combination'], array['Vegan','Organic Certified'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null, 0, 100, array[]::text[]),
-    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 390, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-Free','Vegan'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null, 0, 100, array[]::text[]),
-    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Balance oil and refine pores with antioxidant-rich green tea extract and 0.5% salicylic acid (BHA). Recommended for ages 12+.', 450, 'Toner', array['Oily','Combination'], array['Vegan','Organic Certified'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null, 0, 100, array['contains_bha','age_restricted_12plus','pregnancy_caution']),
-    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a luminous complexion.', 250, 'Cleanser', array['All Types'], array['Cruelty-Free','Organic Certified'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null, 0, 100, array[]::text[]),
-    ('5', 'botanical-spf-50-shield', 'Botanical SPF 50 Shield', 'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.', 220, 'SPF', array['All Types'], array['Vegan','Cruelty-Free'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null, 0, 100, array[]::text[]),
-    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with acai berry and shea for pillowy softness.', 490, 'Lip Care', array['All Types'], array['Vegan','Organic Certified'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null, 0, 100, array[]::text[]),
-    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Minimise pores and control sebum with a 10% niacinamide complex.', 350, 'Serum', array['Oily','Combination'], array['Vegan','Cruelty-Free'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null, 0, 100, array[]::text[]),
-    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Intensive overnight repair with shea butter and vitamin E for morning glow.', 550, 'Moisturiser', array['Dry','Sensitive'], array['Organic Certified','Cruelty-Free'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null, 0, 100, array[]::text[])
+    insert into public.products (id, slug, name, description, price, mrp, price_valid_until, category, skin_types, badges, ingredient, emoji, bg_color, image_url, rating, review_count, stock, compliance_flags) values
+    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for visible cell renewal without irritation.', 250, null, null, 'Serum', array['Dry','Combination'], array['Vegan','Organic Certified'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null, 0, 100, array[]::text[]),
+    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 390, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-Free','Vegan'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null, 0, 100, array[]::text[]),
+    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Balance oil and refine pores with antioxidant-rich green tea extract and 0.5% salicylic acid (BHA). Recommended for ages 12+.', 450, null, null, 'Toner', array['Oily','Combination'], array['Vegan','Organic Certified'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null, 0, 100, array['contains_bha','age_restricted_12plus','pregnancy_caution']),
+    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a luminous complexion.', 250, null, null, 'Cleanser', array['All Types'], array['Cruelty-Free','Organic Certified'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null, 0, 100, array[]::text[]),
+    ('5', 'botanical-spf-50-shield', 'Botanical SPF 50 Shield', 'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.', 220, null, null, 'SPF', array['All Types'], array['Vegan','Cruelty-Free'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null, 0, 100, array[]::text[]),
+    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with acai berry and shea for pillowy softness.', 490, null, null, 'Lip Care', array['All Types'], array['Vegan','Organic Certified'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null, 0, 100, array[]::text[]),
+    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Minimise pores and control sebum with a 10% niacinamide complex.', 350, null, null, 'Serum', array['Oily','Combination'], array['Vegan','Cruelty-Free'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null, 0, 100, array[]::text[]),
+    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Intensive overnight repair with shea butter and vitamin E for morning glow.', 550, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Organic Certified','Cruelty-Free'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null, 0, 100, array[]::text[])
     on conflict (id) do update set
       slug = excluded.slug,
       name = excluded.name,
       description = excluded.description,
       price = excluded.price,
+      mrp = excluded.mrp,
+      price_valid_until = excluded.price_valid_until,
       category = excluded.category,
       skin_types = excluded.skin_types,
       badges = excluded.badges,

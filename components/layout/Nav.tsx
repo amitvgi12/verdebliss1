@@ -38,21 +38,21 @@ export default function Nav() {
   return (
     <>
       <nav className="sticky top-0 z-[100] border-b border-border bg-bg/95 px-4 backdrop-blur-md">
-        <div className="site-container flex h-[60px] items-center gap-3">
+        <div className="site-container flex h-[52px] items-center gap-3">
           {/* Logo */}
           <Link
             href="/"
             aria-label="VerdeBliss home"
             onClick={closeMenus}
-            className="flex flex-shrink-0 items-center pt-px"
+            className="flex h-full flex-shrink-0 items-center pt-px"
           >
             <Image
               src="/images/logo.webp"
               alt="VerdeBliss"
-              width={120}
-              height={40}
+              width={96}
+              height={36}
               priority
-              className="object-contain"
+              className="h-9 w-24 object-contain mix-blend-multiply"
             />
           </Link>
 

@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import {
+  PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE,
   createCheckoutSession,
   createRazorpayOrder,
   normalizeCart,
@@ -69,20 +70,34 @@ export async function POST(request: Request) {
     const lower = message.toLowerCase()
     const isRazorpayConfig = lower.includes('razorpay server credentials')
     const isPersistenceConfig = lower.includes('commerce persistence')
+    const isCatalogueUnavailable = message === PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
+
+    let responseError = message
+    let code = 'CHECKOUT_CREATE_FAILED'
+    let status = 400
+
+    if (isRazorpayConfig) {
+      responseError =
+        'Online payment is not enabled yet. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the server environment.'
+      code = 'RAZORPAY_SERVER_CREDENTIALS_MISSING'
+      status = 503
+    } else if (isCatalogueUnavailable) {
+      responseError = PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
+      code = 'PRODUCT_CATALOGUE_UNAVAILABLE'
+      status = 503
+    } else if (isPersistenceConfig) {
+      responseError =
+        'Online payment is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+      code = 'COMMERCE_PERSISTENCE_MISSING'
+      status = 503
+    }
+
     return NextResponse.json(
       {
-        error: isRazorpayConfig
-          ? 'Online payment is not enabled yet. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the server environment.'
-          : isPersistenceConfig
-            ? 'Online payment is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
-            : message,
-        code: isRazorpayConfig
-          ? 'RAZORPAY_SERVER_CREDENTIALS_MISSING'
-          : isPersistenceConfig
-            ? 'COMMERCE_PERSISTENCE_MISSING'
-            : 'CHECKOUT_CREATE_FAILED',
+        error: responseError,
+        code,
       },
-      { status: isRazorpayConfig || isPersistenceConfig ? 503 : 400 }
+      { status }
     )
   }
 }

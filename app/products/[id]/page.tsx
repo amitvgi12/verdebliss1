@@ -10,6 +10,7 @@ import ProductDetailClient from './ProductDetailClient'
 import { absoluteUrl, breadcrumbJsonLd, productImagePath, productPath } from '@/lib/seo'
 import { StructuredData } from '@/lib/structured-data'
 import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from '@/constants/shipping'
+import { getVerifiablePriceOffer } from '@/lib/pricing'
 import type { Product } from '@/types'
 
 interface ReviewAggregate {
@@ -18,6 +19,37 @@ interface ReviewAggregate {
 }
 
 function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
+  const priceOffer = getVerifiablePriceOffer(product)
+  const offer: Record<string, unknown> = {
+    '@type': 'Offer',
+    price: priceOffer.price,
+    priceCurrency: 'INR',
+    availability:
+      (product.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    url: absoluteUrl(productPath(product)),
+    // Honest shipping disclosure: Free shipping kicks in on cart subtotal,
+    // not single-product price. Quote the standard rate; the threshold is
+    // surfaced via the checkout UI / FAQ, not Schema-level conditional rates.
+    shippingDetails: {
+      '@type': 'OfferShippingDetails',
+      shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
+      shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: STANDARD_SHIPPING_COST,
+        currency: 'INR',
+      },
+      deliveryTime: {
+        '@type': 'ShippingDeliveryTime',
+        handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
+        transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 3, unitCode: 'DAY' },
+      },
+    },
+  }
+
+  if (priceOffer.priceValidUntil) {
+    offer.priceValidUntil = priceOffer.priceValidUntil.slice(0, 10)
+  }
+
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -26,31 +58,7 @@ function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
     image: absoluteUrl(productImagePath(product)),
     sku: product.id,
     brand: { '@type': 'Brand', name: 'VerdeBliss' },
-    offers: {
-      '@type': 'Offer',
-      price: product.price,
-      priceCurrency: 'INR',
-      availability:
-        (product.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      url: absoluteUrl(productPath(product)),
-      // Honest shipping disclosure: Free shipping kicks in on cart subtotal,
-      // not single-product price. Quote the standard rate; the threshold is
-      // surfaced via the checkout UI / FAQ, not Schema-level conditional rates.
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
-        shippingRate: {
-          '@type': 'MonetaryAmount',
-          value: STANDARD_SHIPPING_COST,
-          currency: 'INR',
-        },
-        deliveryTime: {
-          '@type': 'ShippingDeliveryTime',
-          handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
-          transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 3, unitCode: 'DAY' },
-        },
-      },
-    },
+    offers: offer,
     // FREE_SHIPPING_THRESHOLD is surfaced at checkout, not in offer schema —
     // Google penalises offer schema that mismatches the on-page experience.
     // Reading this constant keeps the import wired so future schema additions
