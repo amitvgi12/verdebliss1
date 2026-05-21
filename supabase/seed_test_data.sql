@@ -71,6 +71,13 @@ alter table public.products add column if not exists active boolean default true
 alter table public.products add column if not exists created_at timestamptz default now();
 alter table public.products add column if not exists updated_at timestamptz default now();
 
+update public.products
+   set mrp = null,
+       price_valid_until = null,
+       updated_at = now()
+ where mrp is not null
+   and mrp <= price;
+
 do $$
 begin
   if not exists (
@@ -85,6 +92,8 @@ begin
       not valid;
   end if;
 end $$;
+
+alter table public.products validate constraint products_mrp_gt_price_check;
 
 create unique index if not exists products_slug_unique_idx on public.products (slug) where slug is not null;
 create index if not exists products_active_idx on public.products (active);

@@ -61,6 +61,16 @@ alter table public.products add column if not exists created_at timestamptz defa
 alter table public.products add column if not exists updated_at timestamptz default now();
 alter table public.products add column if not exists compliance_flags text[] default '{}';
 
+-- Existing projects may have had ad hoc MRP values added before the schema
+-- owned the column. Keep invalid reference prices from blocking constraint
+-- validation or leaking into storefront discount displays.
+update public.products
+   set mrp = null,
+       price_valid_until = null,
+       updated_at = now()
+ where mrp is not null
+   and mrp <= price;
+
 do $$
 begin
   if not exists (
@@ -75,6 +85,8 @@ begin
       not valid;
   end if;
 end $$;
+
+alter table public.products validate constraint products_mrp_gt_price_check;
 
 create unique index if not exists products_slug_unique_idx on public.products (slug) where slug is not null;
 create index if not exists products_active_idx on public.products (active);
@@ -800,8 +812,26 @@ $$;
 revoke all on function public.finalize_commerce_order(uuid, text, text, text, text, text, jsonb, jsonb, numeric, numeric, numeric, int, boolean, jsonb) from public, anon, authenticated;
 grant execute on function public.finalize_commerce_order(uuid, text, text, text, text, text, jsonb, jsonb, numeric, numeric, numeric, int, boolean, jsonb) to service_role;
 
--- Removed unsafe legacy RPC from prior versions.
+-- Removed unsafe legacy RPCs and trigger helpers from prior versions.
 drop function if exists public.increment_points(uuid, int);
+drop function if exists public.add_loyalty_points(uuid, int);
+
+do $$
+declare
+  legacy_trigger record;
+begin
+  for legacy_trigger in
+    select tgname
+    from pg_trigger
+    where tgrelid = 'public.refunds'::regclass
+      and tgfoid = to_regprocedure('public.set_refunds_updated_at()')
+      and not tgisinternal
+  loop
+    execute format('drop trigger if exists %I on public.refunds', legacy_trigger.tgname);
+  end loop;
+end $$;
+
+drop function if exists public.set_refunds_updated_at();
 
 -- ── Row Level Security ───────────────────────────────
 alter table public.products enable row level security;

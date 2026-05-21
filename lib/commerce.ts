@@ -219,7 +219,7 @@ async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
     }
   } catch (error) {
     if (isProductionCheckout) {
-      throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE)
+      throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE, { cause: error })
     }
     console.warn('[commerce] Product DB lookup fell back where possible:', error)
   }

@@ -258,7 +258,7 @@ async function callGemini(
     }),
   })
   const text = await res.text()
-  let data: unknown = null
+  let data: unknown
   try {
     data = JSON.parse(text)
   } catch {
