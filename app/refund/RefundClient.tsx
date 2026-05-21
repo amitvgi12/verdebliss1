@@ -195,7 +195,7 @@ export default function RefundClient() {
               Your Refund Requests
             </h2>
 
-            {authLoading && <div style={{ color: C.muted }}>Checking account...</div>}
+            {authLoading && <RefundAccountGuidance loading />}
             {historyLoading && <div style={{ color: C.muted }}>Loading refund history...</div>}
             {historyError && (
               <div style={{ color: '#A32D2D', marginBottom: 12 }}>
@@ -204,13 +204,7 @@ export default function RefundClient() {
             )}
 
             {!authLoading && !user && (
-              <div style={{ color: C.muted, marginBottom: 12 }}>
-                Please{' '}
-                <a href="/account" style={{ color: C.forest }}>
-                  sign in
-                </a>{' '}
-                to view or request refunds.
-              </div>
+              <RefundAccountGuidance />
             )}
 
             {user && refunds.length === 0 && !historyLoading && (
@@ -426,4 +420,79 @@ function summariseOrderItems(items?: EligibleOrderItem[] | null) {
   if (!names.length) return `${items.length} item${items.length === 1 ? '' : 's'}`
   if (names.length <= 2) return names.join(', ')
   return `${names.slice(0, 2).join(', ')} +${names.length - 2} more`
+}
+
+function RefundAccountGuidance({ loading = false }: { loading?: boolean }) {
+  return (
+    <div
+      style={{
+        maxWidth: 640,
+        border: `1px solid ${C.border}`,
+        borderRadius: 16,
+        background: C.card,
+        padding: '18px 20px',
+        color: C.muted,
+        marginBottom: 16,
+      }}
+    >
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        <span
+          aria-hidden
+          style={{
+            display: 'inline-flex',
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: C.sagePale,
+            color: C.forest,
+            flexShrink: 0,
+          }}
+        >
+          <PackageCheck size={17} />
+        </span>
+        <div>
+          <h3 style={{ margin: 0, color: C.text, fontSize: 15, fontWeight: 700 }}>
+            {loading ? 'Checking your account' : 'Sign in to request a refund'}
+          </h3>
+          <p style={{ margin: '7px 0 0', fontSize: 13, lineHeight: 1.7 }}>
+            {loading
+              ? 'If you are signed in, we will load refund history and eligible orders automatically. Signed-out customers can sign in to start a request or review the policy first.'
+              : 'Refund requests are linked to verified orders. Sign in to see eligible orders, open requests, and status updates. Use the same email you used at checkout.'}
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 14 }}>
+            <a
+              href="/account"
+              style={{
+                background: C.forest,
+                color: 'white',
+                borderRadius: 10,
+                padding: '9px 14px',
+                textDecoration: 'none',
+                fontSize: 13,
+                fontWeight: 700,
+              }}
+            >
+              Sign in
+            </a>
+            <a
+              href="/returns-refunds"
+              style={{
+                color: C.forest,
+                border: `1px solid ${C.border}`,
+                borderRadius: 10,
+                padding: '9px 14px',
+                textDecoration: 'none',
+                fontSize: 13,
+                fontWeight: 700,
+              }}
+            >
+              Return and Refund Policy
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

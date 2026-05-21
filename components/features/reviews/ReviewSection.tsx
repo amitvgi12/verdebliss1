@@ -7,6 +7,7 @@ import { apiPost } from '@/lib/api-client'
 import { useAuthStore } from '@/store/authStore'
 import Stars from '@/components/ui/Stars'
 import { C, FONT } from '@/constants/theme'
+import { formatApprovedReviewCount } from '@/lib/review-copy'
 import type { ApprovedReview } from '@/lib/products-server'
 
 interface ReviewRow {
@@ -102,7 +103,14 @@ export default function ReviewSection({
     : null
 
   return (
-    <section style={{ marginTop: 56, paddingTop: 40, borderTop: `1px solid ${C.border}` }}>
+    <section
+      style={{
+        maxWidth: 1200,
+        margin: '56px auto 0',
+        padding: '40px 24px 64px',
+        borderTop: `1px solid ${C.border}`,
+      }}
+    >
       {/* Header */}
       <div
         style={{
@@ -130,7 +138,7 @@ export default function ReviewSection({
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Stars rating={parseFloat(avgRating)} size={16} />
               <span style={{ fontSize: 14, color: C.muted }}>
-                {avgRating} · {reviews.length} approved review{reviews.length !== 1 ? 's' : ''}
+                {avgRating} · {formatApprovedReviewCount(reviews.length)}
               </span>
             </div>
           )}

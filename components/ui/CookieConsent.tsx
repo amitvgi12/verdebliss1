@@ -96,77 +96,97 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
       {modal && <LegalModal type={modal} onClose={() => setModal(null)} />}
       <AnimatePresence>
         {visible && (
-          <div className="pointer-events-none fixed inset-x-0 bottom-3 z-[300] flex justify-center px-3 sm:bottom-5 sm:px-5">
+          <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[300] flex justify-center px-3 sm:bottom-6 sm:px-5">
             <motion.div
-              initial={{ y: 28, opacity: 0, scale: 0.98 }}
+              initial={{ y: 24, opacity: 0, scale: 0.985 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 28, opacity: 0, scale: 0.98 }}
+              exit={{ y: 24, opacity: 0, scale: 0.985 }}
               transition={{ type: 'spring', damping: 26, stiffness: 260 }}
               role="dialog"
               aria-modal="false"
               aria-label="Cookie preferences"
-              className="pointer-events-auto w-full max-w-3xl overflow-hidden rounded-3xl border border-[#E2D6C8] bg-[#FFFCF7] shadow-[0_24px_70px_rgba(28,34,30,0.22)]"
+              className="pointer-events-auto max-h-[min(82vh,720px)] w-full max-w-[760px] overflow-y-auto rounded-[26px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_22px_60px_rgba(28,34,30,0.24)]"
             >
-              <div className="relative overflow-hidden border-b border-[#E8DDCF] bg-[linear-gradient(135deg,#FFFDF9_0%,#F3EBE1_100%)] px-5 py-5 sm:px-6">
+              <div className="relative overflow-hidden bg-[linear-gradient(135deg,#FFFDF9_0%,#F6EFE6_100%)] p-4 sm:p-5">
                 <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#C8A464,#7D9B76,#2D4A32)]" />
                 <button
                   type="button"
                   onClick={decline}
                   aria-label="Reject optional cookies and services and dismiss"
-                  className="absolute right-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-transparent bg-white/70 text-muted transition hover:border-border hover:bg-white hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                  className="absolute right-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-transparent bg-white/75 text-muted shadow-sm transition hover:border-border hover:bg-white hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                 >
                   <X size={17} />
                 </button>
 
-                <div className="flex items-start gap-4 pr-9">
-                  <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full border border-white bg-sagePale shadow-sm">
-                    <Shield size={24} aria-hidden className="text-forest" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-gold">
-                      Consent Centre
-                    </p>
-                    <h2 className="font-serif text-2xl font-semibold leading-none text-text sm:text-3xl">
-                      Your privacy matters
-                    </h2>
-                    <p className="mt-3 max-w-2xl text-sm leading-7 text-muted sm:text-[15px]">
-                      We use essential cookies to keep the site working. Optional analytics,
-                      marketing, and AI support stay off unless you choose them. You&apos;re in
-                      control.{' '}
-                      <button
-                        type="button"
-                        onClick={() => setModal('cookie')}
-                        className="border-none bg-transparent p-0 font-semibold text-forest underline decoration-forest/35 underline-offset-4 transition hover:decoration-forest"
-                      >
-                        Read our cookie policy
-                      </button>
-                    </p>
+                <div className="grid gap-4 pr-9 pt-1.5 sm:grid-cols-[1fr_260px] sm:items-end sm:gap-5 sm:pr-10 sm:pt-1">
+                  <div className="flex min-w-0 items-start gap-3.5">
+                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white bg-sagePale shadow-[0_6px_18px_rgba(45,74,50,0.12)] sm:h-12 sm:w-12">
+                      <Shield size={20} aria-hidden className="text-forest" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-gold">
+                        Consent Centre
+                      </p>
+                      <h2 className="font-serif text-[23px] font-semibold leading-none text-text sm:text-[29px]">
+                        Your privacy matters
+                      </h2>
+                      <p className="mt-2 max-w-xl text-[13px] leading-5 text-muted sm:text-sm sm:leading-6">
+                        <span className="hidden sm:inline">
+                          Essential cookies keep VerdeBliss working. Optional analytics, marketing,
+                          and AI support stay off unless you choose them.
+                        </span>
+                        <span className="sm:hidden">
+                          Essential cookies keep the site working. Optional services stay off unless
+                          you choose them.
+                        </span>{' '}
+                        <button
+                          type="button"
+                          onClick={() => setModal('cookie')}
+                          className="border-none bg-transparent p-0 font-semibold text-forest underline decoration-forest/35 underline-offset-4 transition hover:decoration-forest"
+                        >
+                          Cookie policy
+                        </button>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((s) => !s)}
+                      aria-expanded={expanded}
+                      className="mx-auto flex h-11 w-fit min-w-[190px] cursor-pointer items-center justify-center gap-3 rounded-full border border-[#D8CDBF] bg-white/90 px-5 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:mx-0 sm:w-full sm:min-w-0 sm:justify-between sm:rounded-2xl sm:px-4 sm:text-left"
+                    >
+                      <span>Customise</span>
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sagePale text-forest sm:ml-auto">
+                        <ChevronDown
+                          size={15}
+                          className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
+                        />
+                      </span>
+                    </button>
+
+                    {!expanded && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={decline}
+                          className="min-h-11 cursor-pointer rounded-2xl border border-[#D8CDBF] bg-white px-4 py-2.5 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          ref={acceptRef}
+                          type="button"
+                          onClick={acceptAll}
+                          className="min-h-11 cursor-pointer rounded-2xl border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:bg-[#203927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                        >
+                          Accept all
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-
-              <div className="space-y-4 p-4 sm:p-5">
-                <button
-                  type="button"
-                  onClick={() => setExpanded((s) => !s)}
-                  aria-expanded={expanded}
-                  className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-2xl border border-[#E2D6C8] bg-white px-4 py-3 text-left transition hover:border-forest/35 hover:bg-[#FBF7F0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-                >
-                  <span>
-                    <span className="block text-sm font-bold text-forest">
-                      Customise preferences
-                    </span>
-                    <span className="mt-0.5 block text-xs leading-relaxed text-muted">
-                      Essential stays on. Everything else is your choice.
-                    </span>
-                  </span>
-                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-sagePale text-forest">
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
-                    />
-                  </span>
-                </button>
 
                 {expanded && (
                   <motion.div
@@ -175,7 +195,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="grid gap-2.5 rounded-2xl border border-[#E2D6C8] bg-[#F8F2EA] p-3">
+                    <div className="mt-4 grid gap-2 rounded-2xl border border-[#E2D6C8] bg-[#F8F2EA] p-2.5">
                       <ConsentRow
                         title="Essential"
                         desc="Required for cart, login, and checkout."
@@ -201,35 +221,33 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                         onChange={setFunctionalThirdParty}
                       />
                     </div>
+
+                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                      <button
+                        type="button"
+                        onClick={decline}
+                        className="min-h-11 cursor-pointer rounded-2xl border border-[#D8CDBF] bg-white px-4 py-2.5 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                      >
+                        Reject optional
+                      </button>
+                      <button
+                        type="button"
+                        onClick={acceptSelected}
+                        className="min-h-11 cursor-pointer rounded-2xl border border-forest bg-sagePale px-4 py-2.5 text-sm font-bold text-forest transition hover:bg-[#DDE9DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                      >
+                        Save preferences
+                      </button>
+                      <button
+                        ref={acceptRef}
+                        type="button"
+                        onClick={acceptAll}
+                        className="min-h-11 cursor-pointer rounded-2xl border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:bg-[#203927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                      >
+                        Accept all
+                      </button>
+                    </div>
                   </motion.div>
                 )}
-
-                <div className={`grid gap-3 ${expanded ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-                  <button
-                    type="button"
-                    onClick={decline}
-                    className="min-h-12 cursor-pointer rounded-2xl border border-[#D8CDBF] bg-white px-5 py-3 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-                  >
-                    Reject optional
-                  </button>
-                  {expanded && (
-                    <button
-                      type="button"
-                      onClick={acceptSelected}
-                      className="min-h-12 cursor-pointer rounded-2xl border border-forest bg-sagePale px-5 py-3 text-sm font-bold text-forest transition hover:bg-[#DDE9DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-                    >
-                      Save preferences
-                    </button>
-                  )}
-                  <button
-                    ref={acceptRef}
-                    type="button"
-                    onClick={acceptAll}
-                    className="min-h-12 cursor-pointer rounded-2xl border border-forest bg-forest px-5 py-3 text-sm font-bold text-white shadow-[0_14px_26px_rgba(45,74,50,0.22)] transition hover:bg-[#203927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-                  >
-                    Accept all
-                  </button>
-                </div>
               </div>
             </motion.div>
           </div>
@@ -251,7 +269,7 @@ function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowPro
   const descId = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-desc`
 
   return (
-    <label className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-[#E5DBCF] bg-white px-4 py-3 shadow-sm transition hover:border-forest/25">
+    <label className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-[#E5DBCF] bg-white px-3.5 py-3 shadow-sm transition hover:border-forest/25">
       <input
         type="checkbox"
         checked={on}

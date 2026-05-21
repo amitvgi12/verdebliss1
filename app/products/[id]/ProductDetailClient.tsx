@@ -13,31 +13,9 @@
 import Link from 'next/link'
 import { useState, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Heart,
-  ShoppingBag,
-  Check,
-  Award,
-  ArrowLeft,
-  ChevronRight,
-  Plus,
-  Minus,
-  Share2,
-  Truck,
-  AlertTriangle,
-  BadgeCheck,
-  Banknote,
-  CreditCard,
-  MapPin,
-  PackageCheck,
-  ShieldCheck,
-  Smartphone,
-  WalletCards,
-} from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Award, ArrowLeft, ChevronRight } from 'lucide-react'
 import Stars from '@/components/ui/Stars'
-import ProductImage from '@/components/ui/ProductImage'
-import ProductCard from '@/components/ui/ProductCard'
 import { useProduct, useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
@@ -48,38 +26,16 @@ import { C, FONT } from '@/constants/theme'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
 import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import { formatPriceValidUntil, getVerifiablePriceOffer } from '@/lib/pricing'
+import { formatApprovedReviewCount } from '@/lib/review-copy'
 import type { ApprovedReview, ReviewAggregate } from '@/lib/products-server'
 import type { Product } from '@/types'
-import { COD_MAX_TOTAL } from '@/constants/checkout'
 
-import PAOSymbol from './_components/PAOSymbol'
-import Accordion from './_components/Accordion'
-
-/* ── Per-ingredient INCI fallback ─────────────────────────────── */
-const HOW_TO_USE = [
-  'Cleanse and gently tone your face.',
-  'Apply 3–4 drops to fingertips.',
-  'Press gently into skin, avoiding the eye area.',
-  'Follow with moisturiser and SPF in the morning.',
-]
-
-const BENEFITS = [
-  {
-    icon: '💧',
-    title: 'Deep Hydration',
-    desc: "Helps support skin's moisture retention for visibly plumper skin.",
-  },
-  {
-    icon: '✨',
-    title: 'Visible Radiance',
-    desc: 'Skin appears brighter and more even-toned with regular use.',
-  },
-  {
-    icon: '🛡️',
-    title: 'Barrier Support',
-    desc: 'Helps reinforce the appearance of a healthy skin barrier.',
-  },
-]
+import ProductAccordions from './_components/ProductAccordions'
+import ProductMedia from './_components/ProductMedia'
+import ProductPurchaseActions from './_components/ProductPurchaseActions'
+import ProductPurchaseDetails, { type DeliveryEstimate } from './_components/ProductPurchaseDetails'
+import RelatedProducts from './_components/RelatedProducts'
+import RoutineRecommendations from './_components/RoutineRecommendations'
 
 /* ── Positioning labels — not third-party certification claims ── */
 const CERTIFICATIONS = [
@@ -96,7 +52,12 @@ const CERTIFICATIONS = [
     org: 'Where formulation permits',
   },
   { label: 'Skin-Tested', emoji: '🏥', url: '/certifications', org: 'Dermatologist-reviewed' },
-  { label: 'Recyclable Packaging', emoji: '♻️', url: '/certifications', org: 'Eco-friendly packaging' },
+  {
+    label: 'Recyclable Packaging',
+    emoji: '♻️',
+    url: '/certifications',
+    org: 'Eco-friendly packaging',
+  },
 ]
 
 export default function ProductDetailClient({
@@ -233,13 +194,6 @@ export default function ProductDetailClient({
   const maxQty = Math.min(stockCount ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
   const stockTone =
     stockCount == null ? null : stockCount <= 0 ? 'out' : stockCount <= 5 ? 'low' : 'in'
-  const amRoutine = buildRoutine(all, p, 'AM')
-  const pmRoutine = buildRoutine(all, p, 'PM')
-  const featuredRoutine = p.category === 'SPF' || p.category === 'Cleanser' ? amRoutine : pmRoutine
-  const featuredBundle = uniqueProducts(featuredRoutine.products).filter(
-    (product) => product.stock !== 0
-  )
-  const featuredBundleTotal = featuredBundle.reduce((sum, product) => sum + product.price, 0)
 
   const sectionPad = isMobile ? '20px 16px 48px' : '32px 24px 64px'
   const gridStyle: CSSProperties = isMobile
@@ -305,102 +259,12 @@ export default function ProductDetailClient({
         </button>
 
         <div style={gridStyle}>
-          {/* ── LEFT: image ─────────────────────────────── */}
-          <motion.div
-            initial={{ opacity: 0, x: isMobile ? 0 : -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.45 }}
-            style={isMobile ? {} : { position: 'sticky', top: 80 }}
-          >
-            <div
-              style={{
-                borderRadius: isMobile ? 16 : 24,
-                overflow: 'hidden',
-                aspectRatio: '1 / 1',
-                width: '100%',
-                position: 'relative',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.07)',
-                marginBottom: isMobile ? 20 : 0,
-              }}
-            >
-              <div style={{ position: 'absolute', inset: 0 }}>
-                <ProductImage
-                  product={p}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
-                />
-              </div>
-            </div>
-
-            {/* 11.10 PAO indicator below image */}
-            {compliance.pao && (
-              <div
-                style={{
-                  marginTop: 16,
-                  padding: '12px 16px',
-                  background: C.goldPale,
-                  borderRadius: 12,
-                  border: `1px solid ${C.border}`,
-                }}
-              >
-                <PAOSymbol months={compliance.pao} />
-                <p style={{ fontSize: 10, color: C.muted, marginTop: 8, lineHeight: 1.5 }}>
-                  Store in a cool, dry place away from direct sunlight. Best before date printed on
-                  packaging.
-                </p>
-              </div>
-            )}
-
-            {/* Positioning labels — see /certifications for evidence status */}
-            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {prodCerts.map((cert) =>
-                cert.url ? (
-                  <a
-                    key={cert.label}
-                    href={cert.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`Verified by ${cert.org}`}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      padding: '5px 12px',
-                      borderRadius: 99,
-                      border: `1px solid ${C.border}`,
-                      color: C.olive,
-                      background: C.sagePale,
-                      textDecoration: 'none',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {cert.emoji} {cert.label} ↗
-                  </a>
-                ) : (
-                  <span
-                    key={cert.label}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 5,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      padding: '5px 12px',
-                      borderRadius: 99,
-                      border: `1px solid ${C.border}`,
-                      color: C.muted,
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    {cert.emoji} {cert.label}
-                  </span>
-                )
-              )}
-            </div>
-          </motion.div>
+          <ProductMedia
+            product={p}
+            isMobile={isMobile}
+            paoMonths={compliance.pao}
+            certifications={prodCerts}
+          />
 
           {/* ── RIGHT: info ─────────────────────────────── */}
           <motion.div
@@ -447,9 +311,8 @@ export default function ProductDetailClient({
                 <>
                   <Stars rating={initialReviewAggregate.average} size={14} />
                   <span style={{ fontSize: 13, color: C.muted }}>
-                    {initialReviewAggregate.average.toFixed(1)} ({initialReviewAggregate.count}{' '}
-                    approved review
-                    {initialReviewAggregate.count === 1 ? '' : 's'})
+                    {initialReviewAggregate.average.toFixed(1)} ·{' '}
+                    {formatApprovedReviewCount(initialReviewAggregate.count)}
                   </span>
                 </>
               ) : (
@@ -564,538 +427,35 @@ export default function ProductDetailClient({
               </div>
             </div>
 
-            {/* Qty + Add to Cart + Wishlist + Share */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 8,
-                alignItems: 'stretch',
-                marginTop: 20,
-                marginBottom: 12,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  border: `1px solid ${C.border}`,
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  flexShrink: 0,
-                }}
-              >
-                <button
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  style={qtyBtn}
-                  aria-label="Decrease quantity"
-                  disabled={stockOut}
-                >
-                  <Minus size={13} />
-                </button>
-                <span
-                  style={{
-                    width: 28,
-                    textAlign: 'center',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    color: C.text,
-                  }}
-                >
-                  {qty}
-                </span>
-                <button
-                  onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-                  style={qtyBtn}
-                  aria-label="Increase quantity"
-                  disabled={stockOut || qty >= maxQty}
-                >
-                  <Plus size={13} />
-                </button>
-              </div>
+            <ProductPurchaseActions
+              productName={p.name}
+              qty={qty}
+              setQty={setQty}
+              maxQty={maxQty}
+              stockOut={stockOut}
+              added={added}
+              isWishlisted={has(p.id)}
+              onAdd={handleAdd}
+              onWishlist={() => toggle(p.id, user?.id)}
+            />
 
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={handleAdd}
-                disabled={stockOut}
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  height: 52,
-                  borderRadius: 12,
-                  border: 'none',
-                  cursor: stockOut ? 'not-allowed' : 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: 14,
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  whiteSpace: 'nowrap',
-                  background: stockOut ? C.light : added ? C.sage : C.forest,
-                  color: 'white',
-                  transition: 'background 0.25s',
-                }}
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  {stockOut ? (
-                    <motion.span
-                      key="sold-out"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <ShoppingBag size={15} /> Sold out
-                    </motion.span>
-                  ) : added ? (
-                    <motion.span
-                      key="done"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <Check size={15} /> Added to cart!
-                    </motion.span>
-                  ) : (
-                    <motion.span
-                      key="add"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <ShoppingBag size={15} /> Add to Cart
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+            <ProductPurchaseDetails
+              stockTone={stockTone}
+              stockCount={stockCount}
+              deliveryPin={deliveryPin}
+              deliveryError={deliveryError}
+              deliveryResult={deliveryResult}
+              checkingDelivery={checkingDelivery}
+              onDeliveryPinChange={setDeliveryPin}
+              onDeliveryCheck={handleDeliveryCheck}
+              onOpenCart={openCart}
+            />
 
-              <motion.button
-                whileTap={{ scale: 0.93 }}
-                onClick={() => toggle(p.id, user?.id)}
-                aria-label="Save to wishlist"
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  cursor: 'pointer',
-                  border: `1px solid ${C.border}`,
-                  background: C.ivory,
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Heart
-                  size={18}
-                  fill={has(p.id) ? C.terra : 'none'}
-                  color={has(p.id) ? C.terra : C.muted}
-                />
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.93 }}
-                aria-label="Share product"
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  cursor: 'pointer',
-                  border: `1px solid ${C.border}`,
-                  background: C.ivory,
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onClick={() => navigator.share?.({ title: p.name, url: window.location.href })}
-              >
-                <Share2 size={16} color={C.muted} />
-              </motion.button>
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                background: C.goldPale,
-                borderRadius: 10,
-                padding: '10px 14px',
-                fontSize: 12,
-                color: C.olive,
-                marginBottom: 24,
-                fontWeight: 500,
-              }}
-            >
-              <Truck size={13} />
-              Free shipping on orders above ₹499 · Ships in 2–3 business days
-            </div>
-
-            <section className="product-conversion" aria-label="Purchase details">
-              <div className="product-conversion__signals">
-                {stockTone && (
-                  <div
-                    className={`product-conversion__signal product-conversion__signal--${stockTone}`}
-                  >
-                    <BadgeCheck size={15} />
-                    <span>
-                      {stockTone === 'out'
-                        ? 'Out of stock'
-                        : stockTone === 'low'
-                          ? `Low stock: ${stockCount} left`
-                          : 'In stock'}
-                    </span>
-                  </div>
-                )}
-                <div className="product-conversion__signal">
-                  <WalletCards size={15} />
-                  <span>Prepaid available</span>
-                </div>
-                <div className="product-conversion__signal">
-                  <Banknote size={15} />
-                  <span>COD up to ₹{COD_MAX_TOTAL.toLocaleString()}</span>
-                </div>
-                <Link href="/returns-refunds" className="product-conversion__signal">
-                  <PackageCheck size={15} />
-                  <span>14-day returns</span>
-                </Link>
-              </div>
-
-              <div className="product-conversion__delivery">
-                <div>
-                  <p>Check delivery</p>
-                  <span>ETA and COD status by PIN code</span>
-                </div>
-                <div className="product-conversion__delivery-form">
-                  <label className="sr-only" htmlFor="delivery-pincode">
-                    PIN code
-                  </label>
-                  <input
-                    id="delivery-pincode"
-                    value={deliveryPin}
-                    onChange={(event) =>
-                      setDeliveryPin(event.target.value.replace(/\D/g, '').slice(0, 6))
-                    }
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                    placeholder="Enter PIN code"
-                  />
-                  <button type="button" onClick={handleDeliveryCheck} disabled={checkingDelivery}>
-                    {checkingDelivery ? 'Checking...' : 'Check'}
-                  </button>
-                </div>
-                {deliveryError && (
-                  <small className="product-conversion__error">{deliveryError}</small>
-                )}
-                {deliveryResult && (
-                  <div className="product-conversion__delivery-result" aria-live="polite">
-                    <strong>
-                      <MapPin size={14} />
-                      {deliveryResult.deliveryEstimate} after dispatch
-                    </strong>
-                    <span>
-                      {deliveryResult.dispatchWindow}. {codCopy(deliveryResult.codDecision)}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="product-conversion__payments" aria-label="Payment options">
-                <span>
-                  <Smartphone size={15} /> UPI
-                </span>
-                <span>
-                  <CreditCard size={15} /> Cards
-                </span>
-                <span>
-                  <WalletCards size={15} /> Wallets
-                </span>
-                <span>
-                  <ShieldCheck size={15} /> Secure checkout
-                </span>
-              </div>
-
-              <div className="product-conversion__aftercare">
-                <strong>What happens after purchase</strong>
-                <p>
-                  Confirmation is sent immediately. Orders are usually dispatched within 1 business
-                  day, then tracking is shared once the parcel is handed to the courier.
-                </p>
-              </div>
-
-              <button type="button" className="product-conversion__cart-link" onClick={openCart}>
-                <ShoppingBag size={15} /> Open mini cart
-              </button>
-            </section>
-
-            {/* ── Accordions ─────────────────────────── */}
-            <div style={{ borderTop: `1px solid ${C.border}` }}>
-              {/* 11.2 INCI Ingredients */}
-              <Accordion
-                id="ingredients"
-                label="Full Ingredients (INCI)"
-                open={openSection === 'ingredients'}
-                onToggle={() => toggleAcc('ingredients')}
-              >
-                <div style={{ paddingBottom: 20 }}>
-                  {compliance.inci ? (
-                    <>
-                      <p
-                        style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, marginBottom: 10 }}
-                      >
-                        Listed in descending order of concentration (INCI standard):
-                      </p>
-                      <p
-                        style={{
-                          fontSize: 12,
-                          color: C.text,
-                          lineHeight: 1.8,
-                          fontStyle: 'italic',
-                          background: C.ivory,
-                          borderRadius: 8,
-                          padding: '10px 12px',
-                        }}
-                      >
-                        {compliance.inci}
-                      </p>
-                    </>
-                  ) : (
-                    <p style={{ fontSize: 12, color: C.muted }}>
-                      Full ingredient list available on product packaging.
-                    </p>
-                  )}
-                  {compliance.freeFrom && (
-                    <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                      {compliance.freeFrom.map((f) => (
-                        <span
-                          key={f}
-                          style={{
-                            fontSize: 10,
-                            padding: '3px 9px',
-                            borderRadius: 99,
-                            background: C.sagePale,
-                            color: C.forest,
-                            fontWeight: 600,
-                          }}
-                        >
-                          ✓ {f}-Free
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Accordion>
-
-              <Accordion
-                id="commerce-disclosures"
-                label="Product & Seller Details"
-                open={openSection === 'commerce-disclosures'}
-                onToggle={() => toggleAcc('commerce-disclosures')}
-              >
-                <dl className="product-compliance-list">
-                  <div>
-                    <dt>Country of origin</dt>
-                    <dd>{compliance.countryOfOrigin}</dd>
-                  </div>
-                  <div>
-                    <dt>Manufacturer</dt>
-                    <dd>{compliance.manufacturer}</dd>
-                  </div>
-                  <div>
-                    <dt>Packer</dt>
-                    <dd>{compliance.packer}</dd>
-                  </div>
-                  <div>
-                    <dt>Importer</dt>
-                    <dd>{compliance.importer ?? 'Not applicable - manufactured in India'}</dd>
-                  </div>
-                  {compliance.cdSCoImportLicence && (
-                    <div>
-                      <dt>CDSCO import licence</dt>
-                      <dd>{compliance.cdSCoImportLicence}</dd>
-                    </div>
-                  )}
-                </dl>
-              </Accordion>
-
-              {/* 11.3 Allergen warnings */}
-              <Accordion
-                id="allergens"
-                label="Allergen & Safety Info"
-                open={openSection === 'allergens'}
-                onToggle={() => toggleAcc('allergens')}
-              >
-                <div
-                  style={{ paddingBottom: 20, display: 'flex', flexDirection: 'column', gap: 10 }}
-                >
-                  {compliance.allergens && (
-                    <div
-                      style={{
-                        background: '#FFF8E7',
-                        border: '1px solid #F0D68A',
-                        borderRadius: 10,
-                        padding: '12px 14px',
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: '#8B6914',
-                          marginBottom: 5,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 5,
-                        }}
-                      >
-                        <AlertTriangle size={12} /> Allergen Information
-                      </div>
-                      <p style={{ fontSize: 12, color: '#665200', lineHeight: 1.7 }}>
-                        {compliance.allergens}
-                      </p>
-                    </div>
-                  )}
-                  {compliance.patchTest && (
-                    <div
-                      style={{
-                        background: C.ivory,
-                        borderRadius: 10,
-                        padding: '12px 14px',
-                        border: `1px solid ${C.border}`,
-                      }}
-                    >
-                      <div
-                        style={{ fontSize: 11, fontWeight: 700, color: C.text, marginBottom: 4 }}
-                      >
-                        🧪 Patch Test Recommended
-                      </div>
-                      <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
-                        Apply a small amount to the inner forearm 24 hours before first full use.
-                        Discontinue use if redness, itching, or irritation occurs. Consult a
-                        dermatologist if you have reactive skin.
-                      </p>
-                    </div>
-                  )}
-                  {compliance.agingNote && (
-                    <div
-                      style={{
-                        background: C.terraPale,
-                        borderRadius: 10,
-                        padding: '12px 14px',
-                        border: `1px solid ${C.border}`,
-                      }}
-                    >
-                      <div
-                        style={{ fontSize: 11, fontWeight: 700, color: C.terra, marginBottom: 4 }}
-                      >
-                        ℹ️ Age Guidance
-                      </div>
-                      <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
-                        {compliance.agingNote}
-                      </p>
-                    </div>
-                  )}
-                  <div
-                    style={{
-                      background: C.ivory,
-                      borderRadius: 10,
-                      padding: '12px 14px',
-                      border: `1px solid ${C.border}`,
-                    }}
-                  >
-                    <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
-                      <strong>For external use only.</strong> Avoid contact with eyes. If contact
-                      occurs, rinse thoroughly with water. Keep out of reach of children. Store in a
-                      cool, dry place.
-                    </p>
-                  </div>
-                </div>
-              </Accordion>
-
-              <Accordion
-                id="how_to_use"
-                label="How To Use"
-                open={openSection === 'how_to_use'}
-                onToggle={() => toggleAcc('how_to_use')}
-              >
-                <ol
-                  style={{
-                    paddingBottom: 20,
-                    listStyle: 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 10,
-                  }}
-                >
-                  {HOW_TO_USE.map((step, i) => (
-                    <li
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        gap: 12,
-                        fontSize: 13,
-                        color: C.muted,
-                        alignItems: 'flex-start',
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: '50%',
-                          background: C.sagePale,
-                          color: C.forest,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          marginTop: 1,
-                        }}
-                      >
-                        {i + 1}
-                      </span>
-                      {step}
-                    </li>
-                  ))}
-                </ol>
-              </Accordion>
-
-              <Accordion
-                id="benefits"
-                label="Key Benefits"
-                open={openSection === 'benefits'}
-                onToggle={() => toggleAcc('benefits')}
-              >
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 20 }}
-                >
-                  {BENEFITS.map((b) => (
-                    <div
-                      key={b.title}
-                      style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}
-                    >
-                      <span style={{ fontSize: 20, lineHeight: 1 }}>{b.icon}</span>
-                      <div>
-                        <div
-                          style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}
-                        >
-                          {b.title}
-                        </div>
-                        <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
-                          {b.desc}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Accordion>
-            </div>
+            <ProductAccordions
+              compliance={compliance}
+              openSection={openSection}
+              onToggle={toggleAcc}
+            />
 
             {/* 11.9 FTC Disclaimer */}
             <div
@@ -1112,74 +472,14 @@ export default function ProductDetailClient({
           </motion.div>
         </div>
 
-        {/* You might also like */}
-        {(amRoutine.products.length > 0 || pmRoutine.products.length > 0) && (
-          <section className="ritual-recommendations" aria-label="Recommended routines">
-            <div className="ritual-bundle">
-              <div>
-                <p>Recommended ritual bundle</p>
-                <h2>{featuredRoutine.label}</h2>
-                <span>{featuredRoutine.description}</span>
-              </div>
-              <div className="ritual-bundle__items">
-                {featuredBundle.map((product) => (
-                  <div key={product.id} className="ritual-bundle__item">
-                    <ProductImage product={product} sizes="42px" />
-                    <span>{product.name}</span>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                disabled={!featuredBundle.length}
-                onClick={() => {
-                  featuredBundle.forEach(addItem)
-                  openCart()
-                }}
-              >
-                Add {featuredRoutine.shortLabel} bundle · ₹{featuredBundleTotal.toLocaleString()}
-              </button>
-            </div>
+        <RoutineRecommendations
+          products={all}
+          current={p}
+          onAddItem={addItem}
+          onOpenCart={openCart}
+        />
 
-            <div className="ritual-routine-grid">
-              <RoutinePreview routine={amRoutine} />
-              <RoutinePreview routine={pmRoutine} />
-            </div>
-          </section>
-        )}
-
-        {related.length > 0 && (
-          <div
-            style={{
-              marginTop: isMobile ? 48 : 80,
-              borderTop: `1px solid ${C.border}`,
-              paddingTop: isMobile ? 32 : 48,
-            }}
-          >
-            <h3
-              style={{
-                fontFamily: FONT.serif,
-                fontSize: isMobile ? 24 : 30,
-                fontWeight: 400,
-                color: C.text,
-                marginBottom: 24,
-              }}
-            >
-              You might also like
-            </h3>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fill, minmax(200px, 1fr))',
-                gap: isMobile ? 12 : 16,
-              }}
-            >
-              {related.map((r) => (
-                <ProductCard key={r.id} product={r} />
-              ))}
-            </div>
-          </div>
-        )}
+        <RelatedProducts products={related} isMobile={isMobile} />
       </div>
 
       {/* Customer reviews */}
@@ -1196,109 +496,4 @@ const infoLabel = {
   color: '#6B7A5E',
   marginBottom: 6,
   textTransform: 'uppercase',
-}
-const qtyBtn = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  width: 40,
-  height: 52,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#1C221E',
-}
-
-type RoutineKind = 'AM' | 'PM'
-
-interface Routine {
-  label: string
-  shortLabel: RoutineKind
-  description: string
-  products: Product[]
-}
-
-interface DeliveryEstimate {
-  pincode: string
-  dispatchWindow: string
-  deliveryEstimate: string
-  prepaidAvailable: boolean
-  codDecision: 'allow' | 'manual_review' | 'block'
-}
-
-const ROUTINE_CATEGORIES: Record<RoutineKind, string[]> = {
-  AM: ['Cleanser', 'Toner', 'Serum', 'SPF'],
-  PM: ['Cleanser', 'Serum', 'Moisturiser'],
-}
-
-function uniqueProducts(products: Product[]) {
-  return products.filter(
-    (product, index, source) =>
-      source.findIndex((candidate) => candidate.id === product.id) === index
-  )
-}
-
-function overlapsSkinTypes(a?: string[], b?: string[]) {
-  if (!a?.length || !b?.length) return false
-  if (a.includes('All Types') || b.includes('All Types')) return true
-  return a.some((skinType) => b.includes(skinType))
-}
-
-function pickRoutineProduct(products: Product[], current: Product, category: string) {
-  if (current.category === category) return current
-  return (
-    products.find(
-      (product) =>
-        product.id !== current.id &&
-        product.category === category &&
-        product.stock !== 0 &&
-        overlapsSkinTypes(product.skin_types, current.skin_types)
-    ) ??
-    products.find(
-      (product) => product.id !== current.id && product.category === category && product.stock !== 0
-    )
-  )
-}
-
-function buildRoutine(products: Product[], current: Product, kind: RoutineKind): Routine {
-  const routineProducts = ROUTINE_CATEGORIES[kind]
-    .map((category) => pickRoutineProduct(products, current, category))
-    .filter((product): product is Product => Boolean(product))
-
-  return {
-    label: kind === 'AM' ? 'Complete your AM routine' : 'Complete your PM routine',
-    shortLabel: kind,
-    description:
-      kind === 'AM'
-        ? 'Cleanse, treat, and protect before the day starts.'
-        : 'Cleanse, replenish, and seal in overnight recovery.',
-    products: uniqueProducts(routineProducts),
-  }
-}
-
-function codCopy(decision: DeliveryEstimate['codDecision']) {
-  if (decision === 'block') return 'COD is not available for this PIN code.'
-  if (decision === 'manual_review') return 'COD may need manual review at checkout.'
-  return 'COD is generally available after checkout verification.'
-}
-
-function RoutinePreview({ routine }: { routine: Routine }) {
-  if (!routine.products.length) return null
-
-  return (
-    <article className="ritual-preview">
-      <div>
-        <p>{routine.label}</p>
-        <span>{routine.description}</span>
-      </div>
-      <ul>
-        {routine.products.map((product) => (
-          <li key={product.id}>
-            <ProductImage product={product} sizes="42px" />
-            <span>{product.name}</span>
-          </li>
-        ))}
-      </ul>
-    </article>
-  )
 }

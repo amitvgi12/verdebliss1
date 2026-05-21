@@ -74,6 +74,37 @@ describe('RefundClient', () => {
       )
     })
   })
+
+  it('gives signed-out customers clear refund guidance', () => {
+    useAuthStore.setState({
+      user: null,
+      profile: null,
+      loading: false,
+    })
+
+    render(<RefundClient />)
+
+    expect(screen.getByText('Sign in to request a refund')).toBeInTheDocument()
+    expect(screen.getByText(/Refund requests are linked to verified orders/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/account')
+    expect(screen.getByRole('link', { name: 'Return and Refund Policy' })).toHaveAttribute(
+      'href',
+      '/returns-refunds'
+    )
+  })
+
+  it('explains what is happening while account state is loading', () => {
+    useAuthStore.setState({
+      user: null,
+      profile: null,
+      loading: true,
+    })
+
+    render(<RefundClient />)
+
+    expect(screen.getByText('Checking your account')).toBeInTheDocument()
+    expect(screen.getByText(/load refund history and eligible orders automatically/)).toBeInTheDocument()
+  })
 })
 
 function makeRefundHistoryBuilder() {

@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
@@ -45,11 +46,15 @@ export default function Nav() {
             onClick={closeMenus}
             className="group flex h-full flex-shrink-0 items-center gap-2.5 rounded-full bg-bg text-text transition hover:text-forest"
           >
-            <span
-              aria-hidden
-              className="flex h-9 w-11 items-center justify-center font-serif text-[29px] font-semibold leading-none tracking-[-0.16em]"
-            >
-              VB
+            <span aria-hidden className="relative flex h-9 w-11 items-center justify-center">
+              <Image
+                src="/images/logo-mark.png"
+                alt=""
+                width={52}
+                height={42}
+                priority
+                className="h-9 w-auto object-contain"
+              />
             </span>
             <span className="hidden leading-none lg:block">
               <span className="block font-serif text-[16px] font-semibold tracking-[0.01em]">

@@ -9,6 +9,7 @@ import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
 import { getVerifiablePriceOffer } from '@/lib/pricing'
+import { formatApprovedReviewCount } from '@/lib/review-copy'
 import { productPath } from '@/lib/seo'
 import type { Product } from '@/types'
 
@@ -86,7 +87,9 @@ export default function ProductCard({ product: p }: { product: Product }) {
         {hasApprovedReviews ? (
           <div className="vb-product-card__rating">
             <Stars rating={p.rating} size={11} />
-            <span className="vb-product-card__review-count">({p.review_count})</span>
+            <span className="vb-product-card__review-count">
+              {p.rating?.toFixed(1)} · {formatApprovedReviewCount(p.review_count)}
+            </span>
           </div>
         ) : (
           <div className="vb-product-card__review-state">Verified reviews after purchase</div>
