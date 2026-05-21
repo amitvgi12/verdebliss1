@@ -184,7 +184,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                       />
                       <ConsentRow
                         title="Analytics (first-party)"
-                        desc="Anonymous usage data. No third-party tracking."
+                        desc="Vercel Web Analytics and Speed Insights for anonymous page and performance metrics."
                         on={analytics}
                         onChange={setAnalytics}
                       />

@@ -5,6 +5,7 @@ import CookieConsent from '@/components/ui/CookieConsent'
 import AuthInitializer from '@/components/ui/AuthInitializer'
 import MotionProvider from '@/components/ui/MotionProvider'
 import ChatBotLoader from '@/components/ui/ChatBotLoader'
+import VercelInsights from '@/components/ui/VercelInsights'
 import { StructuredData } from '@/lib/structured-data'
 import './globals.css'
 import type { ReactNode } from 'react'
@@ -155,6 +156,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Footer />
           <CartDrawer />
           <ChatBotLoader />
+          <VercelInsights />
           <CookieConsent />
         </MotionProvider>
       </body>

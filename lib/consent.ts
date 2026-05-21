@@ -64,6 +64,10 @@ export function hasFunctionalThirdPartyConsent(): boolean {
   return loadStoredConsent()?.functional_third_party === true
 }
 
+export function hasAnalyticsConsent(): boolean {
+  return loadStoredConsent()?.analytics === true
+}
+
 export function openCookiePreferences() {
   if (typeof window === 'undefined') return
   window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))
