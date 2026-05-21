@@ -173,7 +173,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                           onClick={decline}
                           className="min-h-11 cursor-pointer rounded-2xl border border-[#D8CDBF] bg-white px-4 py-2.5 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                         >
-                          Reject
+                          Reject optional
                         </button>
                         <button
                           ref={acceptRef}
