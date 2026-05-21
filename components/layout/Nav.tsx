@@ -1,5 +1,4 @@
 'use client'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
@@ -44,20 +43,26 @@ export default function Nav() {
             href="/"
             aria-label="VerdeBliss home"
             onClick={closeMenus}
-            className="flex h-full flex-shrink-0 items-center pt-px"
+            className="group flex h-full flex-shrink-0 items-center gap-2.5 rounded-full bg-bg text-text transition hover:text-forest"
           >
-            <Image
-              src="/images/logo.webp"
-              alt="VerdeBliss"
-              width={96}
-              height={36}
-              priority
-              className="h-9 w-24 object-contain mix-blend-multiply"
-            />
+            <span
+              aria-hidden
+              className="flex h-9 w-11 items-center justify-center font-serif text-[29px] font-semibold leading-none tracking-[-0.16em]"
+            >
+              VB
+            </span>
+            <span className="hidden leading-none lg:block">
+              <span className="block font-serif text-[16px] font-semibold tracking-[0.01em]">
+                VerdeBliss
+              </span>
+              <span className="mt-0.5 block text-[7px] font-bold uppercase tracking-[0.14em] text-muted">
+                Cosmetics
+              </span>
+            </span>
           </Link>
 
           {/* Desktop nav links — md+ only via Tailwind, CSS-driven (no JS hydration mismatch) */}
-          <div className="ml-2 hidden flex-shrink-0 gap-5 md:flex">
+          <div className="ml-1 hidden flex-shrink-0 gap-5 md:flex">
             {LINKS.map(({ path, label }) => {
               const active = isActive(path)
               return (

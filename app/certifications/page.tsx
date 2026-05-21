@@ -105,6 +105,7 @@ export default function CertificationsPage() {
               color: '#5d4200',
               lineHeight: 1.7,
               maxWidth: 760,
+              marginInline: 'auto',
             }}
           >
             <strong>Until certifications are verified:</strong> product pages and marketing copy use
@@ -126,7 +127,7 @@ export default function CertificationsPage() {
           </header>
         </FadeIn>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 860 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 860, marginInline: 'auto' }}>
           {CLAIMS.map((row, i) => {
             const cfg = STATUS_CONFIG[row.status]
             const Icon = cfg.Icon
