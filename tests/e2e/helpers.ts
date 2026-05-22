@@ -47,7 +47,7 @@ export async function seedConsent(page: Page, functionalThirdParty = false) {
       window.localStorage.setItem(
         'vb_cookie_consent',
         JSON.stringify({
-          version: '1.1',
+          version: '1.2',
           essential: true,
           analytics: false,
           marketing: false,

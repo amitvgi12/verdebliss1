@@ -41,7 +41,7 @@ const CONTENT: Record<LegalModalType, Doc> = {
       },
       {
         heading: '4. Cookies',
-        body: 'We use essential cookies to maintain your session and cart. We use analytical cookies (first-party only) for Web Analytics page-view reporting when you accept analytics. We collect anonymous Speed Insights performance vitals separately without cookies or session tracking. We do not use third-party advertising or tracking cookies.',
+        body: 'We use essential cookies to maintain your session and cart. We use Vercel Web Analytics and Speed Insights as privacy-preserving site measurement: anonymous page-view and performance metrics without cookies, cross-site tracking, advertising profiles, or query-string capture. We do not use third-party advertising or tracking cookies.',
       },
       {
         heading: '5. Data Retention',
@@ -113,7 +113,7 @@ const CONTENT: Record<LegalModalType, Doc> = {
       },
       {
         heading: 'Cookies we use',
-        body: 'Essential cookies: Required for cart and login sessions.\n\nAnalytical cookies (first-party): Anonymous Web Analytics page-view data when accepted — no third-party advertising data sharing.\n\nPerformance vitals: Speed Insights records anonymous page-performance data without cookies or session tracking.\n\nPreference cookies: Remember your skin type and display preferences.\n\nOptional third-party AI support is controlled separately in the same preference centre and stays off unless you opt in.',
+        body: 'Essential cookies: Required for cart and login sessions.\n\nSite measurement: Vercel Web Analytics and Speed Insights record anonymous page-view and page-performance data without cookies, cross-site tracking, advertising profiles, or query-string capture.\n\nPreference cookies: Remember your skin type and display preferences.\n\nOptional marketing and third-party AI support are controlled separately in the same preference centre and stay off unless you opt in.',
       },
       {
         heading: 'Cookies we do NOT use',

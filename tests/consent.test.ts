@@ -52,7 +52,7 @@ describe('consent storage', () => {
     expect(hasFunctionalThirdPartyConsent()).toBe(true)
   })
 
-  it('persists explicit analytics consent', () => {
+  it('persists the reserved optional analytics preference', () => {
     persistConsent({ analytics: true, marketing: false, functional_third_party: false })
 
     expect(hasAnalyticsConsent()).toBe(true)

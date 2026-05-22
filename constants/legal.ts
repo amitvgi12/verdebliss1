@@ -128,8 +128,8 @@ export const LEGAL_DOCUMENTS = {
         body: 'Essential cookies keep the cart, checkout, login, security controls, and consent record working. These cookies are required for core site functionality.',
       },
       {
-        heading: 'Optional cookies',
-        body: 'Optional Web Analytics and preference cookies help us understand page views and remember choices. They are disabled unless the customer accepts or saves preferences. Speed Insights performance vitals are collected separately as anonymous operational telemetry without cookies or session tracking. The same preference centre also controls optional third-party AI support separately from cookies.',
+        heading: 'Site measurement and optional services',
+        body: 'Vercel Web Analytics and Speed Insights provide privacy-preserving site measurement: anonymous page-view and performance metrics without cookies, cross-site tracking, advertising profiles, or query-string capture. Optional marketing preferences and third-party AI support stay disabled unless the customer accepts or saves preferences.',
       },
       {
         heading: 'What we do not use',

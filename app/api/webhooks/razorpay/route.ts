@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { after } from 'next/server'
 import {
   completeRazorpayCheckout,
   recordPaymentEvent,
@@ -7,7 +6,7 @@ import {
   verifyRazorpayWebhookSignature,
 } from '@/lib/commerce'
 import { reportError } from '@/lib/observability'
-import { revalidateProductsCache } from '@/lib/revalidate-products'
+import { scheduleProductsRevalidation } from '@/lib/revalidate-products'
 
 interface RazorpayWebhookEntity {
   id?: string
@@ -92,7 +91,7 @@ export async function POST(request: Request) {
         },
         rawPaymentPayload: event,
       })
-      if (!webhookOrder.idempotent) after(() => revalidateProductsCache())
+      if (!webhookOrder.idempotent) scheduleProductsRevalidation()
       reconciliation = 'completed'
     } catch (error) {
       reconciliation = 'pending'

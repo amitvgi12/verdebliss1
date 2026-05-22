@@ -1,5 +1,5 @@
 export const CONSENT_STORAGE_KEY = 'vb_cookie_consent'
-export const CONSENT_VERSION = '1.1'
+export const CONSENT_VERSION = '1.2'
 export const CONSENT_UPDATED_EVENT = 'vb:consent-updated'
 export const COOKIE_PREFERENCES_EVENT = 'vb:cookie-preferences'
 
@@ -64,6 +64,8 @@ export function hasFunctionalThirdPartyConsent(): boolean {
   return loadStoredConsent()?.functional_third_party === true
 }
 
+// Reserved for future optional/enhanced analytics. Vercel Web Analytics is
+// privacy-preserving site measurement and is disclosed separately from consent.
 export function hasAnalyticsConsent(): boolean {
   return loadStoredConsent()?.analytics === true
 }

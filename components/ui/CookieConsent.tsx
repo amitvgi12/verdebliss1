@@ -2,7 +2,7 @@
  * CookieConsent — GDPR/CCPA banner.
  *
  * - Shown on first visit (no localStorage entry).
- * - Granular preferences: essential (always on), analytics, marketing, optional third-party AI.
+ * - Granular preferences: essential (always on), privacy-preserving site measurement, marketing, optional third-party AI.
  * - Stores decision in `vb_cookie_consent` (timestamp, version, prefs).
  * - Accessible: role="dialog", focus on render, ESC dismisses.
  * - CSS-driven responsive (no useWindowWidth → no hydration mismatch).
@@ -21,7 +21,6 @@ interface CookieConsentProps {
 export default function CookieConsent({ initialOpen = false }: CookieConsentProps) {
   const [visible, setVisible] = useState(initialOpen)
   const [expanded, setExpanded] = useState(false)
-  const [analytics, setAnalytics] = useState(false)
   const [marketing, setMarketing] = useState(false)
   const [functionalThirdParty, setFunctionalThirdParty] = useState(false)
   const [modal, setModal] = useState<LegalModalType | null>(null)
@@ -29,7 +28,6 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
 
   const syncFromStored = useCallback(() => {
     const stored = loadStoredConsent()
-    setAnalytics(stored?.analytics ?? false)
     setMarketing(stored?.marketing ?? false)
     setFunctionalThirdParty(stored?.functional_third_party ?? false)
   }, [])
@@ -41,13 +39,13 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   }, [syncFromStored])
 
   const acceptAll = () => {
-    persistConsent({ analytics: true, marketing: true, functional_third_party: true })
+    persistConsent({ analytics: false, marketing: true, functional_third_party: true })
     setVisible(false)
   }
 
   const acceptSelected = () => {
     persistConsent({
-      analytics,
+      analytics: false,
       marketing,
       functional_third_party: functionalThirdParty,
     })
@@ -135,12 +133,13 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                       </h2>
                       <p className="mt-2 max-w-xl text-[13px] leading-5 text-muted sm:text-sm sm:leading-6">
                         <span className="hidden sm:inline">
-                          Essential cookies keep VerdeBliss working. Optional web analytics,
-                          marketing, and AI support stay off unless you choose them.
+                          Essential cookies keep VerdeBliss working. Privacy-preserving site
+                          measurement runs without cookies; marketing and AI support stay off unless
+                          you choose them.
                         </span>
                         <span className="sm:hidden">
-                          Essential cookies keep the site working. Optional services stay off unless
-                          you choose them.
+                          Essential cookies keep the site working. Marketing and AI support stay off
+                          unless you choose them.
                         </span>{' '}
                         <button
                           type="button"
@@ -205,10 +204,10 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                         locked
                       />
                       <ConsentRow
-                        title="Analytics (first-party)"
-                        desc="Vercel Web Analytics for anonymous page-view metrics. Performance vitals are collected separately without cookies or session tracking."
-                        on={analytics}
-                        onChange={setAnalytics}
+                        title="Site measurement"
+                        desc="Vercel Web Analytics and Speed Insights provide anonymized page-view and performance metrics without cookies, cross-site tracking, or advertising profiles."
+                        on
+                        locked
                       />
                       <ConsentRow
                         title="Marketing"
