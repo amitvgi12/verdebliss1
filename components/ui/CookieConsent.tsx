@@ -105,7 +105,9 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
               aria-modal="false"
               aria-label="Cookie preferences"
               tabIndex={-1}
-              className="pointer-events-auto max-h-[min(84vh,760px)] w-full max-w-[900px] overflow-y-auto rounded-[28px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_24px_70px_rgba(28,34,30,0.24)] focus:outline-none"
+              className={`pointer-events-auto max-h-[min(84vh,760px)] w-full overflow-y-auto rounded-[28px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_24px_70px_rgba(28,34,30,0.24)] focus:outline-none ${
+                expanded ? 'max-w-[860px]' : 'max-w-[780px]'
+              }`}
             >
               <div className="relative overflow-hidden bg-[linear-gradient(135deg,#FFFDF9_0%,#F6EFE6_100%)] px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
                 <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#C8A464,#7D9B76,#2D4A32)]" />
@@ -118,7 +120,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                   <X size={17} />
                 </button>
 
-                <div className="grid gap-4 pr-0 sm:grid-cols-[minmax(0,1fr)_340px] sm:items-center sm:gap-6 sm:pr-10">
+                <div className="grid gap-4 pr-0 sm:grid-cols-[minmax(0,1fr)_280px] sm:items-center sm:gap-6 sm:pr-10">
                   <div className="flex min-w-0 items-start gap-3.5">
                     <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white bg-sagePale shadow-[0_6px_18px_rgba(45,74,50,0.12)] sm:h-12 sm:w-12">
                       <Shield size={20} aria-hidden className="text-forest" />
@@ -156,7 +158,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                       type="button"
                       onClick={() => setExpanded((s) => !s)}
                       aria-expanded={expanded}
-                      className="mx-auto flex h-11 w-full max-w-[220px] cursor-pointer items-center justify-center gap-2.5 rounded-full border border-[#D8CDBF] bg-white/95 px-4 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                      className="mx-auto flex h-10 w-full max-w-[190px] cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D8CDBF] bg-white/95 px-4 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                     >
                       <span>Customise</span>
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sagePale text-forest">
@@ -168,18 +170,18 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                     </button>
 
                     {!expanded && (
-                      <div className="grid grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-[0.9fr_1.1fr] gap-2">
                         <button
                           type="button"
                           onClick={decline}
-                          className="h-12 cursor-pointer rounded-full border border-[#D8CDBF] bg-white px-4 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                          className="h-11 cursor-pointer rounded-full border border-[#D8CDBF] bg-white/80 px-3 text-xs font-bold text-muted transition hover:border-forest/35 hover:bg-white hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                         >
-                          Reject optional
+                          Reject
                         </button>
                         <button
                           type="button"
                           onClick={acceptAll}
-                          className="h-12 cursor-pointer rounded-full border border-forest bg-forest px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                          className="h-11 cursor-pointer rounded-full border border-forest bg-forest px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                         >
                           Accept all
                         </button>
@@ -195,7 +197,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-5 overflow-hidden rounded-[22px] border border-[#E2D6C8] bg-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+                    <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
                       <ConsentRow
                         title="Essential"
                         desc="Required for cart, login, and checkout."
@@ -222,25 +224,25 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                       />
                     </div>
 
-                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-end">
                       <button
                         type="button"
                         onClick={decline}
-                        className="min-h-12 cursor-pointer rounded-full border border-[#D8CDBF] bg-white px-4 py-2.5 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                        className="min-h-11 cursor-pointer rounded-full border border-[#D8CDBF] bg-white/85 px-4 py-2.5 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-white hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:min-w-[132px]"
                       >
                         Reject optional
                       </button>
                       <button
                         type="button"
                         onClick={acceptSelected}
-                        className="min-h-12 cursor-pointer rounded-full border border-forest/40 bg-sagePale px-4 py-2.5 text-sm font-bold text-forest transition hover:border-forest hover:bg-[#DDE9DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                        className="min-h-11 cursor-pointer rounded-full border border-forest/40 bg-sagePale px-4 py-2.5 text-sm font-bold text-forest transition hover:border-forest hover:bg-[#DDE9DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:min-w-[152px]"
                       >
                         Save preferences
                       </button>
                       <button
                         type="button"
                         onClick={acceptAll}
-                        className="min-h-12 cursor-pointer rounded-full border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                        className="min-h-11 cursor-pointer rounded-full border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:min-w-[132px]"
                       >
                         Accept all
                       </button>
@@ -269,8 +271,8 @@ function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowPro
 
   return (
     <label
-      className={`group grid gap-3 border-b border-[#E6DBCE] px-4 py-4 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5 ${
-        locked ? 'cursor-default' : 'cursor-pointer transition hover:bg-[#FBF7F0]'
+      className={`group grid min-h-[118px] gap-3 rounded-[20px] border border-[#E2D6C8] bg-white/88 p-4 shadow-[0_10px_24px_rgba(45,74,50,0.07)] sm:grid-rows-[auto_1fr] ${
+        locked ? 'cursor-default' : 'cursor-pointer transition hover:border-forest/25 hover:bg-white'
       }`}
     >
       <input
@@ -281,34 +283,35 @@ function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowPro
         className="sr-only"
         aria-describedby={descId}
       />
-      <span className="min-w-0 flex-1">
+      <span className="flex min-w-0 items-start justify-between gap-3">
         <span className="block text-sm font-bold leading-5 text-text">{title}</span>
-        <span id={descId} className="mt-1 block max-w-[680px] text-xs leading-5 text-muted">
-          {desc}
-        </span>
+
+        {locked ? (
+          <span
+            aria-hidden
+            className="inline-flex h-7 flex-shrink-0 items-center justify-center rounded-full border border-forest/15 bg-sagePale px-2.5 text-[11px] font-bold text-forest"
+          >
+            Always on
+          </span>
+        ) : (
+          <span
+            aria-hidden
+            className={`flex h-7 w-12 flex-shrink-0 items-center rounded-full p-1 transition ${
+              on ? 'bg-forest' : 'bg-[#D8CDBF]'
+            }`}
+          >
+            <span
+              className={`h-5 w-5 rounded-full bg-white shadow-sm transition ${
+                on ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </span>
+        )}
       </span>
 
-      {locked ? (
-        <span
-          aria-hidden
-          className="inline-flex h-8 w-fit items-center justify-center rounded-full border border-forest/15 bg-sagePale px-3 text-xs font-bold text-forest sm:justify-self-end"
-        >
-          Always on
-        </span>
-      ) : (
-        <span
-          aria-hidden
-          className={`flex h-8 w-14 flex-shrink-0 items-center rounded-full p-1 transition sm:justify-self-end ${
-            on ? 'bg-forest' : 'bg-[#D8CDBF]'
-          }`}
-        >
-          <span
-            className={`h-6 w-6 rounded-full bg-white shadow-sm transition ${
-              on ? 'translate-x-6' : 'translate-x-0'
-            }`}
-          />
-        </span>
-      )}
+      <span id={descId} className="block text-xs leading-5 text-muted">
+        {desc}
+      </span>
     </label>
   )
 }
