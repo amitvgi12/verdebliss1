@@ -23,6 +23,7 @@ async function addCheckoutItem(page: Page) {
       'vb_cookie_consent',
       JSON.stringify({
         version: '1.2',
+        essential: true,
         timestamp: new Date().toISOString(),
         analytics: false,
         marketing: false,
