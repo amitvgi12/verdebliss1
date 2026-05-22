@@ -30,6 +30,29 @@ interface ChatTurn {
   content: string
 }
 
+function renderMessage(text: string, isUser: boolean) {
+  const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g)
+  return parts.map((part, i) => {
+    const match = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+    if (match) {
+      return (
+        <a
+          key={i}
+          href={match[2]}
+          style={{
+            color: isUser ? 'rgba(255,255,255,0.9)' : '#2D5A35',
+            textDecoration: 'underline',
+            fontWeight: 600,
+          }}
+        >
+          {match[1]}
+        </a>
+      )
+    }
+    return part
+  })
+}
+
 /* ── Quick reply sets ───────────────────────────────────────────────── */
 const GUEST_REPLIES = [
   'Best serum for dry skin?',
@@ -88,7 +111,7 @@ function consentSafeReply(message: string): string | null {
   }
 
   if (text.includes('refund') || text.includes('return')) {
-    return 'Refunds and returns are handled through the Returns & Refunds policy and the refund request page. Sign in first so eligible orders can be shown before you submit a request.'
+    return 'You can submit a refund request directly on the [Refund Request page](/refund). Sign in first so your eligible orders appear automatically. Returns are accepted for unopened products within 14 days of delivery, and refunds are processed within 3–7 business days.'
   }
 
   if (text.includes('contact') || text.includes('support') || text.includes('email')) {
@@ -452,7 +475,7 @@ export default function ChatBot() {
                       whiteSpace: 'pre-wrap',
                     }}
                   >
-                    {m.content}
+                    {renderMessage(m.content, m.role === 'user')}
                   </div>
                 </div>
               ))}
