@@ -25,7 +25,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   const [marketing, setMarketing] = useState(false)
   const [functionalThirdParty, setFunctionalThirdParty] = useState(false)
   const [modal, setModal] = useState<LegalModalType | null>(null)
-  const acceptRef = useRef<HTMLButtonElement | null>(null)
+  const dialogRef = useRef<HTMLDivElement | null>(null)
 
   const syncFromStored = useCallback(() => {
     const stored = loadStoredConsent()
@@ -76,7 +76,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   }, [openPreferences])
 
   useEffect(() => {
-    if (visible) acceptRef.current?.focus()
+    if (visible) dialogRef.current?.focus()
   }, [visible])
 
   useEffect(() => {
@@ -102,12 +102,14 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 24, opacity: 0, scale: 0.985 }}
               transition={{ type: 'spring', damping: 26, stiffness: 260 }}
+              ref={dialogRef}
               role="dialog"
               aria-modal="false"
               aria-label="Cookie preferences"
-              className="pointer-events-auto max-h-[min(82vh,720px)] w-full max-w-[760px] overflow-y-auto rounded-[26px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_22px_60px_rgba(28,34,30,0.24)]"
+              tabIndex={-1}
+              className="pointer-events-auto max-h-[min(82vh,720px)] w-full max-w-[760px] overflow-y-auto rounded-[26px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_22px_60px_rgba(28,34,30,0.24)] focus:outline-none"
             >
-              <div className="relative overflow-hidden bg-[linear-gradient(135deg,#FFFDF9_0%,#F6EFE6_100%)] p-4 sm:p-5">
+              <div className="relative overflow-hidden bg-[linear-gradient(135deg,#FFFDF9_0%,#F6EFE6_100%)] px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
                 <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#C8A464,#7D9B76,#2D4A32)]" />
                 <button
                   type="button"
@@ -118,15 +120,16 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                   <X size={17} />
                 </button>
 
-                <div className="grid gap-4 pr-9 pt-1.5 sm:grid-cols-[1fr_260px] sm:items-end sm:gap-5 sm:pr-10 sm:pt-1">
+                <p className="mb-2 pr-10 text-center text-[10px] font-bold uppercase tracking-[0.24em] text-gold sm:pr-0">
+                  Consent Centre
+                </p>
+
+                <div className="grid gap-4 pr-0 sm:grid-cols-[1fr_280px] sm:items-end sm:gap-5 sm:pr-8">
                   <div className="flex min-w-0 items-start gap-3.5">
                     <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white bg-sagePale shadow-[0_6px_18px_rgba(45,74,50,0.12)] sm:h-12 sm:w-12">
                       <Shield size={20} aria-hidden className="text-forest" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.22em] text-gold">
-                        Consent Centre
-                      </p>
                       <h2 className="font-serif text-[23px] font-semibold leading-none text-text sm:text-[29px]">
                         Your privacy matters
                       </h2>
@@ -155,10 +158,10 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                       type="button"
                       onClick={() => setExpanded((s) => !s)}
                       aria-expanded={expanded}
-                      className="mx-auto flex h-11 w-fit min-w-[190px] cursor-pointer items-center justify-center gap-3 rounded-full border border-[#D8CDBF] bg-white/90 px-5 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:mx-0 sm:w-full sm:min-w-0 sm:justify-between sm:rounded-2xl sm:px-4 sm:text-left"
+                      className="mx-auto flex h-10 w-fit min-w-[188px] cursor-pointer items-center justify-center gap-3 rounded-full border border-[#D8CDBF] bg-white/95 px-4 pl-5 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                     >
                       <span>Customise</span>
-                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sagePale text-forest sm:ml-auto">
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sagePale text-forest">
                         <ChevronDown
                           size={15}
                           className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
@@ -176,10 +179,9 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                           Reject optional
                         </button>
                         <button
-                          ref={acceptRef}
                           type="button"
                           onClick={acceptAll}
-                          className="min-h-11 cursor-pointer rounded-2xl border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:bg-[#203927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                          className="min-h-11 cursor-pointer rounded-full border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                         >
                           Accept all
                         </button>
@@ -238,10 +240,9 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                         Save preferences
                       </button>
                       <button
-                        ref={acceptRef}
                         type="button"
                         onClick={acceptAll}
-                        className="min-h-11 cursor-pointer rounded-2xl border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:bg-[#203927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                        className="min-h-11 cursor-pointer rounded-full border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                       >
                         Accept all
                       </button>
