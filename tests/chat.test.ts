@@ -200,4 +200,90 @@ describe('chat API consent gate', () => {
     expect(prompt).toContain('[redacted]')
     expect(prompt).not.toMatch(/ignore previous instructions|RAZORPAY_KEY_SECRET/i)
   })
+
+  it('labels the newest order and instructs Gemini to answer latest-order questions singularly', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'Your latest order is processing.' }] } }],
+        })
+      ),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    mocks.hasSupabaseAdminEnv.mockReturnValue(true)
+    mocks.getUserFromAuthorizationHeader.mockResolvedValue({
+      id: 'user-1',
+      email: 'kavya@verdebliss.test',
+    })
+
+    const profileQuery = {
+      select: vi.fn(() => profileQuery),
+      eq: vi.fn(() => profileQuery),
+      maybeSingle: vi.fn().mockResolvedValue({
+        data: {
+          full_name: 'Kavya Menon',
+          skin_type: 'Dry',
+          tier: 'Gold Botanist',
+          points: 620,
+        },
+      }),
+    }
+    const orderQuery = {
+      select: vi.fn(() => orderQuery),
+      eq: vi.fn(() => orderQuery),
+      order: vi.fn(() => orderQuery),
+      limit: vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: '9740352c-processing',
+            status: 'Processing',
+            total: 670,
+            payment_status: 'paid',
+            created_at: '2026-05-21T08:00:00.000Z',
+            items: [
+              { name: 'Botanical SPF 50 Shield', qty: 1 },
+              { name: 'Green Tea Clarity Toner', qty: 1 },
+            ],
+          },
+          {
+            id: 'bd6b19bd-shipped',
+            status: 'Shipped',
+            total: 429,
+            payment_status: 'paid',
+            created_at: '2026-05-17T08:00:00.000Z',
+            items: [{ name: 'Niacinamide Pore Serum', qty: 1 }],
+          },
+        ],
+      }),
+    }
+    mocks.createSupabaseAdmin.mockReturnValue({
+      from: vi.fn((table: string) => (table === 'profiles' ? profileQuery : orderQuery)),
+    })
+
+    await POST(
+      new Request('http://localhost/api/chat', {
+        method: 'POST',
+        headers: {
+          authorization: 'Bearer test-token',
+          'content-type': 'application/json',
+          'x-vb-ai-consent': 'granted',
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: 'Where is my order?' }],
+        }),
+      })
+    )
+
+    const payload = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string)
+    const prompt = payload.system_instruction.parts[0].text as string
+
+    expect(prompt).toContain('Most recent order: ID 9740352c...')
+    expect(prompt).toContain('Status: Processing')
+    expect(prompt).toContain('Earlier recent order 2: ID bd6b19bd...')
+    expect(prompt).toContain('answer only the Most recent order')
+    expect(prompt).toContain('Do not say a Processing order is "on its way"')
+  })
 })
