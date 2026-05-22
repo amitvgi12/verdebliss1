@@ -111,7 +111,7 @@ test.describe('account, support, and consent flows', () => {
 
   test('AI consent flow blocks personal support when declined', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('button', { name: 'Reject optional', exact: true }).click()
+    await page.getByRole('button', { name: 'Reject', exact: true }).click()
     await page.getByRole('button', { name: 'Chat with Verde' }).click()
 
     await page.locator('#chat-message').fill('Where is my latest order?')

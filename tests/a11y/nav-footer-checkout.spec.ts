@@ -16,6 +16,20 @@ async function expectNoAxeViolations(page: Page, selectors: string[]) {
 }
 
 async function addCheckoutItem(page: Page) {
+  // Inject consent into localStorage before the page loads so the cookie
+  // modal never mounts visible and cannot intercept pointer events.
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'vb_cookie_consent',
+      JSON.stringify({
+        version: '1.2',
+        timestamp: new Date().toISOString(),
+        analytics: false,
+        marketing: false,
+        functional_third_party: false,
+      })
+    )
+  })
   await page.goto('/products')
   await page
     .getByRole('button', { name: /Add .* to cart/i })

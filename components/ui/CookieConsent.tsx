@@ -97,11 +97,14 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   useEffect(() => {
     if (!visible) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { decline(); }
+      if (e.key === 'Escape') {
+        persistConsent({ analytics: false, marketing: false, functional_third_party: false })
+        setVisible(false)
+      }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [visible])
 
   const toggleValue = (id: string) => {
     if (id === 'marketing') setMarketing((v) => !v)
@@ -196,7 +199,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                           ) : (
                             <span
                               role="switch"
-                              aria-checked={value ? 'true' : 'false'}
+                              aria-checked={value}
                               aria-label={`Toggle ${cat.title}`}
                               onClick={(e) => { e.stopPropagation(); toggleValue(cat.id) }}
                               className={`relative flex h-6 w-10 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ${value ? 'bg-[#2D4A32]' : 'bg-[#CCC]'}`}
