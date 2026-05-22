@@ -60,7 +60,7 @@ export default function IngredientCard({
         <div className="ingredient-card__body px-5 py-5 text-center">
           {ingredient && (
             <h3
-              className={`font-serif text-[15px] font-semibold leading-snug text-text ${description ? 'mb-2.5' : ''}`}
+              className={`font-serif text-[16px] font-bold leading-snug text-text ${description ? 'mb-2.5' : ''}`}
             >
               {ingredient}
             </h3>

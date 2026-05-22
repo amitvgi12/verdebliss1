@@ -96,7 +96,7 @@ export default function Nav() {
           <div className="flex-1 md:hidden" />
 
           {/* Icon row */}
-          <div className="flex flex-shrink-0 items-center">
+          <div className="flex flex-shrink-0 items-center gap-1">
             {/* Mobile-only search toggle */}
             <button
               type="button"
