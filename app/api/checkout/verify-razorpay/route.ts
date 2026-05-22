@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import { requireSameOriginRequest } from '@/lib/csrf'
 import { completeRazorpayCheckout, verifyRazorpaySignature } from '@/lib/commerce'
+import { revalidateProductsCache } from '@/lib/revalidate-products'
 
 export async function POST(request: Request) {
   try {
@@ -35,6 +37,8 @@ export async function POST(request: Request) {
       razorpayPaymentId,
       rawPaymentPayload: body as Record<string, unknown>,
     })
+
+    if (!completed.idempotent) after(() => revalidateProductsCache())
 
     return NextResponse.json({
       orderId: completed.orderId,

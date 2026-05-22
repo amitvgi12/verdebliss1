@@ -10,6 +10,7 @@ const KNOWN_SEED_REVIEW_COPY = [
   'Lightweight but nourishing',
   'Comfortable mineral SPF',
 ]
+const HARD_CERTIFICATION_BADGES = ['Vegan', 'Organic Certified', 'Certified Organic', 'Cruelty-Free']
 
 describe('pre-launch gates', () => {
   it('blocks launch mode when compliance placeholders remain', () => {
@@ -58,5 +59,32 @@ describe('pre-launch gates', () => {
     })
 
     expect(unverifiable).toEqual([])
+  })
+
+  it('blocks launch mode when production product badges use hard certification claims', async () => {
+    if (process.env.LAUNCH_MODE !== 'true') return
+
+    expect(hasSupabaseAdminEnv(), 'Launch claim gate requires Supabase admin env').toBe(true)
+
+    const supabase = createSupabaseAdmin()
+    const { data, error } = await supabase
+      .from('products')
+      .select('id, name, badges')
+      .eq('active', true)
+
+    if (error) throw new Error(error.message)
+
+    const hardClaims = (data ?? []).flatMap((product) => {
+      const badges = Array.isArray(product.badges) ? product.badges : []
+      return badges
+        .filter((badge) =>
+          HARD_CERTIFICATION_BADGES.some(
+            (claim) => String(badge).trim().toLowerCase() === claim.toLowerCase()
+          )
+        )
+        .map((badge) => ({ id: product.id, name: product.name, badge }))
+    })
+
+    expect(hardClaims).toEqual([])
   })
 })

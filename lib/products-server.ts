@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache'
 import { PRODUCTS } from '@/constants/products'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
+import { normalizeProductClaimList, normalizeProductClaims } from '@/lib/product-claims'
 
 export interface ApprovedReview {
   id: string
@@ -27,17 +28,18 @@ interface ApprovedReviewMetricRow {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function staticProductByIdOrSlug(idOrSlug: string): Product | null {
-  return PRODUCTS.find((p) => p.id === idOrSlug || p.slug === idOrSlug) ?? null
+  const product = PRODUCTS.find((p) => p.id === idOrSlug || p.slug === idOrSlug)
+  return product ? normalizeProductClaims(product) : null
 }
 
 async function fetchProductsFromDb(): Promise<Product[]> {
-  if (!hasSupabaseAdminEnv()) return PRODUCTS
+  if (!hasSupabaseAdminEnv()) return normalizeProductClaimList(PRODUCTS)
   try {
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase.from('products').select('*').eq('active', true)
-    if (error || !data?.length) return PRODUCTS
+    if (error || !data?.length) return normalizeProductClaimList(PRODUCTS)
 
-    const products = data as Product[]
+    const products = normalizeProductClaimList(data as Product[])
     const productIds = products.map((product) => product.id)
     const { data: approvedReviews, error: reviewsError } = await supabase
       .from('reviews')
@@ -52,7 +54,7 @@ async function fetchProductsFromDb(): Promise<Product[]> {
 
     return productsWithReviewMetrics.sort((a, b) => (b.review_count ?? 0) - (a.review_count ?? 0))
   } catch {
-    return PRODUCTS
+    return normalizeProductClaimList(PRODUCTS)
   }
 }
 
@@ -110,7 +112,7 @@ async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
       .eq('slug', idOrSlug)
       .eq('active', true)
       .maybeSingle()
-    if (!bySlug.error && bySlug.data) return bySlug.data as Product
+    if (!bySlug.error && bySlug.data) return normalizeProductClaims(bySlug.data as Product)
 
     if (UUID_RE.test(idOrSlug)) {
       const byId = await supabase
@@ -119,7 +121,7 @@ async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
         .eq('id', idOrSlug)
         .eq('active', true)
         .maybeSingle()
-      if (!byId.error && byId.data) return byId.data as Product
+      if (!byId.error && byId.data) return normalizeProductClaims(byId.data as Product)
     }
   } catch {
     // Fall back to static catalogue below.
@@ -128,8 +130,12 @@ async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
   return staticProductByIdOrSlug(idOrSlug)
 }
 
-export async function getProductServer(idOrSlug: string): Promise<Product | null> {
-  return fetchProductFromDb(idOrSlug)
+export function getProductServer(idOrSlug: string): Promise<Product | null> {
+  return unstable_cache(
+    () => fetchProductFromDb(idOrSlug),
+    [`product-v1-${idOrSlug}`],
+    { revalidate: 300, tags: ['products', `product-${idOrSlug}`] }
+  )()
 }
 
 export async function getApprovedReviewsServer(

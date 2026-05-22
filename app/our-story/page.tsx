@@ -7,7 +7,7 @@ export const revalidate = 3600
 export const metadata = {
   title: 'Our Story — Founded in Pune, 2019',
   description:
-    'How VerdeBliss went from a Pune kitchen to 50,000 customers — built on botanical formulas and full ingredient disclosure.',
+    'How VerdeBliss grew from a Pune formulation idea into an INCI-first botanical skincare catalogue.',
   alternates: { canonical: 'https://www.verdebliss.com/our-story' },
 }
 
@@ -20,7 +20,7 @@ const TIMELINE = [
   {
     year: '2020',
     title: 'First Formula',
-    body: 'After 14 months of botanical research and 280 test batches, the Bakuchiol Renewal Serum was born. Word spread quickly through dermatology communities.',
+    body: 'The first Bakuchiol Renewal Serum prototype was developed around a gentler renewal ritual with full ingredient documentation.',
   },
   {
     year: '2021',
@@ -30,17 +30,17 @@ const TIMELINE = [
   {
     year: '2022',
     title: 'The Full Range',
-    body: 'Eight hero products launched. The brand crossed ₹1 crore in revenue within 90 days, driven entirely by word-of-mouth and community trust.',
+    body: 'Eight hero product concepts were organised into a complete cleanser, serum, moisturiser, SPF, and lip-care catalogue.',
   },
   {
     year: '2024',
-    title: 'Going Global',
-    body: 'VerdeBliss began shipping to the UK, UAE, and Singapore. The philosophy remained unchanged: nature first, luxury second, profit never at the cost of either.',
+    title: 'Evidence First',
+    body: 'The team moved claim substantiation, INCI disclosure, packaging notes, and review rules into public-facing product and Trust Centre pages.',
   },
   {
     year: '2026',
     title: 'Today',
-    body: 'Over 50,000 customers. Zero compromises on ingredients. Still founded on the belief that beauty and integrity are not opposites — they are the same thing.',
+    body: 'A pre-launch storefront with eight current formulas, transparent claim status, and verified reviews only after purchase.',
   },
 ]
 
@@ -49,29 +49,29 @@ const VALUES = [
     Icon: Leaf,
     iconBg: '#EAF0E8',
     iconColor: '#2d4a32',
-    title: 'Organic Integrity',
-    body: 'Formulas built around named organic botanical ingredients with full INCI disclosure. Certification status is published at /certifications.',
+    title: 'Ingredient Transparency',
+    body: 'Formulas are built around named botanical ingredients with full INCI disclosure. Certification status is published at /certifications.',
   },
   {
     Icon: Heart,
     iconBg: '#F6EDE8',
     iconColor: '#c07a5a',
-    title: 'Cruelty-Free',
+    title: 'Animal-testing stance',
     body: 'No animal testing at any stage. We do not commission animal tests and are pursuing formal cruelty-free certification.',
   },
   {
     Icon: RefreshCw,
     iconBg: '#E0F0FA',
     iconColor: '#2a6b8c',
-    title: 'Circular Packaging',
-    body: 'Glass and aluminium primary packaging. Refill programs in pilot for FY27.',
+    title: 'Packaging Accountability',
+    body: 'Packaging claims are documented before publication, with certification status tracked in the Trust Centre.',
   },
   {
     Icon: Users,
     iconBg: '#EDF5E8',
     iconColor: '#4a6844',
-    title: 'Fair Sourcing',
-    body: 'Direct relationships with 12 farmer co-ops across Karnataka, Kerala, and Sikkim.',
+    title: 'Responsible Sourcing',
+    body: 'Supplier and origin documentation is gathered before any sourcing claim is treated as verified.',
   },
 ]
 
@@ -97,7 +97,7 @@ export default function OurStoryPage() {
         <FadeIn>
           <header className="editorial-section-head">
             <p className="label-eyebrow mb-3">THE JOURNEY</p>
-            <h2 className="h-section">From kitchen to 50,000 customers</h2>
+            <h2 className="h-section">From kitchen concept to transparent catalogue</h2>
           </header>
         </FadeIn>
         <ol className="story-timeline">

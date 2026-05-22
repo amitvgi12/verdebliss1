@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import {
   PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE,
@@ -11,6 +12,7 @@ import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
 import { requireSameOriginRequest } from '@/lib/csrf'
 import { assessCodRisk } from '@/lib/cod-risk'
 import { verifyTurnstileFromRequest } from '@/lib/turnstile'
+import { revalidateProductsCache } from '@/lib/revalidate-products'
 
 export async function POST(request: Request) {
   try {
@@ -65,6 +67,9 @@ export async function POST(request: Request) {
         risk_flags: codRisk.flags,
       },
     })
+
+    const purchasedIds = items.map((i) => i.id)
+    after(() => revalidateProductsCache(purchasedIds))
 
     return NextResponse.json({
       orderId: order.id,

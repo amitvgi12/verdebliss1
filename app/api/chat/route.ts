@@ -197,7 +197,8 @@ function buildSystemPrompt(ctx: TrustedContext, products: Product[]): string {
   const policies = `
 Key policies: Free shipping ₹499+. Returns within 14 days (unopened). Refund 3–7 business days.
 Loyalty: 1 point per ₹10. Green Leaf → Gold Botanist → Platinum Alchemist.
-Contact: returns@verdebliss.com | reactions@verdebliss.com | hello@verdebliss.com`
+Refund requests: verdebliss.com/refund (log in, eligible orders appear automatically).
+Contact: reactions@verdebliss.com | hello@verdebliss.com`
 
   const base = `You are Verde, the AI support advisor for VerdeBliss — organic botanical skincare from India.
 Help with skincare advice AND order support (status, refunds, returns, loyalty points).
@@ -224,7 +225,7 @@ When answering about orders/refunds: use the ORDER HISTORY above. Reference orde
 For "where is my order", "track my order", "my order", or "latest order" questions: answer only the Most recent order unless the customer explicitly asks about multiple orders or order history.
 If you mention more than one order, clearly label them as "most recent" and "earlier" so the statuses do not sound contradictory.
 Do not say a Processing order is "on its way"; say it is being prepared or processing. Say "on its way" only for Shipped/In transit statuses.
-For refunds: direct to returns@verdebliss.com with their order ID.
+For refunds: direct the user to verdebliss.com/refund to submit a refund request (they can log in there and eligible orders will appear automatically). Do not mention the returns email address.
 For points: state exact balance (${ctx.points} points, ${ctx.tier} tier).
 For skincare recommendations: factor in skin type (${ctx.skinType}).`
 }

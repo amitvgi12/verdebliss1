@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore'
 import { getVerifiablePriceOffer } from '@/lib/pricing'
 import { formatApprovedReviewCount } from '@/lib/review-copy'
 import { productPath } from '@/lib/seo'
+import { getProductBadgeDisclosure, normalizeProductBadges } from '@/lib/product-claims'
 import type { Product } from '@/types'
 
 export default function ProductCard({ product: p }: { product: Product }) {
@@ -28,6 +29,7 @@ export default function ProductCard({ product: p }: { product: Product }) {
   const inWishlist = has(p.id)
   const stockOut = p.stock === 0
   const hasApprovedReviews = p.rating != null && (p.review_count ?? 0) > 0
+  const visibleBadges = normalizeProductBadges(p.badges).slice(0, 2)
 
   const decreaseQty = () => {
     if (!cartItem) return
@@ -66,13 +68,13 @@ export default function ProductCard({ product: p }: { product: Product }) {
           {stockOut && <ProductBadge label="SOLD OUT" tone="danger" />}
           {(p.compliance_flags ?? []).includes('age_restricted_12plus') && (
             <ProductBadge
-              label="12+ ONLY"
+              label="Contains BHA · 12+"
               tone="warning"
-              title="Contains BHA — not for under 12 / pregnancy"
+              title="Contains 0.5% salicylic acid (BHA). Recommended for ages 12+."
             />
           )}
-          {(p.badges ?? []).slice(0, 2).map((b) => (
-            <ProductBadge key={b} label={b.toUpperCase()} tone="forest" />
+          {visibleBadges.map((b) => (
+            <ProductBadge key={b} label={b} tone="forest" title={getProductBadgeDisclosure(b)} />
           ))}
         </div>
       </div>

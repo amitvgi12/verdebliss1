@@ -126,7 +126,7 @@ begin
         'Bakuchiol Renewal Serum',
         'Plant-based retinol alternative for visible cell renewal without irritation.',
         250.00::numeric, null::numeric, null::timestamptz, 'Serum',
-        array['Dry','Combination']::text[], array['Vegan','Organic Certified']::text[],
+        array['Dry','Combination']::text[], array['Vegan-Friendly','Organic Botanicals']::text[],
         'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null::numeric, 0, 100
       ),
       (
@@ -135,7 +135,7 @@ begin
         'Rose Hip Glow Moisturiser',
         'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.',
         390.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
-        array['Dry','Sensitive']::text[], array['Cruelty-Free','Vegan']::text[],
+        array['Dry','Sensitive']::text[], array['Cruelty-free*','Vegan-Friendly']::text[],
         'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null::numeric, 0, 100
       ),
       (
@@ -144,7 +144,7 @@ begin
         'Green Tea Clarity Toner',
         'Balance oil and refine pores with antioxidant-rich green tea extract.',
         450.00::numeric, null::numeric, null::timestamptz, 'Toner',
-        array['Oily','Combination']::text[], array['Vegan','Organic Certified']::text[],
+        array['Oily','Combination']::text[], array['Vegan-Friendly','Organic Botanicals']::text[],
         'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null::numeric, 0, 100
       ),
       (
@@ -153,7 +153,7 @@ begin
         'Turmeric Brightening Cleanser',
         'Gentle foam cleanser with turmeric and neem for a luminous complexion.',
         250.00::numeric, null::numeric, null::timestamptz, 'Cleanser',
-        array['All Types']::text[], array['Cruelty-Free','Organic Certified']::text[],
+        array['All Types']::text[], array['Cruelty-free*','Organic Botanicals']::text[],
         'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null::numeric, 0, 100
       ),
       (
@@ -162,7 +162,7 @@ begin
         'Botanical SPF 50 Shield',
         'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.',
         220.00::numeric, null::numeric, null::timestamptz, 'SPF',
-        array['All Types']::text[], array['Vegan','Cruelty-Free']::text[],
+        array['All Types']::text[], array['Vegan-Friendly','Cruelty-free*']::text[],
         'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null::numeric, 0, 100
       ),
       (
@@ -171,7 +171,7 @@ begin
         'Wild Berry Lip Elixir',
         'Nourishing lip treatment with acai berry and shea for pillowy softness.',
         490.00::numeric, null::numeric, null::timestamptz, 'Lip Care',
-        array['All Types']::text[], array['Vegan','Organic Certified']::text[],
+        array['All Types']::text[], array['Organic Botanicals']::text[],
         'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null::numeric, 0, 100
       ),
       (
@@ -180,7 +180,7 @@ begin
         'Niacinamide Pore Serum',
         'Minimise pores and control sebum with a 10% niacinamide complex.',
         350.00::numeric, null::numeric, null::timestamptz, 'Serum',
-        array['Oily','Combination']::text[], array['Vegan','Cruelty-Free']::text[],
+        array['Oily','Combination']::text[], array['Vegan-Friendly','Cruelty-free*']::text[],
         'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null::numeric, 0, 100
       ),
       (
@@ -189,7 +189,7 @@ begin
         'Shea Butter Night Cream',
         'Intensive overnight repair with shea butter and vitamin E for morning glow.',
         550.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
-        array['Dry','Sensitive']::text[], array['Organic Certified','Cruelty-Free']::text[],
+        array['Dry','Sensitive']::text[], array['Organic Botanicals','Cruelty-free*']::text[],
         'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null::numeric, 0, 100
       )
     ) as product_seed(

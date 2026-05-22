@@ -7,8 +7,34 @@ import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
 import FadeIn from '@/components/ui/FadeIn'
 import { getProductsServer } from '@/lib/products-server'
 import { TRUST_METRICS } from '@/constants/trust'
+import type { Metadata } from 'next'
 
 export const revalidate = 300
+
+export const metadata: Metadata = {
+  title: { absolute: 'VerdeBliss — Botanical Skincare India' },
+  description:
+    'Premium botanical skincare from India. INCI-first formulas for every skin type. Free shipping above ₹499.',
+  openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    url: 'https://www.verdebliss.com',
+    siteName: 'VerdeBliss',
+    title: 'VerdeBliss — Botanical Skincare India',
+    description: 'Premium botanical skincare. INCI-first formulas for every skin type.',
+    images: [
+      { url: '/og/home.jpg', width: 1200, height: 630, alt: 'VerdeBliss botanical skincare' },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@verdebliss',
+    title: 'VerdeBliss — Botanical Skincare India',
+    description: 'Premium botanical skincare. INCI-first formulas.',
+    images: ['/og/home.jpg'],
+  },
+  alternates: { canonical: 'https://www.verdebliss.com' },
+}
 
 const INGREDIENTS = [
   {
@@ -63,7 +89,7 @@ const ROUTINES = [
 
 export default async function Home() {
   const products = await getProductsServer()
-  const featured = products.slice(0, 6)
+  const featured = products.slice(0, 8)
 
   return (
     <div className="bg-bg">
@@ -81,7 +107,7 @@ export default async function Home() {
               Radiant.
             </h1>
             <p className="premium-hero__text">
-              Luxury skincare rooted in nature. Formulated with organic botanical
+              Luxury skincare rooted in nature. Formulated with transparent botanical
               ingredients.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -182,8 +208,8 @@ export default async function Home() {
               <p className="label-eyebrow">WHAT&apos;S INSIDE</p>
               <h2 className="h-section">Nature&apos;s Finest Ingredients</h2>
               <p>
-                Every formula begins with the most potent certified-organic ingredients the earth
-                has to offer.
+                Every formula begins with carefully sourced botanical ingredients and a full INCI
+                trail you can inspect.
               </p>
             </div>
           </FadeIn>

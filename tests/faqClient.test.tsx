@@ -5,7 +5,7 @@ import FAQClient from '@/app/faq/FAQClient'
 const FAQ_ITEMS = [
   {
     q: 'Are VerdeBliss products certified organic?',
-    a: 'Yes, every formula contains certified organic ingredients.',
+    a: 'Third-party certification is in progress. Current claim status is published in the Trust Centre.',
   },
   {
     q: 'Do you ship across India?',

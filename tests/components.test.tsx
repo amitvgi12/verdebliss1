@@ -30,17 +30,17 @@ describe('Stars component', () => {
 describe('Badge component', () => {
   it('renders the label text in uppercase', () => {
     render(<Badge label="Vegan" />)
-    expect(screen.getByText('VEGAN')).toBeInTheDocument()
+    expect(screen.getByText('VEGAN-FRIENDLY')).toBeInTheDocument()
   })
 
-  it('renders Cruelty-Free badge', () => {
+  it('renders cruelty-free as positioning copy', () => {
     render(<Badge label="Cruelty-Free" />)
-    expect(screen.getByText('CRUELTY-FREE')).toBeInTheDocument()
+    expect(screen.getByText('CRUELTY-FREE*')).toBeInTheDocument()
   })
 
-  it('renders Organic Certified badge', () => {
+  it('renders organic certification claims as botanical positioning', () => {
     render(<Badge label="Organic Certified" />)
-    expect(screen.getByText('ORGANIC CERTIFIED')).toBeInTheDocument()
+    expect(screen.getByText('ORGANIC BOTANICALS')).toBeInTheDocument()
   })
 
   it('renders an unknown label without crashing', () => {

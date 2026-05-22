@@ -40,23 +40,28 @@ import RoutineRecommendations from './_components/RoutineRecommendations'
 /* ── Positioning labels — not third-party certification claims ── */
 const CERTIFICATIONS = [
   {
-    label: 'Cruelty-Free',
+    label: 'Cruelty-free*',
     emoji: '🐰',
     url: '/certifications',
-    org: 'Cruelty-free positioning',
+    org: 'No animal testing; certification in progress',
   },
   {
     label: 'Vegan-Friendly',
     emoji: '🌱',
     url: '/certifications',
-    org: 'Where formulation permits',
+    org: 'Where formulation permits; certification in progress',
   },
-  { label: 'Skin-Tested', emoji: '🏥', url: '/certifications', org: 'Dermatologist-reviewed' },
+  {
+    label: 'Skin-Tested',
+    emoji: '🏥',
+    url: '/certifications',
+    org: 'Internal testing; independent review pending',
+  },
   {
     label: 'Recyclable Packaging',
     emoji: '♻️',
     url: '/certifications',
-    org: 'Eco-friendly packaging',
+    org: 'Packaging documentation in progress',
   },
 ]
 

@@ -8,6 +8,20 @@ export const metadata = {
   title: 'Certifications & Trust Centre',
   description:
     'Transparency about VerdeBliss certification status, evidence requirements, and formulation standards. Updated as each claim is independently verified.',
+  openGraph: {
+    title: 'Certifications & Trust Centre | VerdeBliss',
+    description:
+      'Current certification status, evidence requirements, and formulation standards for VerdeBliss claims.',
+    url: 'https://www.verdebliss.com/certifications',
+    images: [{ url: '/og/home.jpg', width: 1200, height: 630, alt: 'VerdeBliss Trust Centre' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Certifications & Trust Centre | VerdeBliss',
+    description:
+      'Current certification status, evidence requirements, and formulation standards for VerdeBliss claims.',
+    images: ['/og/home.jpg'],
+  },
   alternates: { canonical: 'https://www.verdebliss.com/certifications' },
 }
 

@@ -96,7 +96,7 @@ export default function ProductMedia({
                 textTransform: 'uppercase',
               }}
             >
-              {cert.emoji} {cert.label} ↗
+              <span aria-hidden="true">{cert.emoji}</span> {cert.label} ↗
             </a>
           ) : (
             <span
@@ -115,7 +115,7 @@ export default function ProductMedia({
                 textTransform: 'uppercase',
               }}
             >
-              {cert.emoji} {cert.label}
+              <span aria-hidden="true">{cert.emoji}</span> {cert.label}
             </span>
           )
         )}

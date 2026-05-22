@@ -47,15 +47,7 @@ export const metadata = {
     template: '%s | VerdeBliss',
   },
   description:
-    'Premium organic botanical skincare from India. INCI-first formulas for every skin type. Free shipping above ₹499.',
-  keywords: [
-    'organic skincare India',
-    'natural skincare',
-    'vegan skincare',
-    'cruelty-free cosmetics',
-    'bakuchiol serum',
-    'niacinamide',
-  ],
+    'Premium botanical skincare from India. INCI-first formulas for every skin type. Free shipping above ₹499.',
   authors: [{ name: 'VerdeBliss Cosmetics Private Limited' }],
   openGraph: {
     type: 'website',
@@ -63,15 +55,14 @@ export const metadata = {
     url: 'https://www.verdebliss.com',
     siteName: 'VerdeBliss',
     title: 'VerdeBliss — Botanical Skincare India',
-    description:
-      'Premium organic botanical skincare. INCI-first formulas for every skin type.',
+    description: 'Premium botanical skincare. INCI-first formulas for every skin type.',
     images: [{ url: '/og/home.jpg', width: 1200, height: 630, alt: 'VerdeBliss botanical skincare' }],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@verdebliss',
     title: 'VerdeBliss — Botanical Skincare India',
-    description: 'Premium organic botanical skincare. INCI-first formulas.',
+    description: 'Premium botanical skincare. INCI-first formulas.',
     images: ['/og/home.jpg'],
   },
   robots: { index: true, follow: true },

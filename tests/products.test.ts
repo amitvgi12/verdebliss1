@@ -57,6 +57,13 @@ describe('PRODUCTS catalogue', () => {
       expect(p.review_count ?? 0).toBe(0)
     })
   })
+
+  it('uses Trust Centre-safe positioning badges in the fallback constants', () => {
+    const hardClaims = ['Vegan', 'Organic Certified', 'Certified Organic', 'Cruelty-Free']
+    PRODUCTS.forEach((p) => {
+      expect(p.badges ?? []).not.toEqual(expect.arrayContaining(hardClaims))
+    })
+  })
 })
 
 describe('CATEGORIES', () => {

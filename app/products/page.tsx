@@ -6,12 +6,22 @@ import type { Product } from '@/types'
 export const revalidate = 300
 
 export const metadata = {
-  title: 'Shop Organic Skincare',
+  title: 'Shop Botanical Skincare',
   description:
-    'Browse VerdeBliss organic botanical serums, moisturisers, cleansers and SPF. Filter by skin type. Free shipping above ₹499.',
+    'Browse VerdeBliss botanical serums, moisturisers, cleansers and SPF. Filter by skin type. Free shipping above ₹499.',
   openGraph: {
-    title: 'Shop Organic Skincare | VerdeBliss',
+    title: 'Shop Botanical Skincare | VerdeBliss',
+    description:
+      'Browse VerdeBliss botanical serums, moisturisers, cleansers and SPF. Filter by skin type.',
+    images: [{ url: '/og/home.jpg', width: 1200, height: 630, alt: 'VerdeBliss product range' }],
     url: 'https://www.verdebliss.com/products',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Shop Botanical Skincare | VerdeBliss',
+    description:
+      'Browse VerdeBliss botanical serums, moisturisers, cleansers and SPF. Filter by skin type.',
+    images: ['/og/home.jpg'],
   },
   alternates: { canonical: 'https://www.verdebliss.com/products' },
 }

@@ -67,7 +67,7 @@ test.describe('live smoke checks', () => {
     expect(html).toContain('/images/products/toner.webp')
     expect(html).toContain('sizes="(max-width: 1024px) 90vw, 560px"')
     expect(html).toContain('/og/products/green-tea-clarity-toner.jpg')
-    expect(html).toContain('Cruelty-Free')
+    expect(html).toContain('Cruelty-free*')
     expect(html).toContain('Certifications')
     expect(html).toContain('aria-controls="accordion-ingredients"')
     expect(html).toContain('aria-expanded="true"')
