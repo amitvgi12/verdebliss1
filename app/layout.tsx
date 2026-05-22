@@ -44,7 +44,11 @@ export const metadata = {
   metadataBase: new URL('https://www.verdebliss.com'),
   manifest: '/manifest.json',
   icons: {
-    icon: [{ url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' }],
+    icon: [
+      { url: '/icons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+    ],
     shortcut: ['/favicon.ico'],
     apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
@@ -62,7 +66,9 @@ export const metadata = {
     siteName: 'VerdeBliss',
     title: 'VerdeBliss — Botanical Skincare India',
     description: 'Premium botanical skincare. INCI-first formulas for every skin type.',
-    images: [{ url: '/og/home.jpg', width: 1200, height: 630, alt: 'VerdeBliss botanical skincare' }],
+    images: [
+      { url: '/og/home.jpg', width: 1200, height: 630, alt: 'VerdeBliss botanical skincare' },
+    ],
   },
   twitter: {
     card: 'summary_large_image',

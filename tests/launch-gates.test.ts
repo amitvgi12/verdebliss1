@@ -10,7 +10,12 @@ const KNOWN_SEED_REVIEW_COPY = [
   'Lightweight but nourishing',
   'Comfortable mineral SPF',
 ]
-const HARD_CERTIFICATION_BADGES = ['Vegan', 'Organic Certified', 'Certified Organic', 'Cruelty-Free']
+const HARD_CERTIFICATION_BADGES = [
+  'Vegan',
+  'Organic Certified',
+  'Certified Organic',
+  'Cruelty-Free',
+]
 
 describe('pre-launch gates', () => {
   it('blocks launch mode when compliance placeholders remain', () => {

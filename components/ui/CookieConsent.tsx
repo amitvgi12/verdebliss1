@@ -79,7 +79,10 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   }
 
   useEffect(() => {
-    if (initialOpen) { openPreferences(); return }
+    if (initialOpen) {
+      openPreferences()
+      return
+    }
     if (loadStoredConsent()) return
     const t = setTimeout(() => setVisible(true), 1200)
     return () => clearTimeout(t)
@@ -201,7 +204,10 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                               role="switch"
                               aria-checked={value}
                               aria-label={`Toggle ${cat.title}`}
-                              onClick={(e) => { e.stopPropagation(); toggleValue(cat.id) }}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleValue(cat.id)
+                              }}
                               className={`relative flex h-6 w-10 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ${value ? 'bg-[#2D4A32]' : 'bg-[#CCC]'}`}
                             >
                               <span

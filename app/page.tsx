@@ -89,7 +89,7 @@ const ROUTINES = [
 
 export default async function Home() {
   const products = await getProductsServer()
-  const featured = products.slice(0, 8)
+  const featured = products.slice(0, 4)
 
   return (
     <div className="bg-bg">
@@ -107,8 +107,7 @@ export default async function Home() {
               Radiant.
             </h1>
             <p className="premium-hero__text">
-              Luxury skincare rooted in nature. Formulated with transparent botanical
-              ingredients.
+              Luxury skincare rooted in nature. Formulated with transparent botanical ingredients.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/products" className="btn-terra premium-cta">
@@ -166,7 +165,7 @@ export default async function Home() {
         <FadeIn delay={0.18}>
           <div className="home-collection-cta-wrap">
             <Link href="/products" className="home-collection-cta">
-              View full boutique <ArrowRight size={15} />
+              Explore the full collection <ArrowRight size={15} />
             </Link>
           </div>
         </FadeIn>

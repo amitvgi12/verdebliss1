@@ -32,7 +32,12 @@ const PRODUCTS = [
     'Mineral daily sun care',
     '/images/products/spf.webp',
   ],
-  ['wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip ritual', '/images/products/lip-elixir.webp'],
+  [
+    'wild-berry-lip-elixir',
+    'Wild Berry Lip Elixir',
+    'Nourishing lip ritual',
+    '/images/products/lip-elixir.webp',
+  ],
   [
     'niacinamide-pore-serum',
     'Niacinamide Pore Serum',
@@ -107,7 +112,10 @@ function ogSvg(title, subtitle) {
 }
 
 async function writeOgAsset(output, title, subtitle, imagePath) {
-  const product = await sharp(`public${imagePath}`).resize({ height: 500, fit: 'contain' }).png().toBuffer()
+  const product = await sharp(`public${imagePath}`)
+    .resize({ height: 500, fit: 'contain' })
+    .png()
+    .toBuffer()
 
   await sharp(ogSvg(title, subtitle))
     .composite([{ input: product, left: 760, top: 70 }])

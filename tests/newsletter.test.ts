@@ -92,7 +92,9 @@ describe('newsletter double opt-in', () => {
     )
 
     const response = await confirmNewsletter(
-      new Request('https://www.verdebliss.com/api/newsletter/confirm?token=test-token-value-long-enough')
+      new Request(
+        'https://www.verdebliss.com/api/newsletter/confirm?token=test-token-value-long-enough'
+      )
     )
 
     expect(response.status).toBe(307)

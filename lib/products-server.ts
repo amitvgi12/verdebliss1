@@ -90,11 +90,10 @@ export function applyApprovedReviewMetrics(
 // cache(): intra-render deduplication — multiple callers in the same render
 // (homepage, sitemap, chat route) share one resolved promise.
 export const getProductsServer = cache(
-  unstable_cache(
-    async (): Promise<Product[]> => fetchProductsFromDb(),
-    ['products-catalogue-v1'],
-    { revalidate: 300, tags: ['products'] }
-  )
+  unstable_cache(async (): Promise<Product[]> => fetchProductsFromDb(), ['products-catalogue-v1'], {
+    revalidate: 300,
+    tags: ['products'],
+  })
 )
 
 async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
@@ -131,11 +130,10 @@ async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
 }
 
 export function getProductServer(idOrSlug: string): Promise<Product | null> {
-  return unstable_cache(
-    () => fetchProductFromDb(idOrSlug),
-    [`product-v1-${idOrSlug}`],
-    { revalidate: 300, tags: ['products', `product-${idOrSlug}`] }
-  )()
+  return unstable_cache(() => fetchProductFromDb(idOrSlug), [`product-v1-${idOrSlug}`], {
+    revalidate: 300,
+    tags: ['products', `product-${idOrSlug}`],
+  })()
 }
 
 export async function getApprovedReviewsServer(

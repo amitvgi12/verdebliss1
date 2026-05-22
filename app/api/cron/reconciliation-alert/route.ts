@@ -49,10 +49,7 @@ export async function GET(request: Request) {
   const alert = failures.length > 0 ? await sendOpsAlert(failures) : { sent: false, reason: 'none' }
 
   if (failures.length > 0 && alert.reason === 'webhook_failed') {
-    return NextResponse.json(
-      { ok: false, pending: failures.length, alert },
-      { status: 502 }
-    )
+    return NextResponse.json({ ok: false, pending: failures.length, alert }, { status: 502 })
   }
 
   return NextResponse.json({

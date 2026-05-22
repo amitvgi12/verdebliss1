@@ -46,10 +46,7 @@ export default function ProductMedia({
         }}
       >
         <div style={{ position: 'absolute', inset: 0 }}>
-          <ProductImage
-            product={product}
-            sizes="(max-width: 1024px) 90vw, 560px"
-          />
+          <ProductImage product={product} sizes="(max-width: 1024px) 90vw, 560px" />
         </div>
       </div>
 

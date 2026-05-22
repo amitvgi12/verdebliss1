@@ -549,9 +549,10 @@ function Dashboard({
   const { ids: wishIds } = useWishlistStore()
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
-  const [orderNotice, setOrderNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(
-    null
-  )
+  const [orderNotice, setOrderNotice] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
 
   useEffect(() => {
     supabase
@@ -579,9 +580,7 @@ function Dashboard({
       )
 
       setOrders((current) =>
-        current.map((order) =>
-          order.id === orderId ? { ...order, status: result.status } : order
-        )
+        current.map((order) => (order.id === orderId ? { ...order, status: result.status } : order))
       )
       setOrderNotice({
         type: 'success',

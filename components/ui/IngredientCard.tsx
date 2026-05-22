@@ -57,15 +57,15 @@ export default function IngredientCard({
       </div>
 
       {(ingredient || description) && (
-        <div className="ingredient-card__body px-4 py-3.5">
+        <div className="ingredient-card__body px-4 py-4">
           {ingredient && (
             <h3
-              className={`font-serif text-sm font-semibold text-text ${description ? 'mb-1' : ''}`}
+              className={`font-serif text-[15px] font-semibold leading-snug text-text ${description ? 'mb-2' : ''}`}
             >
               {ingredient}
             </h3>
           )}
-          {description && <p className="text-xs leading-relaxed text-muted">{description}</p>}
+          {description && <p className="text-[12.5px] leading-[1.65] text-muted">{description}</p>}
         </div>
       )}
     </div>

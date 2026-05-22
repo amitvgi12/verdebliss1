@@ -203,9 +203,7 @@ export default function RefundClient() {
               </div>
             )}
 
-            {!authLoading && !user && (
-              <RefundAccountGuidance />
-            )}
+            {!authLoading && !user && <RefundAccountGuidance />}
 
             {user && refunds.length === 0 && !historyLoading && (
               <div style={{ color: C.muted, marginBottom: 12 }}>No refund requests yet.</div>
@@ -296,8 +294,7 @@ export default function RefundClient() {
                               ? `1px solid ${C.forest}`
                               : `1px solid ${C.border}`,
                           borderRadius: 12,
-                          background:
-                            selectedOrderId === order.id ? C.sagePale : C.bg,
+                          background: selectedOrderId === order.id ? C.sagePale : C.bg,
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'flex-start',
@@ -331,7 +328,13 @@ export default function RefundClient() {
 
                   <label
                     htmlFor="refund-reason"
-                    style={{ display: 'grid', gap: 8, fontSize: 12, fontWeight: 600, color: C.text }}
+                    style={{
+                      display: 'grid',
+                      gap: 8,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: C.text,
+                    }}
                   >
                     Refund reason
                     <textarea

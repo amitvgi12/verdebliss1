@@ -8,7 +8,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-      time: "09:00"
+      time: '09:00'
       timezone: Asia/Kolkata
     groups:
       frontend-runtime:
@@ -16,13 +16,13 @@ updates:
           - next
           - react
           - react-dom
-          - "@supabase/*"
-          - "@upstash/*"
+          - '@supabase/*'
+          - '@upstash/*'
       frontend-tooling:
         patterns:
           - postcss
           - tailwindcss
-          - "@tailwindcss/*"
+          - '@tailwindcss/*'
           - eslint*
           - typescript
           - vitest
@@ -35,5 +35,5 @@ updates:
     schedule:
       interval: weekly
       day: monday
-      time: "09:30"
+      time: '09:30'
       timezone: Asia/Kolkata

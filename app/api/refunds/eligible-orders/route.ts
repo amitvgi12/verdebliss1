@@ -48,8 +48,7 @@ export async function GET(request: Request) {
     )
 
     const eligibleOrders = ((orders ?? []) as RefundOrderRow[]).filter(
-      (order) =>
-        !openRefundOrderIds.has(order.id) && getRefundIneligibilityReason(order) === null
+      (order) => !openRefundOrderIds.has(order.id) && getRefundIneligibilityReason(order) === null
     )
 
     return NextResponse.json({ orders: eligibleOrders })

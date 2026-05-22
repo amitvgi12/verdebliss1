@@ -37,8 +37,7 @@ interface ClaimRow {
 const CLAIMS: ClaimRow[] = [
   {
     claim: 'Organic botanical ingredients',
-    requiredProof:
-      'Issuer name, certificate/licence ID, product or ingredient scope, expiry date',
+    requiredProof: 'Issuer name, certificate/licence ID, product or ingredient scope, expiry date',
     status: 'in-progress',
     note: 'Sourcing standards documented; third-party audit in progress.',
   },
@@ -58,7 +57,8 @@ const CLAIMS: ClaimRow[] = [
   },
   {
     claim: 'Dermatologist-reviewed',
-    requiredProof: 'Lab or dermatologist report: name of assessor, date, test method, product scope',
+    requiredProof:
+      'Lab or dermatologist report: name of assessor, date, test method, product scope',
     status: 'pending',
     note: 'Internal skin-compatibility testing conducted. Independent dermatologist review documentation pending.',
   },
@@ -67,8 +67,7 @@ const CLAIMS: ClaimRow[] = [
     requiredProof:
       'SPF test lab report: lab name, accreditation, test standard (ISO 24444 or equivalent), batch/formula scope',
     status: 'pending',
-    note:
-      'Botanical SPF 50 Shield contains 20% non-nano Zinc Oxide. Independent SPF efficacy testing documentation pending.',
+    note: 'Botanical SPF 50 Shield contains 20% non-nano Zinc Oxide. Independent SPF efficacy testing documentation pending.',
   },
   {
     claim: 'Recyclable / eco-friendly packaging',
@@ -141,7 +140,15 @@ export default function CertificationsPage() {
           </header>
         </FadeIn>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 860, marginInline: 'auto' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            maxWidth: 860,
+            marginInline: 'auto',
+          }}
+        >
           {CLAIMS.map((row, i) => {
             const cfg = STATUS_CONFIG[row.status]
             const Icon = cfg.Icon
@@ -242,11 +249,53 @@ export default function CertificationsPage() {
               }}
             >
               {[
-                { label: 'Organic', items: ['Issuing body', 'Certificate/licence ID', 'Product scope', 'Expiry date', 'Verification URL'] },
-                { label: 'Vegan / Cruelty-free', items: ['Issuing body', 'Listing URL or cert ID', 'Brand scope confirmed', 'Supplier scope', 'Renewal date'] },
-                { label: 'Derma-Tested', items: ['Lab or assessor name', 'Test method and standard', 'Date of assessment', 'Products covered'] },
-                { label: 'SPF efficacy', items: ['Lab name and accreditation', 'Test standard (e.g. ISO 24444)', 'Formula/batch scope', 'Report date'] },
-                { label: 'Eco/FSC Packaging', items: ['FSC licence number', 'Packaging type scope', 'Supplier chain', 'Renewal date'] },
+                {
+                  label: 'Organic',
+                  items: [
+                    'Issuing body',
+                    'Certificate/licence ID',
+                    'Product scope',
+                    'Expiry date',
+                    'Verification URL',
+                  ],
+                },
+                {
+                  label: 'Vegan / Cruelty-free',
+                  items: [
+                    'Issuing body',
+                    'Listing URL or cert ID',
+                    'Brand scope confirmed',
+                    'Supplier scope',
+                    'Renewal date',
+                  ],
+                },
+                {
+                  label: 'Derma-Tested',
+                  items: [
+                    'Lab or assessor name',
+                    'Test method and standard',
+                    'Date of assessment',
+                    'Products covered',
+                  ],
+                },
+                {
+                  label: 'SPF efficacy',
+                  items: [
+                    'Lab name and accreditation',
+                    'Test standard (e.g. ISO 24444)',
+                    'Formula/batch scope',
+                    'Report date',
+                  ],
+                },
+                {
+                  label: 'Eco/FSC Packaging',
+                  items: [
+                    'FSC licence number',
+                    'Packaging type scope',
+                    'Supplier chain',
+                    'Renewal date',
+                  ],
+                },
               ].map((section) => (
                 <div
                   key={section.label}
@@ -269,10 +318,32 @@ export default function CertificationsPage() {
                   >
                     {section.label}
                   </p>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <ul
+                    style={{
+                      listStyle: 'none',
+                      padding: 0,
+                      margin: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 4,
+                    }}
+                  >
                     {section.items.map((item) => (
-                      <li key={item} style={{ fontSize: 12, color: '#5a6654', lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-                        <CheckCircle2 size={11} style={{ color: '#6b7a5e', marginTop: 3, flexShrink: 0 }} />
+                      <li
+                        key={item}
+                        style={{
+                          fontSize: 12,
+                          color: '#5a6654',
+                          lineHeight: 1.6,
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 6,
+                        }}
+                      >
+                        <CheckCircle2
+                          size={11}
+                          style={{ color: '#6b7a5e', marginTop: 3, flexShrink: 0 }}
+                        />
                         {item}
                       </li>
                     ))}

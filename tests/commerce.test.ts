@@ -133,10 +133,7 @@ describe('commerce validation and payment helpers', () => {
       event: 'payment.captured',
       payload: { payment: { entity: { id: 'pay_456' } } },
     })
-    const signature = crypto
-      .createHmac('sha256', 'webhook_secret')
-      .update(rawBody)
-      .digest('hex')
+    const signature = crypto.createHmac('sha256', 'webhook_secret').update(rawBody).digest('hex')
 
     expect(verifyRazorpayWebhookSignature(rawBody, signature)).toBe(true)
     expect(verifyRazorpayWebhookSignature(rawBody.replace('captured', 'failed'), signature)).toBe(

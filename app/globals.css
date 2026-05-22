@@ -188,7 +188,7 @@ video {
     @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] border-2 border-forest bg-transparent px-7 py-3 font-sans text-sm font-semibold text-forest transition hover:bg-forest hover:text-white;
   }
   .input-base {
-    @apply w-full rounded-[10px] border border-border bg-warmWhite px-4 py-3 font-sans text-sm text-text outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/20;
+    @apply w-full rounded-[10px] border border-border bg-warmWhite px-4 py-3.5 font-sans text-sm text-text outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/20;
   }
   .label-eyebrow {
     @apply text-[10px] font-semibold uppercase tracking-[0.14em] text-terra;

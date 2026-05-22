@@ -103,7 +103,9 @@ describe('RefundClient', () => {
     render(<RefundClient />)
 
     expect(screen.getByText('Checking your account')).toBeInTheDocument()
-    expect(screen.getByText(/load refund history and eligible orders automatically/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/load refund history and eligible orders automatically/)
+    ).toBeInTheDocument()
   })
 })
 

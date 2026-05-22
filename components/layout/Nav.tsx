@@ -106,7 +106,11 @@ export default function Nav() {
             >
               <Search size={18} className="text-text" />
             </button>
-            <Link href="/account" aria-label="Account" className="flex items-center rounded-lg p-2">
+            <Link
+              href="/account"
+              aria-label="Account"
+              className="flex items-center rounded-lg p-2.5"
+            >
               <User size={18} className={user ? 'text-forest' : 'text-text'} />
             </Link>
             <button
@@ -114,7 +118,7 @@ export default function Nav() {
               onClick={openCart}
               aria-label={`Cart, ${itemCount} items`}
               title="Cart"
-              className="relative flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-transparent p-2"
+              className="relative flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-transparent p-2.5"
             >
               <ShoppingBag size={18} className="text-text" />
               <span className="sr-only">Cart</span>
