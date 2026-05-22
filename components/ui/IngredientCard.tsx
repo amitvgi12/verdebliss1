@@ -45,7 +45,7 @@ export default function IngredientCard({
             src={src}
             alt={ingredient}
             fill
-            sizes="(max-width: 768px) 50vw, 200px"
+            sizes="(max-width: 640px) 45vw, 220px"
             className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.06]"
           />
         ) : (

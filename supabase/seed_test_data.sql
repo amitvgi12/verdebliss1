@@ -602,15 +602,20 @@ begin
     ('Kavya Menon', 'kavya@verdebliss.test', 'Order Support', 'Can you confirm when my SPF order will be delivered?', 'seed_test_data', 'new', now() - interval '2 days', now() - interval '2 days'),
     ('Rahul Sharma', 'rahul@verdebliss.test', 'Product Advice', 'Which product should I pair with the niacinamide serum for oily skin?', 'seed_test_data', 'new', now() - interval '1 day', now() - interval '1 day');
 
-  insert into public.customer_consents (email, consent_type, source, consented, consented_at, created_at) values
-    ('kavya@verdebliss.test', 'newsletter', 'seed_test_data', true, now() - interval '60 days', now() - interval '60 days'),
-    ('rahul@verdebliss.test', 'newsletter', 'seed_test_data', true, now() - interval '20 days', now() - interval '20 days'),
-    ('priya@verdebliss.test', 'newsletter', 'seed_test_data', true, now() - interval '120 days', now() - interval '120 days')
+  insert into public.customer_consents (
+    email, consent_type, source, consented, consented_at, confirmed_at, created_at
+  ) values
+    ('kavya@verdebliss.test', 'newsletter', 'seed_test_data', true, now() - interval '60 days', now() - interval '60 days', now() - interval '60 days'),
+    ('rahul@verdebliss.test', 'newsletter', 'seed_test_data', true, now() - interval '20 days', now() - interval '20 days', now() - interval '20 days'),
+    ('priya@verdebliss.test', 'newsletter', 'seed_test_data', true, now() - interval '120 days', now() - interval '120 days', now() - interval '120 days')
   on conflict (email, consent_type) do update
     set source = excluded.source,
         consented = excluded.consented,
         consented_at = excluded.consented_at,
-        revoked_at = null;
+        confirmed_at = excluded.confirmed_at,
+        revoked_at = null,
+        confirmation_token_hash = null,
+        confirmation_expires_at = null;
 
   -- Tier calibration bonus entries keep account-dashboard tests meaningful even
   -- with the current catalogue's low demo product prices.

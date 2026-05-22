@@ -13,6 +13,17 @@ export const PRODUCT_IMAGE_BY_ID: Record<string, string> = {
   '8': '/images/products/night-cream.webp',
 }
 
+export const PRODUCT_OG_IMAGE_BY_ID: Record<string, string> = {
+  '1': '/og/products/bakuchiol-renewal-serum.jpg',
+  '2': '/og/products/rose-hip-glow-moisturiser.jpg',
+  '3': '/og/products/green-tea-clarity-toner.jpg',
+  '4': '/og/products/turmeric-brightening-cleanser.jpg',
+  '5': '/og/products/botanical-spf-50-shield.jpg',
+  '6': '/og/products/wild-berry-lip-elixir.jpg',
+  '7': '/og/products/niacinamide-pore-serum.jpg',
+  '8': '/og/products/shea-butter-night-cream.jpg',
+}
+
 export function absoluteUrl(path: string): string {
   if (path.startsWith('http')) return path
   return `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`
@@ -27,6 +38,11 @@ export function productImagePath(product?: Pick<Product, 'id' | 'image_url'> | n
   return (
     product?.image_url || PRODUCT_IMAGE_BY_ID[product?.id ?? ''] || '/images/products/serum.webp'
   )
+}
+
+export function productOgImagePath(product?: Pick<Product, 'id' | 'slug'> | null): string {
+  if (product?.slug) return `/og/products/${product.slug}.jpg`
+  return PRODUCT_OG_IMAGE_BY_ID[product?.id ?? ''] || '/og/home.jpg'
 }
 
 export interface BreadcrumbItem {

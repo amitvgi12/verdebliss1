@@ -47,10 +47,10 @@ export function proxy(request: NextRequest) {
     // strict-dynamic lets nonce'd scripts load further scripts; we still keep
     // an allow-list for Razorpay because their checkout JS lives at a fixed
     // origin and is loaded directly by client code.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com${
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com${
       isProduction ? '' : " 'unsafe-eval'"
     }`,
-    `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com`,
+    `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`,
     // Tailwind v4 + Next.js inject style tags. 'unsafe-inline' here is widely
     // accepted because style-based exfiltration is much weaker than script
     // execution. Hashes/nonces for styles are possible but break Tailwind's JIT.
@@ -58,7 +58,7 @@ export function proxy(request: NextRequest) {
     "style-src-elem 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob: https://*.supabase.co",
-    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com",
+    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://va.vercel-scripts.com https://vitals.vercel-insights.com",
     'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
     "frame-ancestors 'none'",
     "object-src 'none'",

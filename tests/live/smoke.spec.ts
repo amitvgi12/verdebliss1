@@ -19,6 +19,28 @@ test.describe('live smoke checks', () => {
     expect(mainIndex).toBeLessThan(footerIndex)
   })
 
+  test('homepage and PDP are served from the same current build', async ({ request }) => {
+    const paths = ['/', '/products/green-tea-clarity-toner']
+    const htmlByPath = new Map<string, string>()
+
+    for (const path of paths) {
+      const response = await request.get(path)
+      expect(response.status()).toBe(200)
+      htmlByPath.set(path, await response.text())
+    }
+
+    const rootSha = extractMetaContent(htmlByPath.get('/') ?? '', 'x-build-sha')
+    const pdpSha = extractMetaContent(
+      htmlByPath.get('/products/green-tea-clarity-toner') ?? '',
+      'x-build-sha'
+    )
+    const expectedSha = process.env.EXPECTED_BUILD_SHA
+
+    expect(rootSha).toBeTruthy()
+    expect(pdpSha).toBe(rootSha)
+    if (expectedSha) expect(rootSha).toBe(expectedSha)
+  })
+
   for (const slug of PRODUCT_SLUGS) {
     test(`product page returns 200: ${slug}`, async ({ request }) => {
       const response = await request.get(`/products/${slug}`)
@@ -35,6 +57,23 @@ test.describe('live smoke checks', () => {
     expect(product).toBeTruthy()
     expect(product?.name).toBe('Bakuchiol Renewal Serum')
     expect(product?.offers).toMatchObject({ '@type': 'Offer', priceCurrency: 'INR' })
+  })
+
+  test('PDP reflects current build freshness sentinels', async ({ request }) => {
+    const response = await request.get('/products/green-tea-clarity-toner')
+    expect(response.status()).toBe(200)
+    const html = await response.text()
+
+    expect(html).toContain('/images/products/toner.webp')
+    expect(html).toContain('sizes="(max-width: 1024px) 90vw, 560px"')
+    expect(html).toContain('/og/products/green-tea-clarity-toner.jpg')
+    expect(html).toContain('Cruelty-Free')
+    expect(html).toContain('Certifications')
+    expect(html).toContain('aria-controls="accordion-ingredients"')
+    expect(html).toContain('aria-expanded="true"')
+    expect(html).not.toContain('beauty-without-bunnies')
+    expect(html).not.toContain('Returns &amp; Refund')
+    expect(html).not.toContain('Returns & Refund')
   })
 
   test('FAQ schema validates', async ({ request }) => {
@@ -96,6 +135,14 @@ function findJsonLd(
   }
 
   return null
+}
+
+function extractMetaContent(html: string, name: string): string | null {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const meta = html.match(
+    new RegExp(`<meta[^>]+name=["']${escaped}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i')
+  )
+  return meta?.[1] ?? null
 }
 
 function flattenJsonLd(value: unknown): Record<string, unknown>[] {

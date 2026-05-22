@@ -7,7 +7,13 @@ import {
   getReviewAggregatesServer,
 } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
-import { absoluteUrl, breadcrumbJsonLd, productImagePath, productPath } from '@/lib/seo'
+import {
+  absoluteUrl,
+  breadcrumbJsonLd,
+  productImagePath,
+  productOgImagePath,
+  productPath,
+} from '@/lib/seo'
 import { StructuredData } from '@/lib/structured-data'
 import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from '@/constants/shipping'
 import { getVerifiablePriceOffer } from '@/lib/pricing'
@@ -95,7 +101,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const image = productImagePath(p)
+  const ogImage = productOgImagePath(p)
   const canonical = absoluteUrl(productPath(p))
   return {
     title: p.name,
@@ -103,14 +109,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title: `${p.name} | VerdeBliss`,
       description: p.description,
-      images: [image],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: p.name }],
       url: canonical,
     },
     twitter: {
       card: 'summary_large_image',
       title: `${p.name} | VerdeBliss`,
       description: `${p.description} Shop ${p.name} at VerdeBliss. Free shipping above ₹499.`,
-      images: [image],
+      images: [ogImage],
     },
     alternates: { canonical },
   }

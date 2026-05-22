@@ -40,8 +40,7 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
   if (subscribed) {
     return (
       <div className="inline-flex items-center gap-2 rounded-[10px] bg-sagePale px-6 py-3 font-medium text-forest">
-        <Check size={16} aria-hidden /> You&apos;re on the list. Please check your inbox for
-        updates.
+        <Check size={16} aria-hidden /> Check your inbox to confirm your subscription.
       </div>
     )
   }

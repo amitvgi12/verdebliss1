@@ -22,11 +22,12 @@ export default function Accordion({ id, label, open, onToggle, children }: Accor
       >
         <span className="text-sm font-semibold text-text">{label}</span>
         <motion.span
-          animate={{ rotate: open ? 45 : 0 }}
+          animate={{ scale: open ? 1.04 : 1 }}
           transition={{ duration: 0.18 }}
+          aria-hidden
           className="block text-[22px] leading-none text-muted"
         >
-          +
+          {open ? '−' : '+'}
         </motion.span>
       </button>
       <AnimatePresence initial={false}>

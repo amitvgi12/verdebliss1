@@ -65,14 +65,14 @@ export const metadata = {
     title: 'VerdeBliss — Botanical Skincare India',
     description:
       'Premium organic botanical skincare. INCI-first formulas for every skin type.',
-    images: [{ url: '/images/products/serum.webp', width: 800, height: 800 }],
+    images: [{ url: '/og/home.jpg', width: 1200, height: 630, alt: 'VerdeBliss botanical skincare' }],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@verdebliss',
     title: 'VerdeBliss — Botanical Skincare India',
     description: 'Premium organic botanical skincare. INCI-first formulas.',
-    images: ['/images/products/serum.webp'],
+    images: ['/og/home.jpg'],
   },
   robots: { index: true, follow: true },
   alternates: { canonical: 'https://www.verdebliss.com' },
@@ -132,10 +132,14 @@ const websiteLd = {
   },
 }
 
+const buildSha =
+  process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? 'dev'
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`} data-scroll-behavior="smooth">
       <head>
+        <meta name="x-build-sha" content={buildSha} />
         {/* Preconnect / DNS-prefetch for the payment iframe so first-checkout RTT is minimal */}
         <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://checkout.razorpay.com" />

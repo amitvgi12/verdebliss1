@@ -48,7 +48,7 @@ export default function ProductMedia({
         <div style={{ position: 'absolute', inset: 0 }}>
           <ProductImage
             product={product}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+            sizes="(max-width: 1024px) 90vw, 560px"
           />
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function ProductMedia({
               href={cert.url}
               target="_blank"
               rel="noopener noreferrer"
-              title={`Verified by ${cert.org}`}
+              title={`${cert.label}: ${cert.org}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',

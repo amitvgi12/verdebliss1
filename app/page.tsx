@@ -107,7 +107,7 @@ export default async function Home() {
                 priority
                 fetchPriority="high"
                 fill
-                sizes="(max-width: 768px) 78vw, 420px"
+                sizes="(max-width: 768px) 90vw, 480px"
                 className="object-cover"
               />
             </div>

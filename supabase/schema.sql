@@ -367,12 +367,31 @@ create table if not exists public.customer_consents (
   email         text not null,
   consent_type  text not null,
   source        text,
-  consented     boolean default true,
-  consented_at  timestamptz default now(),
+  consented     boolean default false,
+  consented_at  timestamptz,
   revoked_at    timestamptz,
+  confirmation_token_hash text,
+  confirmation_sent_at timestamptz,
+  confirmation_expires_at timestamptz,
+  confirmed_at  timestamptz,
   created_at    timestamptz default now(),
   unique(email, consent_type)
 );
+
+alter table public.customer_consents add column if not exists source text;
+alter table public.customer_consents add column if not exists consented boolean default false;
+alter table public.customer_consents alter column consented set default false;
+alter table public.customer_consents add column if not exists consented_at timestamptz;
+alter table public.customer_consents alter column consented_at drop default;
+alter table public.customer_consents add column if not exists revoked_at timestamptz;
+alter table public.customer_consents add column if not exists confirmation_token_hash text;
+alter table public.customer_consents add column if not exists confirmation_sent_at timestamptz;
+alter table public.customer_consents add column if not exists confirmation_expires_at timestamptz;
+alter table public.customer_consents add column if not exists confirmed_at timestamptz;
+
+create index if not exists customer_consents_confirmation_token_idx
+  on public.customer_consents (confirmation_token_hash)
+  where confirmation_token_hash is not null;
 
 
 create table if not exists public.api_rate_limits (
