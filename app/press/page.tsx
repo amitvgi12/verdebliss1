@@ -102,7 +102,7 @@ export default function PressPage() {
               </p>
               <Link
                 href="/contact"
-                className="inline-flex h-9 w-fit items-center justify-center rounded-[10px] border border-forest/35 bg-white px-4 text-xs font-bold text-forest shadow-sm transition hover:border-forest hover:bg-forest hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                className="inline-flex min-h-11 w-fit items-center justify-center rounded-full border border-forest/45 bg-sagePale px-7 py-3 text-sm font-bold leading-none text-forest shadow-sm transition hover:border-forest hover:bg-forest hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
               >
                 Request media kit
               </Link>

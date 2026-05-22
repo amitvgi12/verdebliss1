@@ -44,7 +44,7 @@ export default function Nav() {
             href="/"
             aria-label="VerdeBliss home"
             onClick={closeMenus}
-            className="group flex h-full flex-shrink-0 items-center gap-2.5 rounded-full bg-bg text-text transition hover:text-forest"
+            className="group flex h-full flex-shrink-0 items-center gap-2.5 text-text transition hover:text-forest"
           >
             <span aria-hidden className="relative flex h-9 w-11 items-center justify-center">
               <Image

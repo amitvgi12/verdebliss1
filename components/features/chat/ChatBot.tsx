@@ -334,24 +334,21 @@ export default function ChatBot() {
                 flexShrink: 0,
               }}
             >
-              <Image
-                src="/images/logo.webp"
-                alt=""
+              <div
                 aria-hidden="true"
-                width={32}
-                height={32}
-                style={{
-                  height: 32,
-                  width: 32,
-                  objectFit: 'contain',
-                  borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.1)',
-                  padding: 3,
-                }}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
+                className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/30 bg-cream shadow-sm"
+              >
+                <Image
+                  src="/images/logo.webp"
+                  alt=""
+                  fill
+                  sizes="36px"
+                  className="scale-125 object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>Verde</div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)' }}>
