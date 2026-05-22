@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Mail, Download, ArrowRight, ExternalLink } from 'lucide-react'
 
-export const revalidate = 3600
+export const dynamic = 'force-static'
 
 export const metadata = {
   title: 'Press & Media',

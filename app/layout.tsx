@@ -34,6 +34,12 @@ const serif = localFont({
   variable: '--font-serif',
 })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#2D4A32',
+}
+
 export const metadata = {
   metadataBase: new URL('https://www.verdebliss.com'),
   manifest: '/manifest.json',

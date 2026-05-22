@@ -1,16 +1,7 @@
-/**
- * CookieConsent — GDPR/CCPA banner.
- *
- * - Shown on first visit (no localStorage entry).
- * - Granular preferences: essential (always on), privacy-preserving site measurement, marketing, optional third-party AI.
- * - Stores decision in `vb_cookie_consent` (timestamp, version, prefs).
- * - Accessible: role="dialog", focus on render, ESC dismisses.
- * - CSS-driven responsive (no useWindowWidth → no hydration mismatch).
- */
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, X, ChevronDown } from 'lucide-react'
+import { ChevronRight, X } from 'lucide-react'
 import LegalModal, { type LegalModalType } from '@/components/ui/LegalModal'
 import { COOKIE_PREFERENCES_EVENT, loadStoredConsent, persistConsent } from '@/lib/consent'
 
@@ -18,11 +9,46 @@ interface CookieConsentProps {
   initialOpen?: boolean
 }
 
+interface Category {
+  id: string
+  title: string
+  description: string
+  locked?: boolean
+}
+
+const CATEGORIES: Category[] = [
+  {
+    id: 'essential',
+    title: 'Essential',
+    description:
+      'Required for core site functionality — cart, login, checkout, and security. Cannot be disabled.',
+    locked: true,
+  },
+  {
+    id: 'analytics',
+    title: 'Site measurement',
+    description:
+      'Vercel Web Analytics and Speed Insights provide anonymised page-view and performance metrics without cookies, cross-site tracking, or advertising profiles.',
+    locked: true,
+  },
+  {
+    id: 'marketing',
+    title: 'Marketing',
+    description: 'Personalised offers and product recommendations based on your browsing.',
+  },
+  {
+    id: 'ai',
+    title: 'AI support (Google Gemini)',
+    description:
+      'Allows Verde to send chat messages and, for signed-in order questions, limited account and order context to Google Gemini.',
+  },
+]
+
 export default function CookieConsent({ initialOpen = false }: CookieConsentProps) {
   const [visible, setVisible] = useState(initialOpen)
-  const [expanded, setExpanded] = useState(false)
   const [marketing, setMarketing] = useState(false)
   const [functionalThirdParty, setFunctionalThirdParty] = useState(false)
+  const [openCategory, setOpenCategory] = useState<string | null>(null)
   const [modal, setModal] = useState<LegalModalType | null>(null)
   const dialogRef = useRef<HTMLDivElement | null>(null)
 
@@ -34,7 +60,6 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
 
   const openPreferences = useCallback(() => {
     syncFromStored()
-    setExpanded(true)
     setVisible(true)
   }, [syncFromStored])
 
@@ -44,11 +69,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   }
 
   const acceptSelected = () => {
-    persistConsent({
-      analytics: false,
-      marketing,
-      functional_third_party: functionalThirdParty,
-    })
+    persistConsent({ analytics: false, marketing, functional_third_party: functionalThirdParty })
     setVisible(false)
   }
 
@@ -58,11 +79,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   }
 
   useEffect(() => {
-    if (initialOpen) {
-      openPreferences()
-      return
-    }
-
+    if (initialOpen) { openPreferences(); return }
     if (loadStoredConsent()) return
     const t = setTimeout(() => setVisible(true), 1200)
     return () => clearTimeout(t)
@@ -80,239 +97,168 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   useEffect(() => {
     if (!visible) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        persistConsent({ analytics: false, marketing: false, functional_third_party: false })
-        setVisible(false)
-      }
+      if (e.key === 'Escape') { decline(); }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [visible])
+  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const toggleValue = (id: string) => {
+    if (id === 'marketing') setMarketing((v) => !v)
+    if (id === 'ai') setFunctionalThirdParty((v) => !v)
+  }
+
+  const getValue = (id: string) => {
+    if (id === 'marketing') return marketing
+    if (id === 'ai') return functionalThirdParty
+    return true
+  }
 
   return (
     <>
       {modal && <LegalModal type={modal} onClose={() => setModal(null)} />}
       <AnimatePresence>
         {visible && (
-          <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[300] flex justify-center px-3 sm:bottom-6 sm:px-5">
+          <>
+            {/* Backdrop */}
             <motion.div
-              initial={{ y: 24, opacity: 0, scale: 0.985 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 24, opacity: 0, scale: 0.985 }}
-              transition={{ type: 'spring', damping: 26, stiffness: 260 }}
-              ref={dialogRef}
-              role="dialog"
-              aria-modal="false"
-              aria-label="Cookie preferences"
-              tabIndex={-1}
-              className={`pointer-events-auto max-h-[min(84vh,760px)] w-full overflow-y-auto rounded-[28px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_24px_70px_rgba(28,34,30,0.24)] focus:outline-none ${
-                expanded ? 'max-w-[860px]' : 'max-w-[780px]'
-              }`}
-            >
-              <div className="relative overflow-hidden bg-[linear-gradient(135deg,#FFFDF9_0%,#F6EFE6_100%)] px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
-                <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#C8A464,#7D9B76,#2D4A32)]" />
-                <button
-                  type="button"
-                  onClick={decline}
-                  aria-label="Reject optional cookies and services and dismiss"
-                  className="absolute right-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-transparent bg-white/75 text-muted shadow-sm transition hover:border-border hover:bg-white hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-                >
-                  <X size={17} />
-                </button>
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[290] bg-black/40 backdrop-blur-[2px]"
+              onClick={decline}
+            />
 
-                <div className="grid gap-4 pr-0 sm:grid-cols-[minmax(0,1fr)_280px] sm:items-center sm:gap-6 sm:pr-10">
-                  <div className="flex min-w-0 items-start gap-3.5">
-                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white bg-sagePale shadow-[0_6px_18px_rgba(45,74,50,0.12)] sm:h-12 sm:w-12">
-                      <Shield size={20} aria-hidden className="text-forest" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.24em] text-gold">
-                        Consent Centre
-                      </p>
-                      <h2 className="font-serif text-[23px] font-semibold leading-none text-text sm:text-[29px]">
-                        Your privacy matters
-                      </h2>
-                      <p className="mt-2 max-w-xl text-[13px] leading-5 text-muted sm:text-sm sm:leading-6">
-                        <span className="hidden sm:inline">
-                          Essential cookies keep VerdeBliss working. Privacy-preserving site
-                          measurement runs without cookies; marketing and AI support stay off unless
-                          you choose them.
-                        </span>
-                        <span className="sm:hidden">
-                          Essential cookies keep the site working. Marketing and AI support stay off
-                          unless you choose them.
-                        </span>{' '}
-                        <button
-                          type="button"
-                          onClick={() => setModal('cookie')}
-                          className="border-none bg-transparent p-0 font-semibold text-forest underline decoration-forest/35 underline-offset-4 transition hover:decoration-forest"
-                        >
-                          Cookie policy
-                        </button>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2.5 sm:justify-self-end">
+            {/* Modal */}
+            <div className="pointer-events-none fixed inset-0 z-[300] flex items-center justify-center px-4 py-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Privacy preferences"
+                tabIndex={-1}
+                className="pointer-events-auto flex max-h-[min(88vh,680px)] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-[#E2D6C8] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] focus:outline-none"
+              >
+                {/* Header */}
+                <div className="relative flex-shrink-0 border-b border-[#EDE5DA] px-6 pb-4 pt-5">
+                  <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl bg-[linear-gradient(90deg,#C8A464,#7D9B76,#2D4A32)]" />
+                  <button
+                    type="button"
+                    onClick={decline}
+                    aria-label="Reject optional and close"
+                    className="absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-transparent bg-[#F5F0EA] text-[#888] transition hover:border-[#D8CDBF] hover:bg-[#EDE5DA] hover:text-[#333]"
+                  >
+                    <X size={15} />
+                  </button>
+                  <h2 className="font-serif text-[22px] font-semibold text-[#1C1C1C]">
+                    Privacy Overview
+                  </h2>
+                  <p className="mt-1.5 pr-8 text-[13px] leading-[1.6] text-[#666]">
+                    This site uses cookies and similar technologies to improve your experience.{' '}
                     <button
                       type="button"
-                      onClick={() => setExpanded((s) => !s)}
-                      aria-expanded={expanded}
-                      className="mx-auto flex h-10 w-full max-w-[190px] cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D8CDBF] bg-white/95 px-4 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                      onClick={() => setModal('cookie')}
+                      className="border-none bg-transparent p-0 text-[#2D4A32] underline decoration-[#2D4A32]/30 underline-offset-2 transition hover:decoration-[#2D4A32]"
                     >
-                      <span>Customise</span>
-                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sagePale text-forest">
-                        <ChevronDown
-                          size={15}
-                          className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
-                        />
-                      </span>
+                      Cookie policy
                     </button>
-
-                    {!expanded && (
-                      <div className="grid grid-cols-[0.9fr_1.1fr] gap-2">
-                        <button
-                          type="button"
-                          onClick={decline}
-                          aria-label="Reject optional"
-                          className="h-11 cursor-pointer rounded-full border border-[#D8CDBF] bg-white/80 px-3 text-xs font-bold text-muted transition hover:border-forest/35 hover:bg-white hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-                        >
-                          Reject
-                        </button>
-                        <button
-                          type="button"
-                          onClick={acceptAll}
-                          className="h-11 cursor-pointer rounded-full border border-forest bg-forest px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
-                        >
-                          Accept all
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  </p>
                 </div>
 
-                {expanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
-                      <ConsentRow
-                        title="Essential"
-                        desc="Required for cart, login, and checkout."
-                        on
-                        locked
-                      />
-                      <ConsentRow
-                        title="Site measurement"
-                        desc="Vercel Web Analytics and Speed Insights provide anonymized page-view and performance metrics without cookies, cross-site tracking, or advertising profiles."
-                        on
-                        locked
-                      />
-                      <ConsentRow
-                        title="Marketing"
-                        desc="Personalised offers and product recommendations."
-                        on={marketing}
-                        onChange={setMarketing}
-                      />
-                      <ConsentRow
-                        title="AI support (Google Gemini)"
-                        desc="Allows Verde to send chat messages and, for signed-in order questions, limited account and order context to Google Gemini."
-                        on={functionalThirdParty}
-                        onChange={setFunctionalThirdParty}
-                      />
-                    </div>
+                {/* Category list */}
+                <div className="flex-1 overflow-y-auto">
+                  {CATEGORIES.map((cat) => {
+                    const isOpen = openCategory === cat.id
+                    const value = getValue(cat.id)
 
-                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-end">
-                      <button
-                        type="button"
-                        onClick={decline}
-                        className="min-h-11 cursor-pointer rounded-full border border-[#D8CDBF] bg-white/85 px-4 py-2.5 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-white hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:min-w-[132px]"
-                      >
-                        Reject optional
-                      </button>
-                      <button
-                        type="button"
-                        onClick={acceptSelected}
-                        className="min-h-11 cursor-pointer rounded-full border border-forest/40 bg-sagePale px-4 py-2.5 text-sm font-bold text-forest transition hover:border-forest hover:bg-[#DDE9DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:min-w-[152px]"
-                      >
-                        Save preferences
-                      </button>
-                      <button
-                        type="button"
-                        onClick={acceptAll}
-                        className="min-h-11 cursor-pointer rounded-full border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest sm:min-w-[132px]"
-                      >
-                        Accept all
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          </div>
+                    return (
+                      <div key={cat.id} className="border-b border-[#F0EAE0] last:border-b-0">
+                        <button
+                          type="button"
+                          onClick={() => setOpenCategory(isOpen ? null : cat.id)}
+                          className="flex w-full cursor-pointer items-center gap-3 px-6 py-3.5 text-left transition hover:bg-[#FAFAF8]"
+                        >
+                          <ChevronRight
+                            size={15}
+                            className={`flex-shrink-0 text-[#999] transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
+                          />
+                          <span className="flex-1 text-[14px] font-semibold text-[#1C1C1C]">
+                            {cat.title}
+                          </span>
+                          {cat.locked ? (
+                            <span className="flex-shrink-0 rounded-full border border-[#2D4A32]/20 bg-[#EEF4EC] px-2.5 py-0.5 text-[11px] font-semibold text-[#2D4A32]">
+                              Always on
+                            </span>
+                          ) : (
+                            <span
+                              role="switch"
+                              aria-checked={value ? 'true' : 'false'}
+                              aria-label={`Toggle ${cat.title}`}
+                              onClick={(e) => { e.stopPropagation(); toggleValue(cat.id) }}
+                              className={`relative flex h-6 w-10 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ${value ? 'bg-[#2D4A32]' : 'bg-[#CCC]'}`}
+                            >
+                              <span
+                                className={`absolute h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${value ? 'translate-x-5' : 'translate-x-1'}`}
+                              />
+                            </span>
+                          )}
+                        </button>
+
+                        <AnimatePresence initial={false}>
+                          {isOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: 'easeInOut' }}
+                              className="overflow-hidden"
+                            >
+                              <p className="px-6 pb-4 pt-0 text-[12.5px] leading-[1.65] text-[#666]">
+                                {cat.description}
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Footer buttons */}
+                <div className="flex-shrink-0 border-t border-[#EDE5DA] bg-[#FAFAF8] px-6 py-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={decline}
+                      className="h-10 cursor-pointer rounded-lg border border-[#D8CDBF] bg-white text-[13px] font-semibold text-[#666] transition hover:border-[#999] hover:text-[#333] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D4A32]"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      type="button"
+                      onClick={acceptSelected}
+                      className="h-10 cursor-pointer rounded-lg border border-[#2D4A32]/30 bg-[#EEF4EC] text-[13px] font-semibold text-[#2D4A32] transition hover:border-[#2D4A32] hover:bg-[#DDE9DA] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D4A32]"
+                    >
+                      Save & accept
+                    </button>
+                    <button
+                      type="button"
+                      onClick={acceptAll}
+                      className="h-10 cursor-pointer rounded-lg bg-[#2D4A32] text-[13px] font-semibold text-white transition hover:bg-[#203927] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2D4A32]"
+                    >
+                      Accept all
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
         )}
       </AnimatePresence>
     </>
-  )
-}
-
-interface ConsentRowProps {
-  title: string
-  desc: string
-  on: boolean
-  locked?: boolean
-  onChange?: (next: boolean) => void
-}
-
-function ConsentRow({ title, desc, on, locked = false, onChange }: ConsentRowProps) {
-  const descId = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-desc`
-
-  return (
-    <label
-      className={`group grid min-h-[118px] gap-3 rounded-[20px] border border-[#E2D6C8] bg-white/88 p-4 shadow-[0_10px_24px_rgba(45,74,50,0.07)] sm:grid-rows-[auto_1fr] ${
-        locked ? 'cursor-default' : 'cursor-pointer transition hover:border-forest/25 hover:bg-white'
-      }`}
-    >
-      <input
-        type="checkbox"
-        checked={on}
-        disabled={locked}
-        onChange={(e) => onChange?.(e.target.checked)}
-        className="sr-only"
-        aria-describedby={descId}
-      />
-      <span className="flex min-w-0 items-start justify-between gap-3">
-        <span className="block text-sm font-bold leading-5 text-text">{title}</span>
-
-        {locked ? (
-          <span
-            aria-hidden
-            className="inline-flex h-7 flex-shrink-0 items-center justify-center rounded-full border border-forest/15 bg-sagePale px-2.5 text-[11px] font-bold text-forest"
-          >
-            Always on
-          </span>
-        ) : (
-          <span
-            aria-hidden
-            className={`flex h-7 w-12 flex-shrink-0 items-center rounded-full p-1 transition ${
-              on ? 'bg-forest' : 'bg-[#D8CDBF]'
-            }`}
-          >
-            <span
-              className={`h-5 w-5 rounded-full bg-white shadow-sm transition ${
-                on ? 'translate-x-5' : 'translate-x-0'
-              }`}
-            />
-          </span>
-        )}
-      </span>
-
-      <span id={descId} className="block text-xs leading-5 text-muted">
-        {desc}
-      </span>
-    </label>
   )
 }

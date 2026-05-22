@@ -150,12 +150,12 @@ export default async function Home() {
       </section>
 
       <section className="site-container home-collection-section page-section">
-        <FadeIn>
-          <div className="premium-section-head">
-            <h2 className="vb-collection-heading">The Collection</h2>
-            <p>{TRUST_METRICS.collectionCopy}</p>
-          </div>
-        </FadeIn>
+        {/* No FadeIn on the heading — it can be in the initial viewport on taller
+            screens and starting at opacity:0 would delay the LCP measurement. */}
+        <div className="premium-section-head">
+          <h2 className="vb-collection-heading">The Collection</h2>
+          <p>{TRUST_METRICS.collectionCopy}</p>
+        </div>
         <FadeIn delay={0.1}>
           <div className="product-grid product-grid-compact">
             {featured.map((p) => (
