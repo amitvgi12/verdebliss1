@@ -88,7 +88,7 @@ export default function PressPage() {
             </p>
             <Link
               href="/contact"
-              className="inline-flex min-h-10 w-fit items-center justify-center gap-2 rounded-lg border border-forest/35 bg-sagePale pl-5 pr-8 py-3 text-[13px] font-bold text-forest shadow-[0_8px_18px_rgba(45,74,50,0.1)] transition hover:-translate-y-0.5 hover:border-forest/55 hover:bg-[#DDE9DA] hover:shadow-[0_12px_22px_rgba(45,74,50,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+              className="inline-flex min-h-10 w-fit items-center justify-center gap-2 rounded-lg border border-forest/35 bg-sagePale px-6 py-3 text-[13px] font-bold text-forest shadow-[0_8px_18px_rgba(45,74,50,0.1)] transition hover:-translate-y-0.5 hover:border-forest/55 hover:bg-[#DDE9DA] hover:shadow-[0_12px_22px_rgba(45,74,50,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
             >
               <Download size={15} aria-hidden />
               Request media kit
