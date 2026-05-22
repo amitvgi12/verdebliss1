@@ -129,7 +129,7 @@ export const LEGAL_DOCUMENTS = {
       },
       {
         heading: 'Optional cookies',
-        body: 'Optional analytics and preference cookies help us understand website performance and remember choices. They are disabled unless the customer accepts or saves preferences. The same preference centre also controls optional third-party AI support separately from cookies.',
+        body: 'Optional Web Analytics and preference cookies help us understand page views and remember choices. They are disabled unless the customer accepts or saves preferences. Speed Insights performance vitals are collected separately as anonymous operational telemetry without cookies or session tracking. The same preference centre also controls optional third-party AI support separately from cookies.',
       },
       {
         heading: 'What we do not use',

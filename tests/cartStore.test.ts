@@ -207,10 +207,11 @@ describe('cartStore — qty ceiling', () => {
     expect(useCartStore.getState().items[0]?.qty).toBe(1)
   })
 
-  it('updateQty floor stays at 1', () => {
+  it('updateQty removes the item when decrementing from 1', () => {
     const { addItem, updateQty } = useCartStore.getState()
     addItem(SERUM)
     updateQty(SERUM.id, -1)
-    expect(useCartStore.getState().items[0]?.qty).toBe(1)
+    expect(useCartStore.getState().items).toHaveLength(0)
+    expect(sumCount(useCartStore.getState().items)).toBe(0)
   })
 })

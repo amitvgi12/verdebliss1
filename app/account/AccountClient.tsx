@@ -1,12 +1,15 @@
 'use client'
+import Link from 'next/link'
 import { useState, useEffect, type FormEvent, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { LogOut, Heart, Leaf, Check } from 'lucide-react'
 import LoyaltyPanel from '@/components/features/loyalty/LoyaltyPanel'
+import ProductImage from '@/components/ui/ProductImage'
 import { useAuthStore } from '@/store/authStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { supabase } from '@/lib/supabase'
 import { apiPost } from '@/lib/api-client'
+import { productPath } from '@/lib/seo'
 import { PRODUCTS } from '@/constants/products'
 import { C, FONT } from '@/constants/theme'
 
@@ -904,25 +907,42 @@ function Dashboard({
                 }}
               >
                 {wishProducts.map((p) => (
-                  <div
+                  <Link
                     key={p.id}
+                    href={productPath(p)}
+                    aria-label={`View ${p.name}`}
                     style={{
-                      background: p.bg_color,
+                      background: C.card,
                       borderRadius: 12,
-                      padding: '14px 10px',
+                      padding: 8,
                       textAlign: 'center',
                       cursor: 'pointer',
                       border: `1px solid ${C.border}`,
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      display: 'block',
                     }}
                   >
-                    <div style={{ fontSize: 28, marginBottom: 4 }}>{p.emoji}</div>
-                    <div style={{ fontSize: 10, color: C.text, fontWeight: 500, lineHeight: 1.3 }}>
+                    <div
+                      style={{
+                        width: '100%',
+                        aspectRatio: '1 / 1',
+                        borderRadius: 10,
+                        overflow: 'hidden',
+                        border: `1px solid ${C.border}`,
+                        marginBottom: 8,
+                        background: p.bg_color,
+                      }}
+                    >
+                      <ProductImage product={p} sizes="96px" />
+                    </div>
+                    <div style={{ fontSize: 11, color: C.text, fontWeight: 600, lineHeight: 1.3 }}>
                       {p.name.split(' ').slice(0, 2).join(' ')}
                     </div>
                     <div style={{ fontSize: 11, color: C.muted, marginTop: 2, fontWeight: 600 }}>
                       ₹{p.price?.toLocaleString()}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

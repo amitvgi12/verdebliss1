@@ -256,7 +256,11 @@ export default function CartDrawer() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <button
                           onClick={() => updateQty(item.id, -1)}
-                          aria-label={`Decrease ${item.name} quantity`}
+                          aria-label={
+                            item.qty <= 1
+                              ? `Remove ${item.name} from cart`
+                              : `Decrease ${item.name} quantity`
+                          }
                           style={{
                             width: 26,
                             height: 26,

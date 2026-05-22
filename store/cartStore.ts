@@ -41,6 +41,10 @@ export const useCartStore = create<CartState>()(
       updateQty: (id, delta) => {
         const item = get().items.find((i) => i.id === id)
         if (!item) return
+        if (delta < 0 && item.qty + delta <= 0) {
+          set((state) => ({ items: state.items.filter((i) => i.id !== id) }))
+          return
+        }
         const ceiling = Math.min(item.stock ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
         if (delta > 0 && item.qty >= ceiling) {
           useToastStore.getState().push(`Maximum ${ceiling} per order for ${item.name}.`, 'warning')

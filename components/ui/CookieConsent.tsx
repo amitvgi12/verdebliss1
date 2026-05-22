@@ -107,9 +107,9 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
               aria-modal="false"
               aria-label="Cookie preferences"
               tabIndex={-1}
-              className="pointer-events-auto max-h-[min(82vh,720px)] w-full max-w-[760px] overflow-y-auto rounded-[26px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_22px_60px_rgba(28,34,30,0.24)] focus:outline-none"
+              className="pointer-events-auto max-h-[min(82vh,720px)] w-full max-w-[820px] overflow-y-auto rounded-[26px] border border-[#D9CCBC] bg-[#FFFCF7] shadow-[0_22px_60px_rgba(28,34,30,0.24)] focus:outline-none"
             >
-              <div className="relative overflow-hidden bg-[linear-gradient(135deg,#FFFDF9_0%,#F6EFE6_100%)] px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
+              <div className="relative overflow-hidden bg-[linear-gradient(135deg,#FFFDF9_0%,#F6EFE6_100%)] px-4 pb-4 pt-7 sm:px-6 sm:pb-5 sm:pt-8">
                 <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#C8A464,#7D9B76,#2D4A32)]" />
                 <button
                   type="button"
@@ -120,11 +120,11 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                   <X size={17} />
                 </button>
 
-                <p className="mb-2 pr-10 text-center text-[10px] font-bold uppercase tracking-[0.24em] text-gold sm:pr-0">
+                <p className="mx-auto mb-3 w-fit rounded-full bg-white/70 px-3 py-1 text-center text-[10px] font-bold uppercase tracking-[0.24em] text-gold shadow-sm">
                   Consent Centre
                 </p>
 
-                <div className="grid gap-4 pr-0 sm:grid-cols-[1fr_280px] sm:items-end sm:gap-5 sm:pr-8">
+                <div className="grid gap-4 pr-0 sm:grid-cols-[minmax(0,1fr)_320px] sm:items-center sm:gap-6 sm:pr-9">
                   <div className="flex min-w-0 items-start gap-3.5">
                     <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white bg-sagePale shadow-[0_6px_18px_rgba(45,74,50,0.12)] sm:h-12 sm:w-12">
                       <Shield size={20} aria-hidden className="text-forest" />
@@ -135,8 +135,8 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                       </h2>
                       <p className="mt-2 max-w-xl text-[13px] leading-5 text-muted sm:text-sm sm:leading-6">
                         <span className="hidden sm:inline">
-                          Essential cookies keep VerdeBliss working. Optional analytics, marketing,
-                          and AI support stay off unless you choose them.
+                          Essential cookies keep VerdeBliss working. Optional web analytics,
+                          marketing, and AI support stay off unless you choose them.
                         </span>
                         <span className="sm:hidden">
                           Essential cookies keep the site working. Optional services stay off unless
@@ -153,12 +153,12 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                     </div>
                   </div>
 
-                  <div className="grid gap-2">
+                  <div className="grid gap-2.5 sm:justify-self-end">
                     <button
                       type="button"
                       onClick={() => setExpanded((s) => !s)}
                       aria-expanded={expanded}
-                      className="mx-auto flex h-10 w-fit min-w-[188px] cursor-pointer items-center justify-center gap-3 rounded-full border border-[#D8CDBF] bg-white/95 px-4 pl-5 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                      className="mx-auto flex h-11 w-[184px] cursor-pointer items-center justify-center gap-2.5 rounded-full border border-[#D8CDBF] bg-white/95 px-4 text-center text-sm font-bold text-forest shadow-sm transition hover:border-forest/35 hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                     >
                       <span>Customise</span>
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sagePale text-forest">
@@ -170,18 +170,18 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                     </button>
 
                     {!expanded && (
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-2.5">
                         <button
                           type="button"
                           onClick={decline}
-                          className="min-h-11 cursor-pointer rounded-2xl border border-[#D8CDBF] bg-white px-4 py-2.5 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                          className="h-12 cursor-pointer rounded-full border border-[#D8CDBF] bg-white px-4 text-sm font-bold text-muted transition hover:border-forest/35 hover:bg-[#FBF7F0] hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                         >
                           Reject optional
                         </button>
                         <button
                           type="button"
                           onClick={acceptAll}
-                          className="min-h-11 cursor-pointer rounded-full border border-forest bg-forest px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+                          className="h-12 cursor-pointer rounded-full border border-forest bg-forest px-4 text-sm font-bold text-white shadow-[0_12px_24px_rgba(45,74,50,0.2)] transition hover:-translate-y-0.5 hover:bg-[#203927] hover:shadow-[0_15px_28px_rgba(45,74,50,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                         >
                           Accept all
                         </button>
@@ -206,7 +206,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                       />
                       <ConsentRow
                         title="Analytics (first-party)"
-                        desc="Vercel Web Analytics and Speed Insights for anonymous page and performance metrics."
+                        desc="Vercel Web Analytics for anonymous page-view metrics. Performance vitals are collected separately without cookies or session tracking."
                         on={analytics}
                         onChange={setAnalytics}
                       />

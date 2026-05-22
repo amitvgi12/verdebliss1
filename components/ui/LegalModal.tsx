@@ -41,7 +41,7 @@ const CONTENT: Record<LegalModalType, Doc> = {
       },
       {
         heading: '4. Cookies',
-        body: 'We use essential cookies to maintain your session and cart. We use analytical cookies (first-party only) to understand how customers use our website. We do not use third-party advertising or tracking cookies.',
+        body: 'We use essential cookies to maintain your session and cart. We use analytical cookies (first-party only) for Web Analytics page-view reporting when you accept analytics. We collect anonymous Speed Insights performance vitals separately without cookies or session tracking. We do not use third-party advertising or tracking cookies.',
       },
       {
         heading: '5. Data Retention',
@@ -113,7 +113,7 @@ const CONTENT: Record<LegalModalType, Doc> = {
       },
       {
         heading: 'Cookies we use',
-        body: 'Essential cookies: Required for cart and login sessions.\n\nAnalytical cookies (first-party): Anonymous data about which pages are visited — no third-party data sharing.\n\nPreference cookies: Remember your skin type and display preferences.\n\nOptional third-party AI support is controlled separately in the same preference centre and stays off unless you opt in.',
+        body: 'Essential cookies: Required for cart and login sessions.\n\nAnalytical cookies (first-party): Anonymous Web Analytics page-view data when accepted — no third-party advertising data sharing.\n\nPerformance vitals: Speed Insights records anonymous page-performance data without cookies or session tracking.\n\nPreference cookies: Remember your skin type and display preferences.\n\nOptional third-party AI support is controlled separately in the same preference centre and stays off unless you opt in.',
       },
       {
         heading: 'Cookies we do NOT use',
