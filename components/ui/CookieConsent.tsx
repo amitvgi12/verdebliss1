@@ -174,6 +174,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                         <button
                           type="button"
                           onClick={decline}
+                          aria-label="Reject optional"
                           className="h-11 cursor-pointer rounded-full border border-[#D8CDBF] bg-white/80 px-3 text-xs font-bold text-muted transition hover:border-forest/35 hover:bg-white hover:text-forest focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
                         >
                           Reject
