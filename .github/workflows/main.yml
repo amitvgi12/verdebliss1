@@ -196,10 +196,16 @@ jobs:
       # generateStaticParams pre-builds all PDPs, but this belt-and-suspenders
       # step ensures the route cache is cleared even if the prerender is somehow
       # served from a previous ISR snapshot.
-      - name: Revalidate ISR cache (all product pages)
+      - name: Revalidate ISR cache (products + FAQ + certifications)
         env:
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
         run: |
+          if [ -z "${REVALIDATE_SECRET}" ]; then
+            echo "⚠️  REVALIDATE_SECRET not set — skipping on-demand revalidation."
+            echo "    Add it as a GitHub Actions secret and a Vercel production env var"
+            echo "    (openssl rand -hex 32) to enable immediate post-deploy cache purge."
+            exit 0
+          fi
           curl -sS -X POST \
             "https://www.verdebliss.com/api/revalidate" \
             -H "x-revalidate-secret: ${REVALIDATE_SECRET}" \
