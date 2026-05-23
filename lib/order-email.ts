@@ -56,162 +56,272 @@ interface TemplateData extends OrderEmailData {
 }
 
 function buildHtml(d: TemplateData): string {
+  const firstName = d.address.name.split(' ')[0]
   const date = new Date().toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
 
+  const addr = d.address
+  const addrLine = [addr.line1, addr.line2].filter(Boolean).join(', ')
+
+  const sans = `-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Helvetica Neue',Arial,sans-serif`
+  const serif = `Georgia,'Times New Roman',serif`
+
   const itemRows = d.items
     .map(
-      (item) => `
+      (item, i, arr) => `
     <tr>
-      <td style="padding:12px 0;border-bottom:1px solid #EDE5DA;font-size:13px;color:#1C221E;font-weight:600">${item.name}</td>
-      <td style="padding:12px 8px;border-bottom:1px solid #EDE5DA;font-size:13px;color:#5C6C4D;text-align:center">${item.qty}</td>
-      <td style="padding:12px 0;border-bottom:1px solid #EDE5DA;font-size:13px;color:#1C221E;font-weight:700;text-align:right">₹${(item.price * item.qty).toLocaleString('en-IN')}</td>
+      <td style="padding:11px 0;${i < arr.length - 1 ? 'border-bottom:1px solid #f0ebe3;' : ''}vertical-align:top">
+        <p style="margin:0 0 2px;font-size:14px;font-weight:600;color:#2d3a2e;font-family:${sans}">${item.name}</p>
+        <p style="margin:0;font-size:12px;color:#7a8a7b;font-family:${sans}">Qty: ${item.qty}&nbsp;&nbsp;·&nbsp;&nbsp;&#8377;${item.price.toLocaleString('en-IN')} each</p>
+      </td>
+      <td style="padding:11px 0;${i < arr.length - 1 ? 'border-bottom:1px solid #f0ebe3;' : ''}text-align:right;vertical-align:top">
+        <p style="margin:0;font-size:14px;font-weight:700;color:#2d3a2e;font-family:${sans}">&#8377;${(item.price * item.qty).toLocaleString('en-IN')}</p>
+      </td>
     </tr>`
     )
     .join('')
 
-  const addr = d.address
-  const addrLine = [addr.line1, addr.line2].filter(Boolean).join(', ')
-
-  return `<!DOCTYPE html>
-<html lang="en">
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Order Confirmed — VerdeBliss</title>
+  <meta content="width=device-width" name="viewport"/>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+  <meta name="x-apple-disable-message-reformatting"/>
+  <meta content="telephone=no,address=no,email=no,date=no,url=no" name="format-detection"/>
 </head>
-<body style="margin:0;padding:0;background:#FAF7F2;font-family:'DM Sans',Arial,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF7F2;padding:32px 16px">
-<tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%">
+<body style="margin:0;padding:0;background-color:#f5f1ea">
 
-  <!-- Header -->
-  <tr>
-    <td style="background:#2D4A32;border-radius:16px 16px 0 0;padding:28px 36px;text-align:center">
-      <div style="font-family:Georgia,serif;font-size:26px;font-weight:700;color:#fff;letter-spacing:0.01em">VerdeBliss</div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:0.18em;color:rgba(255,255,255,0.5);margin-top:2px">COSMETICS</div>
-      <div style="margin-top:16px;display:inline-block;background:rgba(255,255,255,0.12);border-radius:99px;padding:6px 18px">
-        <span style="font-size:12px;font-weight:700;color:#BFA06A;letter-spacing:0.06em">✦ ORDER CONFIRMED</span>
-      </div>
-    </td>
-  </tr>
+  <!-- Preheader -->
+  <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0">
+    Your order #${d.shortId} is confirmed — a little nature is on its way to you.
+  </div>
 
-  <!-- Body -->
-  <tr>
-    <td style="background:#FDFAF6;padding:28px 36px">
+  <!-- Outer wrapper -->
+  <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation"
+         style="background-color:#f5f1ea">
+    <tr>
+      <td align="center" style="padding:40px 16px;font-family:${sans};font-size:14px;line-height:1.55">
 
-      <!-- Greeting -->
-      <p style="margin:0 0 6px;font-size:20px;font-weight:700;color:#1C221E;font-family:Georgia,serif">
-        Thank you, ${addr.name.split(' ')[0]}!
-      </p>
-      <p style="margin:0 0 24px;font-size:13px;color:#5C6C4D;line-height:1.6">
-        Your order <strong style="color:#2D4A32">#${d.shortId}</strong> has been received and is now being processed. We'll notify you once it ships.
-      </p>
+        <!-- Inner 600px container -->
+        <table border="0" width="600" cellpadding="0" cellspacing="0" role="presentation"
+               style="max-width:600px;width:100%">
 
-      <!-- Order meta -->
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF7F2;border-radius:10px;margin-bottom:24px">
-        <tr>
-          <td style="padding:14px 18px;border-right:1px solid #EDE5DA">
-            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#C07A5A;margin-bottom:4px">ORDER ID</div>
-            <div style="font-size:13px;font-weight:700;color:#1C221E">#${d.shortId}</div>
-          </td>
-          <td style="padding:14px 18px;border-right:1px solid #EDE5DA">
-            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#C07A5A;margin-bottom:4px">DATE</div>
-            <div style="font-size:13px;font-weight:700;color:#1C221E">${date}</div>
-          </td>
-          <td style="padding:14px 18px">
-            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#C07A5A;margin-bottom:4px">STATUS</div>
-            <div style="font-size:13px;font-weight:700;color:#2D4A32">${d.status}</div>
-          </td>
-        </tr>
-      </table>
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:12px">
+              <img src="https://resend-attachments.s3.amazonaws.com/a7005c89-2d27-49ca-8ab0-edbf483d30ee"
+                   width="160" height="106" alt="VerdeBliss"
+                   style="display:block;border:none;outline:none;text-decoration:none;max-width:100%"/>
+            </td>
+          </tr>
 
-      <!-- Items -->
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:#C07A5A;margin-bottom:10px">ORDER ITEMS</div>
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:0">
-        <tr>
-          <th style="padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.08em;color:#A8BAA9;text-align:left;border-bottom:2px solid #EDE5DA">PRODUCT</th>
-          <th style="padding:8px 8px;font-size:10px;font-weight:700;letter-spacing:0.08em;color:#A8BAA9;text-align:center;border-bottom:2px solid #EDE5DA">QTY</th>
-          <th style="padding:8px 0;font-size:10px;font-weight:700;letter-spacing:0.08em;color:#A8BAA9;text-align:right;border-bottom:2px solid #EDE5DA">TOTAL</th>
-        </tr>
-        ${itemRows}
-      </table>
+          <!-- Tagline -->
+          <tr>
+            <td align="center" style="padding-bottom:6px">
+              <p style="margin:0;font-size:11px;letter-spacing:3px;color:#7a8a7b;text-transform:uppercase;font-family:${sans}">
+                Natural &middot; Sustainable &middot; Blissful
+              </p>
+            </td>
+          </tr>
 
-      <!-- Totals -->
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px">
-        <tr>
-          <td style="font-size:12px;color:#5C6C4D;padding:4px 0">Subtotal</td>
-          <td style="font-size:12px;color:#1C221E;font-weight:600;text-align:right;padding:4px 0">₹${d.totals.subtotal.toLocaleString('en-IN')}</td>
-        </tr>
-        <tr>
-          <td style="font-size:12px;color:#5C6C4D;padding:4px 0">Shipping</td>
-          <td style="font-size:12px;color:#1C221E;font-weight:600;text-align:right;padding:4px 0">${d.totals.shipping === 0 ? 'Free' : `₹${d.totals.shipping.toLocaleString('en-IN')}`}</td>
-        </tr>
-        <tr>
-          <td colspan="2" style="padding:4px 0"><div style="border-top:2px solid #EDE5DA;margin:6px 0"></div></td>
-        </tr>
-        <tr>
-          <td style="font-size:15px;font-weight:800;color:#1C221E;padding:4px 0">Total</td>
-          <td style="font-size:15px;font-weight:800;color:#2D4A32;text-align:right;padding:4px 0">₹${d.totals.total.toLocaleString('en-IN')}</td>
-        </tr>
-        ${d.totals.pointsToEarn > 0 ? `<tr><td colspan="2" style="font-size:11px;color:#7D9B76;font-weight:600;padding:6px 0">✦ +${d.totals.pointsToEarn} Verde points earned on this order</td></tr>` : ''}
-      </table>
+          <!-- Fleuron divider -->
+          <tr>
+            <td align="center" style="padding-bottom:32px">
+              <p style="margin:0;font-size:20px;color:#a8b3a4;line-height:1">&#10086;</p>
+            </td>
+          </tr>
 
-      <!-- Divider -->
-      <div style="border-top:1px solid #EDE5DA;margin:24px 0"></div>
+          <!-- Heading -->
+          <tr>
+            <td align="center" style="padding:0 24px 14px">
+              <h1 style="margin:0;font-size:32px;font-weight:400;color:#2d3a2e;letter-spacing:-0.5px;line-height:1.2;font-family:${serif}">
+                Thank you for your order
+              </h1>
+            </td>
+          </tr>
 
-      <!-- Address + Payment side by side -->
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr valign="top">
-          <td width="50%" style="padding-right:16px">
-            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#C07A5A;margin-bottom:8px">DELIVERY ADDRESS</div>
-            <div style="font-size:13px;font-weight:700;color:#1C221E;margin-bottom:3px">${addr.name}</div>
-            <div style="font-size:12px;color:#5C6C4D;line-height:1.6">${addrLine}<br/>${addr.city}, ${addr.state} ${addr.pincode}<br/>${addr.phone}</div>
-          </td>
-          <td width="50%" style="padding-left:16px;border-left:1px solid #EDE5DA">
-            <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#C07A5A;margin-bottom:8px">PAYMENT</div>
-            <div style="font-size:13px;font-weight:700;color:#1C221E;margin-bottom:3px">${d.paymentMethod}</div>
-            <div style="font-size:11px;color:#A8BAA9;word-break:break-all">Ref: ${d.paymentId}</div>
-          </td>
-        </tr>
-      </table>
+          <!-- Greeting -->
+          <tr>
+            <td align="center" style="padding:0 40px 36px">
+              <p style="margin:0;font-size:16px;color:#5a6a5b;line-height:1.7;text-align:center;font-family:${sans}">
+                Hi ${firstName}, we&#8217;ve received your order and it&#8217;s being prepared with care.<br/>
+                A little nature is on its way to you.
+              </p>
+            </td>
+          </tr>
 
-      <!-- Divider -->
-      <div style="border-top:1px solid #EDE5DA;margin:24px 0"></div>
+          <!-- ── Order summary card ── -->
+          <tr>
+            <td style="padding-bottom:28px">
+              <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation"
+                     style="background:#ffffff;border-radius:12px;border:1px solid #e5e0d6">
+                <tr>
+                  <td style="padding:32px">
 
-      <!-- CTAs -->
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-          <td align="center" style="padding:0 8px 0 0">
-            <a href="${d.orderUrl}" style="display:block;background:#2D4A32;color:#fff;text-decoration:none;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;text-align:center">
-              View Order
-            </a>
-          </td>
-          <td align="center" style="padding:0 0 0 8px">
-            <a href="${d.invoiceUrl}" style="display:block;background:#FAF7F2;border:1px solid #E4DAD0;color:#2D4A32;text-decoration:none;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;text-align:center">
-              Download Invoice
-            </a>
-          </td>
-        </tr>
-      </table>
+                    <!-- Order number -->
+                    <p style="margin:0 0 4px;font-size:11px;letter-spacing:2px;color:#7a8a7b;text-transform:uppercase;text-align:center;font-family:${sans}">
+                      Order Number
+                    </p>
+                    <p style="margin:0 0 24px;font-size:22px;font-weight:500;color:#2d3a2e;text-align:center;font-family:${serif}">
+                      #${d.shortId}
+                    </p>
 
-    </td>
-  </tr>
+                    <hr style="margin:0 0 20px;border:none;border-top:1px solid #e5e0d6"/>
 
-  <!-- Footer -->
-  <tr>
-    <td style="background:#2D4A32;border-radius:0 0 16px 16px;padding:20px 36px;text-align:center">
-      <p style="margin:0 0 4px;font-size:12px;color:rgba(255,255,255,0.75)">Questions? Reply to this email or write to <a href="mailto:support@verdebliss.com" style="color:#BFA06A;text-decoration:none">support@verdebliss.com</a></p>
-      <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.4)">VerdeBliss Cosmetics · Pune, India · verdebliss.com</p>
-    </td>
-  </tr>
+                    <!-- Date + Status -->
+                    <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation"
+                           style="margin-bottom:20px">
+                      <tr>
+                        <td style="padding-right:12px">
+                          <p style="margin:0 0 3px;font-size:11px;letter-spacing:1.5px;color:#7a8a7b;text-transform:uppercase;font-family:${sans}">Order Date</p>
+                          <p style="margin:0;font-size:15px;color:#2d3a2e;font-family:${sans}">${date}</p>
+                        </td>
+                        <td style="text-align:right;padding-left:12px">
+                          <p style="margin:0 0 3px;font-size:11px;letter-spacing:1.5px;color:#7a8a7b;text-transform:uppercase;font-family:${sans}">Status</p>
+                          <p style="margin:0;font-size:15px;font-weight:600;color:#4a7c59;font-family:${sans}">${d.status}</p>
+                        </td>
+                      </tr>
+                    </table>
 
-</table>
-</td></tr>
-</table>
+                    <hr style="margin:0 0 20px;border:none;border-top:1px solid #e5e0d6"/>
+
+                    <!-- Items label -->
+                    <p style="margin:0 0 4px;font-size:11px;letter-spacing:1.5px;color:#7a8a7b;text-transform:uppercase;font-family:${sans}">
+                      Items Ordered
+                    </p>
+
+                    <!-- Item rows -->
+                    <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation"
+                           style="margin-bottom:0">
+                      ${itemRows}
+                    </table>
+
+                    <!-- Totals -->
+                    <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation"
+                           style="margin-top:16px;padding-top:16px;border-top:1px solid #e5e0d6">
+                      <tr>
+                        <td style="padding-bottom:6px">
+                          <p style="margin:0;font-size:13px;color:#7a8a7b;font-family:${sans}">Subtotal</p>
+                        </td>
+                        <td style="text-align:right;padding-bottom:6px">
+                          <p style="margin:0;font-size:13px;color:#2d3a2e;font-family:${sans}">&#8377;${d.totals.subtotal.toLocaleString('en-IN')}</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <p style="margin:0;font-size:13px;color:#7a8a7b;font-family:${sans}">Shipping</p>
+                        </td>
+                        <td style="text-align:right">
+                          <p style="margin:0;font-size:13px;color:#2d3a2e;font-family:${sans}">${d.totals.shipping === 0 ? 'Free' : `&#8377;${d.totals.shipping.toLocaleString('en-IN')}`}</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="padding:10px 0 0">
+                          <hr style="margin:0 0 10px;border:none;border-top:1px solid #e5e0d6"/>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <p style="margin:0;font-size:16px;font-weight:700;color:#2d3a2e;font-family:${sans}">Total</p>
+                        </td>
+                        <td style="text-align:right">
+                          <p style="margin:0;font-size:16px;font-weight:700;color:#2d3a2e;font-family:${sans}">&#8377;${d.totals.total.toLocaleString('en-IN')}</p>
+                        </td>
+                      </tr>
+                      ${
+                        d.totals.pointsToEarn > 0
+                          ? `<tr><td colspan="2"><p style="margin:10px 0 0;font-size:12px;color:#4a7c59;font-weight:600;font-family:${sans}">&#10022; +${d.totals.pointsToEarn} Verde points earned on this order</p></td></tr>`
+                          : ''
+                      }
+                    </table>
+
+                    <hr style="margin:20px 0;border:none;border-top:1px solid #e5e0d6"/>
+
+                    <!-- Delivery address + Payment -->
+                    <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                      <tr valign="top">
+                        <td width="50%" style="padding-right:20px">
+                          <p style="margin:0 0 8px;font-size:11px;letter-spacing:1.5px;color:#7a8a7b;text-transform:uppercase;font-family:${sans}">Shipping To</p>
+                          <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#2d3a2e;font-family:${sans}">${addr.name}</p>
+                          <p style="margin:0;font-size:13px;color:#5a6a5b;line-height:1.6;font-family:${sans}">${addrLine}<br/>${addr.city}, ${addr.state} ${addr.pincode}<br/>${addr.phone}</p>
+                        </td>
+                        <td width="50%" style="padding-left:20px;border-left:1px solid #e5e0d6">
+                          <p style="margin:0 0 8px;font-size:11px;letter-spacing:1.5px;color:#7a8a7b;text-transform:uppercase;font-family:${sans}">Payment</p>
+                          <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#2d3a2e;font-family:${sans}">${d.paymentMethod}</p>
+                          <p style="margin:0;font-size:11px;color:#a8b3a4;word-break:break-all;font-family:${sans}">Ref: ${d.paymentId}</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA buttons -->
+          <tr>
+            <td style="padding-bottom:36px">
+              <table border="0" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                  <td align="center" style="padding-right:8px" width="50%">
+                    <a href="${d.orderUrl}"
+                       style="display:block;background-color:#4a7c59;color:#ffffff;text-decoration:none;border-radius:6px;padding:15px 20px;font-size:14px;font-weight:500;text-align:center;letter-spacing:0.5px;font-family:${sans}">
+                      View Order Details
+                    </a>
+                  </td>
+                  <td align="center" style="padding-left:8px" width="50%">
+                    <a href="${d.invoiceUrl}"
+                       style="display:block;background-color:#ffffff;color:#4a7c59;text-decoration:none;border-radius:6px;padding:15px 20px;font-size:14px;font-weight:500;text-align:center;border:1px solid #c2d4c2;letter-spacing:0.5px;font-family:${sans}">
+                      Download Invoice
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Shipping note -->
+          <tr>
+            <td align="center" style="padding:0 32px 8px">
+              <p style="margin:0;font-size:14px;color:#7a8a7b;line-height:1.7;text-align:center;font-style:italic;font-family:${serif}">
+                We&#8217;ll send another note when your order ships.<br/>
+                Questions? Reply to this email &#8212; we&#8217;re always happy to help.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer divider -->
+          <tr>
+            <td style="padding:32px 0 20px">
+              <hr style="border:none;border-top:1px solid #e5e0d6;margin:0"/>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding-bottom:40px">
+              <p style="margin:0 0 4px;font-size:12px;color:#7a8a7b;font-family:${sans}">
+                VerdeBliss &middot; Naturally crafted, thoughtfully made
+              </p>
+              <p style="margin:0 0 4px;font-size:12px;color:#a8b3a4;font-family:${sans}">
+                Pune, India &middot;
+                <a href="https://www.verdebliss.com" style="color:#a8b3a4;text-decoration:none">verdebliss.com</a>
+              </p>
+              <p style="margin:0;font-size:11px;color:#c2cfc3;font-family:${sans}">
+                &copy; 2026 VerdeBliss. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>`
 }
