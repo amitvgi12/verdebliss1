@@ -18,6 +18,10 @@ import type { NextRequest } from 'next/server'
 
 const CF_ORIGIN_SECRET = process.env.CF_ORIGIN_SECRET
 const CF_ORIGIN_GATE_ENABLED = Boolean(CF_ORIGIN_SECRET)
+
+// When Sentry is configured, its ingest endpoint must be in connect-src so
+// error reports are not blocked by CSP. The pattern covers all Sentry org IDs.
+const SENTRY_CONNECT_SRC = process.env.SENTRY_DSN ? ' https://o*.ingest.sentry.io' : ''
 // Webhook routes are exempt: third parties (Razorpay) call them directly
 // through Cloudflare, but the WAF rule for the webhook locks down the source
 // IP so app-level gating is unnecessary. We still want them to work even if
@@ -58,7 +62,7 @@ export function proxy(request: NextRequest) {
     "style-src-elem 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob: https://*.supabase.co",
-    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+    `connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://va.vercel-scripts.com https://vitals.vercel-insights.com${SENTRY_CONNECT_SRC}`,
     'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
     "frame-ancestors 'none'",
     "object-src 'none'",
@@ -86,6 +90,21 @@ export function proxy(request: NextRequest) {
       endpoints: [{ url: '/api/csp-report' }],
     })
   )
+  // Network Error Logging — captures DNS/TCP/TLS failures to the same reporting
+  // endpoint. Zero-cost signal since the Report-To infrastructure is already live.
+  response.headers.set(
+    'NEL',
+    JSON.stringify({ report_to: 'csp-endpoint', max_age: 10886400, include_subdomains: false })
+  )
+  // Blocks Flash / Acrobat cross-domain policy file lookups. Trivial cost, defence-
+  // in-depth for CDN-served assets even though Flash is end-of-life.
+  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')
+  // Prevents the browser from DNS-prefetching linked domains, which would leak
+  // user browsing patterns to external DNS resolvers. Aligns with privacy-first brand.
+  response.headers.set('X-DNS-Prefetch-Control', 'off')
+  // NOTE: Cross-Origin-Embedder-Policy is intentionally absent. COEP: credentialless
+  // would strip cookies from the Razorpay checkout.razorpay.com iframe, breaking
+  // payment flows. Re-evaluate once Razorpay publishes COEP-compatible embed docs.
   return response
 }
 

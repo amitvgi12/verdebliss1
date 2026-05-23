@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 
 interface AccordionProps {
@@ -30,22 +30,18 @@ export default function Accordion({ id, label, open, onToggle, children }: Accor
           {open ? '−' : '+'}
         </motion.span>
       </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key={id}
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            className="overflow-hidden"
-          >
-            <div id={`accordion-${id}`} className="pb-4 text-[13px] leading-relaxed text-muted">
-              {children}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Content stays mounted so crawlers and SSR see all accordion text.
+          Height + opacity are driven by Framer Motion; overflow-hidden clips it. */}
+      <motion.div
+        id={`accordion-${id}`}
+        initial={false}
+        animate={{ height: open ? 'auto' : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.22, ease: 'easeInOut' }}
+        className="overflow-hidden"
+        aria-hidden={!open}
+      >
+        <div className="pb-4 text-[13px] leading-relaxed text-muted">{children}</div>
+      </motion.div>
     </div>
   )
 }

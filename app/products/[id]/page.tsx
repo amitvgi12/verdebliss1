@@ -6,6 +6,7 @@ import {
   getProductServer,
   getReviewAggregatesServer,
 } from '@/lib/products-server'
+import { PRODUCTS } from '@/constants/products'
 import ProductDetailClient from './ProductDetailClient'
 import {
   absoluteUrl,
@@ -89,6 +90,13 @@ function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
   }
 
   return data
+}
+
+// Pre-build all known PDPs at deploy time so no PDP ever starts life as a
+// runtime ISR render from the previous build. dynamicParams=true (default)
+// keeps dynamic rendering available for any product added after the build.
+export function generateStaticParams() {
+  return PRODUCTS.map((p) => ({ id: p.slug ?? p.id }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

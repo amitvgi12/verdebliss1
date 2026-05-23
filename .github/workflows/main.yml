@@ -190,3 +190,19 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
       - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      # Force-revalidate all product ISR caches immediately after the new build
+      # goes live. Without this, stale rendered HTML from the previous build can
+      # persist for up to revalidate=300s (or indefinitely on low-traffic PDPs).
+      # generateStaticParams pre-builds all PDPs, but this belt-and-suspenders
+      # step ensures the route cache is cleared even if the prerender is somehow
+      # served from a previous ISR snapshot.
+      - name: Revalidate ISR cache (all product pages)
+        env:
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+        run: |
+          curl -sS -X POST \
+            "https://www.verdebliss.com/api/revalidate" \
+            -H "x-revalidate-secret: ${REVALIDATE_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            --fail --retry 3 --retry-delay 10

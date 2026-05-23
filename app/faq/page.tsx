@@ -1,4 +1,4 @@
-export const revalidate = 3600
+export const revalidate = 300
 
 import FAQClient from './FAQClient'
 import { StructuredData } from '@/lib/structured-data'
@@ -6,7 +6,7 @@ import { StructuredData } from '@/lib/structured-data'
 const FAQ_DATA = [
   {
     q: 'Are VerdeBliss products organic?',
-    a: 'Our formulas are built around organic botanical ingredients. Full INCI lists are published on every product page so you can verify what is in each formula. We are working toward third-party certification and will publish issuer names, licence IDs, and scope at /certifications as each is confirmed.',
+    a: 'Our formulas are built around organic botanical ingredients. Third-party certification is in progress and evidence will be published in the Trust Centre at verdebliss.com/certifications.',
   },
   {
     q: 'Do you ship across India?',
@@ -37,8 +37,12 @@ const FAQ_DATA = [
     a: 'Each product has a PAO (Period After Opening) symbol on its page and packaging. Most VerdeBliss products are 12M (use within 12 months); the Wild Berry Lip Elixir is 18M. Store in a cool, dry place away from direct sunlight.',
   },
   {
+    q: 'Are your products vegan?',
+    a: 'Most formulas are vegan-friendly. The Wild Berry Lip Elixir contains Beeswax and is not vegan. Formal vegan certification is in progress. Current status is published in the Trust Centre at verdebliss.com/certifications.',
+  },
+  {
     q: 'Do you test on animals?',
-    a: 'No. We do not conduct or commission animal testing at any stage of formulation or manufacture. We are pursuing cruelty-free certification and will link the verified listing at /certifications once confirmed.',
+    a: 'No. We do not conduct or commission animal testing at any stage of formulation or manufacture. Cruelty-free certification is in progress. The verified listing will be published in the Trust Centre at verdebliss.com/certifications once confirmed.',
   },
   {
     q: 'How do I track my order?',

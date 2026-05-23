@@ -40,7 +40,10 @@ export default function RoutineRecommendations({
   const featuredBundle = uniqueProducts(featuredRoutine.products).filter(
     (product) => product.stock !== 0
   )
-  const featuredBundleTotal = featuredBundle.reduce((sum, product) => sum + product.price, 0)
+  const featuredBundleTotal = featuredBundle.reduce(
+    (sum, product) => sum + Number(product.price),
+    0
+  )
 
   return (
     <section className="ritual-recommendations" aria-label="Recommended routines">
@@ -58,16 +61,17 @@ export default function RoutineRecommendations({
             </div>
           ))}
         </div>
-        <button
-          type="button"
-          disabled={!featuredBundle.length}
-          onClick={() => {
-            featuredBundle.forEach(onAddItem)
-            onOpenCart()
-          }}
-        >
-          Add {featuredRoutine.shortLabel} bundle · ₹{featuredBundleTotal.toLocaleString()}
-        </button>
+        {featuredBundle.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              featuredBundle.forEach(onAddItem)
+              onOpenCart()
+            }}
+          >
+            Add {featuredRoutine.shortLabel} bundle · ₹{featuredBundleTotal.toLocaleString()}
+          </button>
+        )}
       </div>
 
       <div className="ritual-routine-grid">

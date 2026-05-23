@@ -2,11 +2,38 @@ import { expect, test } from '@playwright/test'
 
 const PRODUCT_SLUGS = [
   'bakuchiol-renewal-serum',
-  'niacinamide-pore-serum',
+  'rose-hip-glow-moisturiser',
+  'green-tea-clarity-toner',
+  'turmeric-brightening-cleanser',
   'botanical-spf-50-shield',
+  'wild-berry-lip-elixir',
+  'niacinamide-pore-serum',
+  'shea-butter-night-cream',
+]
+
+const CORE_ROUTES: Array<[string, string]> = [
+  ['/', 'homepage'],
+  ['/products', 'product catalogue'],
+  ['/products/bakuchiol-renewal-serum', 'PDP'],
+  ['/faq', 'FAQ'],
+  ['/certifications', 'Trust Centre (certifications)'],
+  ['/refund', 'refund'],
+  ['/cookie-policy', 'cookie policy'],
+  ['/blog', 'blog'],
+  ['/sitemap.xml', 'sitemap'],
+  ['/robots.txt', 'robots'],
 ]
 
 test.describe('live smoke checks', () => {
+  test.describe('core routes return 200', () => {
+    for (const [path, label] of CORE_ROUTES) {
+      test(label, async ({ request }) => {
+        const response = await request.get(path)
+        expect(response.status(), `${path} should return 200`).toBe(200)
+      })
+    }
+  })
+
   test('main content appears before footer in live HTML', async ({ request }) => {
     const response = await request.get('/')
     expect(response.status()).toBe(200)
@@ -19,8 +46,28 @@ test.describe('live smoke checks', () => {
     expect(mainIndex).toBeLessThan(footerIndex)
   })
 
-  test('homepage and PDP are served from the same current build', async ({ request }) => {
-    const paths = ['/', '/products/green-tea-clarity-toner']
+  test('cookie-policy: policy content appears before footer', async ({ request }) => {
+    const response = await request.get('/cookie-policy')
+    expect(response.status()).toBe(200)
+    const html = await response.text()
+
+    // The LegalPage hero header renders inside <main id="main-content">.
+    // If the footer or nav appears first, the deploy served stale/mixed output.
+    const mainIndex = html.search(/<main[^>]+id=["']main-content["']/i)
+    const footerIndex = html.search(/<footer\b/i)
+    const legalHeroIndex = html.search(/legal-hero/i)
+
+    expect(mainIndex, 'main-content landmark missing').toBeGreaterThanOrEqual(0)
+    expect(footerIndex, 'footer missing').toBeGreaterThanOrEqual(0)
+    expect(legalHeroIndex, 'legal-hero class (policy content) missing').toBeGreaterThanOrEqual(0)
+    expect(mainIndex, 'main comes before footer').toBeLessThan(footerIndex)
+    expect(legalHeroIndex, 'policy content comes before footer').toBeLessThan(footerIndex)
+  })
+
+  test('all product PDPs are served from the same current build as the homepage', async ({
+    request,
+  }) => {
+    const paths = ['/', ...PRODUCT_SLUGS.map((s) => `/products/${s}`)]
     const htmlByPath = new Map<string, string>()
 
     for (const path of paths) {
@@ -30,15 +77,15 @@ test.describe('live smoke checks', () => {
     }
 
     const rootSha = extractMetaContent(htmlByPath.get('/') ?? '', 'x-build-sha')
-    const pdpSha = extractMetaContent(
-      htmlByPath.get('/products/green-tea-clarity-toner') ?? '',
-      'x-build-sha'
-    )
     const expectedSha = process.env.EXPECTED_BUILD_SHA
 
     expect(rootSha).toBeTruthy()
-    expect(pdpSha).toBe(rootSha)
     if (expectedSha) expect(rootSha).toBe(expectedSha)
+
+    for (const slug of PRODUCT_SLUGS) {
+      const pdpSha = extractMetaContent(htmlByPath.get(`/products/${slug}`) ?? '', 'x-build-sha')
+      expect(pdpSha, `Build SHA mismatch on /products/${slug}`).toBe(rootSha)
+    }
   })
 
   for (const slug of PRODUCT_SLUGS) {
@@ -76,6 +123,26 @@ test.describe('live smoke checks', () => {
     expect(html).not.toContain('Returns & Refund')
   })
 
+  test('no seed review copy appears on any live PDP', async ({ request }) => {
+    const seedPhrases = [
+      'without making my skin feel tight',
+      'My dry skin handled this serum well',
+      'Lightweight but nourishing',
+      'Comfortable mineral SPF',
+    ]
+
+    for (const slug of PRODUCT_SLUGS) {
+      const response = await request.get(`/products/${slug}`)
+      expect(response.status()).toBe(200)
+      const html = await response.text()
+      for (const phrase of seedPhrases) {
+        expect(html, `Seed review phrase found on /products/${slug}: "${phrase}"`).not.toContain(
+          phrase
+        )
+      }
+    }
+  })
+
   test('FAQ schema validates', async ({ request }) => {
     const response = await request.get('/faq')
     expect(response.status()).toBe(200)
@@ -108,10 +175,31 @@ test.describe('live smoke checks', () => {
     const headers = response.headers()
     const csp = headers['content-security-policy'] ?? ''
 
+    // CSP
     expect(csp).toContain("default-src 'self'")
     expect(csp).toContain("frame-ancestors 'none'")
+    expect(csp).toContain("object-src 'none'")
+    expect(csp).toContain("base-uri 'self'")
+    expect(csp).toContain('upgrade-insecure-requests')
     expect(csp).toContain('report-uri /api/csp-report')
+
+    // Reporting infrastructure
     expect(headers['reporting-endpoints'] ?? headers['report-to']).toBeTruthy()
+    expect(headers['nel']).toContain('csp-endpoint')
+
+    // Standard defensive headers
+    expect(headers['x-content-type-options']).toBe('nosniff')
+    expect(headers['x-frame-options']).toBe('DENY')
+    expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin')
+    expect(headers['strict-transport-security']).toContain('includeSubDomains')
+    expect(headers['strict-transport-security']).toContain('preload')
+    expect(headers['cross-origin-opener-policy']).toBe('same-origin')
+    expect(headers['cross-origin-resource-policy']).toBe('same-site')
+    expect(headers['x-permitted-cross-domain-policies']).toBe('none')
+    expect(headers['x-dns-prefetch-control']).toBe('off')
+    expect(headers['permissions-policy']).toContain('geolocation=()')
+    expect(headers['permissions-policy']).toContain('microphone=()')
+    expect(headers['permissions-policy']).toContain('camera=()')
   })
 })
 

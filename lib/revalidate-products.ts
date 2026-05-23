@@ -1,20 +1,26 @@
 import { after } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { PRODUCTS } from '@/constants/products'
+
+const ALL_PRODUCT_PARAMS = PRODUCTS.map((p) => p.slug ?? p.id)
 
 /**
  * Purges the Next.js Data Cache for product pages.
- * Call this from any Route Handler after product stock changes or data updates.
- * Pass productIds to also bust individual PDP entries; omit to bust only the catalogue.
+ *
+ * - Called with no args (e.g. post-deploy hook): revalidates the catalogue
+ *   listing AND every individual PDP so a new build is never blocked by a
+ *   stale ISR render from the previous deployment.
+ * - Called with productIds: revalidates the catalogue + only those PDPs
+ *   (used after a single product edit / stock change).
  */
 export function revalidateProductsCache(productIds?: string[]) {
   revalidateTag('products', 'max')
   revalidatePath('/products', 'layout')
 
-  if (productIds?.length) {
-    for (const id of productIds) {
-      revalidateTag(`product-${id}`, 'max')
-      revalidatePath(`/products/${id}`, 'page')
-    }
+  const ids = productIds ?? ALL_PRODUCT_PARAMS
+  for (const id of ids) {
+    revalidateTag(`product-${id}`, 'max')
+    revalidatePath(`/products/${id}`, 'page')
   }
 }
 
