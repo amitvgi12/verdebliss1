@@ -12,6 +12,7 @@ import { requireSameOriginRequest } from '@/lib/csrf'
 import { assessCodRisk } from '@/lib/cod-risk'
 import { verifyTurnstileFromRequest } from '@/lib/turnstile'
 import { scheduleProductsRevalidation } from '@/lib/revalidate-products'
+import { sendOrderConfirmationEmail } from '@/lib/order-email'
 
 export async function POST(request: Request) {
   try {
@@ -69,6 +70,16 @@ export async function POST(request: Request) {
 
     const purchasedIds = items.map((i) => i.id)
     scheduleProductsRevalidation(purchasedIds)
+
+    void sendOrderConfirmationEmail({
+      orderId: order.id,
+      paymentId: codRef,
+      paymentMethod: 'Cash on Delivery',
+      status: manualReview ? 'COD Verification Required' : 'COD Pending',
+      address,
+      items,
+      totals,
+    })
 
     return NextResponse.json({
       orderId: order.id,

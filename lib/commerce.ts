@@ -629,6 +629,8 @@ export async function completeRazorpayCheckout(input: {
     totals,
     idempotent: Boolean(order.idempotent),
     paymentMethod: order.paymentMethod ?? paymentMethod,
+    address: session.address,
+    items: session.cart_snapshot,
   }
 }
 

@@ -65,9 +65,7 @@ export default function IngredientCard({
               {ingredient}
             </h3>
           )}
-          {description && (
-            <p className="text-[12.5px] leading-[1.7] text-muted">{description}</p>
-          )}
+          {description && <p className="text-[12.5px] leading-[1.7] text-muted">{description}</p>}
         </div>
       )}
     </div>

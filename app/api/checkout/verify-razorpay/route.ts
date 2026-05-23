@@ -3,6 +3,7 @@ import { isRateLimited } from '@/lib/rate-limit'
 import { requireSameOriginRequest } from '@/lib/csrf'
 import { completeRazorpayCheckout, verifyRazorpaySignature } from '@/lib/commerce'
 import { scheduleProductsRevalidation } from '@/lib/revalidate-products'
+import { sendOrderConfirmationEmail } from '@/lib/order-email'
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +38,20 @@ export async function POST(request: Request) {
       rawPaymentPayload: body as Record<string, unknown>,
     })
 
-    if (!completed.idempotent) scheduleProductsRevalidation()
+    if (!completed.idempotent) {
+      scheduleProductsRevalidation()
+      if (completed.address && completed.items) {
+        void sendOrderConfirmationEmail({
+          orderId: completed.orderId,
+          paymentId: razorpayPaymentId,
+          paymentMethod: completed.paymentMethod ?? 'Razorpay',
+          status: 'Processing',
+          address: completed.address,
+          items: completed.items,
+          totals: completed.totals,
+        })
+      }
+    }
 
     return NextResponse.json({
       orderId: completed.orderId,

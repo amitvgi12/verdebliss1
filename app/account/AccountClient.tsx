@@ -844,28 +844,47 @@ function Dashboard({
                   <div style={{ fontSize: 12, color: C.sage, marginTop: 4 }}>
                     +{o.points_earned} points earned
                   </div>
-                  {canCancelOrder(o.status) && (
-                    <button
-                      type="button"
-                      onClick={() => void cancelOrder(o.id)}
-                      disabled={cancellingOrderId === o.id}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                    <Link
+                      href={`/account/orders/${o.id}`}
                       style={{
-                        marginTop: 10,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
                         border: `1px solid ${C.border}`,
                         borderRadius: 999,
-                        background: '#FAF4EE',
+                        background: C.sagePale,
                         color: C.forest,
-                        cursor: cancellingOrderId === o.id ? 'not-allowed' : 'pointer',
-                        fontFamily: 'inherit',
+                        textDecoration: 'none',
                         fontSize: 12,
                         fontWeight: 700,
                         padding: '7px 14px',
-                        opacity: cancellingOrderId === o.id ? 0.65 : 1,
                       }}
                     >
-                      {cancellingOrderId === o.id ? 'Cancelling...' : 'Cancel order'}
-                    </button>
-                  )}
+                      View details →
+                    </Link>
+                    {canCancelOrder(o.status) && (
+                      <button
+                        type="button"
+                        onClick={() => void cancelOrder(o.id)}
+                        disabled={cancellingOrderId === o.id}
+                        style={{
+                          border: `1px solid ${C.border}`,
+                          borderRadius: 999,
+                          background: '#FAF4EE',
+                          color: C.forest,
+                          cursor: cancellingOrderId === o.id ? 'not-allowed' : 'pointer',
+                          fontFamily: 'inherit',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          padding: '7px 14px',
+                          opacity: cancellingOrderId === o.id ? 0.65 : 1,
+                        }}
+                      >
+                        {cancellingOrderId === o.id ? 'Cancelling...' : 'Cancel order'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))
             )}
