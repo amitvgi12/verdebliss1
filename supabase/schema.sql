@@ -989,3 +989,219 @@ begin
     raise notice 'Skipping static product seed because public.products.id is %, not text. Existing uuid products are preserved.', product_id_type;
   end if;
 end $$;
+
+-- ════════════════════════════════════════════════════
+--  Invoices — sequential TAX invoices with GST breakdown
+--
+--  One invoice is auto-created per order via trigger.
+--  GST assumed at 18% (standard rate for cosmetics/personal care).
+--  Seller state: Maharashtra → same-state orders get CGST+SGST;
+--  all other states get IGST.
+--  Update seller_gstin below once VerdeBliss obtains GST registration.
+-- ════════════════════════════════════════════════════
+
+-- Monotonically increasing counter — never reset, never reused.
+-- Invoice numbers are VB-YYYYMM-NNNN (e.g. VB-202605-0001).
+create sequence if not exists public.invoice_number_seq
+  start with 1
+  increment by 1
+  no maxvalue
+  no cycle
+  cache 1;
+
+create table if not exists public.invoices (
+  id                  uuid        primary key default uuid_generate_v4(),
+  order_id            uuid        not null references public.orders on delete cascade,
+  invoice_number      text        not null,
+  invoice_date        timestamptz not null default now(),
+
+  -- Financial snapshot (all amounts are tax-inclusive, matching storefront)
+  subtotal            numeric(10,2) not null default 0,
+  tax_amount          numeric(10,2) not null default 0,  -- back-calculated GST
+  shipping            numeric(10,2) not null default 0,
+  total               numeric(10,2) not null default 0,
+
+  -- GST breakdown as an ordered array of tax line objects.
+  -- Intra-state example:
+  --   [{"type":"CGST","rate":9,"amount":40.50},{"type":"SGST","rate":9,"amount":40.50}]
+  -- Inter-state example:
+  --   [{"type":"IGST","rate":18,"amount":81.00}]
+  tax_lines           jsonb       not null default '[]'::jsonb,
+
+  seller_gstin        text,        -- populate once VerdeBliss is GST-registered
+  buyer_gstin         text,        -- for B2B orders; null for B2C
+  supply_type         text        not null default 'intra_state',  -- 'intra_state' | 'inter_state'
+  place_of_supply     text,        -- customer state (from order address)
+
+  -- Lifecycle
+  status              text        not null default 'issued',  -- 'issued' | 'cancelled' | 'revised'
+
+  -- Delivery audit
+  email_sent_at       timestamptz,
+  download_count      int         not null default 0 check (download_count >= 0),
+  last_downloaded_at  timestamptz,
+
+  notes               text,
+  created_at          timestamptz default now(),
+  updated_at          timestamptz default now()
+);
+
+-- Idempotent column additions for existing installs
+alter table public.invoices add column if not exists order_id uuid references public.orders on delete cascade;
+alter table public.invoices add column if not exists invoice_number text;
+alter table public.invoices add column if not exists invoice_date timestamptz default now();
+alter table public.invoices add column if not exists subtotal numeric(10,2) default 0;
+alter table public.invoices add column if not exists tax_amount numeric(10,2) default 0;
+alter table public.invoices add column if not exists shipping numeric(10,2) default 0;
+alter table public.invoices add column if not exists total numeric(10,2) default 0;
+alter table public.invoices add column if not exists tax_lines jsonb default '[]'::jsonb;
+alter table public.invoices add column if not exists seller_gstin text;
+alter table public.invoices add column if not exists buyer_gstin text;
+alter table public.invoices add column if not exists supply_type text default 'intra_state';
+alter table public.invoices add column if not exists place_of_supply text;
+alter table public.invoices add column if not exists status text default 'issued';
+alter table public.invoices add column if not exists email_sent_at timestamptz;
+alter table public.invoices add column if not exists download_count int default 0;
+alter table public.invoices add column if not exists last_downloaded_at timestamptz;
+alter table public.invoices add column if not exists notes text;
+alter table public.invoices add column if not exists created_at timestamptz default now();
+alter table public.invoices add column if not exists updated_at timestamptz default now();
+
+-- One invoice per order; invoice numbers are globally unique
+create unique index if not exists invoices_order_id_unique_idx     on public.invoices (order_id);
+create unique index if not exists invoices_invoice_number_unique_idx on public.invoices (invoice_number);
+create index        if not exists invoices_status_idx               on public.invoices (status);
+create index        if not exists invoices_email_sent_idx           on public.invoices (email_sent_at) where email_sent_at is null;
+
+-- ── Updated-at trigger ───────────────────────────────
+drop trigger if exists trg_invoices_updated_at on public.invoices;
+create trigger trg_invoices_updated_at before update on public.invoices
+  for each row execute procedure public.touch_updated_at();
+
+-- ── Invoice number generator ─────────────────────────
+-- Format: VB-YYYYMM-NNNN  e.g. VB-202605-0001
+create or replace function public.generate_invoice_number()
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return 'VB-' || to_char(now(), 'YYYYMM') || '-' || lpad(nextval('public.invoice_number_seq')::text, 4, '0');
+end;
+$$;
+
+revoke all on function public.generate_invoice_number() from public, anon, authenticated;
+grant execute on function public.generate_invoice_number() to service_role;
+
+-- ── Auto-create invoice on order insert ──────────────
+-- Fires AFTER INSERT on public.orders.  The trigger shares the same
+-- transaction as finalize_commerce_order, so a failed order rolls back
+-- the invoice too — no orphan invoice records possible.
+create or replace function public.create_invoice_for_order()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_tax_rate      constant numeric := 18;   -- 18% GST for cosmetics/personal care (India)
+  v_seller_state  constant text    := 'Maharashtra';
+  v_place_of_supply text;
+  v_supply_type   text;
+  v_tax_amount    numeric;
+  v_half_tax      numeric;
+  v_tax_lines     jsonb;
+begin
+  v_place_of_supply := coalesce(new.address->>'state', '');
+
+  v_supply_type := case
+    when lower(trim(v_place_of_supply)) = lower(v_seller_state) then 'intra_state'
+    else 'inter_state'
+  end;
+
+  -- GST is included in the storefront price; back-calculate from subtotal.
+  -- Formula: tax = price_inclusive * rate / (100 + rate)
+  v_tax_amount := round(new.subtotal * v_tax_rate / (100 + v_tax_rate), 2);
+
+  if v_supply_type = 'intra_state' then
+    v_half_tax  := round(v_tax_amount / 2, 2);
+    v_tax_lines := jsonb_build_array(
+      jsonb_build_object('type', 'CGST', 'rate', v_tax_rate / 2, 'amount', v_half_tax),
+      jsonb_build_object('type', 'SGST', 'rate', v_tax_rate / 2, 'amount', v_tax_amount - v_half_tax)
+    );
+  else
+    v_tax_lines := jsonb_build_array(
+      jsonb_build_object('type', 'IGST', 'rate', v_tax_rate, 'amount', v_tax_amount)
+    );
+  end if;
+
+  insert into public.invoices (
+    order_id, invoice_number, invoice_date,
+    subtotal, tax_amount, shipping, total,
+    tax_lines, supply_type, place_of_supply,
+    status
+  ) values (
+    new.id,
+    public.generate_invoice_number(),
+    coalesce(new.created_at, now()),
+    new.subtotal,
+    v_tax_amount,
+    new.shipping,
+    new.total,
+    v_tax_lines,
+    v_supply_type,
+    nullif(trim(v_place_of_supply), ''),
+    'issued'
+  )
+  on conflict (order_id) do nothing;  -- safe for schema re-runs
+
+  return new;
+end;
+$$;
+
+revoke all on function public.create_invoice_for_order() from public, anon, authenticated;
+grant execute on function public.create_invoice_for_order() to service_role;
+
+drop trigger if exists trg_create_invoice_on_order on public.orders;
+create trigger trg_create_invoice_on_order
+  after insert on public.orders
+  for each row execute procedure public.create_invoice_for_order();
+
+-- ── RPC: record invoice download ─────────────────────
+-- Called from the browser (authenticated) when a user opens the invoice page.
+create or replace function public.record_invoice_download(p_order_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.invoices
+  set download_count     = download_count + 1,
+      last_downloaded_at = now(),
+      updated_at         = now()
+  where order_id = p_order_id
+    and exists (
+      select 1 from public.orders o
+      where o.id = p_order_id
+        and o.user_id = auth.uid()
+    );
+end;
+$$;
+
+revoke all on function public.record_invoice_download(uuid) from public, anon;
+grant execute on function public.record_invoice_download(uuid) to authenticated, service_role;
+
+-- ── RLS for invoices ─────────────────────────────────
+alter table public.invoices enable row level security;
+
+drop policy if exists "Owner can read own invoices" on public.invoices;
+create policy "Owner can read own invoices" on public.invoices
+  for select using (
+    exists (
+      select 1 from public.orders o
+      where o.id = invoices.order_id
+        and (o.user_id = auth.uid() or public.is_staff())
+    )
+  );

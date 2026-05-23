@@ -10,6 +10,7 @@
 --    - the 8 current VerdeBliss catalogue products
 --    - 3 test customers / profiles
 --    - test orders, order_items, payment_events, loyalty_ledger
+--    - invoices with varied email_sent/download states for UI testing
 --    - wishlist, reviews, addresses, contact/newsletter consent test rows
 --
 --  Test password for seeded auth users: TestPass123!
@@ -393,6 +394,19 @@ begin
   delete from public.wishlist where user_id = any(array[uid_kavya, uid_rahul, uid_priya]);
   delete from public.reviews where user_id = any(array[uid_kavya, uid_rahul, uid_priya]);
   delete from public.addresses where user_id = any(array[uid_kavya, uid_rahul, uid_priya]);
+
+  -- Invoices are FK-cascaded when orders are deleted, but explicit removal here
+  -- handles partial schema installs where the FK cascade may not exist yet.
+  begin
+    delete from public.invoices
+     where order_id in (
+       select id from public.orders
+        where user_id = any(array[uid_kavya, uid_rahul, uid_priya])
+           or payment_id like 'pay_test_%'
+     );
+  exception when undefined_table then null;
+  end;
+
   delete from public.orders where user_id = any(array[uid_kavya, uid_rahul, uid_priya]) or payment_id like 'pay_test_%';
   delete from public.contact_tickets where email like '%@verdebliss.test';
   delete from public.customer_consents where email like '%@verdebliss.test';
@@ -531,6 +545,103 @@ begin
     o.created_at
   from public.orders o
   where o.payment_id like 'pay_test_%';
+
+  -- ── Invoice backfill ─────────────────────────────────────────────────────────
+  -- trg_create_invoice_on_order fires on INSERT and should have already created
+  -- invoice rows above. This block inserts any that are missing — a safety net
+  -- for environments where schema.sql was applied after the first seed run.
+  begin
+    insert into public.invoices (
+      order_id, invoice_number, invoice_date,
+      subtotal, tax_amount, shipping, total,
+      tax_lines, supply_type, place_of_supply, status
+    )
+    select
+      o.id,
+      'VB-' || to_char(o.created_at, 'YYYYMM') || '-'
+        || lpad(nextval('public.invoice_number_seq')::text, 4, '0'),
+      o.created_at,
+      o.subtotal,
+      round(o.subtotal * 18 / 118, 2),
+      o.shipping,
+      o.total,
+      case
+        when lower(coalesce(o.address->>'state', '')) = 'maharashtra' then
+          jsonb_build_array(
+            jsonb_build_object('type', 'CGST', 'rate', 9,
+              'amount', round(round(o.subtotal * 18 / 118, 2) / 2, 2)),
+            jsonb_build_object('type', 'SGST', 'rate', 9,
+              'amount', round(o.subtotal * 18 / 118, 2)
+                       - round(round(o.subtotal * 18 / 118, 2) / 2, 2))
+          )
+        else
+          jsonb_build_array(
+            jsonb_build_object('type', 'IGST', 'rate', 18,
+              'amount', round(o.subtotal * 18 / 118, 2))
+          )
+      end,
+      case
+        when lower(coalesce(o.address->>'state', '')) = 'maharashtra'
+          then 'intra_state'
+        else 'inter_state'
+      end,
+      nullif(trim(coalesce(o.address->>'state', '')), ''),
+      'issued'
+    from public.orders o
+    where o.payment_id like 'pay_test_%'
+      and not exists (select 1 from public.invoices i where i.order_id = o.id);
+  exception when undefined_table then
+    raise notice 'invoices table not found — run schema.sql to enable invoice features.';
+  end;
+
+  -- ── Invoice state variations for UI testing ──────────────────────────────────
+  -- Different states let you exercise all invoice UI paths in one seed run:
+  --   Kav001: email sent + 3 downloads  → fully-used delivered-order invoice
+  --   Kav002: email sent + 0 downloads  → received but not yet downloaded
+  --   Kav003: no email, no downloads    → brand-new order (test pristine state)
+  --   Rah001: email sent + 1 download   → inter-state IGST invoice
+  --   Pri001: email sent + 2 downloads  → large multi-item intra-state invoice
+  --   Pri002: email sent + 1 download   → older delivered order
+  --   Pri003: no email (COD)            → COD order — email not applicable
+  --   Pri004: email sent + 0 downloads  → recent shipped, viewed but not printed
+  --   Pri005: no email, no downloads    → very fresh COD order
+  begin
+    update public.invoices
+       set email_sent_at     = (select created_at from public.orders where payment_id = 'pay_test_Kav001Delivered') + interval '2 minutes',
+           download_count    = 3,
+           last_downloaded_at = now() - interval '10 days'
+     where order_id = (select id from public.orders where payment_id = 'pay_test_Kav001Delivered');
+
+    update public.invoices
+       set email_sent_at  = (select created_at from public.orders where payment_id = 'pay_test_Kav002Shipped') + interval '2 minutes',
+           download_count = 0
+     where order_id = (select id from public.orders where payment_id = 'pay_test_Kav002Shipped');
+
+    update public.invoices
+       set email_sent_at     = (select created_at from public.orders where payment_id = 'pay_test_Rah001Processing') + interval '2 minutes',
+           download_count    = 1,
+           last_downloaded_at = now() - interval '1 day'
+     where order_id = (select id from public.orders where payment_id = 'pay_test_Rah001Processing');
+
+    update public.invoices
+       set email_sent_at     = (select created_at from public.orders where payment_id = 'pay_test_Pri001Delivered') + interval '2 minutes',
+           download_count    = 2,
+           last_downloaded_at = now() - interval '100 days'
+     where order_id = (select id from public.orders where payment_id = 'pay_test_Pri001Delivered');
+
+    update public.invoices
+       set email_sent_at     = (select created_at from public.orders where payment_id = 'pay_test_Pri002Delivered') + interval '2 minutes',
+           download_count    = 1,
+           last_downloaded_at = now() - interval '80 days'
+     where order_id = (select id from public.orders where payment_id = 'pay_test_Pri002Delivered');
+
+    update public.invoices
+       set email_sent_at     = (select created_at from public.orders where payment_id = 'pay_test_Pri004Shipped') + interval '2 minutes',
+           download_count    = 0
+     where order_id = (select id from public.orders where payment_id = 'pay_test_Pri004Shipped');
+
+  exception when undefined_table then null;
+  end;
 
   insert into public.wishlist (user_id, product_id, created_at) values
     (uid_kavya, pid_spf, now() - interval '10 days'),
@@ -697,3 +808,23 @@ where u.email in (
 )
 group by p.id, p.full_name, u.email, p.tier, p.points, p.skin_type
 order by lifetime_spend desc;
+
+-- Invoice verification: one row per seeded order showing the generated invoice,
+-- GST breakdown, supply type and email/download audit state.
+select
+  o.payment_id,
+  i.invoice_number,
+  i.supply_type,
+  i.subtotal,
+  i.tax_amount,
+  i.shipping,
+  i.total,
+  i.tax_lines,
+  i.status,
+  case when i.email_sent_at is not null then 'yes' else 'no' end as email_sent,
+  i.download_count,
+  i.last_downloaded_at::date as last_downloaded
+from public.orders o
+join public.invoices i on i.order_id = o.id
+where o.payment_id like 'pay_test_%'
+order by o.created_at desc;

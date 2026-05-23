@@ -35,10 +35,32 @@ interface FullOrder {
   address: OrderAddress
 }
 
+interface TaxLine {
+  type: 'CGST' | 'SGST' | 'IGST'
+  rate: number
+  amount: number
+}
+
+interface Invoice {
+  invoice_number: string
+  invoice_date: string
+  subtotal: number
+  tax_amount: number
+  shipping: number
+  total: number
+  tax_lines: TaxLine[]
+  seller_gstin: string | null
+  buyer_gstin: string | null
+  supply_type: string
+  place_of_supply: string | null
+  status: string
+}
+
 export default function InvoiceClient({ orderId }: { orderId: string }) {
   const user = useAuthStore((s) => s.user)
   const loading = useAuthStore((s) => s.loading)
   const [order, setOrder] = useState<FullOrder | null>(null)
+  const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [fetching, setFetching] = useState(true)
 
   useEffect(() => {
@@ -47,17 +69,20 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
       setFetching(false)
       return
     }
-    supabase
-      .from('orders')
-      .select('*')
-      .eq('id', orderId)
-      .eq('user_id', user.id)
-      .single()
-      .then(({ data }) => {
-        setOrder(data as FullOrder)
-        setFetching(false)
-      })
+    Promise.all([
+      supabase.from('orders').select('*').eq('id', orderId).eq('user_id', user.id).single(),
+      supabase.from('invoices').select('*').eq('order_id', orderId).single(),
+    ]).then(([{ data: orderData }, { data: invData }]) => {
+      if (orderData) setOrder(orderData as FullOrder)
+      if (invData) setInvoice(invData as Invoice)
+      setFetching(false)
+    })
   }, [orderId, user, loading])
+
+  const handlePrint = () => {
+    void supabase.rpc('record_invoice_download', { p_order_id: orderId })
+    window.print()
+  }
 
   if (fetching || loading) {
     return (
@@ -95,12 +120,17 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
     )
   }
 
-  const date = new Date(order.created_at).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-  const invoiceNo = `VB-${order.id.slice(0, 8).toUpperCase()}`
+  const invoiceNumber = invoice?.invoice_number ?? `VB-${order.id.slice(0, 8).toUpperCase()}`
+  const invoiceDate = new Date(invoice?.invoice_date ?? order.created_at).toLocaleDateString(
+    'en-IN',
+    { day: 'numeric', month: 'long', year: 'numeric' }
+  )
+  const taxLines: TaxLine[] = invoice?.tax_lines ?? []
+  // Taxable base = subtotal minus embedded GST
+  const taxableAmount = invoice
+    ? round2(invoice.subtotal - invoice.tax_amount)
+    : round2((order.subtotal * 100) / 118)
+  const addr = order.address
 
   return (
     <>
@@ -130,10 +160,12 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
           padding: '10px 24px',
         }}
       >
-        <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>Invoice — {invoiceNo}</span>
+        <span style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>
+          Invoice — {invoiceNumber}
+        </span>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
-            onClick={() => window.print()}
+            onClick={handlePrint}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -184,7 +216,7 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
             overflow: 'hidden',
           }}
         >
-          {/* Header band */}
+          {/* Header */}
           <div
             style={{
               background: '#2D4A32',
@@ -217,6 +249,11 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
               >
                 COSMETICS
               </div>
+              {invoice?.seller_gstin && (
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 6 }}>
+                  GSTIN: {invoice.seller_gstin}
+                </div>
+              )}
             </div>
             <div style={{ textAlign: 'right' }}>
               <div
@@ -224,144 +261,100 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
               >
                 TAX INVOICE
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 4 }}>
-                {invoiceNo}
+              <div
+                style={{
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.9)',
+                  marginTop: 6,
+                  fontWeight: 700,
+                }}
+              >
+                {invoiceNumber}
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>
-                {date}
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 3 }}>
+                {invoiceDate}
               </div>
+              {invoice?.status === 'cancelled' && (
+                <div
+                  style={{
+                    marginTop: 6,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    color: '#F87171',
+                    letterSpacing: '0.1em',
+                  }}
+                >
+                  CANCELLED
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Address section */}
+          {/* Seller / Buyer */}
           <div
             style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: 0,
               borderBottom: '1px solid #E8E0D6',
             }}
           >
             <div style={{ padding: '20px 36px', borderRight: '1px solid #E8E0D6' }}>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
-                  color: '#C07A5A',
-                  marginBottom: 8,
-                }}
-              >
-                SOLD BY
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1C221E' }}>
-                VerdeBliss Cosmetics
-              </div>
-              <div style={{ fontSize: 12, color: '#5C6C4D', lineHeight: 1.6, marginTop: 3 }}>
+              <div style={eyebrow}>SOLD BY</div>
+              <div style={boldLine}>VerdeBliss Cosmetics</div>
+              <div style={mutedLine}>
                 Pune, Maharashtra, India
                 <br />
                 support@verdebliss.com
               </div>
+              {invoice?.place_of_supply && (
+                <div style={{ ...mutedLine, marginTop: 4 }}>
+                  State of supply: {invoice.place_of_supply}
+                </div>
+              )}
             </div>
             <div style={{ padding: '20px 36px' }}>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
-                  color: '#C07A5A',
-                  marginBottom: 8,
-                }}
-              >
-                BILL TO
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#1C221E' }}>
-                {order.address?.name}
-              </div>
-              <div style={{ fontSize: 12, color: '#5C6C4D', lineHeight: 1.6, marginTop: 3 }}>
-                {order.address?.line1}
-                {order.address?.line2 ? `, ${order.address.line2}` : ''}
+              <div style={eyebrow}>BILL TO</div>
+              <div style={boldLine}>{addr?.name}</div>
+              <div style={mutedLine}>
+                {addr?.line1}
+                {addr?.line2 ? `, ${addr.line2}` : ''}
                 <br />
-                {order.address?.city}, {order.address?.state} — {order.address?.pincode}
+                {addr?.city}, {addr?.state} — {addr?.pincode}
                 <br />
-                {order.address?.phone}
+                {addr?.phone}
               </div>
-              <div style={{ fontSize: 12, color: '#A8BAA9', marginTop: 3 }}>
-                {order.address?.email}
-              </div>
+              <div style={{ fontSize: 12, color: '#A8BAA9', marginTop: 3 }}>{addr?.email}</div>
+              {invoice?.buyer_gstin && (
+                <div style={{ fontSize: 11, color: '#5C6C4D', marginTop: 4 }}>
+                  GSTIN: {invoice.buyer_gstin}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Items table */}
           <div style={{ padding: '0 36px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#FAF7F2' }}>
-                  <th
-                    style={{
-                      padding: '11px 0',
-                      textAlign: 'left',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: '#C07A5A',
-                      borderBottom: '1px solid #E8E0D6',
-                    }}
-                  >
-                    #
-                  </th>
-                  <th
-                    style={{
-                      padding: '11px 12px',
-                      textAlign: 'left',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: '#C07A5A',
-                      borderBottom: '1px solid #E8E0D6',
-                    }}
-                  >
-                    PRODUCT
-                  </th>
-                  <th
-                    style={{
-                      padding: '11px 12px',
-                      textAlign: 'right',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: '#C07A5A',
-                      borderBottom: '1px solid #E8E0D6',
-                    }}
-                  >
-                    QTY
-                  </th>
-                  <th
-                    style={{
-                      padding: '11px 12px',
-                      textAlign: 'right',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: '#C07A5A',
-                      borderBottom: '1px solid #E8E0D6',
-                    }}
-                  >
-                    UNIT PRICE
-                  </th>
-                  <th
-                    style={{
-                      padding: '11px 0 11px 12px',
-                      textAlign: 'right',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: '0.08em',
-                      color: '#C07A5A',
-                      borderBottom: '1px solid #E8E0D6',
-                    }}
-                  >
-                    TOTAL
-                  </th>
+                  {['#', 'PRODUCT', 'QTY', 'UNIT PRICE', 'TOTAL'].map((h, i) => (
+                    <th
+                      key={h}
+                      style={{
+                        padding: '11px 0',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        color: '#C07A5A',
+                        borderBottom: '1px solid #E8E0D6',
+                        textAlign: i === 0 ? 'left' : i === 1 ? 'left' : 'right',
+                        paddingLeft: i > 0 && i < 4 ? 12 : 0,
+                        paddingRight: i === 4 ? 0 : undefined,
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -396,7 +389,7 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
                         textAlign: 'right',
                       }}
                     >
-                      ₹{item.price.toLocaleString()}
+                      ₹{item.price.toLocaleString('en-IN')}
                     </td>
                     <td
                       style={{
@@ -407,7 +400,7 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
                         textAlign: 'right',
                       }}
                     >
-                      ₹{(item.price * item.qty).toLocaleString()}
+                      ₹{(item.price * item.qty).toLocaleString('en-IN')}
                     </td>
                   </tr>
                 ))}
@@ -415,13 +408,86 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
             </table>
           </div>
 
-          {/* Totals */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 36px 20px' }}>
-            <div style={{ width: 240 }}>
-              <TotalRow label="Subtotal" value={`₹${order.subtotal?.toLocaleString()}`} />
+          {/* Totals + GST breakdown */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gap: '0 32px',
+              padding: '16px 36px 20px',
+              alignItems: 'start',
+            }}
+          >
+            {/* GST breakdown (left) */}
+            {taxLines.length > 0 && (
+              <div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    color: '#C07A5A',
+                    marginBottom: 8,
+                  }}
+                >
+                  TAX BREAKDOWN
+                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      {['Tax Type', 'Rate', 'Taxable Amt', 'Tax Amt'].map((h) => (
+                        <th
+                          key={h}
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: '#A8BAA9',
+                            textAlign: 'left',
+                            paddingBottom: 4,
+                            paddingRight: 16,
+                          }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {taxLines.map((tl) => (
+                      <tr key={tl.type}>
+                        <td style={taxCell}>{tl.type}</td>
+                        <td style={taxCell}>{tl.rate}%</td>
+                        <td style={taxCell}>₹{taxableAmount.toLocaleString('en-IN')}</td>
+                        <td style={taxCell}>₹{tl.amount.toLocaleString('en-IN')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{ fontSize: 10, color: '#A8BAA9', marginTop: 6 }}>
+                  All prices are inclusive of GST
+                </div>
+              </div>
+            )}
+            {taxLines.length === 0 && <div />}
+
+            {/* Amount summary (right) */}
+            <div style={{ minWidth: 220 }}>
+              <TotalRow
+                label="Subtotal (incl. tax)"
+                value={`₹${order.subtotal?.toLocaleString('en-IN')}`}
+              />
+              {invoice && invoice.tax_amount > 0 && (
+                <TotalRow
+                  label={`GST (${taxLines.map((t) => `${t.type} ${t.rate}%`).join(' + ')})`}
+                  value={`₹${invoice.tax_amount.toLocaleString('en-IN')}`}
+                  muted
+                />
+              )}
               <TotalRow
                 label="Shipping"
-                value={order.shipping === 0 ? 'Free' : `₹${order.shipping?.toLocaleString()}`}
+                value={
+                  order.shipping === 0 ? 'Free' : `₹${order.shipping?.toLocaleString('en-IN')}`
+                }
               />
               <div
                 style={{
@@ -434,13 +500,13 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
               >
                 <span style={{ fontSize: 14, fontWeight: 800, color: '#1C221E' }}>Grand Total</span>
                 <span style={{ fontSize: 14, fontWeight: 800, color: '#2D4A32' }}>
-                  ₹{order.total?.toLocaleString()}
+                  ₹{order.total?.toLocaleString('en-IN')}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Payment & footer */}
+          {/* Footer */}
           <div
             style={{
               background: '#FAF7F2',
@@ -454,17 +520,7 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
             }}
           >
             <div>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
-                  color: '#C07A5A',
-                  marginBottom: 4,
-                }}
-              >
-                PAYMENT
-              </div>
+              <div style={eyebrow}>PAYMENT</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: '#1C221E' }}>
                 {order.payment_method}
               </div>
@@ -487,11 +543,47 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
   )
 }
 
-function TotalRow({ label, value }: { label: string; value: string }) {
+// ── Shared micro-styles ────────────────────────────────────────────────────────
+
+const eyebrow: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  color: '#C07A5A',
+  marginBottom: 8,
+}
+
+const boldLine: React.CSSProperties = {
+  fontSize: 13,
+  fontWeight: 700,
+  color: '#1C221E',
+  marginBottom: 3,
+}
+
+const mutedLine: React.CSSProperties = {
+  fontSize: 12,
+  color: '#5C6C4D',
+  lineHeight: 1.6,
+}
+
+const taxCell: React.CSSProperties = {
+  fontSize: 11,
+  color: '#5C6C4D',
+  paddingTop: 3,
+  paddingRight: 16,
+}
+
+function TotalRow({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-      <span style={{ fontSize: 12, color: '#5C6C4D' }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, color: '#1C221E' }}>{value}</span>
+      <span style={{ fontSize: 12, color: muted ? '#A8BAA9' : '#5C6C4D' }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: muted ? '#A8BAA9' : '#1C221E' }}>
+        {value}
+      </span>
     </div>
   )
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100
 }

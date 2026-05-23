@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import type { CheckoutAddress, NormalizedCartItem, CartTotals } from './commerce'
+import { createSupabaseAdmin, hasSupabaseAdminEnv } from './supabase-admin'
 
 export interface OrderEmailData {
   orderId: string
@@ -33,6 +34,14 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
       subject: `Order confirmed — #${shortId} ✦ VerdeBliss`,
       html: buildHtml({ ...data, shortId, invoiceUrl, orderUrl }),
     })
+
+    if (hasSupabaseAdminEnv()) {
+      const admin = createSupabaseAdmin()
+      await admin
+        .from('invoices')
+        .update({ email_sent_at: new Date().toISOString() })
+        .eq('order_id', data.orderId)
+    }
   } catch {
     console.warn('[order-email] Failed to send order confirmation email')
   }
