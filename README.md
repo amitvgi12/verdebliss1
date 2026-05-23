@@ -2,58 +2,63 @@
 
 VerdeBliss is a production-oriented D2C skincare storefront built with **Next.js App Router**, **TypeScript strict mode**, **Tailwind CSS**, **Supabase**, and **Razorpay**.
 
-The current architecture is server-first for SEO-critical routes and server-owned for payment/order integrity. Browser code never writes orders, payment events, loyalty points, or inventory movements directly.
+The architecture is server-first for SEO-critical routes and server-owned for payment/order integrity. Browser code never writes orders, payment events, loyalty points, or inventory movements directly.
 
-## Current architecture
+## Architecture
 
-```text
-Browser UI
-  ├─ Server-rendered homepage, products, product detail, blog, policy pages
-  ├─ Client islands: cart, checkout steps, account, filters, reviews form, chatbot
-  └─ API calls use x-vb-client + Origin/Referer checks
+```mermaid
+flowchart TB
+    Browser(["Browser"])
 
-Next.js API boundary
-  ├─ /api/checkout/create-razorpay-order
-  ├─ /api/checkout/verify-razorpay
-  ├─ /api/checkout/cod
-  ├─ /api/webhooks/razorpay
-  ├─ /api/reviews
-  ├─ /api/refunds/eligible-orders
-  ├─ /api/refunds/request
-  ├─ /api/contact
-  ├─ /api/newsletter
-  └─ /api/version
+    subgraph CF["☁️  Cloudflare  (edge)"]
+        WAF["WAF · CDN · Rate Limits · Bot Management · DDoS"]
+        Turnstile["Turnstile — Bot Defence\ncontact · newsletter"]
+    end
 
-Supabase Postgres
-  ├─ products, profiles
-  ├─ checkout_sessions
-  ├─ orders, order_items
-  ├─ payment_events, payment_reconciliation_failures
-  ├─ inventory_movements
-  ├─ loyalty_ledger
-  ├─ reviews with verified-purchase fields
-  ├─ refunds, contact_tickets, customer_consents
-  └─ api_rate_limits
+    subgraph VCL["▲  Vercel — Next.js App Router"]
+        Proxy["proxy.ts\nCSP nonce · CF origin gate · security headers"]
+
+        subgraph Render["Rendering"]
+            SC["Server Components\n/ · /products · /products/:id · /blog\n/faq · /certifications · /quiz · /press · policies"]
+            CC["Client Islands\ncart · checkout · account · quiz · chatbot · filters"]
+        end
+
+        subgraph API["API Routes"]
+            Pay["/api/checkout/create-order\n/api/checkout/verify-razorpay\n/api/checkout/cod\n/api/webhooks/razorpay"]
+            Svc["/api/reviews · /api/refunds/*\n/api/newsletter · /newsletter/confirm\n/api/contact"]
+            Ops["/api/revalidate · /api/version\n/api/cron/reconciliation-alert"]
+        end
+    end
+
+    subgraph Ext["External Services"]
+        RZP["💳  Razorpay\nPayment Gateway"]
+        SUP["🗄️  Supabase Postgres\norders · order_items · invoices · checkout_sessions\npayment_events · payment_reconciliation_failures\nproducts · reviews · profiles · wishlist\nloyalty_ledger · inventory_movements\ncustomer_consents · api_rate_limits · refunds"]
+        RDS["⚡  Upstash Redis\nAPI Rate Limiting"]
+        GEM["🤖  Google Gemini\nChatbot AI"]
+    end
+
+    Browser -- HTTPS --> CF
+    CF -- proxied --> Proxy
+    Proxy --> SC & CC & Pay & Svc & Ops
+
+    Pay --> RZP
+    SC --> SUP
+    Pay & Svc & Ops --> SUP
+    Pay & Svc & Ops --> RDS
+    CC --> GEM
+    Svc --> Turnstile
 ```
 
-## Production fixes included
+## Key design decisions
 
-- Server-owned Razorpay checkout sessions.
-- Server-side Razorpay signature verification and payment amount/currency validation.
-- Raw-body Razorpay webhook verification.
-- Atomic order finalisation through `public.finalize_commerce_order(...)`.
-- Inventory and loyalty updates happen inside the database transaction.
-- Distributed Redis/KV-first API rate limiting with Supabase durable fallback.
-- Strict TypeScript enabled.
-- Homepage is server-rendered.
-- `/products` now server-renders product cards instead of shipping an empty client shell.
-- Product sitemap uses DB-first catalogue via `getProductsServer()`.
-- Review submissions go through `/api/reviews` and require a purchased order item.
-- Product detail no longer displays fake “verified reviews” counts when approved review data is unavailable.
-- Newsletter copy no longer promises points that the backend does not award.
-- UI containment helpers fix the edge-to-edge/misaligned layouts visible in the audit screenshots.
-- Sentry SDK imports were removed from app modules because they caused Next build-trace instability in this repo; structured log signatures remain for log-drain alerting.
-- Footer and PDP commerce disclosures now render from shared pre-launch compliance data.
+- Server-owned Razorpay checkout sessions with server-side signature + amount verification.
+- Raw-body Razorpay webhook verification; atomic order finalisation via `public.finalize_commerce_order(...)`.
+- Inventory and loyalty updates run inside the database transaction.
+- Redis/KV-first API rate limiting with Supabase durable fallback and per-identity (user/email/cart) second bucket.
+- Per-request CSP nonce in `proxy.ts` with `strict-dynamic`; no `unsafe-inline` in `script-src`.
+- Optional Cloudflare origin gate: `CF_ORIGIN_SECRET` header checked on `/api/*` (see `CLOUDFLARE_WAF.md`).
+- ISR product pages purged post-deploy via `/api/revalidate` (requires `REVALIDATE_SECRET`).
+- `LAUNCH_MODE=true` arms `tests/launch-gates.test.ts` compliance gates before live orders.
 
 ## Required environment variables
 
@@ -62,21 +67,17 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
-# GitHub Actions only: required for remote schema drift detection
+# GitHub Actions: schema drift detection
 SUPABASE_ACCESS_TOKEN=
 SUPABASE_PROJECT_REF=
 SUPABASE_DB_PASSWORD=
 
-# Runtime rate limiter: use Upstash Redis REST or Vercel KV REST aliases.
-# URLs must be REST HTTPS endpoints, not redis:// connection strings.
-# A writable token is required; KV_REST_API_READ_ONLY_TOKEN is not used here.
+# Rate limiter — Upstash Redis REST or Vercel KV REST aliases.
+# Must be HTTPS REST endpoints, not redis:// connection strings.
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 # KV_REST_API_URL=
-# KV_REST_API_REDIS_URL=
-# KV_REST_API_KV_URL=
 # KV_REST_API_TOKEN=
-# KV_REST_API_READ_ONLY_TOKEN=
 
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 RAZORPAY_KEY_ID=
@@ -84,20 +85,30 @@ RAZORPAY_KEY_SECRET=
 RAZORPAY_WEBHOOK_SECRET=
 
 GEMINI_API_KEY=
+
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 
+# Post-deploy ISR cache purge (see PRODUCTION_RUNBOOK.md)
+REVALIDATE_SECRET=
+
+# Hourly reconciliation alert
+CRON_SECRET=
+OPS_ALERT_WEBHOOK_URL=
+
+# Build identity — injected by CI
 NEXT_PUBLIC_BUILD_SHA=
 NEXT_PUBLIC_BUILD_TIME=
 NEXT_PUBLIC_APP_VERSION=
-CF_ORIGIN_SECRET=
+
+# Optional
+CF_ORIGIN_SECRET=           # Cloudflare origin gate (see CLOUDFLARE_WAF.md)
+SENTRY_DSN=                 # Enables observability shim → Sentry forwarding
+EXPOSE_BUILD_METADATA=      # Set true only for diagnostic windows; redacts Git rev in /api/version otherwise
+LAUNCH_MODE=                # Set true in production before live orders; arms launch-gates tests
 ```
 
-`/api/version` returns deployment metadata plus boolean capability flags for
-public Supabase, Supabase admin, Razorpay, Turnstile, distributed rate limiting,
-and static-fallback mode. It confirms runtime readiness without exposing secret
-values. Production responses redact the Git revision unless
-`EXPOSE_BUILD_METADATA=true` is set for a controlled diagnostic window.
+`/api/version` returns deployment metadata plus boolean capability flags for Supabase, Supabase admin, Razorpay, Turnstile, distributed rate limiting, and static-fallback mode.
 
 ## Local setup
 
@@ -112,27 +123,25 @@ npm run dev
 Run in Supabase SQL editor:
 
 ```sql
--- 1. Main schema / migrations
-supabase/schema.sql
+-- 1. Main schema (idempotent — safe to rerun)
+\i supabase/schema.sql
 
--- 2. Optional local/demo data
-supabase/seed_test_data.sql
+-- 2. Optional demo data
+\i supabase/seed_test_data.sql
 ```
 
-`schema.sql` is idempotent and can be rerun on an existing project.
+See `supabase/README_RUN_SCHEMA.md` for details.
 
 ## Razorpay setup
 
 1. Add `RAZORPAY_KEY_ID`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, and `RAZORPAY_KEY_SECRET` to Vercel.
-2. Add webhook URL in Razorpay:
-
-```text
-https://www.verdebliss.com/api/webhooks/razorpay
-```
-
+2. Add webhook URL in Razorpay dashboard:
+   ```
+   https://www.verdebliss.com/api/webhooks/razorpay
+   ```
 3. Add `RAZORPAY_WEBHOOK_SECRET` to Vercel.
-4. Subscribe at minimum to payment authorized/captured/failed events.
-5. Monitor `payment_reconciliation_failures` and `[ALERT] payment_reconciliation_failed` log events.
+4. Subscribe to payment `authorized`, `captured`, and `failed` events.
+5. Monitor `payment_reconciliation_failures` and `[ALERT] payment_reconciliation_failed` log lines.
 
 ## Validation commands
 
@@ -140,60 +149,34 @@ https://www.verdebliss.com/api/webhooks/razorpay
 npm run format:check
 npm run lint
 npm run typecheck
-npm test
+npm test -- --run
 npm run build
 ```
 
-CI treats these as mandatory failing gates before deployment:
+CI gates (must pass before deploy):
 
 ```bash
 npm run lint
 npm run typecheck
-npm test
+npm run test:coverage
 npm run build
 npm run schema:drift
 ```
 
-`npm run schema:drift` compares the canonical `supabase/schema.sql` against the linked Supabase
-project and requires these GitHub repository secrets: `SUPABASE_ACCESS_TOKEN`,
-`SUPABASE_PROJECT_REF`, and `SUPABASE_DB_PASSWORD`.
+`npm run schema:drift` requires `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, and `SUPABASE_DB_PASSWORD` in GitHub secrets.
 
-## Production runbook summary
+## Pre-launch checklist
 
-- Treat `payment_reconciliation_failures` as an operational queue.
-- Wire log alerts for `[ALERT] payment_reconciliation_failed`, `[EXCEPTION]`, and checkout API 5xx spikes.
-- Do not restore hardcoded review counts; use approved review aggregates only.
-- Do not promise loyalty points unless a `loyalty_ledger` event is actually created.
-- Keep product catalogue DB-first; `constants/products.ts` is only fallback data.
-- Replace every `DEMO` commerce disclosure before accepting live orders. See `constants/businessCompliance.ts` and `constants/productCompliance.ts`.
+Full checklist is in `PRODUCTION_RUNBOOK.md`. Key steps:
 
-## Pre-launch compliance placeholders
+1. Replace every `DEMO` placeholder in `constants/businessCompliance.ts` and `constants/productCompliance.ts`.
+2. Set `REVALIDATE_SECRET` in both GitHub Actions secrets and Vercel production env vars.
+3. Set `CRON_SECRET` and `OPS_ALERT_WEBHOOK_URL`; confirm `/api/cron/reconciliation-alert` runs hourly.
+4. Run `supabase/purge_seeded_reviews.sql` against the production DB.
+5. Set `LAUNCH_MODE=true` in Vercel production and confirm `npm run test:coverage` still passes.
 
-The app currently ships with deliberately fake disclosure values so layout, SEO, and PDP presentation can be tested before launch. They are not valid legal registrations.
+## Operational docs
 
-Update these files before accepting real consumer orders:
-
-- `constants/businessCompliance.ts`
-  - legal name
-  - `CIN`
-  - `GSTIN`
-  - full registered-office address
-  - principal place of business
-  - helpline and support hours
-  - grievance-officer name, designation, and email
-- `constants/productCompliance.ts`
-  - country of origin for each product
-  - manufacturer, packer, importer
-  - CDSCO import-licence number only where an imported cosmetic requires it
-
-After replacing those values, verify the footer, PDP “Product & Seller Details” accordion, Organization JSON-LD, and policy links in production.
-
-### Legacy Sentry config cleanup
-
-This package intentionally does **not** install `@sentry/nextjs`. Earlier builds used root-level `sentry.edge.config.ts`, `sentry.server.config.ts`, or `sentry.client.config.ts`. If you copy this package over an older checkout instead of deploying from a clean clone, those orphan files can remain and Next.js will try to compile them, causing:
-
-```text
-Cannot find module '@sentry/nextjs'
-```
-
-`npm run build` now runs `scripts/cleanup-legacy-sentry.mjs` first and removes those stale files automatically. For manual cleanup, delete any root-level `sentry.*.config.*` files before building.
+- `PRODUCTION_RUNBOOK.md` — release checklist, ISR purge, LAUNCH_MODE gates, payment reconciliation, Razorpay capture mode, backup drills
+- `CLOUDFLARE_WAF.md` — DNS setup, origin lock-down, WAF rules, rate-limit rules, bot management, rollback
+- `supabase/README_RUN_SCHEMA.md` — schema idempotency notes, recommended run order

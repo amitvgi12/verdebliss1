@@ -1,6 +1,6 @@
 # VerdeBliss — QA Test Cases v2.0
 
-**Version:** 2.0.0 | **Target:** https://verdebliss.vercel.app/
+**Version:** 2.1.0 | **Target:** https://www.verdebliss.com/
 **Environments:** Chrome 124 / Safari 17 · iPhone 14 (375px) · iPad (768px) · Desktop (1280px+)
 
 ## Execution Summary
@@ -27,7 +27,8 @@
 | Mobile / Responsive | 14      |      |      |         |
 | Accessibility       | 10      |      |      |         |
 | Performance         | 8       |      |      |         |
-| **TOTAL**           | **190** |      |      |         |
+| Skin Quiz           | 8       |      |      |         |
+| **TOTAL**           | **198** |      |      |         |
 
 ---
 
@@ -256,7 +257,7 @@
 | PRESS-03 | Awards: 6 rows        | 1. Scroll. | Year, award, badge    | P2  |
 | PRESS-04 | Download Kit → toast  | 1. Click.  | Info toast with email | P2  |
 | PRESS-05 | Cards animate         | 1. Scroll. | Fade+slide            | P3  |
-| PRESS-06 | Contact email visible | 1. Hero.   | press@verdebliss.in   | P2  |
+| PRESS-06 | Contact email visible | 1. Hero.   | press@verdebliss.com  | P2  |
 
 ## TC-CONTACT: Contact /contact (8 tests)
 
@@ -336,6 +337,19 @@
 | PERF-06 | LCP ≤ 2.5s            | 1. Lighthouse.    | ≤ 2.5s             | P2  |
 | PERF-07 | CLS ≤ 0.1             | 1. Lighthouse.    | ≤ 0.1              | P2  |
 | PERF-08 | No chunk >200kB gzip  | 1. Check dist.    | All ≤ 55 kB gzip   | P2  |
+
+## TC-QUIZ: Skin Quiz /quiz (8 tests)
+
+| ID      | Title                      | Steps                        | Expected                                   | P   |
+| ------- | -------------------------- | ---------------------------- | ------------------------------------------ | --- |
+| QUIZ-01 | Page loads with h1         | 1. /quiz.                    | "Skin Quiz — Find Your Routine" in DOM     | P1  |
+| QUIZ-02 | Progress bar accessible    | 1. Inspect bar.              | role="progressbar" + aria-valuenow present | P1  |
+| QUIZ-03 | Options are radiogroup     | 1. Inspect Q1 options.       | role="radiogroup" + aria-labelledby on div | P1  |
+| QUIZ-04 | Selected option aria state | 1. Tap one option.           | aria-checked="true" on selected button     | P1  |
+| QUIZ-05 | Auto-advance on pick       | 1. Pick any option.          | Next question after ~220ms                 | P1  |
+| QUIZ-06 | Back button works          | 1. Q3 → Back.                | Returns to Q2                              | P2  |
+| QUIZ-07 | Results screen loads       | 1. Complete all 5 questions. | Products grid + bundle CTA                 | P1  |
+| QUIZ-08 | Retake quiz resets         | 1. Results → Retake.         | Back to Q1, progress = 20%                 | P2  |
 
 ---
 

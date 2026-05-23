@@ -39,15 +39,22 @@ export async function POST(request: Request) {
   }
 
   revalidateProductsCache(productId ? [productId] : undefined)
-  // Always purge content pages alongside products so corrections go live on the
-  // next request rather than waiting for the ISR TTL.
+  // ISR roots: purge every top-level route that can lag a build behind.
+  // Without these, a targeted product purge leaves the homepage and catalogue
+  // on the previous build's HTML — the "inverted split-brain" seen in the
+  // May-23 audit (PDP on c570…, homepage still on c304…).
+  revalidatePath('/', 'page')
+  revalidatePath('/products', 'page')
+  revalidatePath('/blog', 'page')
+  // Content pages that carry certification/claims copy.
   revalidatePath('/faq', 'page')
   revalidatePath('/certifications', 'page')
   revalidatePath('/cookie-policy', 'page')
 
+  const paths = ['/', '/products', '/blog', '/faq', '/certifications', '/cookie-policy']
   return NextResponse.json({
     revalidated: true,
     productId: productId ?? 'all',
-    paths: ['/faq', '/certifications', '/cookie-policy'],
+    paths,
   })
 }

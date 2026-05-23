@@ -348,7 +348,14 @@ export default function QuizClient() {
     <div style={{ background: C.bg, minHeight: '100vh' }}>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 16px 64px' }}>
         {/* Progress */}
-        <div style={{ marginBottom: 32 }}>
+        <div
+          style={{ marginBottom: 32 }}
+          role="progressbar"
+          aria-valuenow={step + 1}
+          aria-valuemin={1}
+          aria-valuemax={QUESTIONS.length}
+          aria-label={`Question ${step + 1} of ${QUESTIONS.length}`}
+        >
           <div
             style={{
               display: 'flex',
@@ -381,6 +388,7 @@ export default function QuizClient() {
             exit={{ opacity: 0, x: -20 }}
           >
             <h2
+              id={`quiz-q-${step}`}
               style={{
                 fontFamily: FONT.serif,
                 fontSize: 'clamp(24px, 4vw, 32px)',
@@ -398,12 +406,18 @@ export default function QuizClient() {
               </p>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div
+              role="radiogroup"
+              aria-labelledby={`quiz-q-${step}`}
+              style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+            >
               {q.options.map((opt) => {
                 const selected = answers[q.id] === opt.value
                 return (
                   <button
                     key={opt.value}
+                    role="radio"
+                    aria-checked={selected}
                     onClick={() => pick(q.id, opt.value)}
                     style={{
                       background: selected ? C.sagePale : C.card,

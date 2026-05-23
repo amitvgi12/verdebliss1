@@ -66,6 +66,26 @@ describe('pre-launch gates', () => {
     expect(unverifiable).toEqual([])
   })
 
+  it('blocks launch mode when DEMO_MODE is enabled in production', () => {
+    if (process.env.LAUNCH_MODE !== 'true') return
+    expect(
+      process.env.NEXT_PUBLIC_DEMO_MODE,
+      'NEXT_PUBLIC_DEMO_MODE must not be "true" in a production launch'
+    ).not.toBe('true')
+  })
+
+  it('blocks launch mode when critical production env vars are missing', () => {
+    if (process.env.LAUNCH_MODE !== 'true') return
+    const required = [
+      'RAZORPAY_KEY_ID',
+      'RAZORPAY_KEY_SECRET',
+      'RAZORPAY_WEBHOOK_SECRET',
+      'SUPABASE_SERVICE_ROLE_KEY',
+    ]
+    const missing = required.filter((k) => !process.env[k])
+    expect(missing, `Missing required production env vars: ${missing.join(', ')}`).toHaveLength(0)
+  })
+
   it('blocks launch mode when production product badges use hard certification claims', async () => {
     if (process.env.LAUNCH_MODE !== 'true') return
 

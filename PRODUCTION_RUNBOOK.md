@@ -19,6 +19,75 @@
     channel.
 12. Before the final live launch, set `LAUNCH_MODE=true` in the production
     environment and confirm `npm run test:coverage` still passes.
+13. Set `REVALIDATE_SECRET` in both GitHub Actions secrets **and** Vercel
+    production environment variables (see below).
+
+## REVALIDATE_SECRET — post-deploy ISR cache purge
+
+After every production deploy, the CI pipeline calls `POST /api/revalidate` to
+immediately purge the ISR cache for all product pages, the homepage, the product
+catalogue, the blog, the FAQ, the certifications page, and the cookie policy.
+Without this, stale HTML from the previous build can persist until the per-route
+`revalidate` TTL (300 s) expires.
+
+**Generate the secret (one-time):**
+
+```bash
+openssl rand -hex 32
+```
+
+**Register the same value in two places:**
+
+| Location                    | How                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| GitHub Actions secret       | Repo → Settings → Secrets and variables → Actions → New repository secret → name: `REVALIDATE_SECRET`   |
+| Vercel environment variable | Project → Settings → Environment Variables → add `REVALIDATE_SECRET` for the **Production** environment |
+
+**What happens if the secret is missing:**
+The CI revalidation step prints a warning and exits 0 (deploy does not fail), but the
+ISR cache is NOT purged. Each route will then serve stale HTML until its own TTL
+expires — typically 300 s for product/content routes. The live smoke test's
+build-SHA parity assertion (`all product PDPs are served from the same current build
+as the homepage`) will catch any split-brain that survives into the next test run.
+
+**Manual purge during incident response:**
+
+```bash
+curl -X POST https://www.verdebliss.com/api/revalidate \
+  -H "x-revalidate-secret: <secret>" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+Response confirms which paths were purged:
+
+```json
+{
+  "revalidated": true,
+  "productId": "all",
+  "paths": ["/", "/products", "/blog", "/faq", "/certifications", "/cookie-policy"]
+}
+```
+
+## LAUNCH_MODE — pre-launch gate
+
+Set `LAUNCH_MODE=true` in the Vercel production environment **before** enabling
+live orders. This arms the `tests/launch-gates.test.ts` suite, which will fail CI if:
+
+- Any `DEMO` placeholder remains in `businessCompliance.ts` or `productCompliance.ts`
+  (including the manufacturer/packer/seller block, which inherits from the same constants)
+- Any seeded review row matching the known seed phrases remains in the `reviews` table
+- Any active product has unverifiable MRP data
+- Any active product badge uses a hard certification claim
+
+**Seed review purge (run once against production DB before launch):**
+
+```bash
+# In the Supabase SQL editor or psql against the production project:
+\i supabase/purge_seeded_reviews.sql
+```
+
+The script is idempotent and recomputes product rating aggregates after deletion.
 
 ## Critical operational alerts
 

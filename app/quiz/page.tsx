@@ -10,5 +10,10 @@ export const metadata = {
 }
 
 export default function QuizPage() {
-  return <QuizClient />
+  return (
+    <>
+      <h1 className="sr-only">Skin Quiz — Find Your Routine</h1>
+      <QuizClient />
+    </>
+  )
 }
