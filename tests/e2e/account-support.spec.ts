@@ -100,6 +100,19 @@ test.describe('account, support, and consent flows', () => {
 
   test('delivery checker returns ETA and COD status', async ({ page }) => {
     await seedConsent(page)
+    await page.route('**/api/delivery-estimate*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          pincode: '411014',
+          dispatchWindow: 'Usually dispatched within 1 business day',
+          deliveryEstimate: '2–3 business days',
+          prepaidAvailable: true,
+          codDecision: 'allow',
+        }),
+      })
+    })
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
     await page.locator('#delivery-pincode').fill('411014')
