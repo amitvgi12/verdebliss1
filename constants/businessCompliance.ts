@@ -231,11 +231,15 @@ export function validateBusinessCompliance(
     if (!hasVerifiedCin(compliance.cin)) errors.push('CIN must be a verified 21-character CIN')
     if (!hasVerifiedGstin(compliance.gstin))
       errors.push('GSTIN must be a verified 15-character GSTIN')
-    if (
-      !hasVerifiedPhone(compliance.helpline.display) ||
-      isPlaceholderPhone(compliance.helpline.href)
-    ) {
-      errors.push('Support phone must be a real verified business phone number')
+    if (!hasVerifiedPhone(compliance.helpline.display)) {
+      errors.push(
+        'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY must be a real verified business phone number'
+      )
+    }
+    if (!hasVerifiedPhone(compliance.helpline.href)) {
+      errors.push(
+        'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF must be a real verified business phone number'
+      )
     }
   }
 
