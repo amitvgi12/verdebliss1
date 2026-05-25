@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ' *)",
+      "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('/Users/amitkumar/VerdeBliss1/verdebliss1/.github/workflows/main.yml'\\)\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(git merge fix/audit-remediation-2026-05 --no-ff -m ' *)"
+    ]
+  }
+}

@@ -245,7 +245,9 @@ export default function Nav() {
                       <ArrowRight
                         size={14}
                         className={
-                          active ? 'text-[#fffaf4] opacity-85' : 'text-muted group-hover:text-forest'
+                          active
+                            ? 'text-[#fffaf4] opacity-85'
+                            : 'text-muted group-hover:text-forest'
                         }
                       />
                     </Link>
