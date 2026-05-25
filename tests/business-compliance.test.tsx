@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import Footer from '@/components/layout/Footer'
 import { CONTACT_CHANNELS } from '@/app/contact/ContactClient'
@@ -13,6 +13,11 @@ import {
 import { organizationJsonLd } from '@/lib/site-schema'
 
 const DEMO_MARKERS = /DEMO|Demo House|\(Demo\)|U20231PN2026PTC000001|27ABCDE1234F1Z5|example\.com/i
+
+afterEach(() => {
+  vi.resetModules()
+  vi.unstubAllEnvs()
+})
 
 const VALID_COMPLIANCE: BusinessCompliance = {
   brandName: 'VerdeBliss',
@@ -80,6 +85,14 @@ describe('business compliance source of truth', () => {
     expect(
       validateBusinessCompliance(VALID_COMPLIANCE, { strict: true, env: fullProductionEnv() })
     ).toMatchObject({ ok: true, errors: [] })
+  })
+
+  it('normalizes tel: phone href values from environment configuration', async () => {
+    vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF', 'tel:+91 22 4567 8901')
+
+    const { BUSINESS_COMPLIANCE: configured } = await import('@/constants/businessCompliance')
+
+    expect(configured.helpline.href).toBe('+912245678901')
   })
 
   it('omits unverified identifiers and addresses from Organization JSON-LD', () => {

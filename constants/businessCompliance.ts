@@ -70,6 +70,14 @@ function env(key: string, fallback: string): string {
   return process.env[key]?.trim() || fallback
 }
 
+function normalizePhoneHref(value: string): string {
+  const trimmed = value.trim().replace(/^tel:/i, '')
+  const hasInternationalPrefix = trimmed.trim().startsWith('+')
+  const digits = trimmed.replace(/\D/g, '')
+  if (!digits) return ''
+  return `${hasInternationalPrefix ? '+' : ''}${digits}`
+}
+
 function isPlaceholderLike(value: string): boolean {
   return (
     PLACEHOLDER_PATTERN.test(value) || KNOWN_FAKE_CIN.test(value) || KNOWN_FAKE_GSTIN.test(value)
@@ -108,7 +116,7 @@ export const BUSINESS_COMPLIANCE: BusinessCompliance = {
       'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY',
       'Support phone pending verification'
     ),
-    href: env('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF', ''),
+    href: normalizePhoneHref(env('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF', '')),
     hours: env('NEXT_PUBLIC_VERDEBLISS_SUPPORT_HOURS', '10:00-18:00 IST, Mon-Sat'),
   },
   emails: {

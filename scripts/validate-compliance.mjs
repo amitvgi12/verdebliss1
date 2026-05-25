@@ -51,7 +51,8 @@ for (const key of required) {
 const cinValue = process.env.NEXT_PUBLIC_VERDEBLISS_CIN?.trim() ?? ''
 const gstinValue = process.env.NEXT_PUBLIC_VERDEBLISS_GSTIN?.trim() ?? ''
 const phoneDisplay = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY?.trim() ?? ''
-const phoneHref = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF?.trim() ?? ''
+const phoneHrefRaw = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF?.trim() ?? ''
+const phoneHref = normalizePhoneHref(phoneHrefRaw)
 const supportEmail = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL?.trim() ?? ''
 const grievanceEmail = process.env.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL?.trim() ?? ''
 
@@ -61,8 +62,13 @@ if (!cin.test(cinValue) || /U20231PN2026PTC000001/i.test(cinValue)) {
 if (!gstin.test(gstinValue) || /27ABCDE1234F1Z5/i.test(gstinValue)) {
   errors.push('NEXT_PUBLIC_VERDEBLISS_GSTIN must be a verified 15-character GSTIN')
 }
-if (!isRealPhone(phoneDisplay) || !isRealPhone(phoneHref)) {
-  errors.push('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_* must be real business phone values')
+if (!isRealPhone(phoneDisplay)) {
+  errors.push('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY must be a real business phone value')
+}
+if (!isRealPhone(phoneHref)) {
+  errors.push(
+    'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF must be a real business phone value, e.g. +912245678901 or tel:+912245678901'
+  )
 }
 if (!email.test(supportEmail) || /\.(test|example)$/i.test(supportEmail)) {
   errors.push('NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL must be a real support email')
@@ -94,4 +100,11 @@ function isRealPhone(value) {
   if (['1234567890', '0123456789', '9876543210'].includes(digits)) return false
   if (digits.includes('40002026') || digits.includes('67890123')) return false
   return /^\+?[0-9][0-9\s-]{7,18}$/.test(value)
+}
+
+function normalizePhoneHref(value) {
+  const stripped = value.replace(/^tel:/i, '')
+  const prefix = stripped.trim().startsWith('+') ? '+' : ''
+  const digits = stripped.replace(/\D/g, '')
+  return digits ? `${prefix}${digits}` : ''
 }
