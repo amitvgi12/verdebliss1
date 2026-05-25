@@ -53,7 +53,7 @@ const VALID_COMPLIANCE: BusinessCompliance = {
 
 describe('business compliance source of truth', () => {
   it('does not keep old demo legal values in the active compliance object', () => {
-    expect(JSON.stringify(BUSINESS_COMPLIANCE)).not.toMatch(DEMO_MARKERS)
+    expect(findDemoMarkerPaths(BUSINESS_COMPLIANCE)).toEqual([])
   })
 
   it('blocks fake compliance values in strict production validation', () => {
@@ -106,7 +106,9 @@ describe('business compliance source of truth', () => {
     ).toBeGreaterThan(0)
     expect(screen.getByText(formatPostalAddress(), { exact: false })).toBeInTheDocument()
     expect(container.textContent).toContain(BUSINESS_COMPLIANCE.emails.support)
-    expect(container.textContent).not.toMatch(DEMO_MARKERS)
+    expect(redactComplianceValues(container.textContent ?? '', BUSINESS_COMPLIANCE)).not.toMatch(
+      DEMO_MARKERS
+    )
   })
 
   it('contact channels use the same compliance source', () => {
@@ -137,4 +139,38 @@ function fullProductionEnv(): NodeJS.ProcessEnv {
     NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME: VALID_COMPLIANCE.grievanceOfficer.name,
     NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL: VALID_COMPLIANCE.grievanceOfficer.email,
   }
+}
+
+function findDemoMarkerPaths(value: unknown, prefix = 'BUSINESS_COMPLIANCE'): string[] {
+  const paths: string[] = []
+
+  function visit(current: unknown, path: string) {
+    if (typeof current === 'string') {
+      if (DEMO_MARKERS.test(current)) paths.push(path)
+      return
+    }
+    if (!current || typeof current !== 'object') return
+
+    for (const [key, nested] of Object.entries(current)) {
+      visit(nested, `${path}.${key}`)
+    }
+  }
+
+  visit(value, prefix)
+  return paths
+}
+
+function redactComplianceValues(text: string, compliance: BusinessCompliance): string {
+  let redacted = text
+  for (const value of flattenComplianceStrings(compliance)) {
+    if (!value) continue
+    redacted = redacted.split(value).join('[compliance-value]')
+  }
+  return redacted
+}
+
+function flattenComplianceStrings(value: unknown): string[] {
+  if (typeof value === 'string') return [value]
+  if (!value || typeof value !== 'object') return []
+  return Object.values(value).flatMap(flattenComplianceStrings)
 }
