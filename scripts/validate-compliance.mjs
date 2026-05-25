@@ -4,6 +4,13 @@ const STRICT =
   process.env.LAUNCH_MODE === 'true' ||
   process.env.VERDEBLISS_ENFORCE_COMPLIANCE === 'true' ||
   process.env.VERCEL_ENV === 'production'
+const strictReasons = [
+  process.env.LAUNCH_MODE === 'true' ? 'LAUNCH_MODE=true' : null,
+  process.env.VERDEBLISS_ENFORCE_COMPLIANCE === 'true'
+    ? 'VERDEBLISS_ENFORCE_COMPLIANCE=true'
+    : null,
+  process.env.VERCEL_ENV === 'production' ? 'VERCEL_ENV=production' : null,
+].filter(Boolean)
 
 if (!STRICT) {
   process.exit(0)
@@ -71,7 +78,11 @@ if (
 }
 
 if (errors.length) {
-  console.error('Production compliance validation failed:')
+  console.error(
+    `Production compliance validation failed${
+      strictReasons.length ? ` (${strictReasons.join(', ')})` : ''
+    }:`
+  )
   for (const error of errors) console.error(`- ${error}`)
   process.exit(1)
 }
