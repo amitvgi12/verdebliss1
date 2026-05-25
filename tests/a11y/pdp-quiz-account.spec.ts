@@ -44,8 +44,11 @@ test.describe('PDP, quiz, and account accessibility', () => {
   test('account page (unauthenticated) passes axe AA checks', async ({ page }) => {
     await suppressCookieModal(page)
     await page.goto('/account')
-    // Unauthenticated state: sign-in form or redirect to login
-    await page.waitForLoadState('networkidle')
+    // Auth/bootstrap listeners can keep the page from ever reaching
+    // Playwright's networkidle state in CI. Wait for the actual unauthenticated
+    // UI that axe will scan instead.
+    await expect(page.getByRole('heading', { name: /welcome back|join verdebliss/i })).toBeVisible()
+    await expect(page.getByLabel(/email address/i)).toBeVisible()
     await expectNoAxeViolations(page, 'main')
   })
 })
