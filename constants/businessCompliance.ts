@@ -145,6 +145,7 @@ export function shouldEnforceProductionCompliance(
   source: NodeJS.ProcessEnv = process.env
 ): boolean {
   return (
+    source.NODE_ENV === 'production' ||
     source.LAUNCH_MODE === 'true' ||
     source.VERDEBLISS_ENFORCE_COMPLIANCE === 'true' ||
     source.VERCEL_ENV === 'production'

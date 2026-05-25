@@ -89,8 +89,9 @@ GEMINI_API_KEY=
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 
-# Public seller/compliance disclosure. Required for production deploys when
-# VERCEL_ENV=production, LAUNCH_MODE=true, or VERDEBLISS_ENFORCE_COMPLIANCE=true.
+# Public seller/compliance disclosure. Required for `npm run build` and all
+# production deploys when NODE_ENV=production, VERCEL_ENV=production,
+# LAUNCH_MODE=true, or VERDEBLISS_ENFORCE_COMPLIANCE=true.
 # Define these in .env.local for local strict builds and in Vercel Project
 # Settings → Environment Variables for production. See .env.example for the
 # full list, including optional privacy/returns/press/order email aliases.

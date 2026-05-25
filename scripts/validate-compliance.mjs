@@ -1,10 +1,14 @@
 /* global console, process */
 
 const STRICT =
+  process.env.npm_lifecycle_event === 'prebuild' ||
+  process.env.NODE_ENV === 'production' ||
   process.env.LAUNCH_MODE === 'true' ||
   process.env.VERDEBLISS_ENFORCE_COMPLIANCE === 'true' ||
   process.env.VERCEL_ENV === 'production'
 const strictReasons = [
+  process.env.npm_lifecycle_event === 'prebuild' ? 'npm run build' : null,
+  process.env.NODE_ENV === 'production' ? 'NODE_ENV=production' : null,
   process.env.LAUNCH_MODE === 'true' ? 'LAUNCH_MODE=true' : null,
   process.env.VERDEBLISS_ENFORCE_COMPLIANCE === 'true'
     ? 'VERDEBLISS_ENFORCE_COMPLIANCE=true'

@@ -7,6 +7,7 @@ import {
   formatPostalAddress,
   getBusinessIdentifiers,
   getStructuredPostalAddress,
+  shouldEnforceProductionCompliance,
   validateBusinessCompliance,
   type BusinessCompliance,
 } from '@/constants/businessCompliance'
@@ -85,6 +86,11 @@ describe('business compliance source of truth', () => {
     expect(
       validateBusinessCompliance(VALID_COMPLIANCE, { strict: true, env: fullProductionEnv() })
     ).toMatchObject({ ok: true, errors: [] })
+  })
+
+  it('treats any production runtime as a strict compliance environment', () => {
+    expect(shouldEnforceProductionCompliance({ NODE_ENV: 'production' })).toBe(true)
+    expect(shouldEnforceProductionCompliance({ NODE_ENV: 'development' })).toBe(false)
   })
 
   it('normalizes tel: phone href values from environment configuration', async () => {

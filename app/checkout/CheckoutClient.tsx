@@ -61,8 +61,8 @@ function readPersistedCartItems(): CartItem[] {
 }
 
 /* ── Load Razorpay checkout script dynamically ─────────────────────────
- * Programmatic script injection. Razorpay's origin is allow-listed in the
- * CSP (see proxy.ts) so this works without a nonce. We keep the script
+ * Programmatic script injection. The checkout page runs from a nonced Next
+ * bundle, so CSP `strict-dynamic` allows this child script. We keep the script
  * around across unmounts (re-loading on every checkout return is wasteful)
  * and silently no-op when the iframe API has already been registered.
  *

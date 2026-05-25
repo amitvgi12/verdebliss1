@@ -7,6 +7,8 @@ import type { NextRequest } from 'next/server'
  * - Generates a fresh nonce per request via Web Crypto (Edge runtime safe).
  * - Forwards the nonce to Server Components via the `x-nonce` request header,
  *   which `app/layout.tsx` reads with `headers()` to attach to JSON-LD blocks.
+ * - Forwards the CSP itself on the request. Next parses that request header to
+ *   attach the same nonce to its framework/bootstrap scripts.
  * - Sets a strict CSP that drops `'unsafe-inline'` for scripts.
  * - When `CF_ORIGIN_SECRET` is set, rejects requests to `/api/*` that don't
  *   carry the matching `x-cf-origin-secret` header. See `CLOUDFLARE_WAF.md`.
@@ -51,38 +53,13 @@ export function proxy(request: NextRequest) {
   const nonce = generateNonce()
   const isProduction = process.env.NODE_ENV === 'production'
 
-  const cspDirectives = [
-    "default-src 'self'",
-    // strict-dynamic lets nonce'd scripts load further scripts; we still keep
-    // an allow-list for Razorpay because their checkout JS lives at a fixed
-    // origin and is loaded directly by client code.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com${
-      isProduction ? '' : " 'unsafe-eval'"
-    }`,
-    `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`,
-    // Tailwind v4 + Next.js inject style tags. 'unsafe-inline' here is widely
-    // accepted because style-based exfiltration is much weaker than script
-    // execution. Hashes/nonces for styles are possible but break Tailwind's JIT.
-    "style-src 'self' 'unsafe-inline'",
-    "style-src-elem 'self' 'unsafe-inline'",
-    "font-src 'self' data:",
-    "img-src 'self' data: blob: https://*.supabase.co",
-    `connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://va.vercel-scripts.com https://vitals.vercel-insights.com${SENTRY_CONNECT_SRC}`,
-    'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
-    "frame-ancestors 'none'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "manifest-src 'self'",
-    'upgrade-insecure-requests',
-    'report-to csp-endpoint',
-    'report-uri /api/csp-report',
-  ].join('; ')
+  const cspDirectives = buildContentSecurityPolicy(nonce, {
+    isProduction,
+    sentryConnectSrc: SENTRY_CONNECT_SRC,
+  })
 
   // Forward nonce to Server Components.
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-nonce', nonce)
-  requestHeaders.set('x-csp', cspDirectives)
+  const requestHeaders = withSecurityRequestHeaders(request.headers, nonce, cspDirectives)
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
   response.headers.set('Content-Security-Policy', cspDirectives)
@@ -124,6 +101,57 @@ function generateNonce(): string {
   for (const b of bytes) str += String.fromCharCode(b)
   // btoa is available in Edge runtime.
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+export function buildContentSecurityPolicy(
+  nonce: string,
+  {
+    isProduction,
+    sentryConnectSrc = '',
+  }: {
+    isProduction: boolean
+    sentryConnectSrc?: string
+  }
+): string {
+  return [
+    "default-src 'self'",
+    // strict-dynamic lets nonce'd scripts load further scripts; we still keep
+    // an allow-list for Razorpay because their checkout JS lives at a fixed
+    // origin and is loaded directly by client code.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com${
+      isProduction ? '' : " 'unsafe-eval'"
+    }`,
+    `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`,
+    // Tailwind v4 + Next.js inject style tags. 'unsafe-inline' here is widely
+    // accepted because style-based exfiltration is much weaker than script
+    // execution. Hashes/nonces for styles are possible but break Tailwind's JIT.
+    "style-src 'self' 'unsafe-inline'",
+    "style-src-elem 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
+    "img-src 'self' data: blob: https://*.supabase.co",
+    `connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://va.vercel-scripts.com https://vitals.vercel-insights.com${sentryConnectSrc}`,
+    'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "manifest-src 'self'",
+    'upgrade-insecure-requests',
+    'report-to csp-endpoint',
+    'report-uri /api/csp-report',
+  ].join('; ')
+}
+
+export function withSecurityRequestHeaders(
+  headers: Headers,
+  nonce: string,
+  cspDirectives: string
+): Headers {
+  const requestHeaders = new Headers(headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('x-csp', cspDirectives)
+  requestHeaders.set('Content-Security-Policy', cspDirectives)
+  return requestHeaders
 }
 
 export const config = {
