@@ -206,16 +206,14 @@ export default function Nav() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-3 top-[64px] z-[99] w-[min(86vw,320px)] overflow-hidden rounded-[24px] border border-border bg-card/95 p-3 shadow-[0_24px_70px_rgba(28,34,30,0.22)] backdrop-blur-xl md:hidden"
+              className="fixed inset-x-4 top-[68px] z-[99] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-[#d7c7b6] bg-[#fffaf4] p-3 shadow-[0_26px_80px_rgba(23,36,27,0.32)] backdrop-blur-xl md:hidden"
               aria-label="Pages menu"
             >
-              <div className="mb-2 rounded-[18px] bg-sagePale/70 px-4 py-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-goldText">
-                  Pages
-                </p>
-                <p className="mt-1 text-sm font-semibold text-forest">Explore VerdeBliss</p>
+              <div className="mb-2.5 rounded-[20px] bg-forest px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gold">Pages</p>
+                <p className="mt-1 text-base font-semibold text-white">Explore VerdeBliss</p>
               </div>
-              <div className="grid gap-1.5">
+              <div className="grid gap-2">
                 {LINKS.map(({ path, label, icon: Icon }) => {
                   const active = isActive(path)
                   return (
@@ -224,10 +222,10 @@ export default function Nav() {
                       href={path}
                       aria-current={active ? 'page' : undefined}
                       onClick={closeMenus}
-                      className={`group flex min-h-12 w-full items-center gap-3 rounded-[16px] px-3.5 py-2.5 text-left text-sm transition ${
+                      className={`group flex min-h-12 w-full items-center gap-3 rounded-[18px] border px-3.5 py-2.5 text-left text-sm transition ${
                         active
-                          ? 'bg-forest font-semibold text-white shadow-sm'
-                          : 'font-semibold text-text hover:bg-warmWhite hover:text-forest'
+                          ? 'border-forest bg-forest font-semibold text-white shadow-sm'
+                          : 'border-[#eadfd4] bg-[#fdf7ef] font-semibold text-text hover:border-sage hover:bg-sagePale hover:text-forest'
                       }`}
                     >
                       <span

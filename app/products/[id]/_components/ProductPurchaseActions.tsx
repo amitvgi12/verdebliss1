@@ -1,33 +1,36 @@
 'use client'
 
-import type { Dispatch, SetStateAction } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Heart, Minus, Plus, Share2, ShoppingBag, Truck } from 'lucide-react'
 import { C } from '@/constants/theme'
 
 interface ProductPurchaseActionsProps {
   productName: string
-  qty: number
-  setQty: Dispatch<SetStateAction<number>>
+  cartQty: number | null
   maxQty: number
   stockOut: boolean
   added: boolean
   isWishlisted: boolean
   onAdd: () => void
+  onDecreaseCartQty: () => void
+  onIncreaseCartQty: () => void
   onWishlist: () => void
 }
 
 export default function ProductPurchaseActions({
   productName,
-  qty,
-  setQty,
+  cartQty,
   maxQty,
   stockOut,
   added,
   isWishlisted,
   onAdd,
+  onDecreaseCartQty,
+  onIncreaseCartQty,
   onWishlist,
 }: ProductPurchaseActionsProps) {
+  const showCartQty = cartQty !== null
+
   return (
     <>
       <div
@@ -39,44 +42,49 @@ export default function ProductPurchaseActions({
           marginBottom: 12,
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            border: `1px solid ${C.border}`,
-            borderRadius: 12,
-            overflow: 'hidden',
-            flexShrink: 0,
-          }}
-        >
-          <button
-            onClick={() => setQty((q) => Math.max(1, q - 1))}
-            style={qtyBtn}
-            aria-label="Decrease quantity"
-            disabled={stockOut}
-          >
-            <Minus size={13} />
-          </button>
-          <span
+        {showCartQty && (
+          <div
             style={{
-              width: 28,
-              textAlign: 'center',
-              fontSize: 14,
-              fontWeight: 600,
-              color: C.text,
+              display: 'flex',
+              alignItems: 'center',
+              border: `1px solid ${C.border}`,
+              borderRadius: 12,
+              overflow: 'hidden',
+              flexShrink: 0,
             }}
           >
-            {qty}
-          </span>
-          <button
-            onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-            style={qtyBtn}
-            aria-label="Increase quantity"
-            disabled={stockOut || qty >= maxQty}
-          >
-            <Plus size={13} />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={onDecreaseCartQty}
+              style={qtyBtn}
+              aria-label={`Decrease ${productName} quantity`}
+              disabled={stockOut}
+            >
+              <Minus size={13} />
+            </button>
+            <span
+              aria-label={`${productName} quantity in cart`}
+              style={{
+                width: 28,
+                textAlign: 'center',
+                fontSize: 14,
+                fontWeight: 600,
+                color: C.text,
+              }}
+            >
+              {cartQty}
+            </span>
+            <button
+              type="button"
+              onClick={onIncreaseCartQty}
+              style={qtyBtn}
+              aria-label={`Increase ${productName} quantity`}
+              disabled={stockOut || cartQty >= maxQty}
+            >
+              <Plus size={13} />
+            </button>
+          </div>
+        )}
 
         <motion.button
           whileTap={{ scale: 0.97 }}

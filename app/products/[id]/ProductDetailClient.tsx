@@ -93,12 +93,13 @@ export default function ProductDetailClient({
   const isLoading = !initialProduct && loading
   const { products: all } = useProducts({})
   const addItem = useCartStore((s) => s.addItem)
+  const updateQty = useCartStore((s) => s.updateQty)
+  const cartItem = useCartStore((s) => (p ? s.items.find((item) => item.id === p.id) : null))
   const openCart = useCartStore((s) => s.openCart)
   const { toggle, has } = useWishlistStore()
   const user = useAuthStore((s) => s.user)
 
   const [added, setAdded] = useState(false)
-  const [qty, setQty] = useState(1)
   const [openSection, setSection] = useState('benefits')
   const [deliveryPin, setDeliveryPin] = useState('')
   const [deliveryResult, setDeliveryResult] = useState<DeliveryEstimate | null>(null)
@@ -109,9 +110,8 @@ export default function ProductDetailClient({
 
   const handleAdd = () => {
     if (!p) return
-    const qtyToAdd = Math.min(qty, maxQty)
-    if (stockOut || qtyToAdd < 1) return
-    for (let i = 0; i < qtyToAdd; i++) addItem(p)
+    if (stockOut || maxQty < 1) return
+    addItem(p)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -438,13 +438,14 @@ export default function ProductDetailClient({
 
             <ProductPurchaseActions
               productName={p.name}
-              qty={qty}
-              setQty={setQty}
+              cartQty={cartItem?.qty ?? null}
               maxQty={maxQty}
               stockOut={stockOut}
               added={added}
               isWishlisted={has(p.id)}
               onAdd={handleAdd}
+              onDecreaseCartQty={() => updateQty(p.id, -1)}
+              onIncreaseCartQty={() => updateQty(p.id, 1)}
               onWishlist={() => toggle(p.id, user?.id)}
             />
 

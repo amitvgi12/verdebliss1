@@ -197,6 +197,7 @@ function FilterGroup({
           <button
             key={opt}
             type="button"
+            data-active={active ? 'true' : 'false'}
             onClick={() => onChange(opt)}
             className={`catalog-filter-option block w-full cursor-pointer border-l-2 text-left transition ${
               active

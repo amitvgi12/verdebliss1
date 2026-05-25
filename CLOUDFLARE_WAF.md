@@ -1,6 +1,6 @@
 # Cloudflare WAF + Origin Protection Runbook
 
-## Goal 
+## Goal
 
 Front Vercel with Cloudflare so:
 
