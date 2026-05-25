@@ -84,12 +84,26 @@ function isPlaceholderLike(value: string): boolean {
   )
 }
 
+function extractLast10Digits(digits: string): string {
+  return digits.length > 10 ? digits.slice(-10) : digits
+}
+
 function isPlaceholderPhone(value: string): boolean {
   const digits = value.replace(/\D/g, '')
   if (!digits) return true
   if (/^(\d)\1{7,}$/.test(digits)) return true
-  if (['1234567890', '0123456789', '9876543210'].includes(digits)) return true
+  // Normalize: strip leading country code (91 or 0) to get last 10 digits
+  const last10 = extractLast10Digits(digits)
+  const FAKE_LAST10 = ['1234567890', '0123456789', '9876543210']
+  if (FAKE_LAST10.includes(last10)) return true
+  // Also reject the full-length forms (with country code prefix) directly
+  if (['919876543210', '09876543210'].includes(digits)) return true
   return digits.includes('40002026') || digits.includes('67890123')
+}
+
+function phoneLast10(value: string): string {
+  const normalized = normalizePhoneHref(value)
+  return extractLast10Digits(normalized.replace(/\D/g, ''))
 }
 
 export const BUSINESS_COMPLIANCE: BusinessCompliance = {
@@ -241,6 +255,13 @@ export function validateBusinessCompliance(
         'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF must be a real verified business phone number'
       )
     }
+    const displayLast10 = phoneLast10(compliance.helpline.display)
+    const hrefLast10 = phoneLast10(compliance.helpline.href)
+    if (displayLast10 && hrefLast10 && displayLast10 !== hrefLast10) {
+      errors.push(
+        `Support phone display (…${displayLast10}) and href (…${hrefLast10}) resolve to different numbers — they must match`
+      )
+    }
   }
 
   for (const [path, email] of Object.entries(compliance.emails)) {
@@ -250,6 +271,26 @@ export function validateBusinessCompliance(
   }
   if (!EMAIL_RE.test(compliance.grievanceOfficer.email)) {
     errors.push('grievanceOfficer.email must be a valid email address')
+  }
+
+  // P1-1: Grievance officer name must be a real person's name
+  const goName = compliance.grievanceOfficer.name.trim()
+  if (!goName) {
+    errors.push('grievanceOfficer.name is required')
+  } else if (/^[\d\s+\-().]+$/.test(goName)) {
+    // Catches the live case: "+911352000000" or "911352000000" in the name field
+    errors.push("grievanceOfficer.name must be a person's name, not a phone number or digits")
+  } else if (isPlaceholderLike(goName)) {
+    errors.push('grievanceOfficer.name contains a placeholder value')
+  }
+
+  // P1-2: Address data quality — warn (strict: error) when locality, region, and city are identical
+  const { addressLocality, addressRegion } = compliance.registeredOffice
+  const tokenCheck = [addressLocality, addressRegion].filter(Boolean).map((s) => s.trim().toLowerCase())
+  if (tokenCheck.length >= 2 && new Set(tokenCheck).size === 1) {
+    errors.push(
+      `Registered office locality and region are identical ("${addressLocality}") — verify the address against official records`
+    )
   }
 
   return { ok: errors.length === 0, errors }
