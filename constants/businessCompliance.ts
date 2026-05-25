@@ -296,6 +296,40 @@ export function validateBusinessCompliance(
   return { ok: errors.length === 0, errors }
 }
 
+/**
+ * Reads compliance identity fresh from process.env at call time.
+ *
+ * Use this in server components and ISR page routes instead of the module-level
+ * BUSINESS_COMPLIANCE constant, which is frozen at bundle-compile time via
+ * NEXT_PUBLIC_* inlining.  When an ISR page revalidates after a deploy, calling
+ * this function guarantees the current env values are used — even if the JS
+ * bundle was compiled under a previous deploy's env.
+ *
+ * NEVER import this in 'use client' files; it is server-side only.
+ */
+export function getSellerDetailsServer(): string {
+  const legalName =
+    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() ||
+    'VerdeBliss Cosmetics Private Limited'
+  const line1 =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_LINE1?.trim() || ''
+  const city =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_CITY?.trim() || ''
+  const state =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE?.trim() || ''
+  const pincode =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_PINCODE?.trim() || ''
+  const addressParts = [line1, city, state, pincode, 'India'].filter(Boolean)
+  return `${legalName}${addressParts.length ? ', ' + addressParts.join(', ') : ''}`
+}
+
+export function getLegalNameServer(): string {
+  return (
+    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() ||
+    'VerdeBliss Cosmetics Private Limited'
+  )
+}
+
 export function assertProductionBusinessCompliance(): void {
   if (!shouldEnforceProductionCompliance()) return
 
