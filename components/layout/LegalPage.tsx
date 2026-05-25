@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { LegalDocument } from '@/constants/legal'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
 export default function LegalPage({ doc, cta }: { doc: LegalDocument; cta?: React.ReactNode }) {
   return (
@@ -32,9 +33,15 @@ export default function LegalPage({ doc, cta }: { doc: LegalDocument; cta?: Reac
         <div className="legal-contact-card">
           <h2>Questions?</h2>
           <p>
-            Contact <a href="mailto:hello@verdebliss.com">hello@verdebliss.com</a> for general
-            support or <a href="mailto:privacy@verdebliss.com">privacy@verdebliss.com</a> for
-            privacy-specific requests.
+            Contact{' '}
+            <a href={`mailto:${BUSINESS_COMPLIANCE.emails.support}`}>
+              {BUSINESS_COMPLIANCE.emails.support}
+            </a>{' '}
+            for general support or{' '}
+            <a href={`mailto:${BUSINESS_COMPLIANCE.emails.privacy}`}>
+              {BUSINESS_COMPLIANCE.emails.privacy}
+            </a>{' '}
+            for privacy-specific requests.
           </p>
         </div>
       </div>

@@ -51,6 +51,11 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   const [openCategory, setOpenCategory] = useState<string | null>(null)
   const [modal, setModal] = useState<LegalModalType | null>(null)
   const dialogRef = useRef<HTMLDivElement | null>(null)
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+
+  const restoreFocus = useCallback(() => {
+    window.setTimeout(() => previouslyFocusedRef.current?.focus?.(), 0)
+  }, [])
 
   const syncFromStored = useCallback(() => {
     const stored = loadStoredConsent()
@@ -66,16 +71,19 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   const acceptAll = () => {
     persistConsent({ analytics: false, marketing: true, functional_third_party: true })
     setVisible(false)
+    restoreFocus()
   }
 
   const acceptSelected = () => {
     persistConsent({ analytics: false, marketing, functional_third_party: functionalThirdParty })
     setVisible(false)
+    restoreFocus()
   }
 
   const decline = () => {
     persistConsent({ analytics: false, marketing: false, functional_third_party: false })
     setVisible(false)
+    restoreFocus()
   }
 
   useEffect(() => {
@@ -94,20 +102,50 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
   }, [openPreferences])
 
   useEffect(() => {
-    if (visible) dialogRef.current?.focus()
+    if (!visible) return
+
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null
+    document.body.style.overflow = 'hidden'
+    requestAnimationFrame(() => {
+      const first = getFocusableElements(dialogRef.current)[0]
+      first?.focus()
+    })
+
+    return () => {
+      document.body.style.overflow = ''
+      previouslyFocusedRef.current?.focus?.()
+    }
   }, [visible])
 
   useEffect(() => {
     if (!visible) return
     const handler = (e: KeyboardEvent) => {
+      if (modal) return
       if (e.key === 'Escape') {
         persistConsent({ analytics: false, marketing: false, functional_third_party: false })
         setVisible(false)
+        restoreFocus()
+      }
+      if (e.key !== 'Tab') return
+
+      const focusable = getFocusableElements(dialogRef.current)
+      if (!focusable.length) return
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) return
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [visible])
+  }, [visible, modal, restoreFocus])
 
   const toggleValue = (id: string) => {
     if (id === 'marketing') setMarketing((v) => !v)
@@ -145,7 +183,8 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
-                aria-label="Privacy preferences"
+                aria-labelledby="cookie-preferences-title"
+                aria-describedby="cookie-preferences-description"
                 tabIndex={-1}
                 className="pointer-events-auto flex max-h-[min(88vh,680px)] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-[#E2D6C8] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] focus:outline-none"
               >
@@ -160,10 +199,16 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                   >
                     <X size={15} />
                   </button>
-                  <h2 className="font-serif text-[22px] font-semibold text-[#1C1C1C]">
+                  <h2
+                    id="cookie-preferences-title"
+                    className="font-serif text-[22px] font-semibold text-[#1C1C1C]"
+                  >
                     Privacy Overview
                   </h2>
-                  <p className="mt-1.5 pr-8 text-[13px] leading-[1.6] text-[#666]">
+                  <p
+                    id="cookie-preferences-description"
+                    className="mt-1.5 pr-8 text-[13px] leading-[1.6] text-[#666]"
+                  >
                     This site uses cookies and similar technologies to improve your experience.{' '}
                     <button
                       type="button"
@@ -183,43 +228,57 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
 
                     return (
                       <div key={cat.id} className="border-b border-[#F0EAE0] last:border-b-0">
-                        <button
-                          type="button"
-                          onClick={() => setOpenCategory(isOpen ? null : cat.id)}
-                          className="flex w-full cursor-pointer items-center gap-3 px-6 py-3.5 text-left transition hover:bg-[#FAFAF8]"
-                        >
-                          <ChevronRight
-                            size={15}
-                            className={`flex-shrink-0 text-[#999] transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
-                          />
-                          <span className="flex-1 text-[14px] font-semibold text-[#1C1C1C]">
-                            {cat.title}
+                        <div className="flex w-full items-center gap-3 px-6 py-3.5 transition hover:bg-[#FAFAF8]">
+                          <span id={`cookie-category-${cat.id}-description`} className="sr-only">
+                            {cat.description}
                           </span>
+                          <button
+                            type="button"
+                            onClick={() => setOpenCategory(isOpen ? null : cat.id)}
+                            aria-expanded={isOpen}
+                            aria-controls={`cookie-category-${cat.id}`}
+                            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 border-none bg-transparent p-0 text-left"
+                          >
+                            <ChevronRight
+                              size={15}
+                              aria-hidden="true"
+                              className={`flex-shrink-0 text-[#999] transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
+                            />
+                            <span className="flex-1 text-[14px] font-semibold text-[#1C1C1C]">
+                              {cat.title}
+                            </span>
+                          </button>
                           {cat.locked ? (
                             <span className="flex-shrink-0 rounded-full border border-[#2D4A32]/20 bg-[#EEF4EC] px-2.5 py-0.5 text-[11px] font-semibold text-[#2D4A32]">
                               Always on
                             </span>
                           ) : (
-                            <span
-                              role="switch"
-                              aria-checked={value}
-                              aria-label={`Toggle ${cat.title}`}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                toggleValue(cat.id)
-                              }}
-                              className={`relative flex h-6 w-10 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ${value ? 'bg-[#2D4A32]' : 'bg-[#CCC]'}`}
-                            >
-                              <span
-                                className={`absolute h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${value ? 'translate-x-5' : 'translate-x-1'}`}
+                            <label className="relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer items-center">
+                              <input
+                                type="checkbox"
+                                role="switch"
+                                checked={value}
+                                onChange={() => toggleValue(cat.id)}
+                                aria-label={`${cat.title} preference`}
+                                aria-describedby={`cookie-category-${cat.id}-description`}
+                                className="peer sr-only"
                               />
-                            </span>
+                              <span
+                                aria-hidden="true"
+                                className="absolute inset-0 rounded-full bg-[#CCC] transition-colors duration-200 peer-checked:bg-[#2D4A32] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2D4A32]"
+                              />
+                              <span
+                                aria-hidden="true"
+                                className="absolute left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5"
+                              />
+                            </label>
                           )}
-                        </button>
+                        </div>
 
                         <AnimatePresence initial={false}>
                           {isOpen && (
                             <motion.div
+                              id={`cookie-category-${cat.id}`}
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
@@ -270,4 +329,13 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
       </AnimatePresence>
     </>
   )
+}
+
+function getFocusableElements(root: HTMLElement | null): HTMLElement[] {
+  if (!root) return []
+  return Array.from(
+    root.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true')
 }

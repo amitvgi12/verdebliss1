@@ -68,22 +68,22 @@ test.describe('live smoke checks', () => {
     request,
   }) => {
     const paths = ['/', ...PRODUCT_SLUGS.map((s) => `/products/${s}`)]
-    const htmlByPath = new Map<string, string>()
+    const shaByPath = new Map<string, string | null>()
 
     for (const path of paths) {
       const response = await request.get(path)
       expect(response.status()).toBe(200)
-      htmlByPath.set(path, await response.text())
+      shaByPath.set(path, response.headers()['x-build-sha'] ?? null)
     }
 
-    const rootSha = extractMetaContent(htmlByPath.get('/') ?? '', 'x-build-sha')
+    const rootSha = shaByPath.get('/')
     const expectedSha = process.env.EXPECTED_BUILD_SHA
 
     expect(rootSha).toBeTruthy()
     if (expectedSha) expect(rootSha).toBe(expectedSha)
 
     for (const slug of PRODUCT_SLUGS) {
-      const pdpSha = extractMetaContent(htmlByPath.get(`/products/${slug}`) ?? '', 'x-build-sha')
+      const pdpSha = shaByPath.get(`/products/${slug}`)
       expect(pdpSha, `Build SHA mismatch on /products/${slug}`).toBe(rootSha)
     }
   })
@@ -223,14 +223,6 @@ function findJsonLd(
   }
 
   return null
-}
-
-function extractMetaContent(html: string, name: string): string | null {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const meta = html.match(
-    new RegExp(`<meta[^>]+name=["']${escaped}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i')
-  )
-  return meta?.[1] ?? null
 }
 
 function flattenJsonLd(value: unknown): Record<string, unknown>[] {

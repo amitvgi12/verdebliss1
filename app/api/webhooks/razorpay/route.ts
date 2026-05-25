@@ -3,6 +3,7 @@ import {
   completeRazorpayCheckout,
   recordPaymentEvent,
   recordReconciliationFailure,
+  retryPendingReconciliations,
   verifyRazorpayWebhookSignature,
 } from '@/lib/commerce'
 import { reportError } from '@/lib/observability'
@@ -48,6 +49,12 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid webhook payload' }, { status: 400 })
   }
+
+  // Best-effort DLQ retry: attempt to resolve any pending reconciliation rows
+  // before processing the new event. This reduces worst-case recovery time from
+  // the hourly cron interval to the typical Razorpay webhook retry interval
+  // (minutes). Safe to fire-and-forget — never blocks the 200 response.
+  void retryPendingReconciliations()
 
   const eventType = String(event.event ?? 'unknown')
   const payment = pickPaymentEntity(event)

@@ -3,6 +3,7 @@ import { isRateLimited } from '@/lib/rate-limit'
 import { requireSameOriginRequest } from '@/lib/csrf'
 import { verifyTurnstileFromRequest } from '@/lib/turnstile'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
 const EMAIL_RE = /\S+@\S+\.\S+/
 const TOPICS = new Set([
@@ -56,7 +57,9 @@ export async function POST(request: Request) {
     if (!hasSupabaseAdminEnv()) {
       if (process.env.NODE_ENV === 'production') {
         return NextResponse.json(
-          { error: 'Contact service is not configured. Please email hello@verdebliss.com.' },
+          {
+            error: `Contact service is not configured. Please email ${BUSINESS_COMPLIANCE.emails.support}.`,
+          },
           { status: 503 }
         )
       }

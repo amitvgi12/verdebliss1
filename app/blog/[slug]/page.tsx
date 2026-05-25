@@ -23,22 +23,22 @@ const ARTICLES: Record<string, Article> = {
   'bakuchiol-vs-retinol': {
     title: 'Bakuchiol vs Retinol: Which Is Right for Your Skin?',
     description:
-      'A complete science-backed comparison of bakuchiol vs retinol. Which works better for sensitive skin in Indian climate?',
+      'A practical comparison of bakuchiol vs retinol: visible-skin goals, comfort profile, and routine fit for Indian climate.',
     category: 'Ingredient Science',
     date: 'April 2026',
     readTime: 6,
     sections: [
       {
         heading: 'The short answer',
-        body: 'Bakuchiol and retinol target the same cellular pathways but reach them differently. Retinol is the established gold standard for collagen stimulation. Bakuchiol delivers comparable visible results without the irritation, photosensitivity, or pregnancy contraindications.',
+        body: 'Bakuchiol and retinol are often used for similar visible-skin goals, but they are not the same ingredient. Retinol has the stronger clinical history for signs of ageing. Bakuchiol is commonly chosen when someone wants a gentler-feeling night routine, though individual tolerance varies.',
       },
       {
         heading: 'What the studies say',
-        body: 'A 2019 randomised study published in the British Journal of Dermatology compared 0.5% bakuchiol with 0.5% retinol over 12 weeks. Both groups showed significant reductions in wrinkle depth and hyperpigmentation. The retinol group reported significantly more scaling and stinging. Bakuchiol matched retinol on outcomes while losing the irritation tax.',
+        body: 'A 2019 randomised study published in the British Journal of Dermatology compared 0.5% bakuchiol with 0.5% retinol over 12 weeks. Both groups showed visible improvements in wrinkles and pigmentation measures, while the retinol group reported more scaling and stinging. It is useful evidence, not a promise that every formula or user will see the same result.',
       },
       {
         heading: 'Which one for which skin',
-        body: 'Sensitive, reactive, or rosacea-prone skin: bakuchiol. Pregnancy or breastfeeding: bakuchiol (retinol is contraindicated). Tolerant skin already adapted to actives: either works; retinol may be more efficient at higher concentrations. Hot, humid Indian summers: bakuchiol — its lack of photosensitivity matters when SPF compliance is imperfect.',
+        body: 'Sensitive or reactive skin: consider a lower-friction routine and patch test first. Pregnancy or breastfeeding: avoid self-prescribing active swaps and ask your clinician before using retinoids or retinol-alternative products. Tolerant skin already adapted to actives may choose either based on goals, texture preference, and professional advice.',
       },
       {
         heading: 'Practical layering tips',
@@ -49,14 +49,14 @@ const ARTICLES: Record<string, Article> = {
   'skincare-routine-dry-skin': {
     title: 'The Complete Skincare Routine for Dry Skin (Organic Edition)',
     description:
-      'A 6-step dermatologist-approved organic skincare routine for dry skin — right layering order, best ingredients, product picks.',
+      'A 6-step botanical skincare routine for dry-feeling skin — right layering order, ingredient roles, and product picks.',
     category: 'Routines',
     date: 'March 2026',
     readTime: 8,
     sections: [
       {
         heading: 'Step 1 — Cleanse without stripping',
-        body: 'Choose a creamy, sulphate-free cleanser. The job is to remove SPF and pollution without disturbing your skin barrier. Look for amino-acid-based surfactants and avoid foaming gel cleansers.',
+        body: 'Choose a creamy, sulphate-free cleanser. The job is to remove sunscreen and daily buildup while keeping skin comfortable. Look for mild surfactants and avoid formulas that leave your skin feeling tight.',
       },
       {
         heading: 'Step 2 — Hydrating toner',
@@ -64,11 +64,11 @@ const ARTICLES: Record<string, Article> = {
       },
       {
         heading: 'Step 3 — Targeted serum',
-        body: 'For dry skin, this is your hydration and barrier-repair stage. Hyaluronic acid + niacinamide is the workhorse pairing. Bakuchiol three nights a week if anti-ageing is also a goal.',
+        body: 'For dry-feeling skin, this is your hydration and barrier-support stage. Hyaluronic acid plus niacinamide is a useful pairing. Bakuchiol can be introduced slowly at night if a smoother-looking routine is also a goal.',
       },
       {
         heading: 'Step 4 — Rich moisturiser',
-        body: 'Squalane, shea butter, and ceramide-based formulations deliver lasting nourishment. Apply while skin is still damp — wet skin absorbs occlusives 30–40% better.',
+        body: 'Squalane, shea butter, and ceramide-based formulations help reduce a dry, tight feel. Apply while skin is slightly damp to improve comfort and spreadability.',
       },
       {
         heading: 'Step 5 — Facial oil (night)',
@@ -83,7 +83,7 @@ const ARTICLES: Record<string, Article> = {
   'organic-skincare-india': {
     title: 'Why Organic Skincare Is the Smartest Choice for Indian Skin',
     description:
-      'Indian skin faces unique UV, humidity and pollution challenges. Learn why organic botanical skincare outperforms conventional products.',
+      'Indian skin faces UV, humidity and pollution stressors. Learn how to evaluate botanical skincare claims with evidence-first habits.',
     category: 'Education',
     date: 'February 2026',
     readTime: 7,
@@ -98,11 +98,11 @@ const ARTICLES: Record<string, Article> = {
       },
       {
         heading: 'Pollution defence is the real differentiator',
-        body: 'Indian urban skin needs antioxidant load — green tea polyphenols, vitamin C, niacinamide, turmeric — every single day. Organic actives tend to come with their full plant matrix intact, which delivers a broader antioxidant profile than synthetic isolates.',
+        body: 'Indian urban routines often benefit from antioxidant-support ingredients such as green tea polyphenols, vitamin C, niacinamide, and turmeric. The strongest choice is the one with a clear INCI list, appropriate concentration, and a formula your skin tolerates.',
       },
       {
         heading: 'What to look for on the INCI list',
-        body: 'Concentration order matters: ingredients are listed in descending order, so anything past position 6 is likely fragrance, preservative, or trace. Keep an eye out for parabens, sulphates, phthalates, formaldehyde donors, and synthetic fragrance — none have a legitimate place in a barrier-respecting routine.',
+        body: 'Concentration order matters: ingredients are listed in descending order until the low-concentration zone, where exact order can vary by regulation. Keep an eye out for known personal triggers and choose formulas with clear allergen and fragrance disclosure.',
       },
     ],
   },

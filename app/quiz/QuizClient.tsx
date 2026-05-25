@@ -42,7 +42,7 @@ const QUESTIONS = [
       { value: 'Anti-Ageing', label: 'Fine lines & ageing', desc: 'Plumper, firmer skin' },
       { value: 'Brightening', label: 'Dullness', desc: 'Glow & even tone' },
       { value: 'Acne', label: 'Breakouts', desc: 'Clear pores, less oil' },
-      { value: 'Hydration', label: 'Hydration', desc: 'Moisture & barrier repair' },
+      { value: 'Hydration', label: 'Hydration', desc: 'Moisture & barrier support' },
       { value: 'Pigmentation', label: 'Pigmentation', desc: 'Dark spots & melasma' },
     ],
   },
@@ -101,7 +101,7 @@ function recommend(
   set.add('4') // Turmeric Brightening Cleanser
 
   // SPF — always
-  set.add('5') // Botanical SPF 50 Shield
+  set.add('5') // Botanical Mineral Sun Shield
 
   // Moisturiser by skin type
   if (['Dry', 'Sensitive'].includes(answers.skin_type)) set.add('2') // Rose Hip

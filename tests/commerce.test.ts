@@ -71,6 +71,15 @@ describe('commerce validation and payment helpers', () => {
     expect(() => validateCartItems([{ id: '2', qty: 99 }])).toThrow('Invalid quantity')
   })
 
+  it('ignores client-supplied prices and calculates totals from the trusted catalogue', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+
+    const result = await normalizeCart([{ id: '1', qty: 2, price: 1 }])
+
+    expect(result.items[0]).toMatchObject({ id: '1', price: 250, qty: 2 })
+    expect(result.totals.subtotal).toBe(500)
+  })
+
   it('allows static catalogue fallback outside production when product lookup fails', async () => {
     vi.stubEnv('NODE_ENV', 'development')
     vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true)

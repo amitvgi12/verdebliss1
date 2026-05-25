@@ -7,6 +7,11 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
 import TurnstileWidget from '@/components/ui/TurnstileWidget'
+import {
+  BUSINESS_COMPLIANCE,
+  formatPostalAddress,
+  hasVerifiedPhone,
+} from '@/constants/businessCompliance'
 
 const TOPICS = [
   'Product question',
@@ -17,20 +22,37 @@ const TOPICS = [
   'Other',
 ]
 
-const CHANNELS = [
-  { Icon: Mail, title: 'Email us', value: 'hello@verdebliss.com', sub: 'Response within 24 hours' },
-  { Icon: Phone, title: 'Call us', value: '+91 20 6789 0123', sub: 'Mon–Sat, 9 AM–6 PM IST' },
+export const CONTACT_CHANNELS = [
+  {
+    Icon: Mail,
+    title: 'Email us',
+    value: BUSINESS_COMPLIANCE.emails.support,
+    href: `mailto:${BUSINESS_COMPLIANCE.emails.support}`,
+    sub: 'Response within 24 hours',
+  },
+  {
+    Icon: Phone,
+    title: 'Call us',
+    value: BUSINESS_COMPLIANCE.helpline.display,
+    href:
+      hasVerifiedPhone() && BUSINESS_COMPLIANCE.helpline.href
+        ? `tel:${BUSINESS_COMPLIANCE.helpline.href}`
+        : null,
+    sub: BUSINESS_COMPLIANCE.helpline.hours,
+  },
   {
     Icon: MessageCircle,
     title: 'Live Chat',
     value: 'Via the chat bubble',
+    href: null,
     sub: 'Available 9 AM–9 PM IST',
   },
   {
     Icon: MapPin,
-    title: 'Our lab',
-    value: 'Kharadi, Pune 411014',
-    sub: 'Visits by appointment only',
+    title: 'Registered office',
+    value: formatPostalAddress(),
+    href: null,
+    sub: `${BUSINESS_COMPLIANCE.legalName}`,
   },
 ]
 
@@ -92,7 +114,7 @@ export default function ContactClient() {
         <div>
           <div className="label-eyebrow mb-5">CONTACT CHANNELS</div>
           <div className="contact-stack">
-            {CHANNELS.map(({ Icon, ...ch }, index) => (
+            {CONTACT_CHANNELS.map(({ Icon, ...ch }, index) => (
               <motion.article
                 key={ch.title}
                 initial={{ opacity: 0, y: 14 }}
@@ -105,7 +127,16 @@ export default function ContactClient() {
                 </div>
                 <div>
                   <div className="mb-0.5 text-xs font-bold text-text">{ch.title}</div>
-                  <div className="mb-0.5 text-sm font-semibold text-forest">{ch.value}</div>
+                  {ch.href ? (
+                    <a
+                      href={ch.href}
+                      className="mb-0.5 block text-sm font-semibold text-forest underline-offset-2 hover:underline"
+                    >
+                      {ch.value}
+                    </a>
+                  ) : (
+                    <div className="mb-0.5 text-sm font-semibold text-forest">{ch.value}</div>
+                  )}
                   <div className="text-[11px] text-muted">{ch.sub}</div>
                 </div>
               </motion.article>

@@ -18,6 +18,7 @@ import { AnimatePresence } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { getShippingCost } from '@/constants/shipping'
 import { COD_MAX_TOTAL } from '@/constants/checkout'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
 import Steps from './_components/Steps'
 import AddressStep from './_components/AddressStep'
@@ -131,7 +132,7 @@ function userFacingCheckoutError(error: unknown): string {
     lower.includes('supabase_service_role_key') ||
     lower.includes('online payment is not enabled yet')
   ) {
-    return 'Order placement is temporarily unavailable while checkout is being configured. Please contact hello@verdebliss.com for help.'
+    return `Order placement is temporarily unavailable while checkout is being configured. Please contact ${BUSINESS_COMPLIANCE.emails.support} for help.`
   }
 
   return message || 'Checkout request failed. Please try again.'

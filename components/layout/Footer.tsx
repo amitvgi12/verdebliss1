@@ -3,7 +3,13 @@ import Link from 'next/link'
 import LegalLinks from '@/components/layout/LegalLinks'
 import SocialButtons from '@/components/layout/SocialButtons'
 import CookiePreferencesButton from '@/components/ui/CookiePreferencesButton'
-import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
+import {
+  BUSINESS_COMPLIANCE,
+  formatPostalAddress,
+  hasVerifiedCin,
+  hasVerifiedGstin,
+  hasVerifiedPhone,
+} from '@/constants/businessCompliance'
 
 const SHOP_LINKS: Array<[string, string]> = [
   ['Serums', '/products?cat=Serum'],
@@ -55,6 +61,10 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
 }
 
 export default function Footer() {
+  const cinLabel = hasVerifiedCin() ? BUSINESS_COMPLIANCE.cin : 'Pending verified CIN'
+  const gstinLabel = hasVerifiedGstin() ? BUSINESS_COMPLIANCE.gstin : 'Pending verified GSTIN'
+  const hasPhone = hasVerifiedPhone() && BUSINESS_COMPLIANCE.helpline.href
+
   return (
     <footer className="site-footer bg-forest px-4 text-white/75">
       <div className="site-container site-footer__grid">
@@ -95,16 +105,19 @@ export default function Footer() {
 
       <div className="site-container site-footer__compliance">
         <p>
-          <strong>{BUSINESS_COMPLIANCE.legalName}</strong> CIN: {BUSINESS_COMPLIANCE.cin} | GSTIN:{' '}
-          {BUSINESS_COMPLIANCE.gstin}
+          <strong>{BUSINESS_COMPLIANCE.legalName}</strong> CIN: {cinLabel} | GSTIN: {gstinLabel}
         </p>
         <p>Registered office: {formatPostalAddress()}</p>
         <p>Principal place of business: {BUSINESS_COMPLIANCE.principalPlaceOfBusiness}</p>
         <p>
           Helpline:{' '}
-          <a href={`tel:${BUSINESS_COMPLIANCE.helpline.href}`}>
-            {BUSINESS_COMPLIANCE.helpline.display}
-          </a>{' '}
+          {hasPhone ? (
+            <a href={`tel:${BUSINESS_COMPLIANCE.helpline.href}`}>
+              {BUSINESS_COMPLIANCE.helpline.display}
+            </a>
+          ) : (
+            <span>{BUSINESS_COMPLIANCE.helpline.display}</span>
+          )}{' '}
           ({BUSINESS_COMPLIANCE.helpline.hours})
         </p>
         <p>

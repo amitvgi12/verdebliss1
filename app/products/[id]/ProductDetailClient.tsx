@@ -23,7 +23,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
-import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
+import { getProductCompliance } from '@/constants/productCompliance'
 import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import { formatPriceValidUntil, getVerifiablePriceOffer } from '@/lib/pricing'
 import { formatApprovedReviewCount } from '@/lib/review-copy'
@@ -40,28 +40,36 @@ import RoutineRecommendations from './_components/RoutineRecommendations'
 /* ── Positioning labels — not third-party certification claims ── */
 const CERTIFICATIONS = [
   {
-    label: 'Cruelty-free*',
+    label: 'No animal testing stance',
     emoji: '🐰',
     url: '/certifications',
-    org: 'No animal testing; certification in progress',
+    org: 'Formal cruelty-free certification is in progress',
+    status: 'Pending verification',
+    matches: ['cruelty'],
   },
   {
-    label: 'Vegan-Friendly',
+    label: 'Vegan-friendly formula',
     emoji: '🌱',
     url: '/certifications',
-    org: 'Where formulation permits; certification in progress',
+    org: 'Formula scope varies; formal vegan certification is in progress',
+    status: 'Pending verification',
+    matches: ['vegan'],
   },
   {
-    label: 'Skin-Tested',
+    label: 'Skin compatibility notes',
     emoji: '🏥',
     url: '/certifications',
-    org: 'Internal testing; independent review pending',
+    org: 'Internal assessment only; independent review documentation pending',
+    status: 'Pending documentation',
+    matches: [],
   },
   {
-    label: 'Recyclable Packaging',
+    label: 'Packaging documentation',
     emoji: '♻️',
     url: '/certifications',
-    org: 'Packaging documentation in progress',
+    org: 'Packaging certification documentation in progress',
+    status: 'Pending documentation',
+    matches: [],
   },
 ]
 
@@ -91,7 +99,7 @@ export default function ProductDetailClient({
 
   const [added, setAdded] = useState(false)
   const [qty, setQty] = useState(1)
-  const [openSection, setSection] = useState('ingredients')
+  const [openSection, setSection] = useState('benefits')
   const [deliveryPin, setDeliveryPin] = useState('')
   const [deliveryResult, setDeliveryResult] = useState<DeliveryEstimate | null>(null)
   const [deliveryError, setDeliveryError] = useState('')
@@ -183,11 +191,7 @@ export default function ProductDetailClient({
       </div>
     )
 
-  const compliance =
-    PRODUCT_COMPLIANCE[p.id] ??
-    (p.slug ? PRODUCT_COMPLIANCE[p.slug] : undefined) ??
-    PRODUCT_COMPLIANCE[id] ??
-    null
+  const compliance = getProductCompliance(p, id)
   const related = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
   const priceOffer = getVerifiablePriceOffer(p)
   const mrp = priceOffer.mrp
@@ -205,12 +209,12 @@ export default function ProductDetailClient({
     ? { display: 'flex', flexDirection: 'column', gap: 0 }
     : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }
 
-  /* Applicable certs — Skin-Tested and Recyclable Packaging show on all products */
+  /* Applicable claim-status badges — all link to the Trust Centre and are visibly pending. */
   const prodCerts = CERTIFICATIONS.filter((c) => {
-    if (c.label === 'Skin-Tested') return true
-    if (c.label === 'Recyclable Packaging') return true
+    if (c.label === 'Skin compatibility notes') return true
+    if (c.label === 'Packaging documentation') return true
     return (p.badges ?? []).some((b: string) =>
-      b.toLowerCase().includes(c.label.toLowerCase().split('-')[0] ?? '')
+      c.matches.some((match) => b.toLowerCase().includes(match))
     )
   })
 
@@ -467,11 +471,10 @@ export default function ProductDetailClient({
               style={{ marginTop: 20, padding: '12px 14px', borderTop: `1px solid ${C.border}` }}
             >
               <p style={{ fontSize: 10, color: C.light, lineHeight: 1.7, fontStyle: 'italic' }}>
-                *These statements have not been evaluated by the Central Drugs Standard Control
-                Organisation (CDSCO) or the Food and Drug Administration (FDA). This product is not
-                intended to diagnose, treat, cure, or prevent any disease. Results may vary based on
-                individual skin type and usage. Individual results are not guaranteed. For external
-                use only. Discontinue use if irritation occurs and consult a dermatologist.
+                Cosmetic product information is provided for routine selection only. This product is
+                not intended to diagnose, treat, cure, or prevent any disease. Results vary by
+                individual skin type and usage. For external use only. Discontinue use if irritation
+                occurs and seek professional advice if symptoms persist.
               </p>
             </div>
           </motion.div>

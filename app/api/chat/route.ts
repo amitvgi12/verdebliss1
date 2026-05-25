@@ -19,6 +19,7 @@ import {
   hasSupabaseAdminEnv,
 } from '@/lib/supabase-admin'
 import { getProductsServer } from '@/lib/products-server'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 import type { Product } from '@/types'
 
 interface ChatMessage {
@@ -198,9 +199,9 @@ function buildSystemPrompt(ctx: TrustedContext, products: Product[]): string {
 Key policies: Free shipping ₹499+. Returns within 14 days (unopened). Refund 3–7 business days.
 Loyalty: 1 point per ₹10. Green Leaf → Gold Botanist → Platinum Alchemist.
 Refund requests: verdebliss.com/refund (log in, eligible orders appear automatically).
-Contact: reactions@verdebliss.com | hello@verdebliss.com`
+Contact: ${BUSINESS_COMPLIANCE.emails.reactions} | ${BUSINESS_COMPLIANCE.emails.support}`
 
-  const base = `You are Verde, the AI support advisor for VerdeBliss — organic botanical skincare from India.
+  const base = `You are Verde, the AI support advisor for VerdeBliss — botanical skincare from India.
 Help with skincare advice AND order support (status, refunds, returns, loyalty points).
 Be warm, knowledgeable, concise — 2 to 4 sentences max.
 Never make medical or clinical diagnostic claims.
@@ -320,7 +321,7 @@ export async function POST(request: Request) {
       content: [
         {
           type: 'text',
-          text: "I can't access live order records right now, so I don't want to guess at your order status. Please check My Account or contact hello@verdebliss.com for help with the latest update.",
+          text: `I can't access live order records right now, so I don't want to guess at your order status. Please check My Account or contact ${BUSINESS_COMPLIANCE.emails.support} for help with the latest update.`,
         },
       ],
     })

@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { Mail, Download, ArrowRight, ExternalLink } from 'lucide-react'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
 export const dynamic = 'force-static'
 
 export const metadata = {
   title: 'Press & Media',
   description:
-    'Press resources, media kit, founder bios, and coverage status for VerdeBliss — botanical skincare brand from India.',
+    'Press resources, media kit, brand notes, and coverage status for VerdeBliss — botanical skincare brand from India.',
   alternates: { canonical: 'https://www.verdebliss.com/press' },
 }
 
@@ -35,7 +36,7 @@ const COVERAGE = [
 ]
 
 const QUICK_FACTS = [
-  ['Founded', '2019, Pune'],
+  ['Business identity', BUSINESS_COMPLIANCE.legalName],
   ['Certifications', 'In progress — see verdebliss.com/certifications'],
   ['Launch market', 'India'],
   ['Status', 'Pre-launch storefront'],
@@ -69,10 +70,10 @@ export default function PressPage() {
               For interview requests, samples, and original commentary, please email our press team.
             </p>
             <a
-              href="mailto:press@verdebliss.com"
+              href={`mailto:${BUSINESS_COMPLIANCE.emails.press}`}
               className="inline-flex items-center gap-1.5 font-semibold text-forest underline-offset-2 hover:underline"
             >
-              press@verdebliss.com <ExternalLink size={13} />
+              {BUSINESS_COMPLIANCE.emails.press} <ExternalLink size={13} />
             </a>
             <p className="mt-2 text-[11px] text-muted">Response within 24 hours, Mon–Fri.</p>
           </article>
@@ -83,8 +84,8 @@ export default function PressPage() {
             </div>
             <h2 className="mb-2 font-serif text-lg font-semibold text-text">Media kit</h2>
             <p className="mb-4 flex-1 text-xs leading-relaxed text-muted">
-              Logos, product photography, founder headshots, and brand guidelines — all in one
-              download.
+              Logos, product photography, formulation notes, and brand guidelines — all in one
+              request.
             </p>
             <Link
               href="/contact"
@@ -158,8 +159,8 @@ export default function PressPage() {
         <p className="mx-auto mb-7 max-w-[440px] text-center text-sm text-white/75">
           We respond to every legitimate press enquiry within 24 hours.
         </p>
-        <a href="mailto:press@verdebliss.com" className="btn-terra">
-          press@verdebliss.com <ArrowRight size={15} />
+        <a href={`mailto:${BUSINESS_COMPLIANCE.emails.press}`} className="btn-terra">
+          {BUSINESS_COMPLIANCE.emails.press} <ArrowRight size={15} />
         </a>
       </section>
     </div>

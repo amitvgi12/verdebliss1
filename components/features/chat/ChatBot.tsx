@@ -17,6 +17,7 @@ import { MessageCircle, X, Send, LogIn, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { C } from '@/constants/theme'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 import {
   CONSENT_UPDATED_EVENT,
   loadStoredConsent,
@@ -99,7 +100,7 @@ function consentSafeReply(message: string): string | null {
   }
 
   if (text.includes('spf') || text.includes('sunscreen')) {
-    return 'For daily sun protection, look at Botanical SPF 50 Shield. It is positioned as a featherlight mineral sunscreen with zinc oxide and soothing aloe vera.'
+    return 'For daily sun protection, look at Botanical Mineral Sun Shield. It is positioned as a mineral sunscreen with zinc oxide and soothing aloe vera; independent SPF-rating documentation is tracked in the Trust Centre.'
   }
 
   if (text.includes('shipping') || text.includes('delivery')) {
@@ -115,7 +116,7 @@ function consentSafeReply(message: string): string | null {
   }
 
   if (text.includes('contact') || text.includes('support') || text.includes('email')) {
-    return 'You can reach VerdeBliss support through the Contact page or email hello@verdebliss.com. For order history, the Account page is the safest non-AI route.'
+    return `You can reach VerdeBliss support through the Contact page or email ${BUSINESS_COMPLIANCE.emails.support}. For order history, the Account page is the safest non-AI route.`
   }
 
   if (

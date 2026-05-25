@@ -1,5 +1,5 @@
 export const TRUST_METRICS = {
-  heroProofs: ['Founded 2019', 'INCI-first formulas', 'Verified reviews after purchase'],
+  heroProofs: ['INCI-first formulas', 'Published claim status', 'Verified reviews after purchase'],
   collectionCopy:
     'Every formula is presented with full ingredient disclosure, product-specific guidance, and review states that reflect approved purchases.',
   philosophyCopy:

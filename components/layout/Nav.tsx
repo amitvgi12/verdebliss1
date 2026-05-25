@@ -4,18 +4,31 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User, ShoppingBag, Menu, X, Search } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  CircleHelp,
+  Home,
+  Menu,
+  Search,
+  ShoppingBag,
+  Sparkles,
+  Store,
+  User,
+  UserRound,
+  X,
+} from 'lucide-react'
 import SearchBar from '@/components/features/search/SearchBar'
 import { useCartStore, selectItemCount } from '@/store/cartStore'
 import { useAuthStore } from '@/store/authStore'
 
 const LINKS = [
-  { path: '/', label: 'Home' },
-  { path: '/products', label: 'Shop' },
-  { path: '/quiz', label: 'Skin Quiz' },
-  { path: '/blog', label: 'Journal' },
-  { path: '/faq', label: 'FAQ' },
-  { path: '/account', label: 'Account' },
+  { path: '/', label: 'Home', icon: Home },
+  { path: '/products', label: 'Shop', icon: Store },
+  { path: '/quiz', label: 'Skin Quiz', icon: Sparkles },
+  { path: '/blog', label: 'Journal', icon: BookOpen },
+  { path: '/faq', label: 'FAQ', icon: CircleHelp },
+  { path: '/account', label: 'Account', icon: UserRound },
 ]
 
 export default function Nav() {
@@ -38,7 +51,7 @@ export default function Nav() {
   return (
     <>
       <nav className="sticky top-0 z-[100] border-b border-border bg-bg/95 px-4 backdrop-blur-md">
-        <div className="site-container flex h-[52px] items-center gap-3">
+        <div className="site-container flex h-[52px] items-center gap-2 sm:gap-3">
           {/* Logo */}
           <Link
             href="/"
@@ -56,11 +69,11 @@ export default function Nav() {
                 className="h-9 w-auto object-contain"
               />
             </span>
-            <span className="hidden leading-none lg:block">
-              <span className="block font-serif text-[16px] font-semibold tracking-[0.01em]">
+            <span className="min-w-0 leading-none">
+              <span className="block font-serif text-[14px] font-semibold tracking-[0.01em] sm:text-[16px]">
                 VerdeBliss
               </span>
-              <span className="mt-0.5 block text-[7px] font-bold uppercase tracking-[0.14em] text-muted">
+              <span className="mt-0.5 block text-[6px] font-bold uppercase tracking-[0.14em] text-muted max-[360px]:hidden sm:text-[7px]">
                 Cosmetics
               </span>
             </span>
@@ -96,29 +109,36 @@ export default function Nav() {
           <div className="flex-1 md:hidden" />
 
           {/* Icon row */}
-          <div className="flex flex-shrink-0 items-center gap-1">
+          <div className="flex flex-shrink-0 items-center gap-2.5 max-[360px]:gap-2 md:gap-3">
             {/* Mobile-only search toggle */}
             <button
               type="button"
-              onClick={() => setSearchOpen((o) => !o)}
+              onClick={() => {
+                setSearchOpen((o) => !o)
+                setMenuOpen(false)
+              }}
               aria-label="Search"
-              className="flex cursor-pointer items-center border-none bg-transparent p-2 md:hidden"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent md:hidden"
             >
               <Search size={18} className="text-text" />
             </button>
             <Link
               href="/account"
               aria-label="Account"
-              className="flex items-center rounded-lg p-2.5"
+              onClick={closeMenus}
+              className="flex h-9 w-9 items-center justify-center rounded-xl"
             >
               <User size={18} className={user ? 'text-forest' : 'text-text'} />
             </Link>
             <button
               type="button"
-              onClick={openCart}
+              onClick={() => {
+                closeMenus()
+                openCart()
+              }}
               aria-label={`Cart, ${itemCount} items`}
               title="Cart"
-              className="relative flex cursor-pointer items-center gap-1.5 rounded-lg border-none bg-transparent p-2.5"
+              className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent"
             >
               <ShoppingBag size={18} className="text-text" />
               <span className="sr-only">Cart</span>
@@ -129,7 +149,7 @@ export default function Nav() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="absolute right-[3px] top-[3px] flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[9px] font-bold text-white"
+                    className="absolute right-[-2px] top-[-2px] flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[9px] font-bold text-white shadow-sm"
                   >
                     {itemCount}
                   </motion.span>
@@ -142,7 +162,7 @@ export default function Nav() {
               onClick={() => setMenuOpen((o) => !o)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
-              className="flex cursor-pointer items-center border-none bg-transparent p-2 md:hidden"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent md:hidden"
             >
               {menuOpen ? (
                 <X size={18} className="text-text" />
@@ -179,31 +199,53 @@ export default function Nav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-[98] bg-black/30 md:hidden"
+              className="fixed inset-0 z-[98] bg-[#17241b]/38 backdrop-blur-[2px] md:hidden"
             />
             <motion.aside
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 26 }}
-              className="fixed bottom-0 right-0 top-0 z-[99] flex w-60 flex-col gap-1 bg-card px-5 pb-5 pt-20 md:hidden"
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed right-3 top-[64px] z-[99] w-[min(86vw,320px)] overflow-hidden rounded-[24px] border border-border bg-card/95 p-3 shadow-[0_24px_70px_rgba(28,34,30,0.22)] backdrop-blur-xl md:hidden"
+              aria-label="Pages menu"
             >
-              {LINKS.map(({ path, label }) => {
-                const active = isActive(path)
-                return (
-                  <Link
-                    key={path}
-                    href={path}
-                    aria-current={active ? 'page' : undefined}
-                    onClick={closeMenus}
-                    className={`block w-full rounded-[10px] px-4 py-3 text-left font-serif text-base ${
-                      active ? 'bg-sagePale font-semibold text-forest' : 'font-normal text-text'
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                )
-              })}
+              <div className="mb-2 rounded-[18px] bg-sagePale/70 px-4 py-3">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-goldText">
+                  Pages
+                </p>
+                <p className="mt-1 text-sm font-semibold text-forest">Explore VerdeBliss</p>
+              </div>
+              <div className="grid gap-1.5">
+                {LINKS.map(({ path, label, icon: Icon }) => {
+                  const active = isActive(path)
+                  return (
+                    <Link
+                      key={path}
+                      href={path}
+                      aria-current={active ? 'page' : undefined}
+                      onClick={closeMenus}
+                      className={`group flex min-h-12 w-full items-center gap-3 rounded-[16px] px-3.5 py-2.5 text-left text-sm transition ${
+                        active
+                          ? 'bg-forest font-semibold text-white shadow-sm'
+                          : 'font-semibold text-text hover:bg-warmWhite hover:text-forest'
+                      }`}
+                    >
+                      <span
+                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+                          active ? 'bg-white/20 text-white' : 'bg-sagePale text-forest'
+                        }`}
+                      >
+                        <Icon size={16} />
+                      </span>
+                      <span className="flex-1">{label}</span>
+                      <ArrowRight
+                        size={14}
+                        className={active ? 'text-white/72' : 'text-muted group-hover:text-forest'}
+                      />
+                    </Link>
+                  )
+                })}
+              </div>
             </motion.aside>
           </>
         )}

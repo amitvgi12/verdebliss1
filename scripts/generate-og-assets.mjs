@@ -28,7 +28,7 @@ const PRODUCTS = [
   ],
   [
     'botanical-spf-50-shield',
-    'Botanical SPF 50 Shield',
+    'Botanical Mineral Sun Shield',
     'Mineral daily sun care',
     '/images/products/spf.webp',
   ],

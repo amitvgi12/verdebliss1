@@ -19,6 +19,11 @@ import type { NextRequest } from 'next/server'
 const CF_ORIGIN_SECRET = process.env.CF_ORIGIN_SECRET
 const CF_ORIGIN_GATE_ENABLED = Boolean(CF_ORIGIN_SECRET)
 
+// Emitted as a response header (not a <meta> tag) to keep the build fingerprint
+// out of the rendered HTML where it could be scraped by bots.
+const BUILD_SHA =
+  process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? 'dev'
+
 // When Sentry is configured, its ingest endpoint must be in connect-src so
 // error reports are not blocked by CSP. The pattern covers all Sentry org IDs.
 const SENTRY_CONNECT_SRC = process.env.SENTRY_DSN ? ' https://o*.ingest.sentry.io' : ''
@@ -96,6 +101,9 @@ export function proxy(request: NextRequest) {
     'NEL',
     JSON.stringify({ report_to: 'csp-endpoint', max_age: 10886400, include_subdomains: false })
   )
+  // Build fingerprint in a response header rather than an HTML <meta> tag so it
+  // is not included in the rendered page source (reduces bot scraping surface).
+  response.headers.set('x-build-sha', BUILD_SHA)
   // Blocks Flash / Acrobat cross-domain policy file lookups. Trivial cost, defence-
   // in-depth for CDN-served assets even though Flash is end-of-life.
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')

@@ -693,3 +693,90 @@ export async function recordReconciliationFailure(input: {
     console.warn('[commerce] DLQ insert threw:', err instanceof Error ? err.message : String(err))
   }
 }
+
+interface PendingReconciliationRow {
+  id: string
+  event_type: string
+  provider_order_id: string | null
+  provider_payment_id: string | null
+  payload: Record<string, unknown>
+  retry_count: number
+}
+
+/**
+ * Best-effort retry of pending DLQ rows on each inbound webhook.
+ *
+ * Runs before the main event is processed so a DB blip that caused a previous
+ * `payment.captured` to land in the DLQ self-heals as soon as the next
+ * webhook arrives — reducing worst-case latency from 24h (daily cron) to
+ * the typical Razorpay retry interval (minutes).
+ *
+ * Safety properties:
+ * - Capped at MAX_RETRY_ROWS rows per invocation so a large backlog cannot
+ *   stall the webhook or cause Razorpay to time out and retry.
+ * - Never throws; any error is logged and swallowed — the caller's 200 response
+ *   must not be blocked by background retry work.
+ * - Idempotent: `completeRazorpayCheckout` returns early for already-completed
+ *   sessions, so double-retrying the same row is harmless.
+ */
+export async function retryPendingReconciliations(): Promise<void> {
+  if (!hasSupabaseAdminEnv()) return
+
+  const MAX_RETRY_ROWS = 5
+
+  try {
+    const supabase = createSupabaseAdmin()
+    const { data, error } = await supabase
+      .from('payment_reconciliation_failures')
+      .select('id, event_type, provider_order_id, provider_payment_id, payload, retry_count')
+      .eq('resolved', false)
+      .in('event_type', ['payment.captured', 'payment.authorized'])
+      .order('created_at', { ascending: true })
+      .limit(MAX_RETRY_ROWS)
+
+    if (error || !data?.length) return
+
+    const rows = data as PendingReconciliationRow[]
+
+    await Promise.allSettled(
+      rows.map(async (row) => {
+        const orderId = row.provider_order_id
+        const paymentId = row.provider_payment_id
+        if (!orderId || !paymentId) return
+
+        try {
+          await completeRazorpayCheckout({
+            razorpayOrderId: orderId,
+            razorpayPaymentId: paymentId,
+            rawPaymentPayload: row.payload,
+          })
+
+          // Mark resolved so it no longer appears in future retries.
+          await supabase
+            .from('payment_reconciliation_failures')
+            .update({
+              resolved: true,
+              resolved_at: new Date().toISOString(),
+              resolved_by: 'webhook_retry',
+            })
+            .eq('id', row.id)
+        } catch {
+          // Increment retry counter for observability; leave resolved=false.
+          await supabase
+            .from('payment_reconciliation_failures')
+            .update({
+              retry_count: row.retry_count + 1,
+              last_retry_at: new Date().toISOString(),
+            })
+            .eq('id', row.id)
+        }
+      })
+    )
+  } catch (err) {
+    // Never block the caller — DLQ retry is best-effort.
+    console.warn(
+      '[commerce] retryPendingReconciliations threw:',
+      err instanceof Error ? err.message : String(err)
+    )
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "name": "VerdeBliss — Organic Skincare",
+  "name": "VerdeBliss — Botanical Skincare",
   "short_name": "VerdeBliss",
-  "description": "Certified organic skincare from India. Vegan, cruelty-free botanicals.",
+  "description": "Botanical skincare from India with INCI-first product pages and published claim status.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF7F2",

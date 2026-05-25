@@ -44,7 +44,10 @@ const INGREDIENTS = [
   { name: 'Rose Hip', desc: 'A vitamin-rich oil profile for barrier comfort and visible glow.' },
   { name: 'Green Tea', desc: 'Polyphenol-rich antioxidant support for oily and combination skin.' },
   { name: 'Turmeric', desc: 'A brightening botanical used in Indian rituals for generations.' },
-  { name: 'Zinc Oxide', desc: 'Mineral UV shield for daily broad-spectrum protection.' },
+  {
+    name: 'Zinc Oxide',
+    desc: 'Mineral UV-filter ingredient used in sun-care formulas; product-level SPF documentation is published when verified.',
+  },
   { name: 'Shea Butter', desc: 'A cushiony emollient for overnight barrier nourishment.' },
 ]
 
@@ -141,7 +144,7 @@ export default async function Home() {
               <strong>Full INCI listed</strong>
             </div>
             <div className="premium-float premium-float--right">
-              <span>SPF 50 Shield</span>
+              <span>Mineral Sun Shield</span>
               <strong>Mineral UV filter</strong>
             </div>
           </div>

@@ -160,7 +160,7 @@ begin
       (
         '5', '5d40699e-80f0-4779-b3d9-577c2f75fb84',
         'botanical-spf-50-shield',
-        'Botanical SPF 50 Shield',
+        'Botanical Mineral Sun Shield',
         'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.',
         220.00::numeric, null::numeric, null::timestamptz, 'SPF',
         array['All Types']::text[], array['Vegan-Friendly','Cruelty-free*']::text[],
@@ -371,7 +371,7 @@ begin
   select id::text into pid_rosehip from public.products where lower(name) = lower('Rose Hip Glow Moisturiser') limit 1;
   select id::text into pid_toner from public.products where lower(name) = lower('Green Tea Clarity Toner') limit 1;
   select id::text into pid_cleanser from public.products where lower(name) = lower('Turmeric Brightening Cleanser') limit 1;
-  select id::text into pid_spf from public.products where lower(name) = lower('Botanical SPF 50 Shield') limit 1;
+  select id::text into pid_spf from public.products where lower(name) = lower('Botanical Mineral Sun Shield') limit 1;
   select id::text into pid_lip from public.products where lower(name) = lower('Wild Berry Lip Elixir') limit 1;
   select id::text into pid_niacinamide from public.products where lower(name) = lower('Niacinamide Pore Serum') limit 1;
   select id::text into pid_nightcream from public.products where lower(name) = lower('Shea Butter Night Cream') limit 1;
@@ -443,7 +443,7 @@ begin
   (
     uid_kavya, 'Processing', 670, 0, 670, 67,
     jsonb_build_array(
-      jsonb_build_object('id', pid_spf, 'name', 'Botanical SPF 50 Shield', 'price', 220, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp'),
+      jsonb_build_object('id', pid_spf, 'name', 'Botanical Mineral Sun Shield', 'price', 220, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp'),
       jsonb_build_object('id', pid_toner, 'name', 'Green Tea Clarity Toner', 'price', 450, 'qty', 1, 'ingredient', 'Green Tea', 'emoji', '🍃', 'bg_color', '#E8F2EA', 'image_url', '/images/products/toner.webp')
     ),
     kavya_addr || '{"payment_method":"Razorpay"}'::jsonb,
@@ -480,7 +480,7 @@ begin
   (
     uid_priya, 'Delivered', 220, 79, 299, 22,
     jsonb_build_array(
-      jsonb_build_object('id', pid_spf, 'name', 'Botanical SPF 50 Shield', 'price', 220, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp')
+      jsonb_build_object('id', pid_spf, 'name', 'Botanical Mineral Sun Shield', 'price', 220, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp')
     ),
     priya_addr || '{"payment_method":"Cash on Delivery"}'::jsonb,
     'pay_test_Pri003Delivered', 'order_test_Pri003', 'Cash on Delivery', 'cod_pending', now() - interval '60 days', now() - interval '54 days'
@@ -772,7 +772,7 @@ where name in (
   'Rose Hip Glow Moisturiser',
   'Green Tea Clarity Toner',
   'Turmeric Brightening Cleanser',
-  'Botanical SPF 50 Shield',
+  'Botanical Mineral Sun Shield',
   'Wild Berry Lip Elixir',
   'Niacinamide Pore Serum',
   'Shea Butter Night Cream'
@@ -782,7 +782,7 @@ order by case name
   when 'Rose Hip Glow Moisturiser' then 2
   when 'Green Tea Clarity Toner' then 3
   when 'Turmeric Brightening Cleanser' then 4
-  when 'Botanical SPF 50 Shield' then 5
+  when 'Botanical Mineral Sun Shield' then 5
   when 'Wild Berry Lip Elixir' then 6
   when 'Niacinamide Pore Serum' then 7
   when 'Shea Butter Night Cream' then 8

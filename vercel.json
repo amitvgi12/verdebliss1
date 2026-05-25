@@ -6,7 +6,7 @@
   "crons": [
     {
       "path": "/api/cron/reconciliation-alert",
-      "schedule": "0 12 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }

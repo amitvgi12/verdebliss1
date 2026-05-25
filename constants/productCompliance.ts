@@ -1,4 +1,5 @@
 import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
+import type { Product } from '@/types'
 
 /**
  * productCompliance.js
@@ -28,13 +29,28 @@ const LOCAL_ENTITY_DETAILS = `${BUSINESS_COMPLIANCE.legalName}, ${formatPostalAd
 const LOCAL_MANUFACTURER = LOCAL_ENTITY_DETAILS
 const LOCAL_PACKER = LOCAL_ENTITY_DETAILS
 
+export const DEFAULT_PRODUCT_COMPLIANCE: ProductCompliance = {
+  pao: 12,
+  inci: 'Full ingredient list is printed on product packaging and should be reviewed before use.',
+  allergens:
+    'Review the product packaging before use. Perform a patch test if you have sensitive or reactive skin.',
+  patchTest: true,
+  agingNote: null,
+  freeFrom: [],
+  countryOfOrigin: 'India',
+  manufacturer: LOCAL_MANUFACTURER,
+  packer: LOCAL_PACKER,
+  importer: null,
+  cdSCoImportLicence: null,
+}
+
 export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
   /* Bakuchiol Renewal Serum */
   1: {
     pao: 12,
     inci: 'Aqua (Water), Bakuchiol (0.5%), Simmondsia Chinensis (Jojoba) Seed Oil, Tocopherol (Vitamin E), Sodium Hyaluronate (Hyaluronic Acid), Glycerin, Panthenol, Niacinamide, Cetyl Alcohol, Cetearyl Alcohol, Phenoxyethanol, Ethylhexylglycerin.',
     allergens:
-      'Contains Cetearyl Alcohol (fatty alcohol, not drying alcohol). Free from: Parabens, Sulphates, Synthetic Fragrance, Mineral Oil, Phthalates. Suitable for use during pregnancy (consult your healthcare provider).',
+      'Contains Cetearyl Alcohol (fatty alcohol, not drying alcohol). Free from: Parabens, Sulphates, Synthetic Fragrance, Mineral Oil, Phthalates. If pregnant, breastfeeding, or under medical care, consult your healthcare provider before use.',
     patchTest: true,
     agingNote: null,
     freeFrom: ['Parabens', 'Sulphates', 'Synthetic Fragrance', 'Mineral Oil', 'Phthalates'],
@@ -67,7 +83,7 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
       'Contains Salicylic Acid — avoid if allergic to aspirin. Avoid during pregnancy. Free from: Alcohol Denat, Parabens, Sulphates.',
     patchTest: true,
     agingNote:
-      'Contains Salicylic Acid (BHA). Recommended for ages 12+. Consult a dermatologist before use during pregnancy.',
+      'Contains Salicylic Acid (BHA). Recommended for ages 12+. Consult your healthcare provider before use during pregnancy.',
     freeFrom: ['Alcohol Denat', 'Parabens', 'Sulphates'],
     countryOfOrigin: 'India',
     manufacturer: LOCAL_MANUFACTURER,
@@ -90,15 +106,15 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     importer: null,
     cdSCoImportLicence: null,
   },
-  /* Botanical SPF 50 Shield */
+  /* Botanical Mineral Sun Shield */
   5: {
     pao: 12,
     inci: 'Aqua (Water), Zinc Oxide (20%) [Non-nano], Aloe Barbadensis Leaf Juice, Tocopherol (Vitamin E), Caprylic/Capric Triglyceride, Glycerin, Cetearyl Alcohol, Phenoxyethanol, Ethylhexylglycerin.',
     allergens:
-      'Free from: Chemical UV filters (Oxybenzone, Octinoxate, Avobenzone), Parabens, Synthetic Fragrance. Contains Non-nano Zinc Oxide — reef-safe formulation.',
+      'Free from: Oxybenzone, Octinoxate, Avobenzone, Parabens, Synthetic Fragrance. Contains Non-nano Zinc Oxide. Independent SPF and environmental-impact documentation is pending.',
     patchTest: false,
     agingNote:
-      'Suitable for all ages. Reapply every 2 hours when outdoors. For infants under 6 months, consult a paediatrician.',
+      'Reapply every 2 hours when outdoors. For children or infants under 6 months, consult a paediatrician.',
     freeFrom: ['Oxybenzone', 'Octinoxate', 'Avobenzone', 'Parabens', 'Synthetic Fragrance'],
     countryOfOrigin: 'India',
     manufacturer: LOCAL_MANUFACTURER,
@@ -141,7 +157,7 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     pao: 12,
     inci: 'Aqua (Water), Butyrospermum Parkii (Shea) Butter (Unrefined), Tocopherol (Vitamin E), Bakuchiol (0.2%), Squalane (Plant-derived), Glycerin, Cetearyl Alcohol, Cetyl Alcohol, Sodium Hyaluronate, Phenoxyethanol, Ethylhexylglycerin.',
     allergens:
-      'Contains Cetearyl Alcohol. Free from: Parabens, Synthetic Fragrance, Mineral Oil, Alcohol Denat. Suitable for use during pregnancy — consult your healthcare provider.',
+      'Contains Cetearyl Alcohol. Free from: Parabens, Synthetic Fragrance, Mineral Oil, Alcohol Denat. If pregnant, breastfeeding, or under medical care, consult your healthcare provider before use.',
     patchTest: true,
     agingNote: null,
     freeFrom: ['Parabens', 'Synthetic Fragrance', 'Mineral Oil', 'Alcohol Denat'],
@@ -151,4 +167,17 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     importer: null,
     cdSCoImportLicence: null,
   },
+}
+
+export function getProductCompliance(
+  product: Pick<Product, 'id' | 'slug'> | null | undefined,
+  routeId?: string
+): ProductCompliance {
+  if (!product) return DEFAULT_PRODUCT_COMPLIANCE
+  return (
+    PRODUCT_COMPLIANCE[product.id] ??
+    (product.slug ? PRODUCT_COMPLIANCE[product.slug] : undefined) ??
+    (routeId ? PRODUCT_COMPLIANCE[routeId] : undefined) ??
+    DEFAULT_PRODUCT_COMPLIANCE
+  )
 }

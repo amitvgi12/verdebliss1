@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
+import { BUSINESS_COMPLIANCE, validateBusinessCompliance } from '@/constants/businessCompliance'
 import { PRODUCT_COMPLIANCE } from '@/constants/productCompliance'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
@@ -21,6 +21,8 @@ describe('pre-launch gates', () => {
   it('blocks launch mode when compliance placeholders remain', () => {
     if (process.env.LAUNCH_MODE !== 'true') return
 
+    const validation = validateBusinessCompliance(BUSINESS_COMPLIANCE, { strict: true })
+    expect(validation.errors, validation.errors.join('\n')).toEqual([])
     expect(JSON.stringify(BUSINESS_COMPLIANCE)).not.toMatch(PLACEHOLDER_MARKERS)
     expect(JSON.stringify(PRODUCT_COMPLIANCE)).not.toMatch(PLACEHOLDER_MARKERS)
   })

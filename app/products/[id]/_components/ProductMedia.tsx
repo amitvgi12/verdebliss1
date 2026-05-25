@@ -12,6 +12,7 @@ interface ProductCertification {
   emoji: string
   url: string
   org: string
+  status: string
 }
 
 interface ProductMediaProps {
@@ -74,8 +75,6 @@ export default function ProductMedia({
             <a
               key={cert.label}
               href={cert.url}
-              target="_blank"
-              rel="noopener noreferrer"
               title={`${cert.label}: ${cert.org}`}
               style={{
                 display: 'flex',
@@ -93,7 +92,7 @@ export default function ProductMedia({
                 textTransform: 'uppercase',
               }}
             >
-              <span aria-hidden="true">{cert.emoji}</span> {cert.label} ↗
+              <span aria-hidden="true">{cert.emoji}</span> {cert.label} · {cert.status}
             </a>
           ) : (
             <span
@@ -112,7 +111,7 @@ export default function ProductMedia({
                 textTransform: 'uppercase',
               }}
             >
-              <span aria-hidden="true">{cert.emoji}</span> {cert.label}
+              <span aria-hidden="true">{cert.emoji}</span> {cert.label} · {cert.status}
             </span>
           )
         )}

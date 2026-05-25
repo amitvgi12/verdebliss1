@@ -244,7 +244,7 @@ describe('chat API consent gate', () => {
             payment_status: 'paid',
             created_at: '2026-05-21T08:00:00.000Z',
             items: [
-              { name: 'Botanical SPF 50 Shield', qty: 1 },
+              { name: 'Botanical Mineral Sun Shield', qty: 1 },
               { name: 'Green Tea Clarity Toner', qty: 1 },
             ],
           },

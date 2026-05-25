@@ -2,6 +2,7 @@ export const revalidate = 300
 
 import FAQClient from './FAQClient'
 import { StructuredData } from '@/lib/structured-data'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
 const FAQ_DATA = [
   {
@@ -14,19 +15,19 @@ const FAQ_DATA = [
   },
   {
     q: 'What is your return policy?',
-    a: 'We accept returns of unopened products within 14 days of delivery. Opened products are eligible for exchange if you experience an adverse reaction. Email returns@verdebliss.com with your order ID.',
+    a: `We accept returns of unopened products within 14 days of delivery. Opened products may be reviewed for adverse-reaction support under the returns policy. Email ${BUSINESS_COMPLIANCE.emails.returns} with your order ID.`,
   },
   {
     q: 'How do loyalty points work?',
     a: 'You earn 1 point per ₹10 spent after successful payment verification. Tiers: Green Leaf (0–499), Gold Botanist (500–1499), Platinum Alchemist (1500+). Higher tiers unlock early access, free samples, and special discounts.',
   },
   {
-    q: 'Are your products safe during pregnancy?',
-    a: 'Most products are safe but some require caution. The Green Tea Clarity Toner contains Salicylic Acid (BHA) and should be avoided during pregnancy. The Bakuchiol Renewal Serum is a pregnancy-safe alternative to retinol. Always consult your healthcare provider before changing your skincare routine during pregnancy.',
+    q: 'Can I use VerdeBliss products during pregnancy?',
+    a: 'Some cosmetic ingredients require extra caution during pregnancy or breastfeeding. The Green Tea Clarity Toner contains Salicylic Acid (BHA), so speak with your healthcare provider before use. If you are pregnant, breastfeeding, or under medical care, review the full INCI list and consult your clinician before changing your routine.',
   },
   {
     q: 'How do I patch test a new product?',
-    a: 'Apply a small amount to the inside of your forearm. Wait 24 hours. If no redness, itching, or irritation occurs, the product is safe to use on your face. We recommend patch testing all active products, especially if you have sensitive skin.',
+    a: 'Apply a small amount to the inside of your forearm and wait 24 hours. If redness, itching, or irritation appears, discontinue use. Patch testing is recommended for active products, especially if you have sensitive or reactive skin.',
   },
   {
     q: 'What does INCI mean?',
@@ -54,14 +55,14 @@ const FAQ_DATA = [
   },
   {
     q: 'What if I have a reaction to a product?',
-    a: 'Stop using the product immediately and consult a dermatologist. Email reactions@verdebliss.com with your order ID and photos — we will issue a full refund and provide a free replacement of an alternative product.',
+    a: `Stop using the product immediately and seek medical advice if symptoms persist or feel severe. Email ${BUSINESS_COMPLIANCE.emails.reactions} with your order ID, product name, and photos so our team can review the case under the returns policy.`,
   },
 ]
 
 export const metadata = {
   title: 'Frequently Asked Questions',
   description:
-    'Answers about VerdeBliss botanical skincare: shipping, returns, ingredients, formulation standards, pregnancy safety, loyalty points, and more.',
+    'Answers about VerdeBliss botanical skincare: shipping, returns, ingredients, formulation standards, pregnancy-use cautions, loyalty points, and more.',
   alternates: { canonical: 'https://www.verdebliss.com/faq' },
 }
 

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
 import FadeIn from '@/components/ui/FadeIn'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
 export const revalidate = 3600
 
@@ -63,11 +64,11 @@ const CLAIMS: ClaimRow[] = [
     note: 'Internal skin-compatibility testing conducted. Independent dermatologist review documentation pending.',
   },
   {
-    claim: 'SPF 50 efficacy',
+    claim: 'SPF rating efficacy',
     requiredProof:
       'SPF test lab report: lab name, accreditation, test standard (ISO 24444 or equivalent), batch/formula scope',
     status: 'pending',
-    note: 'Botanical SPF 50 Shield contains 20% non-nano Zinc Oxide. Independent SPF efficacy testing documentation pending.',
+    note: 'Botanical Mineral Sun Shield contains 20% non-nano Zinc Oxide. Independent SPF-rating efficacy documentation is pending.',
   },
   {
     claim: 'Recyclable / eco-friendly packaging',
@@ -279,7 +280,7 @@ export default function CertificationsPage() {
                   ],
                 },
                 {
-                  label: 'SPF efficacy',
+                  label: 'SPF rating efficacy',
                   items: [
                     'Lab name and accreditation',
                     'Test standard (e.g. ISO 24444)',
@@ -362,7 +363,8 @@ export default function CertificationsPage() {
             Questions about our formulations?
           </h2>
           <p className="mx-auto mb-7 max-w-[440px] text-center text-sm text-white/55">
-            Email us at hello@verdebliss.com or browse product pages for full INCI lists.
+            Email us at {BUSINESS_COMPLIANCE.emails.support} or browse product pages for full INCI
+            lists.
           </p>
           <Link href="/products" className="btn-terra">
             Browse products <ArrowRight size={15} />

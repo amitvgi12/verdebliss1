@@ -8,26 +8,26 @@ import Accordion from './Accordion'
 
 const HOW_TO_USE = [
   'Cleanse and gently tone your face.',
-  'Apply 3–4 drops to fingertips.',
+  'Apply the amount recommended on the product packaging.',
   'Press gently into skin, avoiding the eye area.',
   'Follow with moisturiser and SPF in the morning.',
 ]
 
 const BENEFITS = [
   {
-    icon: '💧',
-    title: 'Deep Hydration',
-    desc: "Helps support skin's moisture retention for visibly plumper skin.",
+    icon: '📋',
+    title: 'Full formula context',
+    desc: 'Full INCI, PAO, allergen notes, and seller details are available before purchase.',
   },
   {
-    icon: '✨',
-    title: 'Visible Radiance',
-    desc: 'Skin appears brighter and more even-toned with regular use.',
+    icon: '🌿',
+    title: 'Routine-first positioning',
+    desc: 'Designed as a cosmetic ritual step without medical, diagnostic, or treatment claims.',
   },
   {
-    icon: '🛡️',
-    title: 'Barrier Support',
-    desc: 'Helps reinforce the appearance of a healthy skin barrier.',
+    icon: '⚠️',
+    title: 'Use with care',
+    desc: 'Patch-test and allergen guidance help you decide whether the formula suits your skin.',
   },
 ]
 
@@ -44,6 +44,29 @@ export default function ProductAccordions({
 }: ProductAccordionsProps) {
   return (
     <div style={{ borderTop: `1px solid ${C.border}` }}>
+      <Accordion
+        id="benefits"
+        label="Key Product Notes"
+        open={openSection === 'benefits'}
+        onToggle={() => onToggle('benefits')}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 20 }}>
+          {BENEFITS.map((benefit) => (
+            <div key={benefit.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <span style={{ fontSize: 20, lineHeight: 1 }} aria-hidden="true">
+                {benefit.icon}
+              </span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}>
+                  {benefit.title}
+                </div>
+                <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>{benefit.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Accordion>
+
       <Accordion
         id="ingredients"
         label="Full Ingredients (INCI)"
@@ -98,40 +121,37 @@ export default function ProductAccordions({
       </Accordion>
 
       <Accordion
-        id="commerce-disclosures"
-        label="Product & Seller Details"
-        open={openSection === 'commerce-disclosures'}
-        onToggle={() => onToggle('commerce-disclosures')}
+        id="how_to_use"
+        label="How To Use"
+        open={openSection === 'how_to_use'}
+        onToggle={() => onToggle('how_to_use')}
       >
-        <dl className="product-compliance-list">
-          <div>
-            <dt>Country of origin</dt>
-            <dd>{compliance.countryOfOrigin}</dd>
-          </div>
-          <div>
-            <dt>Manufacturer</dt>
-            <dd>{compliance.manufacturer}</dd>
-          </div>
-          <div>
-            <dt>Packer</dt>
-            <dd>{compliance.packer}</dd>
-          </div>
-          <div>
-            <dt>Importer</dt>
-            <dd>{compliance.importer ?? 'Not applicable - manufactured in India'}</dd>
-          </div>
-          {compliance.cdSCoImportLicence && (
-            <div>
-              <dt>CDSCO import licence</dt>
-              <dd>{compliance.cdSCoImportLicence}</dd>
-            </div>
-          )}
-        </dl>
+        <ol
+          className="product-usage-list"
+          style={{
+            paddingBottom: 20,
+            display: 'grid',
+            gap: 10,
+          }}
+        >
+          {HOW_TO_USE.map((step) => (
+            <li
+              key={step}
+              style={{
+                fontSize: 13,
+                color: C.muted,
+                paddingLeft: 4,
+              }}
+            >
+              {step}
+            </li>
+          ))}
+        </ol>
       </Accordion>
 
       <Accordion
         id="allergens"
-        label="Allergen & Safety Info"
+        label="Patch Test & Allergen Info"
         open={openSection === 'allergens'}
         onToggle={() => onToggle('allergens')}
       >
@@ -177,8 +197,8 @@ export default function ProductAccordions({
               </div>
               <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>
                 Apply a small amount to the inner forearm 24 hours before first full use.
-                Discontinue use if redness, itching, or irritation occurs. Consult a dermatologist
-                if you have reactive skin.
+                Discontinue use if redness, itching, or irritation occurs. Seek professional advice
+                if you have reactive skin or symptoms persist.
               </p>
             </div>
           )}
@@ -217,74 +237,35 @@ export default function ProductAccordions({
       </Accordion>
 
       <Accordion
-        id="how_to_use"
-        label="How To Use"
-        open={openSection === 'how_to_use'}
-        onToggle={() => onToggle('how_to_use')}
+        id="commerce-disclosures"
+        label="Product & Seller Details"
+        open={openSection === 'commerce-disclosures'}
+        onToggle={() => onToggle('commerce-disclosures')}
       >
-        <ol
-          style={{
-            paddingBottom: 20,
-            listStyle: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-          }}
-        >
-          {HOW_TO_USE.map((step, i) => (
-            <li
-              key={i}
-              style={{
-                display: 'flex',
-                gap: 12,
-                fontSize: 13,
-                color: C.muted,
-                alignItems: 'flex-start',
-              }}
-            >
-              <span
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  background: C.sagePale,
-                  color: C.forest,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  marginTop: 1,
-                }}
-              >
-                {i + 1}
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
-      </Accordion>
-
-      <Accordion
-        id="benefits"
-        label="Key Benefits"
-        open={openSection === 'benefits'}
-        onToggle={() => onToggle('benefits')}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 20 }}>
-          {BENEFITS.map((benefit) => (
-            <div key={benefit.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <span style={{ fontSize: 20, lineHeight: 1 }}>{benefit.icon}</span>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}>
-                  {benefit.title}
-                </div>
-                <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>{benefit.desc}</div>
-              </div>
+        <dl className="product-compliance-list">
+          <div>
+            <dt>Country of origin</dt>
+            <dd>{compliance.countryOfOrigin}</dd>
+          </div>
+          <div>
+            <dt>Manufacturer</dt>
+            <dd>{compliance.manufacturer}</dd>
+          </div>
+          <div>
+            <dt>Packer</dt>
+            <dd>{compliance.packer}</dd>
+          </div>
+          <div>
+            <dt>Importer</dt>
+            <dd>{compliance.importer ?? 'Not applicable - manufactured in India'}</dd>
+          </div>
+          {compliance.cdSCoImportLicence && (
+            <div>
+              <dt>CDSCO import licence</dt>
+              <dd>{compliance.cdSCoImportLicence}</dd>
             </div>
-          ))}
-        </div>
+          )}
+        </dl>
       </Accordion>
     </div>
   )

@@ -1,3 +1,5 @@
+import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
+
 export interface LegalSection {
   heading: string
   body: string
@@ -10,6 +12,12 @@ export interface LegalDocument {
   updated: string
   sections: readonly LegalSection[]
 }
+
+const SUPPORT_EMAIL = BUSINESS_COMPLIANCE.emails.support
+const PRIVACY_EMAIL = BUSINESS_COMPLIANCE.emails.privacy
+const RETURNS_EMAIL = BUSINESS_COMPLIANCE.emails.returns
+const REACTIONS_EMAIL = BUSINESS_COMPLIANCE.emails.reactions
+const LEGAL_ADDRESS = formatPostalAddress()
 
 export const LEGAL_DOCUMENTS = {
   privacy: {
@@ -33,7 +41,11 @@ export const LEGAL_DOCUMENTS = {
       },
       {
         heading: 'Retention and rights',
-        body: 'Account and order data is retained while necessary for customer service, fraud prevention, legal, accounting, and tax obligations. Customers may request access, correction, deletion, or portability by contacting privacy@verdebliss.com.',
+        body: `Account and order data is retained while necessary for customer service, fraud prevention, legal, accounting, and tax obligations. Customers may request access, correction, deletion, or portability by contacting ${PRIVACY_EMAIL}.`,
+      },
+      {
+        heading: 'Business and grievance contact',
+        body: `Privacy and grievance correspondence may be sent to ${BUSINESS_COMPLIANCE.grievanceOfficer.name}, ${BUSINESS_COMPLIANCE.grievanceOfficer.designation}, at ${BUSINESS_COMPLIANCE.grievanceOfficer.email}, or by writing to ${BUSINESS_COMPLIANCE.legalName}, ${LEGAL_ADDRESS}.`,
       },
     ],
   },
@@ -75,7 +87,7 @@ export const LEGAL_DOCUMENTS = {
       },
       {
         heading: 'How to request a return',
-        body: 'Email returns@verdebliss.com or use the refund request page with your order ID, contact email, product details, and reason. Our team will review eligibility before issuing return instructions.',
+        body: `Email ${RETURNS_EMAIL} or use the refund request page with your order ID, contact email, product details, and reason. Our team will review eligibility before issuing return instructions.`,
       },
       {
         heading: 'Order cancellation before delivery',
@@ -87,7 +99,7 @@ export const LEGAL_DOCUMENTS = {
       },
       {
         heading: 'Damaged, incorrect, or reaction cases',
-        body: 'For damaged or incorrect items, contact support within 48 hours with photos. For adverse skin reactions, stop use immediately and email reactions@verdebliss.com with the order ID and product name.',
+        body: `For damaged or incorrect items, contact ${SUPPORT_EMAIL} within 48 hours with photos. For adverse skin reactions, stop use immediately and email ${REACTIONS_EMAIL} with the order ID and product name.`,
       },
     ],
   },
@@ -138,6 +150,10 @@ export const LEGAL_DOCUMENTS = {
       {
         heading: 'Managing cookies',
         body: 'You can manage cookie consent through the banner or browser settings. Blocking essential cookies may prevent login, cart, and checkout features from working correctly.',
+      },
+      {
+        heading: 'Cookie questions',
+        body: `For cookie or privacy questions, contact ${PRIVACY_EMAIL}.`,
       },
     ],
   },

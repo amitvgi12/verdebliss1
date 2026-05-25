@@ -1,22 +1,22 @@
 import type { Product } from '@/types'
 
 const BADGE_NORMALISATION: Record<string, string> = {
-  vegan: 'Vegan-friendly',
-  'vegan-friendly': 'Vegan-friendly',
-  'organic certified': 'Organic botanicals',
-  'certified organic': 'Organic botanicals',
-  'organic botanicals': 'Organic botanicals',
-  'cruelty-free': 'Cruelty-free*',
-  'cruelty free': 'Cruelty-free*',
-  'cruelty-free*': 'Cruelty-free*',
+  vegan: 'Vegan-friendly · pending cert',
+  'vegan-friendly': 'Vegan-friendly · pending cert',
+  'organic certified': 'Organic botanicals · pending cert',
+  'certified organic': 'Organic botanicals · pending cert',
+  'organic botanicals': 'Organic botanicals · pending cert',
+  'cruelty-free': 'No animal testing · pending cert',
+  'cruelty free': 'No animal testing · pending cert',
+  'cruelty-free*': 'No animal testing · pending cert',
 }
 
 const BADGE_DISCLOSURES: Record<string, string> = {
-  'Vegan-friendly':
+  'Vegan-friendly · pending cert':
     'Vegan-friendly where formulation permits. Formal certification status is published in the Trust Centre.',
-  'Organic botanicals':
+  'Organic botanicals · pending cert':
     'Organic botanical ingredient positioning. Third-party certification is in progress.',
-  'Cruelty-free*':
+  'No animal testing · pending cert':
     'No animal testing is conducted or commissioned. Formal cruelty-free certification is in progress.',
 }
 

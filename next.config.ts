@@ -1,4 +1,11 @@
 import type { NextConfig } from 'next'
+import { createRequire } from 'node:module'
+import path from 'node:path'
+
+const require = createRequire(import.meta.url)
+const hasSentryPackage = canResolvePackage('@sentry/nextjs')
+const sentryStubPath = path.resolve(process.cwd(), 'lib/sentry-stub.ts')
+const sentryTurbopackStub = './lib/sentry-stub.ts'
 
 /**
  * CSP is set in proxy.ts (per-request nonce). Static headers stay here.
@@ -19,6 +26,16 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {
     root: process.cwd(),
+    ...(hasSentryPackage ? {} : { resolveAlias: { '@sentry/nextjs': sentryTurbopackStub } }),
+  },
+
+  webpack(config) {
+    if (!hasSentryPackage) {
+      config.resolve ??= {}
+      config.resolve.alias ??= {}
+      config.resolve.alias['@sentry/nextjs'] = sentryStubPath
+    }
+    return config
   },
 
   async headers() {
@@ -91,3 +108,12 @@ const nextConfig: NextConfig = {
 }
 
 export default nextConfig
+
+function canResolvePackage(pkg: string): boolean {
+  try {
+    require.resolve(pkg)
+    return true
+  } catch {
+    return false
+  }
+}

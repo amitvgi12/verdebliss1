@@ -1,9 +1,9 @@
 import { normalizeProductBadgeLabel } from '@/lib/product-claims'
 
 const BADGE_STYLES: Record<string, { bg: string; color: string }> = {
-  'Vegan-friendly': { bg: '#EBF0E9', color: '#1E5C28' },
-  'Cruelty-free*': { bg: '#F6EDE8', color: '#7A2A0A' },
-  'Organic botanicals': { bg: '#FFF5E4', color: '#664A08' },
+  'Vegan-friendly · pending cert': { bg: '#EBF0E9', color: '#1E5C28' },
+  'No animal testing · pending cert': { bg: '#F6EDE8', color: '#7A2A0A' },
+  'Organic botanicals · pending cert': { bg: '#FFF5E4', color: '#664A08' },
 }
 
 interface BadgeProps {

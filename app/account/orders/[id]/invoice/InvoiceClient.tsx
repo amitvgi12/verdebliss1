@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Printer, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/authStore'
+import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
 
 interface OrderAddress {
   name: string
@@ -300,11 +301,11 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
           >
             <div style={{ padding: '20px 36px', borderRight: '1px solid #E8E0D6' }}>
               <div style={eyebrow}>SOLD BY</div>
-              <div style={boldLine}>VerdeBliss Cosmetics</div>
+              <div style={boldLine}>{BUSINESS_COMPLIANCE.legalName}</div>
               <div style={mutedLine}>
-                Pune, Maharashtra, India
+                {formatPostalAddress()}
                 <br />
-                support@verdebliss.com
+                {BUSINESS_COMPLIANCE.emails.support}
               </div>
               {invoice?.place_of_supply && (
                 <div style={{ ...mutedLine, marginTop: 4 }}>
@@ -533,7 +534,7 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
                 Thank you for your order ✦
               </div>
               <div style={{ fontSize: 11, color: '#A8BAA9', marginTop: 2 }}>
-                Questions? support@verdebliss.com
+                Questions? {BUSINESS_COMPLIANCE.emails.support}
               </div>
             </div>
           </div>

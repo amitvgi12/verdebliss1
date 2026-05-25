@@ -15,7 +15,7 @@ export const metadata = {
 const HERO_INGREDIENTS = [
   {
     name: 'Bakuchiol',
-    desc: 'A plant-based retinol alternative from the Babchi seed. Renews skin and softens fine lines without irritation. Suitable during pregnancy.',
+    desc: 'A plant-based retinol alternative from the Babchi seed. Supports a smoother-looking night ritual with a gentler feel than many retinoid routines.',
     source: 'Karnataka, India',
     role: 'Renewal · Anti-ageing',
     roleColor: '#2d4a32',
@@ -29,21 +29,21 @@ const HERO_INGREDIENTS = [
   },
   {
     name: 'Green Tea',
-    desc: 'EGCG-rich extract calms inflammation, controls excess sebum, and shields against environmental stress.',
+    desc: 'EGCG-rich extract used for antioxidant support and a balanced feel on oily or combination skin.',
     source: 'Munnar, India',
     role: 'Antioxidant · Sebum control',
     roleColor: '#4a6844',
   },
   {
     name: 'Turmeric',
-    desc: 'Curcumin-active rhizome extract with potent anti-inflammatory and brightening action — used in Ayurveda for centuries.',
+    desc: 'Curcumin-rich rhizome extract used in traditional beauty rituals for a fresh, even-looking complexion.',
     source: 'Erode, India',
     role: 'Brightening · Calming',
     roleColor: '#bfa06a',
   },
   {
     name: 'Zinc Oxide',
-    desc: 'Mineral broad-spectrum SPF that reflects UVA + UVB without absorbing into the bloodstream. Reef-safe.',
+    desc: 'Mineral UV-filter ingredient used in sun-care formulas. Independent SPF-rating and environmental-impact documentation belongs with the finished product.',
     source: 'Pharmaceutical-grade, USA',
     role: 'SPF · Soothing',
     roleColor: '#5c7a52',
@@ -57,16 +57,16 @@ const HERO_INGREDIENTS = [
   },
   {
     name: 'Acai Berry',
-    desc: 'Antioxidant-dense Amazonian superfruit. Polyphenol content supports skin elasticity and protects against free radicals.',
+    desc: 'Antioxidant-dense superfruit extract used for lip-care comfort and soft-feeling texture.',
     source: 'Brazil',
     role: 'Antioxidant · Plumping',
     roleColor: '#6644a0',
   },
   {
     name: 'Shea Butter',
-    desc: 'Unrefined African shea — vitamins A, E, F. Deeply nourishes and reinforces the skin barrier overnight.',
+    desc: 'Unrefined shea rich in emollient lipids. Helps cushion dry-feeling skin overnight.',
     source: 'Ghana',
-    role: 'Nourishment · Barrier repair',
+    role: 'Nourishment · Barrier support',
     roleColor: '#c07a5a',
   },
 ]

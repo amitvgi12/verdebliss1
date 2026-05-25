@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { C, FONT } from '@/constants/theme'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
 interface FAQItem {
   q: string
@@ -43,7 +44,8 @@ export default function FAQClient({ items }: { items: FAQItem[] }) {
             Frequently Asked Questions
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, lineHeight: 1.7 }}>
-            Can&apos;t find what you&apos;re looking for? Email us at hello@verdebliss.com
+            Can&apos;t find what you&apos;re looking for? Email us at{' '}
+            {BUSINESS_COMPLIANCE.emails.support}
           </p>
         </div>
       </div>

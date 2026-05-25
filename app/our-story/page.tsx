@@ -15,7 +15,7 @@ const TIMELINE = [
   {
     year: '2019',
     title: 'The Idea',
-    body: 'Founded in a kitchen in Pune, VerdeBliss began as a personal quest — founder Kavya Menon could not find a serum gentle enough for her sensitive skin that was also genuinely organic.',
+    body: 'VerdeBliss began as a Pune formulation concept: a gentler-feeling serum ritual with ingredient documentation customers could inspect before buying.',
   },
   {
     year: '2020',

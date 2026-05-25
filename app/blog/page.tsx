@@ -17,7 +17,7 @@ const POSTS = [
     slug: 'bakuchiol-vs-retinol',
     title: 'Bakuchiol vs Retinol: Which Is Right for Your Skin?',
     excerpt:
-      'A complete science-backed comparison: efficacy, irritation profile, pregnancy safety, and which works better for Indian climates.',
+      'A practical comparison: visible-skin goals, comfort profile, pregnancy-use cautions, and routine fit for Indian climates.',
     category: 'Ingredient Science',
     readTime: 6,
     date: 'April 2026',
@@ -28,7 +28,7 @@ const POSTS = [
     slug: 'skincare-routine-dry-skin',
     title: 'The Complete Skincare Routine for Dry Skin (Organic Edition)',
     excerpt:
-      'A 6-step dermatologist-approved organic routine for dry skin — correct layering order, best ingredients, product picks.',
+      'A 6-step botanical routine for dry-feeling skin — layering order, ingredient roles, and product picks.',
     category: 'Routines',
     readTime: 8,
     date: 'March 2026',
@@ -39,7 +39,7 @@ const POSTS = [
     slug: 'organic-skincare-india',
     title: 'Why Organic Skincare Is the Smartest Choice for Indian Skin',
     excerpt:
-      'Indian skin faces unique UV, humidity, and pollution challenges. Why organic botanical formulas outperform conventional options.',
+      'Indian skin faces UV, humidity, and pollution stressors. How to assess botanical formulas without relying on vague clean-beauty claims.',
     category: 'Education',
     readTime: 7,
     date: 'February 2026',

@@ -18,6 +18,7 @@ import {
 import { StructuredData } from '@/lib/structured-data'
 import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from '@/constants/shipping'
 import { getVerifiablePriceOffer } from '@/lib/pricing'
+import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 import type { Product } from '@/types'
 
 interface ReviewAggregate {
@@ -25,7 +26,7 @@ interface ReviewAggregate {
   average: number
 }
 
-function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
+export function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
   const priceOffer = getVerifiablePriceOffer(product)
   const offer: Record<string, unknown> = {
     '@type': 'Offer',
@@ -34,6 +35,19 @@ function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
     availability:
       (product.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     url: absoluteUrl(productPath(product)),
+    seller: {
+      '@type': 'Organization',
+      name: BUSINESS_COMPLIANCE.brandName,
+      legalName: BUSINESS_COMPLIANCE.legalName,
+    },
+    hasMerchantReturnPolicy: {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'IN',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+      merchantReturnDays: 14,
+      returnMethod: 'https://schema.org/ReturnByMail',
+      returnFees: 'https://schema.org/FreeReturn',
+    },
     // Honest shipping disclosure: Free shipping kicks in on cart subtotal,
     // not single-product price. Quote the standard rate; the threshold is
     // surfaced via the checkout UI / FAQ, not Schema-level conditional rates.

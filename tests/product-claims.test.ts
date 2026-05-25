@@ -3,9 +3,11 @@ import { normalizeProductBadgeLabel, normalizeProductBadges } from '@/lib/produc
 
 describe('product claim normalization', () => {
   it('converts hard certification labels into Trust Centre-safe positioning labels', () => {
-    expect(normalizeProductBadgeLabel('Vegan')).toBe('Vegan-friendly')
-    expect(normalizeProductBadgeLabel('Organic Certified')).toBe('Organic botanicals')
-    expect(normalizeProductBadgeLabel('Cruelty-Free')).toBe('Cruelty-free*')
+    expect(normalizeProductBadgeLabel('Vegan')).toBe('Vegan-friendly · pending cert')
+    expect(normalizeProductBadgeLabel('Organic Certified')).toBe(
+      'Organic botanicals · pending cert'
+    )
+    expect(normalizeProductBadgeLabel('Cruelty-Free')).toBe('No animal testing · pending cert')
   })
 
   it('deduplicates equivalent badge labels from stale DB rows', () => {
@@ -17,6 +19,10 @@ describe('product claim normalization', () => {
         'Organic Botanicals',
         'Cruelty-Free',
       ])
-    ).toEqual(['Vegan-friendly', 'Organic botanicals', 'Cruelty-free*'])
+    ).toEqual([
+      'Vegan-friendly · pending cert',
+      'Organic botanicals · pending cert',
+      'No animal testing · pending cert',
+    ])
   })
 })

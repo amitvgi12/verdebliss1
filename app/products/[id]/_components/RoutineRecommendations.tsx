@@ -35,48 +35,16 @@ export default function RoutineRecommendations({
 
   if (!amRoutine.products.length && !pmRoutine.products.length) return null
 
-  const featuredRoutine =
-    current.category === 'SPF' || current.category === 'Cleanser' ? amRoutine : pmRoutine
-  const featuredBundle = uniqueProducts(featuredRoutine.products).filter(
-    (product) => product.stock !== 0
-  )
-  const featuredBundleTotal = featuredBundle.reduce(
-    (sum, product) => sum + Number(product.price),
-    0
-  )
-
   return (
     <section className="ritual-recommendations" aria-label="Recommended routines">
-      <div className="ritual-bundle">
-        <div>
-          <p>Recommended ritual bundle</p>
-          <h2>{featuredRoutine.label}</h2>
-          <span>{featuredRoutine.description}</span>
-        </div>
-        <div className="ritual-bundle__items">
-          {featuredBundle.map((product) => (
-            <div key={product.id} className="ritual-bundle__item">
-              <ProductImage product={product} sizes="42px" />
-              <span>{product.name}</span>
-            </div>
-          ))}
-        </div>
-        {featuredBundle.length > 0 && (
-          <button
-            type="button"
-            onClick={() => {
-              featuredBundle.forEach(onAddItem)
-              onOpenCart()
-            }}
-          >
-            Add {featuredRoutine.shortLabel} bundle · ₹{featuredBundleTotal.toLocaleString()}
-          </button>
-        )}
+      <div className="ritual-recommendations__head">
+        <p>Recommended ritual</p>
+        <h2>Build a complete routine around this product</h2>
+        <span>Choose the morning or evening sequence that fits how you use this formula.</span>
       </div>
-
       <div className="ritual-routine-grid">
-        <RoutinePreview routine={amRoutine} />
-        <RoutinePreview routine={pmRoutine} />
+        <RoutinePreview routine={amRoutine} onAddItem={onAddItem} onOpenCart={onOpenCart} />
+        <RoutinePreview routine={pmRoutine} onAddItem={onAddItem} onOpenCart={onOpenCart} />
       </div>
     </section>
   )
@@ -127,8 +95,18 @@ function buildRoutine(products: Product[], current: Product, kind: RoutineKind):
   }
 }
 
-function RoutinePreview({ routine }: { routine: Routine }) {
-  if (!routine.products.length) return null
+function RoutinePreview({
+  routine,
+  onAddItem,
+  onOpenCart,
+}: {
+  routine: Routine
+  onAddItem: (product: Product) => void
+  onOpenCart: () => void
+}) {
+  const availableProducts = routine.products.filter((product) => product.stock !== 0)
+  if (!availableProducts.length) return null
+  const total = availableProducts.reduce((sum, product) => sum + Number(product.price), 0)
 
   return (
     <article className="ritual-preview">
@@ -137,13 +115,23 @@ function RoutinePreview({ routine }: { routine: Routine }) {
         <span>{routine.description}</span>
       </div>
       <ul>
-        {routine.products.map((product) => (
+        {availableProducts.map((product) => (
           <li key={product.id}>
             <ProductImage product={product} sizes="42px" />
             <span>{product.name}</span>
           </li>
         ))}
       </ul>
+      <button
+        type="button"
+        className="ritual-preview__button"
+        onClick={() => {
+          availableProducts.forEach(onAddItem)
+          onOpenCart()
+        }}
+      >
+        Add {routine.shortLabel} routine · ₹{total.toLocaleString()}
+      </button>
     </article>
   )
 }

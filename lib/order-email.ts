@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import type { CheckoutAddress, NormalizedCartItem, CartTotals } from './commerce'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from './supabase-admin'
+import { BUSINESS_COMPLIANCE, formatPostalAddress } from '@/constants/businessCompliance'
 
 export interface OrderEmailData {
   orderId: string
@@ -29,7 +30,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
 
   try {
     await resend.emails.send({
-      from: process.env.ORDER_FROM_EMAIL ?? 'VerdeBliss <onboarding@resend.dev>',
+      from: process.env.ORDER_FROM_EMAIL ?? `VerdeBliss <${BUSINESS_COMPLIANCE.emails.orders}>`,
       to: data.address.email,
       subject: `Order confirmed — #${shortId} ✦ VerdeBliss`,
       html: buildHtml({ ...data, shortId, invoiceUrl, orderUrl }),
@@ -122,7 +123,7 @@ function buildHtml(d: TemplateData): string {
           <tr>
             <td align="center" style="padding-bottom:6px">
               <p style="margin:0;font-size:11px;letter-spacing:3px;color:#7a8a7b;text-transform:uppercase;font-family:${sans}">
-                Natural &middot; Sustainable &middot; Blissful
+                Botanical &middot; Transparent &middot; Thoughtfully made
               </p>
             </td>
           </tr>
@@ -305,14 +306,14 @@ function buildHtml(d: TemplateData): string {
           <tr>
             <td align="center" style="padding-bottom:40px">
               <p style="margin:0 0 4px;font-size:12px;color:#7a8a7b;font-family:${sans}">
-                VerdeBliss &middot; Naturally crafted, thoughtfully made
+                ${BUSINESS_COMPLIANCE.legalName}
               </p>
               <p style="margin:0 0 4px;font-size:12px;color:#a8b3a4;font-family:${sans}">
-                Pune, India &middot;
+                ${formatPostalAddress()} &middot;
                 <a href="https://www.verdebliss.com" style="color:#a8b3a4;text-decoration:none">verdebliss.com</a>
               </p>
               <p style="margin:0;font-size:11px;color:#c2cfc3;font-family:${sans}">
-                &copy; 2026 VerdeBliss. All rights reserved.
+                Questions? ${BUSINESS_COMPLIANCE.emails.support} &middot; &copy; 2026 ${BUSINESS_COMPLIANCE.legalName}.
               </p>
             </td>
           </tr>
