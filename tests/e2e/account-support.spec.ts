@@ -100,7 +100,7 @@ test.describe('account, support, and consent flows', () => {
 
   test('delivery checker returns ETA and COD status', async ({ page }) => {
     await seedConsent(page)
-    await page.route('**/api/delivery-estimate*', async (route) => {
+    await page.route(/\/api\/delivery-estimate(?:\?.*)?$/, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -115,11 +115,25 @@ test.describe('account, support, and consent flows', () => {
     })
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
-    await page.locator('#delivery-pincode').fill('411014')
-    await page.getByRole('button', { name: 'Check' }).click()
+    const purchaseDetails = page.getByRole('region', { name: 'Purchase details' })
+    await expect(purchaseDetails).toBeVisible()
 
-    await expect(page.getByText(/2–3 business days after dispatch/i)).toBeVisible()
-    await expect(page.getByText(/COD is generally available/i)).toBeVisible()
+    const pincodeInput = purchaseDetails.getByLabel('PIN code')
+    await pincodeInput.click()
+    await pincodeInput.pressSequentially('411014')
+    await expect(pincodeInput).toHaveValue('411014')
+
+    const deliveryResponse = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/delivery-estimate') &&
+        response.request().method() === 'GET' &&
+        response.status() === 200
+    )
+    await purchaseDetails.getByRole('button', { name: 'Check' }).click()
+    await deliveryResponse
+
+    await expect(purchaseDetails.getByText(/2–3 business days after dispatch/i)).toBeVisible()
+    await expect(purchaseDetails.getByText(/COD is generally available/i)).toBeVisible()
   })
 
   test('AI consent flow blocks personal support when declined', async ({ page }) => {
