@@ -72,7 +72,7 @@ export async function POST(request: Request) {
         { status: 500 }
       )
     }
-    productSlugs = products.map((p) => (p.slug ?? p.id))
+    productSlugs = products.map((p) => p.slug ?? p.id)
   }
 
   const failedPaths: string[] = []
@@ -94,10 +94,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const revalidatedPaths = [
-    ...staticPaths,
-    ...productSlugs.map((s) => `/products/${s}`),
-  ]
+  const revalidatedPaths = [...staticPaths, ...productSlugs.map((s) => `/products/${s}`)]
 
   return NextResponse.json({
     revalidated: true,

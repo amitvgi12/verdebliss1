@@ -43,7 +43,10 @@ const BASE: BusinessCompliance = {
 describe('P0-2 — phone placeholder normalization', () => {
   it('rejects bare fake number 9876543210 in strict validation', () => {
     const c = { ...BASE, helpline: { ...BASE.helpline, display: '9876543210', href: '9876543210' } }
-    const { ok, errors } = validateBusinessCompliance(c, { strict: true, env: { NODE_ENV: 'production' } })
+    const { ok, errors } = validateBusinessCompliance(c, {
+      strict: true,
+      env: { NODE_ENV: 'production' },
+    })
     expect(ok).toBe(false)
     expect(errors.some((e) => /DISPLAY/.test(e))).toBe(true)
   })
@@ -53,7 +56,10 @@ describe('P0-2 — phone placeholder normalization', () => {
       ...BASE,
       helpline: { ...BASE.helpline, display: '+91 98765 43210', href: '+919876543210' },
     }
-    const { ok, errors } = validateBusinessCompliance(c, { strict: true, env: { NODE_ENV: 'production' } })
+    const { ok, errors } = validateBusinessCompliance(c, {
+      strict: true,
+      env: { NODE_ENV: 'production' },
+    })
     expect(ok).toBe(false)
     expect(errors.some((e) => /HREF/.test(e) || /DISPLAY/.test(e))).toBe(true)
   })
@@ -63,11 +69,14 @@ describe('P0-2 — phone placeholder normalization', () => {
       ...BASE,
       helpline: {
         ...BASE.helpline,
-        display: '+91 135 2045 678',  // resolves to ...2045678
-        href: '+911352046789',         // resolves to ...2046789 — different
+        display: '+91 135 2045 678', // resolves to ...2045678
+        href: '+911352046789', // resolves to ...2046789 — different
       },
     }
-    const { ok, errors } = validateBusinessCompliance(c, { strict: true, env: { NODE_ENV: 'production' } })
+    const { ok, errors } = validateBusinessCompliance(c, {
+      strict: true,
+      env: { NODE_ENV: 'production' },
+    })
     expect(ok).toBe(false)
     expect(errors.some((e) => /different numbers/.test(e))).toBe(true)
   })
@@ -105,7 +114,10 @@ describe('P1-1 — grievance officer name validation', () => {
       ...BASE,
       grievanceOfficer: { ...BASE.grievanceOfficer, name: '   ' },
     }
-    const { errors } = validateBusinessCompliance(c, { strict: true, env: { NODE_ENV: 'production' } })
+    const { errors } = validateBusinessCompliance(c, {
+      strict: true,
+      env: { NODE_ENV: 'production' },
+    })
     expect(errors.some((e) => /grievanceOfficer\.name/.test(e))).toBe(true)
   })
 

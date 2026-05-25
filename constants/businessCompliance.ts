@@ -286,7 +286,9 @@ export function validateBusinessCompliance(
 
   // P1-2: Address data quality — warn (strict: error) when locality, region, and city are identical
   const { addressLocality, addressRegion } = compliance.registeredOffice
-  const tokenCheck = [addressLocality, addressRegion].filter(Boolean).map((s) => s.trim().toLowerCase())
+  const tokenCheck = [addressLocality, addressRegion]
+    .filter(Boolean)
+    .map((s) => s.trim().toLowerCase())
   if (tokenCheck.length >= 2 && new Set(tokenCheck).size === 1) {
     errors.push(
       `Registered office locality and region are identical ("${addressLocality}") — verify the address against official records`
@@ -309,24 +311,18 @@ export function validateBusinessCompliance(
  */
 export function getSellerDetailsServer(): string {
   const legalName =
-    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() ||
-    'VerdeBliss Cosmetics Private Limited'
-  const line1 =
-    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_LINE1?.trim() || ''
-  const city =
-    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_CITY?.trim() || ''
-  const state =
-    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE?.trim() || ''
-  const pincode =
-    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_PINCODE?.trim() || ''
+    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() || 'VerdeBliss Cosmetics Private Limited'
+  const line1 = process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_LINE1?.trim() || ''
+  const city = process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_CITY?.trim() || ''
+  const state = process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE?.trim() || ''
+  const pincode = process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_PINCODE?.trim() || ''
   const addressParts = [line1, city, state, pincode, 'India'].filter(Boolean)
   return `${legalName}${addressParts.length ? ', ' + addressParts.join(', ') : ''}`
 }
 
 export function getLegalNameServer(): string {
   return (
-    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() ||
-    'VerdeBliss Cosmetics Private Limited'
+    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() || 'VerdeBliss Cosmetics Private Limited'
   )
 }
 

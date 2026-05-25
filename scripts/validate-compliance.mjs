@@ -85,7 +85,7 @@ if (displayLast10 && hrefLast10 && displayLast10 !== hrefLast10) {
 const grievanceName = process.env.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME?.trim() ?? ''
 if (grievanceName && /^\d+$/.test(grievanceName)) {
   errors.push(
-    'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME must be a person\'s name, not a phone number'
+    "NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME must be a person's name, not a phone number"
   )
 }
 if (!email.test(supportEmail) || /\.(test|example)$/i.test(supportEmail)) {
