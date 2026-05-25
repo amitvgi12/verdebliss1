@@ -19,10 +19,10 @@
   /* Sage / Olive */
   --color-sage: #7d9b76;
   --color-sagePale: #eaf0e8;
-  --color-olive: #5c7a52;
+  --color-olive: #455c3c;
 
   /* Terracotta */
-  --color-terra: #c07a5a;
+  --color-terra: #8f4b32;
   --color-terraPale: #f6ede8;
 
   /* Editorial accent */
@@ -39,7 +39,7 @@
   /* Text */
   --color-text: #1c221e;
   --color-muted: #5c6c4d;
-  --color-light: #a8baa9;
+  --color-light: #5c6c4d;
 
   /* Structure */
   --color-border: #e4dad0;

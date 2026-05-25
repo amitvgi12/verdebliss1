@@ -286,7 +286,7 @@ export default function ProductDetailClient({
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: '0.14em',
-                color: C.gold,
+                color: C.goldText,
                 marginBottom: 10,
               }}
             >
@@ -386,7 +386,7 @@ export default function ProductDetailClient({
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
-                      background: C.gold,
+                      background: C.goldText,
                       color: 'white',
                       padding: '3px 10px',
                       borderRadius: 99,
@@ -407,7 +407,7 @@ export default function ProductDetailClient({
               <div
                 style={{
                   fontSize: 12,
-                  color: C.gold,
+                  color: C.goldText,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 5,
@@ -422,7 +422,7 @@ export default function ProductDetailClient({
                     <Link
                       href="/account"
                       style={{
-                        color: C.gold,
+                        color: C.goldText,
                         fontWeight: 600,
                         textDecoration: 'underline',
                         textUnderlineOffset: '2px',
@@ -470,7 +470,7 @@ export default function ProductDetailClient({
             <div
               style={{ marginTop: 20, padding: '12px 14px', borderTop: `1px solid ${C.border}` }}
             >
-              <p style={{ fontSize: 10, color: C.light, lineHeight: 1.7, fontStyle: 'italic' }}>
+              <p style={{ fontSize: 10, color: C.muted, lineHeight: 1.7, fontStyle: 'italic' }}>
                 Cosmetic product information is provided for routine selection only. This product is
                 not intended to diagnose, treat, cure, or prevent any disease. Results vary by
                 individual skin type and usage. For external use only. Discontinue use if irritation
@@ -501,7 +501,7 @@ const infoLabel = {
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: '0.12em',
-  color: '#6B7A5E',
+  color: '#2D4A32',
   marginBottom: 6,
   textTransform: 'uppercase',
 }

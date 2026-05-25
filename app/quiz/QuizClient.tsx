@@ -176,11 +176,11 @@ export default function QuizClient() {
             animate={{ opacity: 1, y: 0 }}
             style={{ textAlign: 'center', marginBottom: 40 }}
           >
-            <Sparkles size={36} color={C.gold} style={{ margin: '0 auto 12px' }} />
+            <Sparkles size={36} color={C.goldText} style={{ margin: '0 auto 12px' }} />
             <div
               style={{
                 fontSize: 11,
-                color: C.gold,
+                color: C.goldText,
                 letterSpacing: '0.16em',
                 fontWeight: 700,
                 marginBottom: 8,
@@ -254,9 +254,14 @@ export default function QuizClient() {
                 marginBottom: 6,
               }}
             >
-              <Sparkles size={16} color={C.gold} />
+              <Sparkles size={16} color={C.goldPale} />
               <span
-                style={{ fontSize: 11, color: C.gold, letterSpacing: '0.14em', fontWeight: 700 }}
+                style={{
+                  fontSize: 11,
+                  color: C.goldPale,
+                  letterSpacing: '0.14em',
+                  fontWeight: 700,
+                }}
               >
                 BUNDLE & SAVE
               </span>
@@ -283,7 +288,7 @@ export default function QuizClient() {
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  background: C.gold,
+                  background: C.goldText,
                   color: 'white',
                   padding: '3px 10px',
                   borderRadius: 99,
@@ -300,7 +305,7 @@ export default function QuizClient() {
               <button
                 onClick={addBundleToCart}
                 style={{
-                  background: C.gold,
+                  background: C.goldText,
                   color: 'white',
                   border: 'none',
                   borderRadius: 12,
@@ -367,7 +372,7 @@ export default function QuizClient() {
             <span style={{ fontSize: 11, color: C.muted, letterSpacing: '0.1em', fontWeight: 600 }}>
               QUESTION {step + 1} OF {QUESTIONS.length}
             </span>
-            <span style={{ fontSize: 11, color: C.gold, fontWeight: 700 }}>
+            <span style={{ fontSize: 11, color: C.goldText, fontWeight: 700 }}>
               {Math.round(((step + 1) / QUESTIONS.length) * 100)}%
             </span>
           </div>

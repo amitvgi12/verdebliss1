@@ -12,7 +12,7 @@ interface BadgeProps {
 
 export default function Badge({ label }: BadgeProps) {
   const displayLabel = normalizeProductBadgeLabel(label) ?? label
-  const s = BADGE_STYLES[displayLabel] ?? { bg: '#F2EAE0', color: '#5C7A52' }
+  const s = BADGE_STYLES[displayLabel] ?? { bg: '#F2EAE0', color: '#455C3C' }
   return (
     <span
       className="rounded-full px-2 py-0.5 text-[9px] font-bold tracking-wider"

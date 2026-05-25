@@ -36,10 +36,10 @@ export const C = {
   /* Sage / Olive */
   sage: '#7D9B76',
   sagePale: '#EAF0E8',
-  olive: '#5C7A52', // olive text on pale backgrounds
+  olive: '#455C3C', // olive text on pale backgrounds, AA-safe for small labels
 
   /* Terracotta */
-  terra: '#C07A5A',
+  terra: '#8F4B32',
   terraPale: '#F6EDE8',
 
   /* Gold — KEY earth tone, should appear on prices, labels, accents */
@@ -53,7 +53,7 @@ export const C = {
   /* Text */
   text: '#1C221E', // deep forest-tinted dark
   muted: '#5C6C4D', // warm stone — AA-safe on the warm cream canvas
-  light: '#A8BAA9',
+  light: '#5C6C4D',
 
   /* Structure */
   border: '#E4DAD0', // warm earth dividers
