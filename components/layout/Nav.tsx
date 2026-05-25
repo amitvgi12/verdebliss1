@@ -209,9 +209,13 @@ export default function Nav() {
               className="fixed inset-x-4 top-[68px] z-[99] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-[#d7c7b6] bg-[#fffaf4] p-3 shadow-[0_26px_80px_rgba(23,36,27,0.32)] backdrop-blur-xl md:hidden"
               aria-label="Pages menu"
             >
-              <div className="mb-2.5 rounded-[20px] bg-forest px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gold">Pages</p>
-                <p className="mt-1 text-base font-semibold text-white">Explore VerdeBliss</p>
+              <div className="mb-3 rounded-[18px] bg-[#254f32] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+                <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#d7b978]">
+                  Pages
+                </p>
+                <p className="mt-2 text-base font-semibold leading-tight text-[#fffaf4]">
+                  Explore VerdeBliss
+                </p>
               </div>
               <div className="grid gap-2">
                 {LINKS.map(({ path, label, icon: Icon }) => {
@@ -224,21 +228,25 @@ export default function Nav() {
                       onClick={closeMenus}
                       className={`group flex min-h-12 w-full items-center gap-3 rounded-[18px] border px-3.5 py-2.5 text-left text-sm transition ${
                         active
-                          ? 'border-forest bg-forest font-semibold text-white shadow-sm'
+                          ? 'border-[#254f32] bg-[#254f32] font-semibold text-[#fffaf4] shadow-sm'
                           : 'border-[#eadfd4] bg-[#fdf7ef] font-semibold text-text hover:border-sage hover:bg-sagePale hover:text-forest'
                       }`}
                     >
                       <span
                         className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-                          active ? 'bg-white/20 text-white' : 'bg-sagePale text-forest'
+                          active ? 'bg-white/18 text-[#fffaf4]' : 'bg-sagePale text-forest'
                         }`}
                       >
                         <Icon size={16} />
                       </span>
-                      <span className="flex-1">{label}</span>
+                      <span className={`flex-1 ${active ? 'text-[#fffaf4]' : 'text-text'}`}>
+                        {label}
+                      </span>
                       <ArrowRight
                         size={14}
-                        className={active ? 'text-white/72' : 'text-muted group-hover:text-forest'}
+                        className={
+                          active ? 'text-[#fffaf4] opacity-85' : 'text-muted group-hover:text-forest'
+                        }
                       />
                     </Link>
                   )

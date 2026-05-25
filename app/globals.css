@@ -810,8 +810,47 @@ video {
 }
 
 @media (max-width: 560px) {
+  .home-newsletter-section {
+    padding-inline: 18px;
+    padding-block: 36px 42px;
+  }
+
+  .home-newsletter-content {
+    width: min(100%, 460px);
+  }
+
+  .home-newsletter-content > p:last-of-type {
+    max-width: 32ch;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .vb-newsletter-form {
+    width: min(100%, 420px);
+  }
+
   .vb-newsletter-row {
     grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .vb-newsletter-input {
+    min-height: 46px;
+    border-radius: 14px;
+    font-size: 16px;
+  }
+
+  .vb-newsletter-input::placeholder {
+    color: rgba(28, 34, 30, 0.48);
+  }
+
+  .vb-newsletter-row .btn-gold {
+    min-height: 46px;
+    border-radius: 14px;
+    background: var(--color-forest);
+    color: white;
+    font-size: 0.92rem;
+    box-shadow: 0 12px 24px rgba(45, 74, 50, 0.16);
   }
 }
 
