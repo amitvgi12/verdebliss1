@@ -49,7 +49,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getProductsServer()
   const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${BASE_URL}${productPath(product)}`,
-    lastModified: product.created_at ? new Date(product.created_at) : fallbackModified,
+    // Prefer updated_at so edits move the lastModified date; fall back to
+    // created_at, then to the static fallback for local/static builds.
+    lastModified: product.updated_at
+      ? new Date(product.updated_at)
+      : product.created_at
+        ? new Date(product.created_at)
+        : fallbackModified,
     changeFrequency: 'weekly',
     priority: 0.8,
   }))
