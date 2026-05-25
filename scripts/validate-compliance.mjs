@@ -74,6 +74,20 @@ if (!isRealPhone(phoneHref)) {
     'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF must be a real business phone value, e.g. +912245678901 or tel:+912245678901'
   )
 }
+const displayLast10 = phoneLast10(phoneDisplay)
+const hrefLast10 = phoneLast10(phoneHref)
+if (displayLast10 && hrefLast10 && displayLast10 !== hrefLast10) {
+  errors.push(
+    `PHONE_DISPLAY (…${displayLast10}) and PHONE_HREF (…${hrefLast10}) resolve to different numbers — they must match`
+  )
+}
+
+const grievanceName = process.env.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME?.trim() ?? ''
+if (grievanceName && /^\d+$/.test(grievanceName)) {
+  errors.push(
+    'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME must be a person\'s name, not a phone number'
+  )
+}
 if (!email.test(supportEmail) || /\.(test|example)$/i.test(supportEmail)) {
   errors.push('NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL must be a real support email')
 }
@@ -97,13 +111,26 @@ if (errors.length) {
   process.exit(1)
 }
 
+function extractLast10Digits(digits) {
+  return digits.length > 10 ? digits.slice(-10) : digits
+}
+
 function isRealPhone(value) {
   const digits = value.replace(/\D/g, '')
   if (!digits) return false
   if (/^(\d)\1{7,}$/.test(digits)) return false
-  if (['1234567890', '0123456789', '9876543210'].includes(digits)) return false
+  const last10 = extractLast10Digits(digits)
+  const FAKE_LAST10 = ['1234567890', '0123456789', '9876543210']
+  if (FAKE_LAST10.includes(last10)) return false
+  if (['919876543210', '09876543210'].includes(digits)) return false
   if (digits.includes('40002026') || digits.includes('67890123')) return false
   return /^\+?[0-9][0-9\s-]{7,18}$/.test(value)
+}
+
+function phoneLast10(value) {
+  const normalized = normalizePhoneHref(value)
+  const digits = normalized.replace(/\D/g, '')
+  return extractLast10Digits(digits)
 }
 
 function normalizePhoneHref(value) {

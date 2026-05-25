@@ -84,12 +84,26 @@ function isPlaceholderLike(value: string): boolean {
   )
 }
 
+function extractLast10Digits(digits: string): string {
+  return digits.length > 10 ? digits.slice(-10) : digits
+}
+
 function isPlaceholderPhone(value: string): boolean {
   const digits = value.replace(/\D/g, '')
   if (!digits) return true
   if (/^(\d)\1{7,}$/.test(digits)) return true
-  if (['1234567890', '0123456789', '9876543210'].includes(digits)) return true
+  // Normalize: strip leading country code (91 or 0) to get last 10 digits
+  const last10 = extractLast10Digits(digits)
+  const FAKE_LAST10 = ['1234567890', '0123456789', '9876543210']
+  if (FAKE_LAST10.includes(last10)) return true
+  // Also reject the full-length forms (with country code prefix) directly
+  if (['919876543210', '09876543210'].includes(digits)) return true
   return digits.includes('40002026') || digits.includes('67890123')
+}
+
+function phoneLast10(value: string): string {
+  const normalized = normalizePhoneHref(value)
+  return extractLast10Digits(normalized.replace(/\D/g, ''))
 }
 
 export const BUSINESS_COMPLIANCE: BusinessCompliance = {
@@ -241,6 +255,13 @@ export function validateBusinessCompliance(
         'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF must be a real verified business phone number'
       )
     }
+    const displayLast10 = phoneLast10(compliance.helpline.display)
+    const hrefLast10 = phoneLast10(compliance.helpline.href)
+    if (displayLast10 && hrefLast10 && displayLast10 !== hrefLast10) {
+      errors.push(
+        `Support phone display (…${displayLast10}) and href (…${hrefLast10}) resolve to different numbers — they must match`
+      )
+    }
   }
 
   for (const [path, email] of Object.entries(compliance.emails)) {
@@ -252,7 +273,61 @@ export function validateBusinessCompliance(
     errors.push('grievanceOfficer.email must be a valid email address')
   }
 
+  // P1-1: Grievance officer name must be a real person's name
+  const goName = compliance.grievanceOfficer.name.trim()
+  if (!goName) {
+    errors.push('grievanceOfficer.name is required')
+  } else if (/^[\d\s+\-().]+$/.test(goName)) {
+    // Catches the live case: "+911352000000" or "911352000000" in the name field
+    errors.push("grievanceOfficer.name must be a person's name, not a phone number or digits")
+  } else if (isPlaceholderLike(goName)) {
+    errors.push('grievanceOfficer.name contains a placeholder value')
+  }
+
+  // P1-2: Address data quality — warn (strict: error) when locality, region, and city are identical
+  const { addressLocality, addressRegion } = compliance.registeredOffice
+  const tokenCheck = [addressLocality, addressRegion].filter(Boolean).map((s) => s.trim().toLowerCase())
+  if (tokenCheck.length >= 2 && new Set(tokenCheck).size === 1) {
+    errors.push(
+      `Registered office locality and region are identical ("${addressLocality}") — verify the address against official records`
+    )
+  }
+
   return { ok: errors.length === 0, errors }
+}
+
+/**
+ * Reads compliance identity fresh from process.env at call time.
+ *
+ * Use this in server components and ISR page routes instead of the module-level
+ * BUSINESS_COMPLIANCE constant, which is frozen at bundle-compile time via
+ * NEXT_PUBLIC_* inlining.  When an ISR page revalidates after a deploy, calling
+ * this function guarantees the current env values are used — even if the JS
+ * bundle was compiled under a previous deploy's env.
+ *
+ * NEVER import this in 'use client' files; it is server-side only.
+ */
+export function getSellerDetailsServer(): string {
+  const legalName =
+    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() ||
+    'VerdeBliss Cosmetics Private Limited'
+  const line1 =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_LINE1?.trim() || ''
+  const city =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_CITY?.trim() || ''
+  const state =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE?.trim() || ''
+  const pincode =
+    process.env.NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_PINCODE?.trim() || ''
+  const addressParts = [line1, city, state, pincode, 'India'].filter(Boolean)
+  return `${legalName}${addressParts.length ? ', ' + addressParts.join(', ') : ''}`
+}
+
+export function getLegalNameServer(): string {
+  return (
+    process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() ||
+    'VerdeBliss Cosmetics Private Limited'
+  )
 }
 
 export function assertProductionBusinessCompliance(): void {

@@ -190,6 +190,25 @@ jobs:
           NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
       - id: deploy
         run: echo "preview_url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> $GITHUB_OUTPUT
+      # Revalidate the preview deployment's ISR cache so any compliance-identity
+      # env vars baked at preview-build time are refreshed in the served HTML.
+      # Soft-fail: preview REVALIDATE_SECRET may legitimately differ from prod.
+      - name: Revalidate ISR cache (preview)
+        env:
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.preview_url }}
+        run: |
+          if [ -z "${REVALIDATE_SECRET}" ]; then
+            echo "REVALIDATE_SECRET not set — skipping preview revalidation (non-fatal)."
+            exit 0
+          fi
+          node scripts/trigger-revalidate.mjs
+      # Smoke test: fail the pipeline if placeholder legal data appears in the
+      # preview HTML. A fresh preview build should never carry DEMO values.
+      - name: Smoke test (preview — no placeholder legal data)
+        env:
+          SMOKE_URL: ${{ steps.deploy.outputs.preview_url }}
+        run: node scripts/smoke-test.mjs
       - uses: actions/github-script@v9
         with:
           script: |
@@ -217,25 +236,20 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
       - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-      # Force-revalidate all product ISR caches immediately after the new build
-      # goes live. Without this, stale rendered HTML from the previous build can
-      # persist for up to revalidate=300s (or indefinitely on low-traffic PDPs).
-      # generateStaticParams pre-builds all PDPs, but this belt-and-suspenders
-      # step ensures the route cache is cleared even if the prerender is somehow
-      # served from a previous ISR snapshot.
-      - name: Revalidate ISR cache (products + FAQ + certifications)
+      # Revalidate all product ISR caches immediately after the new build goes live.
+      # IMPORTANT: A CDN cache purge alone does NOT fix stale ISR HTML — this step
+      # is required. Missing REVALIDATE_SECRET is a hard failure (exit 1): a deploy
+      # without revalidation leaves legally-mandated seller data potentially stale.
+      # See audit finding P0-1 for the root-cause explanation.
+      - name: Revalidate ISR cache (products + static routes)
         env:
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
-        run: |
-          if [ -z "${REVALIDATE_SECRET}" ]; then
-            echo "⚠️  REVALIDATE_SECRET not set — skipping on-demand revalidation."
-            echo "    Add it as a GitHub Actions secret and a Vercel production env var"
-            echo "    (openssl rand -hex 32) to enable immediate post-deploy cache purge."
-            exit 0
-          fi
-          curl -sS -X POST \
-            "https://www.verdebliss.com/api/revalidate" \
-            -H "x-revalidate-secret: ${REVALIDATE_SECRET}" \
-            -H "Content-Type: application/json" \
-            -d '{}' \
-            --fail --retry 3 --retry-delay 10
+          DEPLOY_URL: 'https://www.verdebliss.com'
+        run: node scripts/trigger-revalidate.mjs
+      # Smoke test: fetches /, /contact, and a PDP and fails the pipeline if any
+      # placeholder legal-identity string appears in the served HTML. Guards the
+      # live cache — the build gate guards the env, this guards what users see.
+      - name: Smoke test (production — no placeholder legal data in served HTML)
+        env:
+          SMOKE_URL: 'https://www.verdebliss.com'
+        run: node scripts/smoke-test.mjs

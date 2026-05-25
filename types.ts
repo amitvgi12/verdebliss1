@@ -24,6 +24,7 @@ export interface Product {
   stock?: number | null
   active?: boolean
   created_at?: string
+  updated_at?: string
 }
 
 export interface CartItem extends Product {

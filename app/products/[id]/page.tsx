@@ -18,7 +18,11 @@ import {
 import { StructuredData } from '@/lib/structured-data'
 import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from '@/constants/shipping'
 import { getVerifiablePriceOffer } from '@/lib/pricing'
-import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
+import {
+  BUSINESS_COMPLIANCE,
+  getLegalNameServer,
+  getSellerDetailsServer,
+} from '@/constants/businessCompliance'
 import type { Product } from '@/types'
 
 interface ReviewAggregate {
@@ -26,7 +30,11 @@ interface ReviewAggregate {
   average: number
 }
 
-export function productJsonLd(product: Product, aggregate: ReviewAggregate | null) {
+export function productJsonLd(
+  product: Product,
+  aggregate: ReviewAggregate | null,
+  legalName = BUSINESS_COMPLIANCE.legalName
+) {
   const priceOffer = getVerifiablePriceOffer(product)
   const offer: Record<string, unknown> = {
     '@type': 'Offer',
@@ -38,7 +46,7 @@ export function productJsonLd(product: Product, aggregate: ReviewAggregate | nul
     seller: {
       '@type': 'Organization',
       name: BUSINESS_COMPLIANCE.brandName,
-      legalName: BUSINESS_COMPLIANCE.legalName,
+      legalName,
     },
     hasMerchantReturnPolicy: {
       '@type': 'MerchantReturnPolicy',
@@ -159,9 +167,20 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     getReviewAggregatesServer(product.id),
   ])
 
+  // Read compliance identity fresh from process.env at ISR-render time.
+  // NEXT_PUBLIC_* values are inlined as string literals in the client JS
+  // bundle at build time, so client components that rely on the module-level
+  // BUSINESS_COMPLIANCE constant may show stale data after a deploy until the
+  // bundle itself is rebuilt.  By computing these strings here (server
+  // component) and passing them as props, each ISR revalidation picks up the
+  // current env values — making it structurally impossible for stale
+  // legal-identity HTML to survive a revalidation triggered post-deploy.
+  const legalName = getLegalNameServer()
+  const sellerDetails = getSellerDetailsServer()
+
   return (
     <>
-      <StructuredData data={productJsonLd(product, aggregate)} />
+      <StructuredData data={productJsonLd(product, aggregate, legalName)} />
       <StructuredData
         data={breadcrumbJsonLd([
           { name: 'Home', path: '/' },
@@ -174,6 +193,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         initialProduct={product}
         initialReviews={initialReviews}
         initialReviewAggregate={aggregate}
+        sellerDetails={sellerDetails}
       />
     </>
   )

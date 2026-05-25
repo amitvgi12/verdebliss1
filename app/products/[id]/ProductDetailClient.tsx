@@ -6,7 +6,7 @@
  *   11.2 — Full INCI ingredient list in descending concentration
  *   11.3 — Allergen warnings + patch test notice
  *   11.4 — Certification badges with external verification links
- *   11.9 — Product-level FTC disclaimer
+ *   11.9 — Product-level cosmetic-use disclaimer (India CDSCO scope only)
  *   11.10 — PAO (Period After Opening) indicator
  */
 
@@ -78,11 +78,16 @@ export default function ProductDetailClient({
   initialProduct,
   initialReviews = [],
   initialReviewAggregate = null,
+  sellerDetails,
 }: {
   id: string
   initialProduct?: Product | null
   initialReviews?: ApprovedReview[]
   initialReviewAggregate?: ReviewAggregate | null
+  /** Server-computed seller/manufacturer identity string, read fresh from
+   *  process.env at ISR-render time.  Passed from the server page component
+   *  so client bundle build-time constants cannot cause stale legal data. */
+  sellerDetails?: string
 }) {
   // id passed as prop
   const router = useRouter()
@@ -191,7 +196,12 @@ export default function ProductDetailClient({
       </div>
     )
 
-  const compliance = getProductCompliance(p, id)
+  const _baseCompliance = getProductCompliance(p, id)
+  // Override manufacturer/packer with server-provided identity so ISR
+  // revalidation (not a full rebuild) is enough to update legally-mandated data.
+  const compliance = sellerDetails
+    ? { ..._baseCompliance, manufacturer: sellerDetails, packer: sellerDetails }
+    : _baseCompliance
   const related = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
   const priceOffer = getVerifiablePriceOffer(p)
   const mrp = priceOffer.mrp
@@ -467,7 +477,7 @@ export default function ProductDetailClient({
               onToggle={toggleAcc}
             />
 
-            {/* 11.9 FTC Disclaimer */}
+            {/* 11.9 Cosmetic-use disclaimer — India only (CDSCO scope) */}
             <div
               style={{ marginTop: 20, padding: '12px 14px', borderTop: `1px solid ${C.border}` }}
             >
