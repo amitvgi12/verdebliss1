@@ -179,4 +179,4 @@ Full checklist is in `PRODUCTION_RUNBOOK.md`. Key steps:
 
 - `PRODUCTION_RUNBOOK.md` — release checklist, ISR purge, LAUNCH_MODE gates, payment reconciliation, Razorpay capture mode, backup drills
 - `CLOUDFLARE_WAF.md` — DNS setup, origin lock-down, WAF rules, rate-limit rules, bot management, rollback
-- `supabase/README_RUN_SCHEMA.md` — schema idempotency notes, recommended run order
+- `supabase/README_RUN_SCHEMA.md` — schema idempotency notes, recommended run order 
