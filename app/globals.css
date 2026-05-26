@@ -1024,8 +1024,9 @@ video {
 }
 
 .checkout-primary-action {
-  min-height: 48px;
+  min-height: 44px;
   border-radius: 999px;
+  font-size: 0.9rem;
 }
 
 .checkout-address-form {
@@ -1285,7 +1286,23 @@ video {
 
 .checkout-payment-stack {
   display: grid;
-  gap: 12px;
+  width: min(100%, 640px);
+  margin-inline: auto;
+  gap: 10px;
+}
+
+.checkout-cod-option {
+  display: grid;
+  gap: 7px;
+}
+
+.checkout-cod-note {
+  margin: 0;
+  padding-inline: 12px;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: center;
 }
 
 @media (max-width: 760px) {
@@ -1296,6 +1313,15 @@ video {
 
   .checkout-turnstile-status {
     min-width: 0;
+    text-align: left;
+  }
+
+  .checkout-payment-stack {
+    width: 100%;
+  }
+
+  .checkout-cod-note {
+    padding-inline: 4px;
     text-align: left;
   }
 }

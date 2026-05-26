@@ -57,6 +57,9 @@ export default function ReviewStep({
   onPlaceCod,
 }: ReviewStepProps) {
   const verificationReady = !requiresTurnstile || Boolean(turnstileToken)
+  const codNote = codAvailable
+    ? 'COD orders may be held briefly for phone, pincode, and address verification before dispatch.'
+    : `Please use online payment for orders above ₹${codMaxTotal.toLocaleString()}.`
 
   return (
     <motion.div
@@ -209,6 +212,7 @@ export default function ReviewStep({
 
       <div className="checkout-payment-stack">
         <button
+          type="button"
           onClick={onLaunchRazorpay}
           disabled={loading || !razorReady || !verificationReady}
           className={`checkout-primary-action flex w-full items-center justify-center gap-2 border-none px-6 text-[15px] font-semibold text-white transition disabled:cursor-wait ${
@@ -226,35 +230,36 @@ export default function ReviewStep({
           )}
         </button>
 
-        <button
-          onClick={onPlaceCod}
-          disabled={loading || !codAvailable || !verificationReady}
-          className={`checkout-primary-action flex w-full items-center justify-center gap-2 border px-6 text-sm font-bold transition disabled:cursor-not-allowed ${
-            codAvailable
-              ? 'border-forest bg-ivory text-forest hover:bg-sagePale'
-              : 'cursor-not-allowed border-border bg-[#F1ECE6] text-light'
-          }`}
-        >
-          {loading && paymentAction === 'cod' ? (
-            <>
-              <Loader2 size={15} className="animate-spin" /> Placing order…
-            </>
-          ) : (
-            <>
-              <Banknote size={15} />{' '}
-              {codAvailable
-                ? 'Cash on Delivery'
-                : `COD unavailable above ₹${codMaxTotal.toLocaleString()}`}
-            </>
-          )}
-        </button>
+        <div className="checkout-cod-option">
+          <button
+            type="button"
+            onClick={onPlaceCod}
+            disabled={loading || !codAvailable || !verificationReady}
+            aria-describedby="checkout-cod-note"
+            className={`checkout-primary-action flex w-full items-center justify-center gap-2 border px-6 text-sm font-bold transition disabled:cursor-not-allowed ${
+              codAvailable
+                ? 'border-forest bg-ivory text-forest hover:bg-sagePale'
+                : 'cursor-not-allowed border-border bg-[#F1ECE6] text-light'
+            }`}
+          >
+            {loading && paymentAction === 'cod' ? (
+              <>
+                <Loader2 size={15} className="animate-spin" /> Placing order…
+              </>
+            ) : (
+              <>
+                <Banknote size={15} />{' '}
+                {codAvailable
+                  ? 'Cash on Delivery'
+                  : `COD unavailable above ₹${codMaxTotal.toLocaleString()}`}
+              </>
+            )}
+          </button>
+          <p id="checkout-cod-note" className="checkout-cod-note">
+            {codNote}
+          </p>
+        </div>
       </div>
-
-      <p className="mt-2 text-[11px] leading-relaxed text-muted">
-        {codAvailable
-          ? 'COD orders may be held briefly for phone, pincode, and address verification before dispatch.'
-          : `Please use online payment for orders above ₹${codMaxTotal.toLocaleString()}.`}
-      </p>
 
       {status === 'failed' && (
         <motion.div
