@@ -948,6 +948,9 @@ video {
 }
 
 .footer-address-link {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
   color: rgb(255 255 255 / 70%);
   text-decoration: underline;
   text-decoration-color: rgb(255 255 255 / 30%);
