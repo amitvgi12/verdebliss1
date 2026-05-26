@@ -9,7 +9,7 @@
  */
 import { useEffect, useTransition } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import ProductCard from '@/components/ui/ProductCard'
 import { CATEGORIES, SKIN_TYPES, SORT_OPTIONS } from '@/constants/products'
 import type { Product } from '@/types'
@@ -40,7 +40,6 @@ export default function ProductsClient({
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const shouldReduceMotion = useReducedMotion()
 
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params)
@@ -142,10 +141,13 @@ export default function ProductsClient({
 
             <div className={`catalog-grid transition-opacity ${isPending ? 'opacity-60' : ''}`}>
               {products.map((p, i) => {
-                const aboveFold = i < ABOVE_FOLD_COUNT
                 // Render above-fold cards directly so the LCP image is painted
                 // on the first frame (no opacity:0 start, no framer hydration).
-                if (aboveFold || shouldReduceMotion) {
+                // Reduced-motion preference is handled globally by MotionProvider
+                // via MotionConfig — no need to branch on it here (and branching
+                // would risk a hydration mismatch since useReducedMotion returns
+                // null on SSR).
+                if (i < ABOVE_FOLD_COUNT) {
                   return <ProductCard key={p.id} product={p} priority={i === 0} />
                 }
                 return (

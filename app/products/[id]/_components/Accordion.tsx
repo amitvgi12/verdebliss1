@@ -15,10 +15,11 @@ export default function Accordion({ id, label, open, onToggle, children }: Accor
   return (
     <div className="border-b border-border">
       <button
+        type="button"
         onClick={onToggle}
-        aria-expanded={open}
+        aria-expanded={open ? 'true' : 'false'}
         aria-controls={`accordion-${id}`}
-        className="flex w-full cursor-pointer items-center justify-between border-none bg-transparent py-4 text-left font-inherit"
+        className="flex min-h-[44px] w-full cursor-pointer items-center justify-between border-none bg-transparent py-4 text-left font-inherit"
       >
         <span className="text-sm font-semibold text-text">{label}</span>
         <motion.span

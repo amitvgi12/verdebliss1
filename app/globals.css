@@ -3357,11 +3357,15 @@ video {
   cursor: pointer;
   align-items: center;
   gap: 7px;
+  /* WCAG 2.2 SC 2.5.8 — Target Size. Bumping the button to ≥24px tall also
+     satisfies axe's target-offset rule for the adjacent siblings. */
+  min-height: 24px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   padding: 6px 9px;
   color: rgba(255, 255, 255, 0.78);
   font-size: 0.7rem;
+  line-height: 1;
   background: rgba(255, 255, 255, 0.04);
   transition:
     border-color 180ms ease,
@@ -3384,6 +3388,7 @@ video {
     gap: 5px;
     padding: 5px 8px;
     font-size: 0.64rem;
+    /* min-height inherited from base rule keeps SC 2.5.8 compliance. */
   }
 }
 
