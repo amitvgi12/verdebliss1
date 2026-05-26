@@ -26,6 +26,7 @@ const KNOWN_FAKE_GSTIN = '27ABCDE1234F1Z5'
 const KNOWN_FAKE_CIN = 'U20231PN2026PTC000001'
 
 const BANNED_STRINGS = [
+  // --- Legal identity placeholders ---
   { value: 'DEMO', label: 'DEMO placeholder token' },
   { value: 'Demo House', label: '"Demo House" manufacturer/packer placeholder' },
   { value: KNOWN_FAKE_GSTIN, label: `known-fake GSTIN (${KNOWN_FAKE_GSTIN})` },
@@ -33,6 +34,38 @@ const BANNED_STRINGS = [
   { value: 'Kavya Menon (Demo)', label: '"Kavya Menon (Demo)" placeholder grievance officer' },
   { value: 'pending verification', label: '"pending verification" placeholder value' },
   { value: 'pending appointment', label: '"pending appointment" placeholder value' },
+]
+
+// Forbidden cosmetic claim patterns (regex). Mirrors lib/product-claims.ts
+// FORBIDDEN_CLAIM_PATTERNS — keep in sync.
+const BANNED_PATTERNS = [
+  { pattern: /pregnancy[- ]safe/i, label: '"pregnancy-safe" therapeutic safety claim' },
+  {
+    pattern: /suitable\s+for\s+use\s+during\s+pregnancy/i,
+    label: '"suitable for use during pregnancy" safety claim',
+  },
+  { pattern: /\banti[- ]inflammatory\b/i, label: '"anti-inflammatory" drug action claim' },
+  {
+    pattern: /without\s+absorbing\s+into\s+(?:the\s+)?bloodstream/i,
+    label: '"without absorbing into bloodstream" bioavailability claim',
+  },
+  {
+    pattern: /reflects?\s+UVA\s*(?:\+|and)\s*UVB/i,
+    label: '"reflects UVA+UVB" unsubstantiated SPF mechanism claim',
+  },
+  { pattern: /\breef[- ]safe\b/i, label: '"reef-safe" unsubstantiated environmental claim' },
+  {
+    pattern: /\btreats?\s+(?:acne|pimples?|inflammation|skin\s+condition)/i,
+    label: '"treats acne/inflammation" drug action claim',
+  },
+  {
+    pattern: /\bcures?\s+(?:acne|pimples?|skin|eczema|psoriasis)/i,
+    label: '"cures" drug claim',
+  },
+  {
+    pattern: /\bheals?\s+(?:acne|scars?|skin\s+damage|wounds?)/i,
+    label: '"heals acne/scars" drug action claim',
+  },
 ]
 
 const baseUrl = process.env.SMOKE_URL?.replace(/\/$/, '')
@@ -65,12 +98,15 @@ for (const route of ROUTES) {
     continue
   }
 
-  const hits = BANNED_STRINGS.filter((b) => html.includes(b.value))
-  if (hits.length === 0) {
+  const stringHits = BANNED_STRINGS.filter((b) => html.includes(b.value))
+  const patternHits = BANNED_PATTERNS.filter((b) => b.pattern.test(html))
+  const allHits = [...stringHits, ...patternHits]
+
+  if (allHits.length === 0) {
     console.log(`PASS  ${route}`)
     passed++
   } else {
-    for (const hit of hits) {
+    for (const hit of allHits) {
       console.error(`FAIL  ${route} — found ${hit.label}`)
     }
     failed++
