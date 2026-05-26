@@ -15,6 +15,7 @@ const BASE: BusinessCompliance = {
     addressCountry: 'IN',
   },
   principalPlaceOfBusiness: 'Same as registered office',
+  fulfilmentCity: 'Dehradun',
   helpline: {
     display: '+91 135 2045 678',
     href: '+911352045678',

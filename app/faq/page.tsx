@@ -11,7 +11,7 @@ const FAQ_DATA = [
   },
   {
     q: 'Do you ship across India?',
-    a: 'Yes, we ship to all serviceable PIN codes in India. Free shipping on orders above ₹499. Standard delivery is 2 to 3 business days from our Pune fulfilment centre.',
+    a: `Yes, we ship to all serviceable PIN codes in India. Free shipping on orders above ₹499. Standard delivery is 2 to 3 business days from our ${BUSINESS_COMPLIANCE.fulfilmentCity} fulfilment centre.`,
   },
   {
     q: 'What is your return policy?',

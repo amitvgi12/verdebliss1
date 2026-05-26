@@ -13,6 +13,8 @@ export interface BusinessCompliance {
   gstin: string
   registeredOffice: ComplianceAddress
   principalPlaceOfBusiness: string
+  /** Dispatch/warehouse city — may differ from the registered office. */
+  fulfilmentCity: string
   helpline: {
     display: string
     href: string
@@ -139,6 +141,7 @@ export const BUSINESS_COMPLIANCE: BusinessCompliance = {
     'NEXT_PUBLIC_VERDEBLISS_PRINCIPAL_PLACE_OF_BUSINESS',
     'Same as registered office'
   ),
+  fulfilmentCity: env('NEXT_PUBLIC_VERDEBLISS_FULFILMENT_CITY', 'Dehradun'),
   helpline: {
     display: readSupportPhoneDisplay(),
     href: readSupportPhoneHref(readSupportPhoneDisplay()),

@@ -108,15 +108,19 @@ export const LEGAL_DOCUMENTS = {
     title: 'Shipping Policy',
     description:
       'Shipping charges, dispatch timelines, free shipping threshold, COD restrictions, and delivery support for VerdeBliss orders.',
-    updated: '1 April 2026',
+    updated: '26 May 2026',
     sections: [
+      {
+        heading: 'Seller of record',
+        body: `All goods sold on verdebliss.com are sold by ${BUSINESS_COMPLIANCE.legalName}, whose registered office and GSTIN are printed on every tax invoice. The legal seller is registered in Uttarakhand. Orders are fulfilled and dispatched from our ${BUSINESS_COMPLIANCE.fulfilmentCity} fulfilment centre; the dispatch address is distinct from the registered office and does not affect your statutory rights.`,
+      },
       {
         heading: 'Service area',
         body: 'We ship to serviceable PIN codes across India. Certain remote, restricted, or high-risk service areas may be unavailable for Cash on Delivery or may require prepaid payment.',
       },
       {
         heading: 'Dispatch and delivery',
-        body: 'Orders are normally dispatched within 1 business day after confirmation. Standard delivery is usually 2–3 business days after dispatch, subject to courier availability, public holidays, weather, and local restrictions.',
+        body: `Orders are normally dispatched within 1 business day after confirmation from our ${BUSINESS_COMPLIANCE.fulfilmentCity} fulfilment centre. Standard delivery is usually 2–3 business days after dispatch, subject to courier availability, public holidays, weather, and local restrictions.`,
       },
       {
         heading: 'Shipping charges',
