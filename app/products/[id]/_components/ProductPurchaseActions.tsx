@@ -12,6 +12,7 @@ interface ProductPurchaseActionsProps {
   added: boolean
   isWishlisted: boolean
   onAdd: () => void
+  onGoToCart: () => void
   onDecreaseCartQty: () => void
   onIncreaseCartQty: () => void
   onWishlist: () => void
@@ -25,11 +26,13 @@ export default function ProductPurchaseActions({
   added,
   isWishlisted,
   onAdd,
+  onGoToCart,
   onDecreaseCartQty,
   onIncreaseCartQty,
   onWishlist,
 }: ProductPurchaseActionsProps) {
-  const showCartQty = cartQty !== null
+  const showCartQty = cartQty !== null && cartQty > 0
+  const inCart = showCartQty
 
   return (
     <>
@@ -88,7 +91,7 @@ export default function ProductPurchaseActions({
 
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={onAdd}
+          onClick={inCart ? onGoToCart : onAdd}
           disabled={stockOut}
           style={{
             flex: 1,
@@ -105,7 +108,7 @@ export default function ProductPurchaseActions({
             justifyContent: 'center',
             gap: 6,
             whiteSpace: 'nowrap',
-            background: stockOut ? C.light : added ? C.sage : C.forest,
+            background: stockOut ? C.light : inCart ? C.sage : C.forest,
             color: 'white',
             transition: 'background 0.25s',
           }}
@@ -121,6 +124,16 @@ export default function ProductPurchaseActions({
               >
                 <ShoppingBag size={15} /> Sold out
               </motion.span>
+            ) : inCart ? (
+              <motion.span
+                key="go-to-cart"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <ShoppingBag size={15} /> Go to Cart
+              </motion.span>
             ) : added ? (
               <motion.span
                 key="done"
@@ -129,7 +142,7 @@ export default function ProductPurchaseActions({
                 exit={{ opacity: 0, y: -6 }}
                 style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                <Check size={15} /> Added to cart!
+                <Check size={15} /> Added!
               </motion.span>
             ) : (
               <motion.span

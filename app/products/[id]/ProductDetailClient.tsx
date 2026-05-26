@@ -454,6 +454,7 @@ export default function ProductDetailClient({
               added={added}
               isWishlisted={has(p.id)}
               onAdd={handleAdd}
+              onGoToCart={openCart}
               onDecreaseCartQty={() => updateQty(p.id, -1)}
               onIncreaseCartQty={() => updateQty(p.id, 1)}
               onWishlist={() => toggle(p.id, user?.id)}
