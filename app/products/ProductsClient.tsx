@@ -9,10 +9,15 @@
  */
 import { useEffect, useTransition } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import ProductCard from '@/components/ui/ProductCard'
 import { CATEGORIES, SKIN_TYPES, SORT_OPTIONS } from '@/constants/products'
 import type { Product } from '@/types'
+
+// The first row of cards is the LCP candidate on the products listing — never
+// animate them so the largest visible image is painted on the first frame.
+// Below the fold, a small staggered fade keeps scroll affordance.
+const ABOVE_FOLD_COUNT = 4
 
 interface ProductsClientProps {
   products: Product[]
@@ -35,6 +40,7 @@ export default function ProductsClient({
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const shouldReduceMotion = useReducedMotion()
 
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params)
@@ -135,16 +141,24 @@ export default function ProductsClient({
             </div>
 
             <div className={`catalog-grid transition-opacity ${isPending ? 'opacity-60' : ''}`}>
-              {products.map((p, i) => (
-                <motion.div
-                  key={p.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(i * 0.035, 0.25) }}
-                >
-                  <ProductCard product={p} />
-                </motion.div>
-              ))}
+              {products.map((p, i) => {
+                const aboveFold = i < ABOVE_FOLD_COUNT
+                // Render above-fold cards directly so the LCP image is painted
+                // on the first frame (no opacity:0 start, no framer hydration).
+                if (aboveFold || shouldReduceMotion) {
+                  return <ProductCard key={p.id} product={p} priority={i === 0} />
+                }
+                return (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min((i - ABOVE_FOLD_COUNT) * 0.035, 0.25) }}
+                  >
+                    <ProductCard product={p} />
+                  </motion.div>
+                )
+              })}
             </div>
 
             {products.length === 0 && (

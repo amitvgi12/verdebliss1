@@ -14,7 +14,13 @@ import { productPath } from '@/lib/seo'
 import { getProductBadgeDisclosure, normalizeProductBadges } from '@/lib/product-claims'
 import type { Product } from '@/types'
 
-export default function ProductCard({ product: p }: { product: Product }) {
+export default function ProductCard({
+  product: p,
+  priority = false,
+}: {
+  product: Product
+  priority?: boolean
+}) {
   const addItem = useCartStore((s) => s.addItem)
   const removeItem = useCartStore((s) => s.removeItem)
   const updateQty = useCartStore((s) => s.updateQty)
@@ -47,6 +53,7 @@ export default function ProductCard({ product: p }: { product: Product }) {
         <Link href={href} aria-label={`View ${p.name}, ₹${price.toLocaleString()}`}>
           <ProductImage
             product={p}
+            priority={priority}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
           />
         </Link>
