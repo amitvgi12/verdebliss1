@@ -16,7 +16,7 @@ export async function GET() {
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
     deployedAt:
       process.env.VERCEL_DEPLOYMENT_CREATED_AT ?? process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
-    schemaVersion: '2026-05-checkout-payment-step-v7',
+    schemaVersion: '2026-05-26-seller-config-gst-delivery-tracking',
     capabilities: getEnvironmentCapabilities(),
     compliance: {
       ok: compliance.ok,
