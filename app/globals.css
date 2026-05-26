@@ -926,7 +926,9 @@ video {
   text-decoration: underline;
   text-decoration-color: rgb(255 255 255 / 30%);
   text-underline-offset: 4px;
-  transition: color 0.18s, text-decoration-color 0.18s;
+  transition:
+    color 0.18s,
+    text-decoration-color 0.18s;
 }
 
 .footer-link:hover {

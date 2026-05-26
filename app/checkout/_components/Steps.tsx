@@ -2,7 +2,7 @@
  * Three-step checkout progress indicator. Pure presentational component.
  */
 
-const STEPS = ['Address', 'Review', 'Payment'] as const
+const STEPS = ['Address', 'Order Summary', 'Payment'] as const
 
 export default function Steps({ current }: { current: number }) {
   return (
