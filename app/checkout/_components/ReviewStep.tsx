@@ -158,11 +158,12 @@ export default function ReviewStep({
       </div>
 
       {checkoutError && (
-        <div
-          role="alert"
-          className="checkout-unavailable mb-4 rounded-2xl p-4 text-xs leading-relaxed text-terra"
-        >
-          {checkoutError}
+        <div role="alert" className="checkout-unavailable">
+          <AlertCircle size={16} aria-hidden />
+          <div>
+            <strong>Checkout needs verification</strong>
+            <span>{checkoutError}</span>
+          </div>
         </div>
       )}
 
@@ -175,10 +176,8 @@ export default function ReviewStep({
       {requiresTurnstile && (
         <div className="checkout-turnstile-card">
           <div>
-            <strong>Verify before checkout</strong>
-            <span>
-              Helps us block fake order floods before they reach payment or Cash on Delivery.
-            </span>
+            <strong>Cloudflare verification</strong>
+            <span>Complete this bot check before payment or Cash on Delivery.</span>
           </div>
           <TurnstileWidget
             key={turnstileResetKey}

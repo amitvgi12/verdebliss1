@@ -361,7 +361,7 @@ export default function Checkout() {
 
   function requireCheckoutVerification() {
     if (requiresTurnstile && !turnstileToken) {
-      setCheckoutError('Please complete the verification check before placing your order.')
+      setCheckoutError('Complete the Cloudflare verification box before placing your order.')
       return false
     }
     return true

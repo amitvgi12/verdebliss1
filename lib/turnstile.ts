@@ -28,10 +28,10 @@ export interface TurnstileVerifyResult {
 
 export function turnstileFailureMessage(reason?: string): string {
   if (reason === 'missing_token') {
-    return 'Please complete the verification check before continuing.'
+    return 'Complete the Cloudflare verification box before continuing. If it is not visible, refresh checkout and try again.'
   }
   if (reason === 'timeout-or-duplicate') {
-    return 'Verification expired. Please complete the check again and retry.'
+    return 'Cloudflare verification expired. Complete the box again and retry.'
   }
   if (reason === 'turnstile_not_configured' || reason === 'invalid-input-secret') {
     return 'Verification is not configured correctly. Please contact support.'
@@ -39,7 +39,7 @@ export function turnstileFailureMessage(reason?: string): string {
   if (reason?.startsWith('verify_http_') || reason === 'verify_network_error') {
     return 'Verification could not be reached. Please retry in a moment.'
   }
-  return 'Verification could not be confirmed. Please complete the check again and retry.'
+  return 'Cloudflare verification could not be confirmed. Complete the box again and retry.'
 }
 
 export function isTurnstileConfigured(): boolean {

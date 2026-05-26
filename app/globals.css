@@ -1300,8 +1300,40 @@ video {
 }
 
 .checkout-unavailable {
-  border: 1px solid rgba(194, 125, 90, 0.28);
-  background: rgba(255, 247, 242, 0.92);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 620px;
+  margin: 0 0 14px;
+  border: 1px solid rgba(194, 125, 90, 0.3);
+  border-left-width: 4px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--color-terra);
+  background: rgba(255, 247, 242, 0.9);
+  box-shadow: 0 10px 24px rgba(125, 56, 32, 0.06);
+}
+
+.checkout-unavailable svg {
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+
+.checkout-unavailable strong,
+.checkout-unavailable span {
+  display: block;
+}
+
+.checkout-unavailable strong {
+  margin-bottom: 2px;
+  color: var(--color-text);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.checkout-unavailable span {
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .checkout-success-shell {

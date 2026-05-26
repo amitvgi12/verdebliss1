@@ -16,7 +16,7 @@ export async function GET() {
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
     deployedAt:
       process.env.VERCEL_DEPLOYMENT_CREATED_AT ?? process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
-    schemaVersion: '2026-05-audit-remediated-v3',
+    schemaVersion: '2026-05-checkout-turnstile-v4',
     capabilities: getEnvironmentCapabilities(),
     compliance: {
       ok: compliance.ok,
