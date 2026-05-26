@@ -4,7 +4,11 @@
       "Bash(git commit -m ' *)",
       "Bash(python3 -c \"import yaml; yaml.safe_load\\(open\\('/Users/amitkumar/VerdeBliss1/verdebliss1/.github/workflows/main.yml'\\)\\)\")",
       "Bash(node -e ' *)",
-      "Bash(git merge fix/audit-remediation-2026-05 --no-ff -m ' *)"
+      "Bash(git merge fix/audit-remediation-2026-05 --no-ff -m ' *)",
+      "Bash(npm ls *)",
+      "Bash(npm audit *)",
+      "Bash(node -e \"const c = require\\('./lighthouserc.cjs'\\); JSON.stringify\\(c\\)\")",
+      "Bash(node -e \"const c = require\\('./lighthouserc.cjs'\\); console.log\\(JSON.stringify\\(c, null, 2\\)\\)\")"
     ]
   }
 }
