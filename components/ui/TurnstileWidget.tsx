@@ -102,5 +102,5 @@ export default function TurnstileWidget({ onToken, onExpire, className }: Turnst
 
   if (!siteKey) return null
 
-  return <div ref={containerRef} className={className} aria-label="Bot challenge" />
+  return <div ref={containerRef} className={className} />
 }

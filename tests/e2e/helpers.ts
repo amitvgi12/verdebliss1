@@ -204,6 +204,8 @@ export async function mockWishlistPersistence(page: Page, initialIds: string[] =
 }
 
 export async function mockCheckoutApis(page: Page) {
+  await mockTurnstileWidget(page)
+
   await page.route('**/api/checkout/cod', async (route) => {
     await route.fulfill({
       status: 200,
@@ -244,6 +246,33 @@ export async function mockCheckoutApis(page: Page) {
       }),
     })
   })
+}
+
+export async function mockTurnstileWidget(page: Page, token = 'e2e-turnstile-token') {
+  await page.addInitScript(
+    ({ challengeToken }) => {
+      window.turnstile = {
+        render: (container, options) => {
+          const node = typeof container === 'string' ? document.querySelector(container) : container
+          const widgetId = `e2e-turnstile-${Math.random().toString(36).slice(2)}`
+
+          if (node) {
+            const input = document.createElement('input')
+            input.type = 'hidden'
+            input.name = 'cf-turnstile-response'
+            input.value = challengeToken
+            node.appendChild(input)
+          }
+
+          window.setTimeout(() => options.callback?.(challengeToken), 0)
+          return widgetId
+        },
+        remove: () => {},
+        reset: () => {},
+      }
+    },
+    { challengeToken: token }
+  )
 }
 
 export async function mockRazorpayCheckout(page: Page, outcome: 'success' | 'failure') {
