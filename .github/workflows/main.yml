@@ -176,6 +176,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [quality, typecheck, test, build, accessibility, e2e, schema-drift]
     if: github.event_name == 'pull_request'
+    outputs:
+      preview_url: ${{ steps.deploy.outputs.preview_url }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -253,3 +255,36 @@ jobs:
         env:
           SMOKE_URL: 'https://www.verdebliss.com'
         run: node scripts/smoke-test.mjs
+
+  lighthouse:
+    name: Lighthouse CI (CWV)
+    runs-on: ubuntu-latest
+    needs: [deploy-preview]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Run Lighthouse CI against preview
+        run: |
+          BASE="${{ needs.deploy-preview.outputs.preview_url }}"
+          npx lhci autorun \
+            --collect.url="${BASE}/" \
+            --collect.url="${BASE}/products" \
+            --collect.url="${BASE}/products/bakuchiol-renewal-serum" \
+            --collect.url="${BASE}/account" \
+            --collect.url="${BASE}/quiz"
+        env:
+          # Optional: wire up the Lighthouse CI GitHub App for PR status checks.
+          # Create the app at https://github.com/apps/lighthouse-ci and add the
+          # token as LHCI_GITHUB_APP_TOKEN in repository secrets.
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
+          retention-days: 30

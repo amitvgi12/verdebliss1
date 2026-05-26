@@ -204,6 +204,7 @@ function AuthForm({
               <select
                 id="account-skin-type"
                 name="skin_type"
+                aria-label="Skin type"
                 value={skin}
                 onChange={(e) => setSkin(e.target.value)}
                 disabled={busy}
@@ -385,6 +386,7 @@ function PasswordRecoveryForm() {
             id="account-new-password"
             name="new_password"
             type="password"
+            aria-label="New password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="new-password"
@@ -398,6 +400,7 @@ function PasswordRecoveryForm() {
             id="account-confirm-password"
             name="confirm_password"
             type="password"
+            aria-label="Confirm new password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             autoComplete="new-password"
@@ -772,21 +775,39 @@ function Dashboard({
               Order History
             </div>
             {orderNotice && (
-              <div
-                role={orderNotice.type === 'error' ? 'alert' : 'status'}
-                style={{
-                  marginBottom: 16,
-                  borderRadius: 12,
-                  border: `1px solid ${orderNotice.type === 'error' ? '#F1B8A5' : '#CADCCA'}`,
-                  background: orderNotice.type === 'error' ? '#FFF2EC' : '#EFF6EE',
-                  color: orderNotice.type === 'error' ? '#8B3A24' : C.forest,
-                  padding: '10px 12px',
-                  fontSize: 12,
-                  lineHeight: 1.5,
-                }}
-              >
-                {orderNotice.text}
-              </div>
+              orderNotice.type === 'error' ? (
+                <div
+                  role="alert"
+                  style={{
+                    marginBottom: 16,
+                    borderRadius: 12,
+                    border: '1px solid #F1B8A5',
+                    background: '#FFF2EC',
+                    color: '#8B3A24',
+                    padding: '10px 12px',
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {orderNotice.text}
+                </div>
+              ) : (
+                <div
+                  role="status"
+                  style={{
+                    marginBottom: 16,
+                    borderRadius: 12,
+                    border: '1px solid #CADCCA',
+                    background: '#EFF6EE',
+                    color: C.forest,
+                    padding: '10px 12px',
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {orderNotice.text}
+                </div>
+              )
             )}
             {orders.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '28px 0', color: C.muted, fontSize: 13 }}>

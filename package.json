@@ -21,7 +21,8 @@
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm run test:a11y",
     "smoke-test": "node scripts/smoke-test.mjs",
-    "revalidate": "node scripts/trigger-revalidate.mjs"
+    "revalidate": "node scripts/trigger-revalidate.mjs",
+    "lhci": "lhci autorun"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
+    "@lhci/cli": "^0.14.0",
     "@eslint/js": "^10.0.1",
     "@next/eslint-plugin-next": "^16.2.6",
     "@playwright/test": "^1.60.0",
