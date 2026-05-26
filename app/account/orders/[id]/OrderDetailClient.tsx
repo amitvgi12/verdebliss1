@@ -5,6 +5,7 @@ import { ArrowLeft, FileText, MapPin, CreditCard, Package } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/authStore'
 import { C, FONT } from '@/constants/theme'
+import DeliveryTracker from './DeliveryTracker'
 
 interface OrderAddress {
   name: string
@@ -35,16 +36,26 @@ interface FullOrder {
   total: number
   points_earned: number
   created_at: string
+  shipped_at?: string | null
+  out_for_delivery_at?: string | null
+  delivered_at?: string | null
+  tracking_id?: string | null
+  courier_partner?: string | null
+  tracking_url?: string | null
+  estimated_delivery?: string | null
   items: OrderItem[]
   address: OrderAddress
 }
 
 const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
   Delivered: { bg: '#EBF0E9', color: '#1E5C28' },
+  Shipped: { bg: '#EAF0E8', color: '#455C3C' },
+  'Out for Delivery': { bg: '#EBF0E9', color: '#2D4A32' },
   Processing: { bg: '#FFF5E4', color: '#664A08' },
   'COD Pending': { bg: '#FFF5E4', color: '#664A08' },
   'COD Verification Required': { bg: '#FFF0ED', color: '#8B3A24' },
   Cancelled: { bg: '#F5F5F5', color: '#666' },
+  'Cancellation Requested': { bg: '#FFF0ED', color: '#8B3A24' },
   Refunded: { bg: '#EDF4FB', color: '#1A5276' },
 }
 
@@ -229,6 +240,21 @@ export default function OrderDetailClient({ orderId }: { orderId: string }) {
             </Link>
           </div>
         </div>
+
+        {/* Delivery tracker */}
+        <DeliveryTracker
+          info={{
+            status: order.status,
+            tracking_id: order.tracking_id,
+            courier_partner: order.courier_partner,
+            tracking_url: order.tracking_url,
+            estimated_delivery: order.estimated_delivery,
+            created_at: order.created_at,
+            shipped_at: order.shipped_at,
+            out_for_delivery_at: order.out_for_delivery_at,
+            delivered_at: order.delivered_at,
+          }}
+        />
 
         <div
           style={{

@@ -529,6 +529,22 @@ interface OrderRow {
   points_earned?: number
   created_at?: string
   items?: Array<{ id: string; name: string; qty: number; price: number }>
+  tracking_id?: string | null
+  courier_partner?: string | null
+  tracking_url?: string | null
+}
+
+const ORDER_STATUS_CHIP: Record<string, { bg: string; color: string }> = {
+  Delivered: { bg: '#EBF0E9', color: '#1E5C28' },
+  Shipped: { bg: '#EAF0E8', color: '#455C3C' },
+  'Out for Delivery': { bg: '#EBF0E9', color: '#2D4A32' },
+  Cancelled: { bg: '#F5F5F5', color: '#666' },
+  Refunded: { bg: '#EDF4FB', color: '#1A5276' },
+  'Cancellation Requested': { bg: '#FFF0ED', color: '#8B3A24' },
+}
+
+function orderStatusChip(status?: string) {
+  return ORDER_STATUS_CHIP[status ?? ''] ?? { bg: '#FFF5E4', color: '#664A08' }
 }
 
 function canCancelOrder(status?: string | null) {
@@ -835,8 +851,8 @@ function Dashboard({
                         padding: '4px 10px',
                         borderRadius: 99,
                         fontWeight: 700,
-                        background: o.status === 'Delivered' ? '#EBF0E9' : '#FFF5E4',
-                        color: o.status === 'Delivered' ? '#1E5C28' : '#664A08',
+                        background: orderStatusChip(o.status).bg,
+                        color: orderStatusChip(o.status).color,
                       }}
                     >
                       {o.status}
@@ -883,6 +899,28 @@ function Dashboard({
                     >
                       View details →
                     </Link>
+                    {o.tracking_url && (
+                      <a
+                        href={o.tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          border: `1px solid ${C.border}`,
+                          borderRadius: 999,
+                          background: C.forest,
+                          color: '#fff',
+                          textDecoration: 'none',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          padding: '7px 14px',
+                        }}
+                      >
+                        Track Order →
+                      </a>
+                    )}
                     {canCancelOrder(o.status) && (
                       <button
                         type="button"

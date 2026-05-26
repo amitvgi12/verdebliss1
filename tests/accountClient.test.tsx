@@ -3,6 +3,21 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import AccountClient from '@/app/account/AccountClient'
 import { useAuthStore } from '@/store/authStore'
 
+// Override the global setup mock so we can inject order data per-test
+const supabaseMocks = vi.hoisted(() => ({ from: vi.fn() }))
+
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: supabaseMocks.from,
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      resetPasswordForEmail: vi.fn().mockResolvedValue({ data: {}, error: null }),
+      updateUser: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    },
+  },
+}))
+
 describe('AccountClient', () => {
   const signIn = vi.fn()
   const signUp = vi.fn()
@@ -17,6 +32,8 @@ describe('AccountClient', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default: orders query resolves with no data (empty list)
+    supabaseMocks.from.mockReturnValue(makeOrdersBuilder([]))
     signIn.mockResolvedValue({})
     signUp.mockResolvedValue({})
     resetPassword.mockResolvedValue({})
@@ -121,4 +138,71 @@ describe('AccountClient', () => {
       )
     ).toBeInTheDocument()
   })
+
+  it('shows a Track Order link for shipped orders that have a tracking URL', async () => {
+    supabaseMocks.from.mockReturnValue(
+      makeOrdersBuilder([
+        {
+          id: 'aaaabbbb-0000-0000-0000-000000000001',
+          status: 'Shipped',
+          total: 799,
+          points_earned: 8,
+          created_at: '2026-05-21T10:00:00.000Z',
+          tracking_url: 'https://www.delhivery.com/track/package/DL123',
+        },
+      ])
+    )
+
+    useAuthStore.setState({
+      user: { id: 'user-1', email: 'kavya@example.com' } as never,
+      profile: {
+        id: 'user-1',
+        full_name: 'Kavya Menon',
+        skin_type: 'Sensitive',
+        tier: 'green leaf',
+      },
+    })
+
+    render(<AccountClient />)
+
+    const trackLink = await screen.findByRole('link', { name: /Track Order/ })
+    expect(trackLink).toHaveAttribute('href', 'https://www.delhivery.com/track/package/DL123')
+    expect(trackLink).toHaveAttribute('target', '_blank')
+  })
+
+  it('does not show a Track Order link when no tracking URL is set', async () => {
+    supabaseMocks.from.mockReturnValue(
+      makeOrdersBuilder([
+        {
+          id: 'aaaabbbb-0000-0000-0000-000000000002',
+          status: 'Processing',
+          total: 499,
+          points_earned: 5,
+          created_at: '2026-05-22T10:00:00.000Z',
+          tracking_url: null,
+        },
+      ])
+    )
+
+    useAuthStore.setState({
+      user: { id: 'user-1', email: 'kavya@example.com' } as never,
+      profile: { id: 'user-1', full_name: 'Kavya Menon', skin_type: 'Normal', tier: 'green leaf' },
+    })
+
+    render(<AccountClient />)
+
+    await screen.findByText(/AAAABBBB/)
+    expect(screen.queryByRole('link', { name: /Track Order/ })).not.toBeInTheDocument()
+  })
 })
+
+function makeOrdersBuilder(orders: Record<string, unknown>[]) {
+  return {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    then: vi.fn((resolve: (v: { data: Record<string, unknown>[]; error: null }) => unknown) =>
+      Promise.resolve(resolve({ data: orders, error: null }))
+    ),
+  }
+}

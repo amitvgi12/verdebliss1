@@ -145,6 +145,15 @@ alter table public.orders add column if not exists payment_status text default '
 alter table public.orders add column if not exists created_at timestamptz default now();
 alter table public.orders add column if not exists updated_at timestamptz default now();
 
+-- Delivery tracking fields (courier integration)
+alter table public.orders add column if not exists tracking_id text;
+alter table public.orders add column if not exists courier_partner text;
+alter table public.orders add column if not exists tracking_url text;
+alter table public.orders add column if not exists estimated_delivery date;
+alter table public.orders add column if not exists shipped_at timestamptz;
+alter table public.orders add column if not exists out_for_delivery_at timestamptz;
+alter table public.orders add column if not exists delivered_at timestamptz;
+
 
 -- Pending checkout session created before opening Razorpay. Verification and
 -- webhooks use this server-owned snapshot instead of trusting browser cart data.
