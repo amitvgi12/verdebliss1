@@ -437,6 +437,12 @@ export async function goToCheckoutReview(page: Page) {
   await expect(page.getByRole('heading', { name: 'Review Your Order' })).toBeVisible()
 }
 
+export async function goToCheckoutPayment(page: Page) {
+  await goToCheckoutReview(page)
+  await page.getByRole('button', { name: /Continue to Payment/i }).click()
+  await expect(page.getByRole('heading', { name: 'Payment' })).toBeVisible()
+}
+
 export async function addKnownProductFromPdp(page: Page) {
   await page.goto(`/products/${E2E_PRODUCT.slug}`)
   await expect(page.getByRole('heading', { name: E2E_PRODUCT.name })).toBeVisible()

@@ -90,6 +90,9 @@ test.describe('core accessibility surfaces', () => {
 
     await expect(page.getByRole('heading', { name: 'Review Your Order' })).toBeVisible()
     await expect(page.getByText('ORDER ITEMS')).toBeVisible()
+    await expect(page.getByRole('button', { name: /Back to Address/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Continue to Payment/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Pay Online/i })).not.toBeVisible()
     await expectNoAxeViolations(page, ['main'])
   })
 })

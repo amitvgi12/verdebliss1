@@ -23,6 +23,7 @@ import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '
 import Steps from './_components/Steps'
 import AddressStep from './_components/AddressStep'
 import ReviewStep from './_components/ReviewStep'
+import PaymentStep from './_components/PaymentStep'
 import OrderSummary from './_components/OrderSummary'
 import SuccessState from './_components/SuccessState'
 import { useAuthStore } from '@/store/authStore'
@@ -236,7 +237,7 @@ export default function Checkout() {
   const user = useAuthStore((s) => s.user)
   const profile = useAuthStore((s) => s.profile)
 
-  const [step, setStep] = useState(0) // 0=address, 1=review, 2=paying
+  const [step, setStep] = useState(0) // 0=address, 1=review, 2=payment
   const [status, setStatus] = useState<CheckoutStatus>(null) // null | 'success' | 'failed'
   const [paymentId, setPayId] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('')
@@ -597,6 +598,23 @@ export default function Checkout() {
                 <ReviewStep
                   form={form}
                   items={items}
+                  onEditAddress={() => setStep(0)}
+                  onBackToAddress={() => setStep(0)}
+                  onContinueToPayment={() => {
+                    setCheckoutError('')
+                    setStatus(null)
+                    setStep(2)
+                  }}
+                  onContinueShopping={() => router.push('/products')}
+                  onIncreaseQty={(id) => updateQty(id, 1)}
+                  onDecreaseQty={(id) => updateQty(id, -1)}
+                  onRemoveItem={removeItem}
+                />
+              )}
+
+              {/* ── Step 2: Payment ──────────────────────── */}
+              {step === 2 && (
+                <PaymentStep
                   grandTotal={grandTotal}
                   codAvailable={codAvailable}
                   codMaxTotal={COD_MAX_TOTAL}
@@ -605,15 +623,20 @@ export default function Checkout() {
                   razorReady={razorReady}
                   status={status}
                   checkoutError={checkoutError}
-                  onEditAddress={() => setStep(0)}
-                  onContinueShopping={() => router.push('/products')}
-                  onIncreaseQty={(id) => updateQty(id, 1)}
-                  onDecreaseQty={(id) => updateQty(id, -1)}
-                  onRemoveItem={removeItem}
                   turnstileToken={turnstileToken}
                   turnstileResetKey={turnstileResetKey}
                   turnstileConfigured={hasTurnstileSiteKey}
                   requiresTurnstile={requiresTurnstile}
+                  onBackToReview={() => {
+                    setCheckoutError('')
+                    setStatus(null)
+                    setStep(1)
+                  }}
+                  onEditAddress={() => {
+                    setCheckoutError('')
+                    setStatus(null)
+                    setStep(0)
+                  }}
                   onTurnstileToken={setTurnstileToken}
                   onLaunchRazorpay={launchRazorpay}
                   onPlaceCod={placeCodOrder}

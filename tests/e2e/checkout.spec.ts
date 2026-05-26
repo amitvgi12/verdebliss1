@@ -3,7 +3,7 @@ import {
   addKnownProductFromPdp,
   E2E_ADDRESS,
   fillCheckoutAddress,
-  goToCheckoutReview,
+  goToCheckoutPayment,
   mockCheckoutApis,
   mockRazorpayCheckout,
   mockSupabaseForSignedInUser,
@@ -34,6 +34,8 @@ test.describe('checkout customer journeys', () => {
     await page.getByRole('button', { name: /Continue to Review/i }).click()
     await expect(page.getByRole('heading', { name: 'Review Your Order' })).toBeVisible()
     await expect(page.getByText('Bakuchiol Renewal Serum').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /Continue to Payment/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Pay Online/i })).not.toBeVisible()
   })
 
   test('guest can place a COD order', async ({ page }) => {
@@ -41,7 +43,7 @@ test.describe('checkout customer journeys', () => {
     await seedCart(page)
     await mockCheckoutApis(page)
 
-    await goToCheckoutReview(page)
+    await goToCheckoutPayment(page)
     await page.getByRole('button', { name: /Cash on Delivery/i }).click()
 
     await expect(page.getByRole('heading', { name: 'Order Confirmed!' })).toBeVisible()
@@ -59,6 +61,8 @@ test.describe('checkout customer journeys', () => {
     await fillCheckoutAddress(page)
     await page.getByRole('button', { name: /Continue to Review/i }).click()
     await expect(page.getByRole('heading', { name: 'Review Your Order' })).toBeVisible()
+    await page.getByRole('button', { name: /Continue to Payment/i }).click()
+    await expect(page.getByRole('heading', { name: 'Payment' })).toBeVisible()
     await page.getByRole('button', { name: /Cash on Delivery/i }).click()
 
     await expect(page.getByRole('heading', { name: 'Order Confirmed!' })).toBeVisible()
@@ -71,7 +75,7 @@ test.describe('checkout customer journeys', () => {
     await mockCheckoutApis(page)
     await mockRazorpayCheckout(page, 'success')
 
-    await goToCheckoutReview(page)
+    await goToCheckoutPayment(page)
     await expect(page.getByRole('button', { name: /Pay Online/i })).toBeEnabled()
     await page.getByRole('button', { name: /Pay Online/i }).click()
 
@@ -79,7 +83,7 @@ test.describe('checkout customer journeys', () => {
     await expect(page.getByText(/Method:\s*Razorpay · UPI/i)).toBeVisible()
   })
 
-  test('Razorpay payment failure keeps the customer in review with recovery copy', async ({
+  test('Razorpay payment failure keeps the customer in payment with recovery copy', async ({
     page,
   }) => {
     await seedConsent(page)
@@ -87,13 +91,13 @@ test.describe('checkout customer journeys', () => {
     await mockRazorpayCheckout(page, 'failure')
     await addKnownProductFromPdp(page)
 
-    await goToCheckoutReview(page)
+    await goToCheckoutPayment(page)
     await expect(page.getByRole('button', { name: /Pay Online/i })).toBeEnabled()
     await page.getByRole('button', { name: /Pay Online/i }).click()
 
     await expect(
       page.getByText('Payment failed. Please try again or use a different payment method.')
     ).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Review Your Order' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Payment' })).toBeVisible()
   })
 })

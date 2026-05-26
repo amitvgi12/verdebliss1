@@ -1,5 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import type { ChangeEvent } from 'react'
 import Field, { inputClassName, fieldErrorId } from './Field'
 import type { CheckoutForm, CheckoutErrors } from '../checkout-types'
@@ -183,13 +184,12 @@ export default function AddressStep({ form, errors, onChange, onContinue }: Addr
           </Field>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onContinue}
-        className="btn-primary checkout-primary-action w-full px-6"
-      >
-        Continue to Review →
-      </button>
+      <div className="checkout-step-actions">
+        <button type="button" onClick={onContinue} className="checkout-step-primary">
+          Continue to Review
+          <ArrowRight size={15} aria-hidden />
+        </button>
+      </div>
     </motion.div>
   )
 }
