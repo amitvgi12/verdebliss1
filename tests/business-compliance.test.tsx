@@ -88,13 +88,34 @@ describe('business compliance source of truth', () => {
     ).toMatchObject({ ok: true, errors: [] })
   })
 
+  it('accepts a derived phone href when the duplicate href env is omitted', () => {
+    const { NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF: _omitted, ...env } = fullProductionEnv()
+
+    expect(validateBusinessCompliance(VALID_COMPLIANCE, { strict: true, env })).toMatchObject({
+      ok: true,
+      errors: [],
+    })
+  })
+
   it('treats any production runtime as a strict compliance environment', () => {
     expect(shouldEnforceProductionCompliance({ NODE_ENV: 'production' })).toBe(true)
     expect(shouldEnforceProductionCompliance({ NODE_ENV: 'development' })).toBe(false)
   })
 
   it('normalizes tel: phone href values from environment configuration', async () => {
+    vi.resetModules()
+    vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY', '+91 22 4567 8901')
     vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF', 'tel:+91 22 4567 8901')
+
+    const { BUSINESS_COMPLIANCE: configured } = await import('@/constants/businessCompliance')
+
+    expect(configured.helpline.href).toBe('+912245678901')
+  })
+
+  it('derives the phone href from display when the href env is omitted', async () => {
+    vi.resetModules()
+    vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY', '+91 22 4567 8901')
+    vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF', '')
 
     const { BUSINESS_COMPLIANCE: configured } = await import('@/constants/businessCompliance')
 

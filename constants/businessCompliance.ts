@@ -51,7 +51,6 @@ const REQUIRED_ENV_KEYS = [
   'NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE',
   'NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_PINCODE',
   'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY',
-  'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF',
   'NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL',
   'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME',
   'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL',
@@ -68,6 +67,21 @@ const SUPPORT_PHONE_RE = /^\+?[0-9][0-9\s-]{7,18}$/
 
 function env(key: string, fallback: string): string {
   return process.env[key]?.trim() || fallback
+}
+
+function readSupportPhoneDisplay(): string {
+  return env(
+    'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY',
+    env('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE', 'Support phone pending verification')
+  )
+}
+
+function readSupportPhoneHref(display: string): string {
+  const explicitHref = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF?.trim()
+  if (explicitHref) return normalizePhoneHref(explicitHref)
+
+  const legacyPhone = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE?.trim()
+  return normalizePhoneHref(legacyPhone || display)
 }
 
 function normalizePhoneHref(value: string): string {
@@ -126,11 +140,8 @@ export const BUSINESS_COMPLIANCE: BusinessCompliance = {
     'Same as registered office'
   ),
   helpline: {
-    display: env(
-      'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY',
-      'Support phone pending verification'
-    ),
-    href: normalizePhoneHref(env('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF', '')),
+    display: readSupportPhoneDisplay(),
+    href: readSupportPhoneHref(readSupportPhoneDisplay()),
     hours: env('NEXT_PUBLIC_VERDEBLISS_SUPPORT_HOURS', '10:00-18:00 IST, Mon-Sat'),
   },
   emails: {

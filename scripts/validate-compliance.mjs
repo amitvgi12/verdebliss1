@@ -29,7 +29,6 @@ const required = [
   'NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE',
   'NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_PINCODE',
   'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY',
-  'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF',
   'NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL',
   'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME',
   'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL',
@@ -54,9 +53,14 @@ for (const key of required) {
 
 const cinValue = process.env.NEXT_PUBLIC_VERDEBLISS_CIN?.trim() ?? ''
 const gstinValue = process.env.NEXT_PUBLIC_VERDEBLISS_GSTIN?.trim() ?? ''
-const phoneDisplay = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY?.trim() ?? ''
+const phoneDisplay =
+  process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY?.trim() ||
+  process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE?.trim() ||
+  ''
 const phoneHrefRaw = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF?.trim() ?? ''
-const phoneHref = normalizePhoneHref(phoneHrefRaw)
+const phoneHref = normalizePhoneHref(
+  phoneHrefRaw || process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE?.trim() || phoneDisplay
+)
 const supportEmail = process.env.NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL?.trim() ?? ''
 const grievanceEmail = process.env.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL?.trim() ?? ''
 
