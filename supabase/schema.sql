@@ -1000,13 +1000,55 @@ begin
 end $$;
 
 -- ════════════════════════════════════════════════════
+--  Seller configuration — single canonical row
+--
+--  Authoritative source of seller identity for GST invoice generation.
+--  Populate once after GST registration; keep updated if details change.
+--  The invoice trigger reads this table at order-time.
+--  Missing row or empty state_name/gstin → order INSERT is rejected.
+--
+--  To seed (run in Supabase SQL editor after GST registration):
+--    insert into public.seller_config (id, legal_name, gstin, state_name,
+--      address_line1, address_city, address_pincode)
+--    values (1, 'Your Legal Name Pvt Ltd', '05XXXXX0000X1Z5', 'Uttarakhand',
+--      '123 Example Road', 'Dehradun', '248001')
+--    on conflict (id) do update set
+--      legal_name = excluded.legal_name, gstin = excluded.gstin,
+--      state_name = excluded.state_name, updated_at = now();
+-- ════════════════════════════════════════════════════
+
+create table if not exists public.seller_config (
+  id              int         primary key default 1,
+  legal_name      text        not null,
+  gstin           text        not null,
+  state_name      text        not null,  -- e.g. 'Uttarakhand' — drives CGST/SGST vs IGST
+  address_line1   text,
+  address_city    text,
+  address_pincode text,
+  updated_at      timestamptz default now(),
+  constraint seller_config_singleton check (id = 1)
+);
+
+-- Idempotent column additions
+alter table public.seller_config add column if not exists legal_name text;
+alter table public.seller_config add column if not exists gstin text;
+alter table public.seller_config add column if not exists state_name text;
+alter table public.seller_config add column if not exists address_line1 text;
+alter table public.seller_config add column if not exists address_city text;
+alter table public.seller_config add column if not exists address_pincode text;
+alter table public.seller_config add column if not exists updated_at timestamptz default now();
+
+-- Only service_role may read/write seller config — no public exposure
+alter table public.seller_config enable row level security;
+
+-- ════════════════════════════════════════════════════
 --  Invoices — sequential TAX invoices with GST breakdown
 --
 --  One invoice is auto-created per order via trigger.
---  GST assumed at 18% (standard rate for cosmetics/personal care).
---  Seller state: Maharashtra → same-state orders get CGST+SGST;
---  all other states get IGST.
---  Update seller_gstin below once VerdeBliss obtains GST registration.
+--  GST at 18% (standard rate, HSN 33 cosmetics/personal care).
+--  Seller state comes from seller_config — NOT hard-coded.
+--  Same state as buyer → CGST+SGST (intra-state).
+--  Different state from buyer → IGST (inter-state).
 -- ════════════════════════════════════════════════════
 
 -- Monotonically increasing counter — never reset, never reused.
@@ -1037,7 +1079,13 @@ create table if not exists public.invoices (
   --   [{"type":"IGST","rate":18,"amount":81.00}]
   tax_lines           jsonb       not null default '[]'::jsonb,
 
-  seller_gstin        text,        -- populate once VerdeBliss is GST-registered
+  -- Seller identity — snapshotted from seller_config at invoice-creation time.
+  -- Snapshot is intentional: historical invoices stay accurate even if seller
+  -- details (GSTIN, address) change in future.
+  seller_gstin        text,
+  seller_legal_name   text,
+  seller_state        text,        -- seller GST state at invoice time (drives CGST/SGST vs IGST)
+
   buyer_gstin         text,        -- for B2B orders; null for B2C
   supply_type         text        not null default 'intra_state',  -- 'intra_state' | 'inter_state'
   place_of_supply     text,        -- customer state (from order address)
@@ -1065,6 +1113,8 @@ alter table public.invoices add column if not exists shipping numeric(10,2) defa
 alter table public.invoices add column if not exists total numeric(10,2) default 0;
 alter table public.invoices add column if not exists tax_lines jsonb default '[]'::jsonb;
 alter table public.invoices add column if not exists seller_gstin text;
+alter table public.invoices add column if not exists seller_legal_name text;
+alter table public.invoices add column if not exists seller_state text;
 alter table public.invoices add column if not exists buyer_gstin text;
 alter table public.invoices add column if not exists supply_type text default 'intra_state';
 alter table public.invoices add column if not exists place_of_supply text;
@@ -1114,23 +1164,47 @@ security definer
 set search_path = public
 as $$
 declare
-  v_tax_rate      constant numeric := 18;   -- 18% GST for cosmetics/personal care (India)
-  v_seller_state  constant text    := 'Maharashtra';
+  v_tax_rate        constant numeric := 18;   -- 18% GST, HSN 33 cosmetics/personal care
+  v_seller          record;
   v_place_of_supply text;
-  v_supply_type   text;
-  v_tax_amount    numeric;
-  v_half_tax      numeric;
-  v_tax_lines     jsonb;
+  v_supply_type     text;
+  v_tax_amount      numeric;
+  v_half_tax        numeric;
+  v_tax_lines       jsonb;
 begin
+  -- ── 1. Load seller identity — fail closed if missing or incomplete ───
+  select * into v_seller from public.seller_config where id = 1;
+
+  if not found then
+    raise exception
+      'Invoice generation failed: seller_config has no row. '
+      'Populate seller identity (legal name, GSTIN, state) before accepting orders.';
+  end if;
+
+  if coalesce(trim(v_seller.state_name), '') = '' then
+    raise exception
+      'Invoice generation failed: seller_config.state_name is empty. '
+      'Set the seller GST registration state before accepting orders.';
+  end if;
+
+  if coalesce(trim(v_seller.gstin), '') = '' then
+    raise exception
+      'Invoice generation failed: seller_config.gstin is empty. '
+      'Set the seller GSTIN before accepting orders.';
+  end if;
+
+  -- ── 2. Determine supply type from seller vs buyer state ─────────────
+  -- Intra-state (same state) → CGST + SGST
+  -- Inter-state (different state) → IGST
   v_place_of_supply := coalesce(new.address->>'state', '');
 
   v_supply_type := case
-    when lower(trim(v_place_of_supply)) = lower(v_seller_state) then 'intra_state'
+    when lower(trim(v_place_of_supply)) = lower(trim(v_seller.state_name)) then 'intra_state'
     else 'inter_state'
   end;
 
-  -- GST is included in the storefront price; back-calculate from subtotal.
-  -- Formula: tax = price_inclusive * rate / (100 + rate)
+  -- ── 3. Back-calculate GST from tax-inclusive storefront price ────────
+  -- Formula: tax = inclusive_price × rate / (100 + rate)
   v_tax_amount := round(new.subtotal * v_tax_rate / (100 + v_tax_rate), 2);
 
   if v_supply_type = 'intra_state' then
@@ -1145,10 +1219,12 @@ begin
     );
   end if;
 
+  -- ── 4. Insert invoice with full seller identity snapshot ─────────────
   insert into public.invoices (
     order_id, invoice_number, invoice_date,
     subtotal, tax_amount, shipping, total,
     tax_lines, supply_type, place_of_supply,
+    seller_gstin, seller_legal_name, seller_state,
     status
   ) values (
     new.id,
@@ -1161,6 +1237,9 @@ begin
     v_tax_lines,
     v_supply_type,
     nullif(trim(v_place_of_supply), ''),
+    v_seller.gstin,
+    v_seller.legal_name,
+    v_seller.state_name,
     'issued'
   )
   on conflict (order_id) do nothing;  -- safe for schema re-runs

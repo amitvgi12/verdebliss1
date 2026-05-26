@@ -50,7 +50,11 @@ interface Invoice {
   shipping: number
   total: number
   tax_lines: TaxLine[]
+  // Seller identity — snapshotted at invoice creation; preferred over live env values
+  // so historical invoices remain accurate if seller details change later.
   seller_gstin: string | null
+  seller_legal_name: string | null
+  seller_state: string | null
   buyer_gstin: string | null
   supply_type: string
   place_of_supply: string | null
@@ -250,11 +254,6 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
               >
                 COSMETICS
               </div>
-              {invoice?.seller_gstin && (
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 6 }}>
-                  GSTIN: {invoice.seller_gstin}
-                </div>
-              )}
             </div>
             <div style={{ textAlign: 'right' }}>
               <div
@@ -301,12 +300,21 @@ export default function InvoiceClient({ orderId }: { orderId: string }) {
           >
             <div style={{ padding: '20px 36px', borderRight: '1px solid #E8E0D6' }}>
               <div style={eyebrow}>SOLD BY</div>
-              <div style={boldLine}>{BUSINESS_COMPLIANCE.legalName}</div>
+              {/* Prefer snapshotted seller identity so historical invoices stay
+                  accurate even if registration details change in future. */}
+              <div style={boldLine}>
+                {invoice?.seller_legal_name ?? BUSINESS_COMPLIANCE.legalName}
+              </div>
               <div style={mutedLine}>
                 {formatPostalAddress()}
                 <br />
                 {BUSINESS_COMPLIANCE.emails.support}
               </div>
+              {(invoice?.seller_gstin ?? BUSINESS_COMPLIANCE.gstin) && (
+                <div style={{ fontSize: 11, color: '#5C6C4D', marginTop: 4 }}>
+                  GSTIN: {invoice?.seller_gstin ?? BUSINESS_COMPLIANCE.gstin}
+                </div>
+              )}
               {invoice?.place_of_supply && (
                 <div style={{ ...mutedLine, marginTop: 4 }}>
                   State of supply: {invoice.place_of_supply}
