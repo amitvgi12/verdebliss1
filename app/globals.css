@@ -970,7 +970,7 @@ video {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 50%);
+  color: rgb(255 255 255 / 72%);
   margin-top: 8px;
 }
 
@@ -982,13 +982,13 @@ video {
 .footer-address-id {
   display: block;
   font-size: 11px;
-  color: rgb(255 255 255 / 55%);
+  color: rgb(255 255 255 / 72%);
   letter-spacing: 0.02em;
 }
 
 .footer-address-sub {
   font-size: 11px;
-  color: rgb(255 255 255 / 50%);
+  color: rgb(255 255 255 / 72%);
 }
 
 .footer-socials-wrap {
@@ -1012,7 +1012,7 @@ video {
 
 .footer-bottom__copy {
   font-size: 12px;
-  color: rgb(255 255 255 / 60%);
+  color: rgb(255 255 255 / 75%);
   flex-shrink: 0;
 }
 
@@ -1025,9 +1025,9 @@ video {
 
 .footer-bottom__legal-link {
   font-size: 11px;
-  color: rgb(255 255 255 / 58%);
+  color: rgb(255 255 255 / 75%);
   text-decoration: underline;
-  text-decoration-color: rgb(255 255 255 / 25%);
+  text-decoration-color: rgb(255 255 255 / 35%);
   text-underline-offset: 3px;
   transition: color 0.18s;
 }
@@ -1045,10 +1045,10 @@ video {
 }
 
 .footer-payment-badge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  color: rgb(255 255 255 / 60%);
-  border: 1px solid rgb(255 255 255 / 20%);
+  color: rgb(255 255 255 / 75%);
+  border: 1px solid rgb(255 255 255 / 25%);
   border-radius: 3px;
   padding: 2px 5px;
   letter-spacing: 0.03em;
