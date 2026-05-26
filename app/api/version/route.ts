@@ -16,7 +16,7 @@ export async function GET() {
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
     deployedAt:
       process.env.VERCEL_DEPLOYMENT_CREATED_AT ?? process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
-    schemaVersion: '2026-05-audit-remediated-v2',
+    schemaVersion: '2026-05-audit-remediated-v3',
     capabilities: getEnvironmentCapabilities(),
     compliance: {
       ok: compliance.ok,
@@ -38,11 +38,19 @@ function getPublicRevision(isProduction: boolean): string {
 }
 
 function toPublicComplianceField(error: string): string {
+  const normalized = error.toLowerCase()
+
   if (error.startsWith('BUSINESS_COMPLIANCE.')) return error.split(' ')[0]
   if (error.startsWith('NEXT_PUBLIC_VERDEBLISS_')) return error.split(' ')[0]
+  if (
+    normalized.includes('grievanceofficer.name') ||
+    normalized.includes('grievance officer name')
+  ) {
+    return 'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME'
+  }
   if (error.includes('CIN')) return 'NEXT_PUBLIC_VERDEBLISS_CIN'
   if (error.includes('GSTIN')) return 'NEXT_PUBLIC_VERDEBLISS_GSTIN'
-  if (error.toLowerCase().includes('phone')) return 'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE'
-  if (error.toLowerCase().includes('email')) return 'NEXT_PUBLIC_VERDEBLISS_EMAIL'
+  if (normalized.includes('phone')) return 'NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE'
+  if (normalized.includes('email')) return 'NEXT_PUBLIC_VERDEBLISS_EMAIL'
   return 'BUSINESS_COMPLIANCE'
 }

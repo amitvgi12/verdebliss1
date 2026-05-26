@@ -50,4 +50,36 @@ describe('version API', () => {
 
     expect(body.gitSha).toBe('abcdef123456')
   })
+
+  it('maps a phone-like grievance officer name to the grievance env field', async () => {
+    vi.resetModules()
+    stubValidProductionComplianceEnv()
+    vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME', '+911352000000')
+
+    const { GET: getVersion } = await import('@/app/api/version/route')
+    const response = await getVersion()
+    const body = await response.json()
+
+    expect(body.compliance).toMatchObject({
+      ok: false,
+      errorCount: 1,
+      failingFields: ['NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME'],
+    })
+  })
 })
+
+function stubValidProductionComplianceEnv() {
+  vi.stubEnv('VERCEL_ENV', 'production')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME', 'VerdeBliss Cosmetics Private Limited')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_CIN', 'U24246MH2020PTC123456')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GSTIN', '27AAACV1234F1Z5')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_LINE1', '12 Botanical Park Road')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_CITY', 'Mumbai')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE', 'Maharashtra')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_PINCODE', '400001')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY', '+91 135 2000 000')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF', 'tel:+911352000000')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL', 'hello@verdebliss.com')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME', 'Ananya Rao')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL', 'grievance@verdebliss.com')
+}
