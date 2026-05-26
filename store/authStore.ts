@@ -119,12 +119,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 }))
 
-export async function syncWishlist(ids: string[]) {
-  const userId = useAuthStore.getState().user?.id
-  if (!userId) return
-  return ids
-}
-
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined
   const timeout = new Promise<never>((_, reject) => {

@@ -17,7 +17,14 @@ interface ReconciliationFailure {
 
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+  // Fail closed in production: missing secret = endpoint is unauthenticated,
+  // which would expose pending-reconciliation enumeration to anyone who finds
+  // the URL. In dev we allow the bypass so the route can be hit from curl.
+  if (!cronSecret) {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 })
+    }
+  } else if (request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

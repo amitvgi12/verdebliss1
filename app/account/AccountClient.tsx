@@ -774,8 +774,8 @@ function Dashboard({
             <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 20 }}>
               Order History
             </div>
-            {orderNotice && (
-              orderNotice.type === 'error' ? (
+            {orderNotice &&
+              (orderNotice.type === 'error' ? (
                 <div
                   role="alert"
                   style={{
@@ -807,8 +807,7 @@ function Dashboard({
                 >
                   {orderNotice.text}
                 </div>
-              )
-            )}
+              ))}
             {orders.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '28px 0', color: C.muted, fontSize: 13 }}>
                 No orders yet — time to shop! 🌿

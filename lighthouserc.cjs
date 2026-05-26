@@ -46,7 +46,7 @@ module.exports = {
         // ── Supporting metrics ─────────────────────────────────────────────
         'first-contentful-paint': ['warn', { maxNumericValue: 1800 }],
         'speed-index': ['warn', { maxNumericValue: 3400 }],
-        'interactive': ['warn', { maxNumericValue: 3800 }],
+        interactive: ['warn', { maxNumericValue: 3800 }],
         // ── Category scores ────────────────────────────────────────────────
         'categories:performance': ['warn', { minScore: 0.9 }],
         'categories:accessibility': ['error', { minScore: 0.95 }],

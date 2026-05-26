@@ -28,6 +28,15 @@ describe('reconciliation alert cron', () => {
     expect(mocks.createSupabaseAdmin).not.toHaveBeenCalled()
   })
 
+  it('fails closed in production when CRON_SECRET is missing', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+
+    const response = await GET(new Request('http://localhost/api/cron/reconciliation-alert'))
+
+    expect(response.status).toBe(503)
+    expect(mocks.createSupabaseAdmin).not.toHaveBeenCalled()
+  })
+
   it('reports missing Supabase admin configuration clearly', async () => {
     mocks.hasSupabaseAdminEnv.mockReturnValue(false)
 
