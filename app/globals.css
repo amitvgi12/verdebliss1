@@ -1117,6 +1117,11 @@ video {
   background: rgba(255, 255, 255, 0.62);
 }
 
+.checkout-turnstile-card--missing {
+  border-color: rgba(194, 125, 90, 0.3);
+  background: rgba(255, 247, 242, 0.9);
+}
+
 .checkout-turnstile-card strong,
 .checkout-turnstile-card span {
   display: block;
@@ -1207,8 +1212,10 @@ video {
 
 .checkout-review-item__price {
   margin-top: 4px;
-  color: var(--color-muted);
-  font-size: 0.76rem;
+  color: var(--color-olive);
+  font-size: 0.8rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
 
 .checkout-review-item__qty {
@@ -1249,12 +1256,14 @@ video {
 }
 
 .checkout-review-item__total {
-  min-width: 58px;
+  min-width: 70px;
   text-align: right;
   color: var(--color-text);
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 .checkout-review-item__remove {
@@ -1297,6 +1306,61 @@ video {
 
 .checkout-summary-item {
   min-height: 46px;
+}
+
+.checkout-summary-item__amount {
+  flex-shrink: 0;
+  min-width: 70px;
+  text-align: right;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.checkout-summary-row,
+.checkout-summary-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.checkout-summary-row {
+  margin-bottom: 8px;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.checkout-summary-row span:last-child {
+  color: var(--color-olive);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.checkout-summary-total {
+  border-top: 1px solid rgba(228, 218, 208, 0.8);
+  padding-top: 10px;
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.checkout-summary-total span:last-child {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.checkout-summary-total-words {
+  margin-top: 6px;
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  font-weight: 650;
+  line-height: 1.35;
+  text-align: right;
 }
 
 .checkout-unavailable {

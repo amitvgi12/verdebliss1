@@ -20,6 +20,7 @@ interface ReviewStepProps {
   checkoutError: string
   turnstileToken: string | null
   turnstileResetKey: number
+  turnstileConfigured: boolean
   requiresTurnstile: boolean
   onEditAddress: () => void
   onContinueShopping: () => void
@@ -44,6 +45,7 @@ export default function ReviewStep({
   checkoutError,
   turnstileToken,
   turnstileResetKey,
+  turnstileConfigured,
   requiresTurnstile,
   onEditAddress,
   onContinueShopping,
@@ -111,7 +113,7 @@ export default function ReviewStep({
                   <div className="checkout-review-item__copy">
                     <div className="checkout-review-item__name">{item.name}</div>
                     <div className="checkout-review-item__price">
-                      ₹{item.price.toLocaleString()} each
+                      ₹{item.price.toLocaleString('en-IN')} each
                     </div>
                   </div>
 
@@ -139,7 +141,7 @@ export default function ReviewStep({
                   </div>
 
                   <div className="checkout-review-item__total">
-                    ₹{(item.price * item.qty).toLocaleString()}
+                    ₹{(item.price * item.qty).toLocaleString('en-IN')}
                   </div>
 
                   <button
@@ -174,19 +176,33 @@ export default function ReviewStep({
       </div>
 
       {requiresTurnstile && (
-        <div className="checkout-turnstile-card">
+        <div
+          className={`checkout-turnstile-card ${
+            turnstileConfigured ? '' : 'checkout-turnstile-card--missing'
+          }`}
+        >
           <div>
             <strong>Cloudflare verification</strong>
-            <span>Complete this bot check before payment or Cash on Delivery.</span>
+            <span>
+              {turnstileConfigured
+                ? 'Complete this bot check before payment or Cash on Delivery.'
+                : 'Verification is required, but the public site key is missing from this deployment.'}
+            </span>
           </div>
-          <TurnstileWidget
-            key={turnstileResetKey}
-            onToken={onTurnstileToken}
-            onExpire={() => onTurnstileToken(null)}
-            className="checkout-turnstile-widget"
-          />
+          {turnstileConfigured && (
+            <TurnstileWidget
+              key={turnstileResetKey}
+              onToken={onTurnstileToken}
+              onExpire={() => onTurnstileToken(null)}
+              className="checkout-turnstile-widget"
+            />
+          )}
           <span className="checkout-turnstile-status">
-            {turnstileToken ? 'Verified' : 'Verification required'}
+            {turnstileToken
+              ? 'Verified'
+              : turnstileConfigured
+                ? 'Verification required'
+                : 'Site key missing'}
           </span>
         </div>
       )}

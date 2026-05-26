@@ -35,6 +35,12 @@ env:
   NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL: ${{ vars.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL || secrets.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL }}
   NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_ACK_WINDOW: ${{ vars.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_ACK_WINDOW || secrets.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_ACK_WINDOW }}
   NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_RESOLUTION_WINDOW: ${{ vars.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_RESOLUTION_WINDOW || secrets.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_RESOLUTION_WINDOW }}
+  # Turnstile is split across client/server env. Because this workflow creates
+  # a prebuilt Vercel bundle inside GitHub Actions, the NEXT_PUBLIC site key
+  # must exist here at build time; Vercel runtime env alone cannot patch it
+  # into an already-built client bundle.
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY || secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+  TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
   LAUNCH_MODE: ${{ vars.LAUNCH_MODE || secrets.LAUNCH_MODE }}
   VERDEBLISS_ENFORCE_COMPLIANCE: ${{ vars.VERDEBLISS_ENFORCE_COMPLIANCE || secrets.VERDEBLISS_ENFORCE_COMPLIANCE }}
 
@@ -190,6 +196,8 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY || secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
       - id: deploy
         run: echo "preview_url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> $GITHUB_OUTPUT
       # Revalidate the preview deployment's ISR cache so any compliance-identity
@@ -237,6 +245,8 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY || secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
       - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
       # Revalidate all product ISR caches immediately after the new build goes live.
       # IMPORTANT: A CDN cache purge alone does NOT fix stale ISR HTML — this step

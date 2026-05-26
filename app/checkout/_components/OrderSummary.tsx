@@ -13,6 +13,72 @@ interface OrderSummaryProps {
   pointsToEarn: number
 }
 
+const ONES = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+] as const
+
+const TENS = [
+  '',
+  '',
+  'twenty',
+  'thirty',
+  'forty',
+  'fifty',
+  'sixty',
+  'seventy',
+  'eighty',
+  'ninety',
+] as const
+
+function wordsBelowHundred(value: number): string {
+  if (value < 20) return ONES[value]
+  const tens = Math.floor(value / 10)
+  const ones = value % 10
+  return ones ? `${TENS[tens]}-${ONES[ones]}` : TENS[tens]
+}
+
+function wordsBelowThousand(value: number): string {
+  const hundreds = Math.floor(value / 100)
+  const rest = value % 100
+  if (!hundreds) return wordsBelowHundred(rest)
+  return rest ? `${ONES[hundreds]} hundred ${wordsBelowHundred(rest)}` : `${ONES[hundreds]} hundred`
+}
+
+function rupeesInWords(amount: number): string {
+  const whole = Math.round(amount)
+  if (whole === 0) return 'Zero rupees only'
+
+  const parts: string[] = []
+  const lakh = Math.floor(whole / 100000)
+  const thousand = Math.floor((whole % 100000) / 1000)
+  const rest = whole % 1000
+
+  if (lakh) parts.push(`${wordsBelowThousand(lakh)} lakh`)
+  if (thousand) parts.push(`${wordsBelowThousand(thousand)} thousand`)
+  if (rest) parts.push(wordsBelowThousand(rest))
+
+  return `${parts.join(' ')} rupees only`.replace(/^./, (char) => char.toUpperCase())
+}
+
 export default function OrderSummary({
   items,
   itemCount,
@@ -26,7 +92,9 @@ export default function OrderSummary({
       <div className="checkout-panel checkout-panel--summary">
         <h2 className="mb-5 font-serif text-[1.35rem] font-normal text-text">
           Order Summary{' '}
-          <span className="font-sans text-[13px] text-muted">({itemCount} items)</span>
+          <span className="font-sans text-[13px] text-muted">
+            ({itemCount} item{itemCount === 1 ? '' : 's'})
+          </span>
         </h2>
 
         <ul className="checkout-summary-list m-0 mb-5 flex list-none flex-col p-0">
@@ -46,28 +114,27 @@ export default function OrderSummary({
                   {item.name}
                 </div>
               </div>
-              <div className="flex-shrink-0 text-[13px] font-semibold text-text">
-                ₹{(item.price * item.qty).toLocaleString()}
+              <div className="checkout-summary-item__amount">
+                ₹{(item.price * item.qty).toLocaleString('en-IN')}
               </div>
             </li>
           ))}
         </ul>
 
         <div className="border-t border-border pt-4">
-          <div className="mb-1.5 flex justify-between text-[13px] text-muted">
+          <div className="checkout-summary-row">
             <span>Subtotal</span>
-            <span>₹{total.toLocaleString()}</span>
+            <span>₹{total.toLocaleString('en-IN')}</span>
           </div>
-          <div
-            className={`mb-3 flex justify-between text-[13px] ${shipping === 0 ? 'text-sage' : 'text-muted'}`}
-          >
+          <div className={`checkout-summary-row ${shipping === 0 ? 'text-sage' : ''}`}>
             <span>Shipping</span>
-            <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+            <span>{shipping === 0 ? 'FREE' : `₹${shipping.toLocaleString('en-IN')}`}</span>
           </div>
-          <div className="flex justify-between text-lg font-bold text-text">
+          <div className="checkout-summary-total">
             <span className="font-serif">Total</span>
-            <span className="font-serif">₹{grandTotal.toLocaleString()}</span>
+            <span>₹{grandTotal.toLocaleString('en-IN')}</span>
           </div>
+          <p className="checkout-summary-total-words">{rupeesInWords(grandTotal)}</p>
         </div>
 
         {/* Loyalty + delivery info */}

@@ -248,7 +248,8 @@ export default function Checkout() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [cartHydrated, setCartHydrated] = useState(() => getCartPersist()?.hasHydrated?.() ?? true)
-  const requiresTurnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
+  const hasTurnstileSiteKey = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
+  const requiresTurnstile = process.env.NODE_ENV === 'production' || hasTurnstileSiteKey
 
   const [form, setForm] = useState<CheckoutForm>(() =>
     buildBaseCheckoutForm(profile?.full_name, user?.email)
@@ -611,6 +612,7 @@ export default function Checkout() {
                   onRemoveItem={removeItem}
                   turnstileToken={turnstileToken}
                   turnstileResetKey={turnstileResetKey}
+                  turnstileConfigured={hasTurnstileSiteKey}
                   requiresTurnstile={requiresTurnstile}
                   onTurnstileToken={setTurnstileToken}
                   onLaunchRazorpay={launchRazorpay}
