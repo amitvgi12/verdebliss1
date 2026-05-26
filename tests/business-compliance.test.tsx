@@ -33,6 +33,7 @@ const VALID_COMPLIANCE: BusinessCompliance = {
     addressCountry: 'IN',
   },
   principalPlaceOfBusiness: '12 Botanical Park Road, Mumbai, Maharashtra 400001',
+  fulfilmentCity: 'Mumbai',
   helpline: {
     display: '+91 22 4567 8901',
     href: '+912245678901',
