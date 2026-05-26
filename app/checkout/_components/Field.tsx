@@ -9,6 +9,11 @@ interface FieldProps {
   span?: boolean
 }
 
+/** Stable id for the inline error element — pass to aria-describedby on the control. */
+export function fieldErrorId(id: string) {
+  return `${id}-error`
+}
+
 export default function Field({ id, label, required = false, error, children, span }: FieldProps) {
   return (
     <div className={`mb-4 ${span ? 'col-span-full' : ''}`}>
@@ -22,7 +27,7 @@ export default function Field({ id, label, required = false, error, children, sp
       </label>
       {children}
       {error && (
-        <div role="alert" className="mt-1 text-[11px] text-terra">
+        <div id={fieldErrorId(id)} className="mt-1 text-[11px] text-terra">
           {error}
         </div>
       )}

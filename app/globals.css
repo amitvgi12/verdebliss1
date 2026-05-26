@@ -128,11 +128,15 @@ video {
   top: 0;
 }
 
-/* ── Focus visible (WCAG 2.4.7) ─────────────────────────────── */
+/* ── Focus visible (WCAG 2.4.7 + 2.4.11) ───────────────────── */
 *:focus-visible {
   outline: 2px solid var(--color-forest);
   outline-offset: 3px;
   border-radius: 4px;
+  /* WCAG 2.2 SC 2.4.11 Focus Not Obscured: reserve space above every focused
+   * element so the 52 px sticky nav cannot slide over it when the browser
+   * scrolls to bring the element into view. */
+  scroll-margin-top: 68px;
 }
 
 /* ── Reduced motion (WCAG 2.3.3) ────────────────────────────── */

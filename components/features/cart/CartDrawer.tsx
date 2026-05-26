@@ -6,6 +6,7 @@ import { FREE_SHIPPING_THRESHOLD } from '@/constants/shipping'
 import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
 import ProductImage from '@/components/ui/ProductImage'
 import { C, FONT } from '@/constants/theme'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 export default function CartDrawer() {
   const router = useRouter()
@@ -17,6 +18,10 @@ export default function CartDrawer() {
   const total = useCartStore(selectTotal)
   const itemCount = useCartStore(selectItemCount)
   const pointsToEarn = useCartStore(selectPointsToEarn)
+
+  // WCAG 2.1 SC 2.1.2 + dialog pattern: trap focus inside the drawer while
+  // open and restore it to the trigger element when closed.
+  const drawerRef = useFocusTrap<HTMLElement>(isOpen, closeCart)
 
   const shippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total)
   const shippingProgress = Math.min(100, (total / FREE_SHIPPING_THRESHOLD) * 100)
@@ -41,6 +46,7 @@ export default function CartDrawer() {
 
           {/* Drawer */}
           <motion.aside
+            ref={drawerRef}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -100,6 +106,7 @@ export default function CartDrawer() {
                 )}
               </div>
               <button
+                type="button"
                 onClick={closeCart}
                 aria-label="Close cart"
                 style={{
@@ -193,6 +200,7 @@ export default function CartDrawer() {
                     Discover your perfect botanical ritual
                   </p>
                   <button
+                    type="button"
                     onClick={() => {
                       closeCart()
                       router.push('/products')
@@ -254,7 +262,10 @@ export default function CartDrawer() {
                         ₹{item.price?.toLocaleString()}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {/* WCAG 2.2 SC 2.5.8: minimum 24×24 px; using 32 px for
+                            adequate touch target with the 8 px gap on either side */}
                         <button
+                          type="button"
                           onClick={() => updateQty(item.id, -1)}
                           aria-label={
                             item.qty <= 1
@@ -262,9 +273,9 @@ export default function CartDrawer() {
                               : `Decrease ${item.name} quantity`
                           }
                           style={{
-                            width: 26,
-                            height: 26,
-                            borderRadius: 7,
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
                             border: `1px solid ${C.border}`,
                             background: 'none',
                             cursor: 'pointer',
@@ -273,7 +284,7 @@ export default function CartDrawer() {
                             justifyContent: 'center',
                           }}
                         >
-                          <Minus size={11} />
+                          <Minus size={12} />
                         </button>
                         <span
                           style={{
@@ -286,12 +297,13 @@ export default function CartDrawer() {
                           {item.qty}
                         </span>
                         <button
+                          type="button"
                           onClick={() => updateQty(item.id, 1)}
                           aria-label={`Increase ${item.name} quantity`}
                           style={{
-                            width: 26,
-                            height: 26,
-                            borderRadius: 7,
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
                             border: `1px solid ${C.border}`,
                             background: 'none',
                             cursor: 'pointer',
@@ -300,9 +312,10 @@ export default function CartDrawer() {
                             justifyContent: 'center',
                           }}
                         >
-                          <Plus size={11} />
+                          <Plus size={12} />
                         </button>
                         <button
+                          type="button"
                           onClick={() => removeItem(item.id)}
                           aria-label={`Remove ${item.name} from cart`}
                           style={{
@@ -371,6 +384,7 @@ export default function CartDrawer() {
 
                 {/* Checkout button */}
                 <button
+                  type="button"
                   onClick={handleCheckout}
                   style={{
                     width: '100%',
@@ -396,6 +410,7 @@ export default function CartDrawer() {
                   Proceed to Checkout — ₹{total.toLocaleString()}
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     closeCart()
                     router.push('/products')

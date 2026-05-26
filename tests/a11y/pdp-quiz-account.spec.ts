@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
-const axeTags = ['wcag2a', 'wcag2aa']
+const axeTags = ['wcag2a', 'wcag2aa', 'wcag22aa']
 
 async function suppressCookieModal(page: Page) {
   await page.addInitScript(() => {

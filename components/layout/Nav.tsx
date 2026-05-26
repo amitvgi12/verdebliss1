@@ -21,6 +21,7 @@ import {
 import SearchBar from '@/components/features/search/SearchBar'
 import { useCartStore, selectItemCount } from '@/store/cartStore'
 import { useAuthStore } from '@/store/authStore'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 const LINKS = [
   { path: '/', label: 'Home', icon: Home },
@@ -47,6 +48,10 @@ export default function Nav() {
     setMenuOpen(false)
     setSearchOpen(false)
   }
+
+  // WCAG 2.1 SC 2.1.2 + dialog pattern for the overlay mobile menu:
+  // trap focus within the menu while open, restore it to the burger on close.
+  const menuRef = useFocusTrap<HTMLElement>(menuOpen, () => setMenuOpen(false))
 
   return (
     <>
@@ -161,7 +166,8 @@ export default function Nav() {
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={menuOpen}
+              aria-expanded={menuOpen ? 'true' : 'false'}
+              aria-haspopup="dialog"
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent md:hidden"
             >
               {menuOpen ? (
@@ -202,20 +208,34 @@ export default function Nav() {
               className="fixed inset-0 z-[98] bg-[#17241b]/38 backdrop-blur-[2px] md:hidden"
             />
             <motion.aside
+              ref={menuRef}
               initial={{ opacity: 0, y: -8, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
               className="fixed inset-x-4 top-[68px] z-[99] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-[#d7c7b6] bg-[#fffaf4] p-3 shadow-[0_26px_80px_rgba(23,36,27,0.32)] backdrop-blur-xl md:hidden"
-              aria-label="Pages menu"
             >
-              <div className="mb-3 rounded-[18px] bg-[#254f32] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
-                <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#d7b978]">
-                  Pages
-                </p>
-                <p className="mt-2 text-base font-semibold leading-tight text-[#fffaf4]">
-                  Explore VerdeBliss
-                </p>
+              <div className="mb-3 flex items-start justify-between rounded-[18px] bg-[#254f32] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+                <div>
+                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#d7b978]">
+                    Pages
+                  </p>
+                  <p className="mt-2 text-base font-semibold leading-tight text-[#fffaf4]">
+                    Explore VerdeBliss
+                  </p>
+                </div>
+                {/* Explicit close button — keyboard users can close without navigating */}
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Close navigation menu"
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
+                >
+                  <X size={14} />
+                </button>
               </div>
               <div className="grid gap-2">
                 {LINKS.map(({ path, label, icon: Icon }) => {
