@@ -18,9 +18,14 @@ vi.mock('@/lib/rate-limit', () => ({
 
 vi.mock('@/lib/turnstile', () => ({
   verifyTurnstileFromRequest: mocks.verifyTurnstileFromRequest,
+  turnstileFailureMessage: (reason?: string) =>
+    reason === 'missing_token'
+      ? 'Please complete the verification check before continuing.'
+      : 'Verification could not be confirmed. Please complete the check again and retry.',
 }))
 
 vi.mock('@/lib/commerce', () => ({
+  PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE: 'Product catalogue is temporarily unavailable.',
   normalizeCart: vi.fn(),
   persistOrder: vi.fn(),
   validateAddress: vi.fn(),
@@ -52,7 +57,7 @@ describe('checkout bot protection', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'Verification failed',
+      error: 'Please complete the verification check before continuing.',
       code: 'missing_token',
     })
   })
@@ -62,7 +67,7 @@ describe('checkout bot protection', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'Verification failed',
+      error: 'Please complete the verification check before continuing.',
       code: 'missing_token',
     })
   })

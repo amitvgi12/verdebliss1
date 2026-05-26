@@ -10,7 +10,7 @@ import {
 } from '@/lib/commerce'
 import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
 import { requireSameOriginRequest } from '@/lib/csrf'
-import { verifyTurnstileFromRequest } from '@/lib/turnstile'
+import { turnstileFailureMessage, verifyTurnstileFromRequest } from '@/lib/turnstile'
 
 export async function POST(request: Request) {
   try {
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const turnstile = await verifyTurnstileFromRequest(request, body)
     if (!turnstile.ok) {
       return NextResponse.json(
-        { error: 'Verification failed', code: turnstile.reason },
+        { error: turnstileFailureMessage(turnstile.reason), code: turnstile.reason },
         { status: 400 }
       )
     }

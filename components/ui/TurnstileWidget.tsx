@@ -40,7 +40,14 @@ const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render
 export default function TurnstileWidget({ onToken, onExpire, className }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const widgetIdRef = useRef<string | null>(null)
+  const onTokenRef = useRef(onToken)
+  const onExpireRef = useRef(onExpire)
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
+  useEffect(() => {
+    onTokenRef.current = onToken
+    onExpireRef.current = onExpire
+  }, [onExpire, onToken])
 
   useEffect(() => {
     if (!siteKey) return
@@ -56,9 +63,9 @@ export default function TurnstileWidget({ onToken, onExpire, className }: Turnst
           sitekey: siteKey,
           theme: 'light',
           size: 'normal',
-          callback: (token) => onToken(token),
-          'expired-callback': () => onExpire?.(),
-          'error-callback': () => onExpire?.(),
+          callback: (token) => onTokenRef.current(token),
+          'expired-callback': () => onExpireRef.current?.(),
+          'error-callback': () => onExpireRef.current?.(),
         })
       } catch {
         /* render races during HMR are harmless */
@@ -91,7 +98,7 @@ export default function TurnstileWidget({ onToken, onExpire, className }: Turnst
         }
       }
     }
-  }, [onExpire, onToken, siteKey])
+  }, [siteKey])
 
   if (!siteKey) return null
 

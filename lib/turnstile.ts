@@ -26,6 +26,22 @@ export interface TurnstileVerifyResult {
   reason?: string
 }
 
+export function turnstileFailureMessage(reason?: string): string {
+  if (reason === 'missing_token') {
+    return 'Please complete the verification check before continuing.'
+  }
+  if (reason === 'timeout-or-duplicate') {
+    return 'Verification expired. Please complete the check again and retry.'
+  }
+  if (reason === 'turnstile_not_configured' || reason === 'invalid-input-secret') {
+    return 'Verification is not configured correctly. Please contact support.'
+  }
+  if (reason?.startsWith('verify_http_') || reason === 'verify_network_error') {
+    return 'Verification could not be reached. Please retry in a moment.'
+  }
+  return 'Verification could not be confirmed. Please complete the check again and retry.'
+}
+
 export function isTurnstileConfigured(): boolean {
   return Boolean(process.env.TURNSTILE_SECRET_KEY)
 }

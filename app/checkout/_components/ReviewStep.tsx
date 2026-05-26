@@ -19,6 +19,7 @@ interface ReviewStepProps {
   status: CheckoutStatus
   checkoutError: string
   turnstileToken: string | null
+  turnstileResetKey: number
   requiresTurnstile: boolean
   onEditAddress: () => void
   onContinueShopping: () => void
@@ -42,6 +43,7 @@ export default function ReviewStep({
   status,
   checkoutError,
   turnstileToken,
+  turnstileResetKey,
   requiresTurnstile,
   onEditAddress,
   onContinueShopping,
@@ -52,6 +54,8 @@ export default function ReviewStep({
   onLaunchRazorpay,
   onPlaceCod,
 }: ReviewStepProps) {
+  const verificationReady = !requiresTurnstile || Boolean(turnstileToken)
+
   return (
     <motion.div
       key="review"
@@ -177,6 +181,7 @@ export default function ReviewStep({
             </span>
           </div>
           <TurnstileWidget
+            key={turnstileResetKey}
             onToken={onTurnstileToken}
             onExpire={() => onTurnstileToken(null)}
             className="checkout-turnstile-widget"
@@ -190,7 +195,7 @@ export default function ReviewStep({
       <div className="checkout-payment-stack">
         <button
           onClick={onLaunchRazorpay}
-          disabled={loading || !razorReady}
+          disabled={loading || !razorReady || !verificationReady}
           className={`checkout-primary-action flex w-full items-center justify-center gap-2 border-none px-6 text-[15px] font-semibold text-white transition disabled:cursor-wait ${
             loading && paymentAction === 'razorpay' ? 'bg-sage' : 'bg-forest hover:bg-forestLight'
           }`}
@@ -208,7 +213,7 @@ export default function ReviewStep({
 
         <button
           onClick={onPlaceCod}
-          disabled={loading || !codAvailable}
+          disabled={loading || !codAvailable || !verificationReady}
           className={`checkout-primary-action flex w-full items-center justify-center gap-2 border px-6 text-sm font-bold transition disabled:cursor-not-allowed ${
             codAvailable
               ? 'border-forest bg-ivory text-forest hover:bg-sagePale'

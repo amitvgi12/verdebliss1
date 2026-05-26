@@ -10,7 +10,7 @@ import {
 import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
 import { requireSameOriginRequest } from '@/lib/csrf'
 import { assessCodRisk } from '@/lib/cod-risk'
-import { verifyTurnstileFromRequest } from '@/lib/turnstile'
+import { turnstileFailureMessage, verifyTurnstileFromRequest } from '@/lib/turnstile'
 import { scheduleProductsRevalidation } from '@/lib/revalidate-products'
 import { sendOrderConfirmationEmail } from '@/lib/order-email'
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const turnstile = await verifyTurnstileFromRequest(request, body)
     if (!turnstile.ok) {
       return NextResponse.json(
-        { error: 'Verification failed', code: turnstile.reason },
+        { error: turnstileFailureMessage(turnstile.reason), code: turnstile.reason },
         { status: 400 }
       )
     }

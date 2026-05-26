@@ -111,6 +111,18 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
+class CheckoutApiError extends Error {
+  code?: string
+  status: number
+
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = 'CheckoutApiError'
+    this.status = status
+    this.code = code
+  }
+}
+
 async function postCheckout<T = CheckoutResult>(url: string, payload: unknown): Promise<T> {
   const headers = await authHeaders()
   const res = await fetch(url, {
@@ -119,8 +131,29 @@ async function postCheckout<T = CheckoutResult>(url: string, payload: unknown): 
     body: JSON.stringify(payload),
   })
   const data = (await res.json().catch(() => ({}))) as { error?: string } & T
-  if (!res.ok) throw new Error(data.error ?? 'Checkout request failed')
+  if (!res.ok) {
+    const payload = data as { error?: string; message?: string; code?: string }
+    throw new CheckoutApiError(
+      payload.error ?? payload.message ?? 'Checkout request failed',
+      res.status,
+      payload.code
+    )
+  }
   return data
+}
+
+function isTurnstileCheckoutError(error: unknown): boolean {
+  if (!(error instanceof CheckoutApiError)) return false
+  return (
+    error.code === 'missing_token' ||
+    error.code === 'timeout-or-duplicate' ||
+    error.code === 'invalid-input-response' ||
+    error.code === 'invalid-input-secret' ||
+    error.code === 'bad-request' ||
+    error.code === 'turnstile_not_configured' ||
+    error.code === 'verify_network_error' ||
+    Boolean(error.code?.startsWith('verify_http_'))
+  )
 }
 
 function userFacingCheckoutError(error: unknown): string {
@@ -213,6 +246,7 @@ export default function Checkout() {
   const [checkoutError, setCheckoutError] = useState('')
   const [codVerificationRequired, setCodVerificationRequired] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
   const [cartHydrated, setCartHydrated] = useState(() => getCartPersist()?.hasHydrated?.() ?? true)
   const requiresTurnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
@@ -331,6 +365,11 @@ export default function Checkout() {
       return false
     }
     return true
+  }
+
+  function resetCheckoutVerification() {
+    setTurnstileToken(null)
+    setTurnstileResetKey((key) => key + 1)
   }
 
   /* ── Validate address step ───────────────────────────────────────── */
@@ -468,6 +507,7 @@ export default function Checkout() {
       console.error('[Checkout] Could not create Razorpay order:', err)
       setLoading(false)
       setPaymentAction(null)
+      if (isTurnstileCheckoutError(err)) resetCheckoutVerification()
       setCheckoutError(userFacingCheckoutError(err))
     }
   }
@@ -492,6 +532,7 @@ export default function Checkout() {
       console.error('[Checkout] COD order failed:', err)
       setLoading(false)
       setPaymentAction(null)
+      if (isTurnstileCheckoutError(err)) resetCheckoutVerification()
       setCheckoutError(userFacingCheckoutError(err))
     }
   }
@@ -569,6 +610,7 @@ export default function Checkout() {
                   onDecreaseQty={(id) => updateQty(id, -1)}
                   onRemoveItem={removeItem}
                   turnstileToken={turnstileToken}
+                  turnstileResetKey={turnstileResetKey}
                   requiresTurnstile={requiresTurnstile}
                   onTurnstileToken={setTurnstileToken}
                   onLaunchRazorpay={launchRazorpay}

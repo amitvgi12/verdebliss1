@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import { requireSameOriginRequest } from '@/lib/csrf'
-import { verifyTurnstileFromRequest } from '@/lib/turnstile'
+import { turnstileFailureMessage, verifyTurnstileFromRequest } from '@/lib/turnstile'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 import {
   createNewsletterConfirmationToken,
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const turnstile = await verifyTurnstileFromRequest(request, body)
     if (!turnstile.ok) {
       return NextResponse.json(
-        { error: 'Bot check failed. Please refresh and try again.' },
+        { error: turnstileFailureMessage(turnstile.reason), code: turnstile.reason },
         { status: 400 }
       )
     }
