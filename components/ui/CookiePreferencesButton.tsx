@@ -7,7 +7,7 @@ export default function CookiePreferencesButton() {
     <button
       type="button"
       onClick={openCookiePreferences}
-      className="cursor-pointer border-none bg-transparent p-0 text-[11px] text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
+      className="inline-flex min-h-6 cursor-pointer items-center border-none bg-transparent p-0 text-[11px] text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
     >
       Cookie preferences
     </button>

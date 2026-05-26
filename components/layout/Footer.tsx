@@ -49,7 +49,7 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
           <li key={label}>
             <Link
               href={path}
-              className="block py-[3px] text-[13px] text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
+              className="flex min-h-6 items-center py-[3px] text-[13px] text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
             >
               {label}
             </Link>
@@ -89,7 +89,7 @@ export default function Footer() {
           </p>
           <a
             href={`mailto:${BUSINESS_COMPLIANCE.supportEmail}`}
-            className="mb-3 block text-[11px] font-semibold text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
+            className="mb-3 inline-flex min-h-6 items-center text-[11px] font-semibold text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
           >
             <span aria-hidden="true">📩</span> {BUSINESS_COMPLIANCE.supportEmail}
           </a>

@@ -891,6 +891,9 @@ video {
 }
 
 .site-footer__compliance a {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
   color: rgb(255 255 255);
   text-decoration: underline;
   text-underline-offset: 2px;

@@ -104,7 +104,7 @@ test.describe('WCAG 2.2 keyboard flow', () => {
     await page.getByRole('button', { name: /Continue to Review/i }).click()
 
     // Error summary must appear and be readable
-    const summary = page.getByRole('alert')
+    const summary = page.getByRole('alert', { name: 'Checkout errors' })
     await expect(summary).toBeVisible()
     await expect(summary).toContainText('Please correct')
     // Each error link must be focusable and point to the corresponding input
@@ -117,7 +117,7 @@ test.describe('WCAG 2.2 keyboard flow', () => {
     await page.goto('/products')
 
     // Open the cart
-    await page.getByRole('button', { name: /Cart/i }).click()
+    await page.getByRole('button', { name: /Cart,/i }).click()
     const drawer = page.getByRole('dialog', { name: /cart/i })
     await expect(drawer).toBeVisible()
 

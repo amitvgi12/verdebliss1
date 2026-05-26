@@ -44,6 +44,7 @@ export default function AddressStep({ form, errors, onChange, onContinue }: Addr
           <div
             role="alert"
             aria-live="assertive"
+            aria-label="Checkout errors"
             className="mb-5 rounded-xl border border-terra/30 bg-terraPale px-4 py-3 text-[13px] text-terra"
           >
             <p className="mb-1.5 font-semibold">

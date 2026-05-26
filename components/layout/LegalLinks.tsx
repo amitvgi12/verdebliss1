@@ -15,7 +15,7 @@ export default function LegalLinks() {
         <Link
           key={path}
           href={path}
-          className="text-[11px] text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
+          className="inline-flex min-h-6 items-center text-[11px] text-white underline decoration-white/45 underline-offset-4 transition hover:text-gold hover:decoration-gold"
         >
           {label}
         </Link>
