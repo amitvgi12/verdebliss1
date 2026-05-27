@@ -936,15 +936,6 @@ video {
   text-decoration-color: var(--color-gold);
 }
 
-.footer-link--button {
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-  padding-inline: 0;
-  text-align: left;
-}
-
 /* Address blocks */
 .footer-address {
   font-style: normal;
@@ -1026,6 +1017,42 @@ video {
   font-size: 12px;
   color: rgb(255 255 255 / 75%);
   flex-shrink: 0;
+}
+
+.footer-bottom__actions {
+  display: flex;
+  align-items: center;
+}
+
+.footer-bottom__preferences {
+  display: inline-flex;
+  min-height: 32px;
+  cursor: pointer;
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 6%);
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 78%);
+  text-decoration: none;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    color 0.18s;
+}
+
+.footer-bottom__preferences:hover {
+  border-color: rgb(218 180 98 / 55%);
+  background: rgb(218 180 98 / 12%);
+  color: var(--color-gold);
+}
+
+.footer-bottom__preferences:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
 }
 
 /* ── Footer responsive ───────────────────────────────────── */

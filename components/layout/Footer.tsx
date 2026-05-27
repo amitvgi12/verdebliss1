@@ -66,26 +66,6 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
   )
 }
 
-function PolicyColumn() {
-  return (
-    <div>
-      <ColHead>POLICIES</ColHead>
-      <ul className="footer-link-list">
-        {POLICY_LINKS.map(([label, path]) => (
-          <li key={label}>
-            <Link href={path} className="footer-link">
-              {label}
-            </Link>
-          </li>
-        ))}
-        <li>
-          <CookiePreferencesButton className="footer-link footer-link--button" />
-        </li>
-      </ul>
-    </div>
-  )
-}
-
 export default function Footer() {
   const cinLabel = hasVerifiedCin() ? BUSINESS_COMPLIANCE.cin : null
   const gstinLabel = hasVerifiedGstin() ? BUSINESS_COMPLIANCE.gstin : null
@@ -100,7 +80,7 @@ export default function Footer() {
           <LinkColumn title="SHOP" links={SHOP_LINKS} />
           <LinkColumn title="COMPANY" links={COMPANY_LINKS} />
           <LinkColumn title="HELP" links={HELP_LINKS} />
-          <PolicyColumn />
+          <LinkColumn title="POLICIES" links={POLICY_LINKS} />
         </div>
 
         {/* Vertical divider */}
@@ -172,6 +152,9 @@ export default function Footer() {
           <span className="footer-bottom__copy">
             © {new Date().getFullYear()} {BUSINESS_COMPLIANCE.legalName}
           </span>
+          <div className="footer-bottom__actions">
+            <CookiePreferencesButton className="footer-bottom__preferences" />
+          </div>
         </div>
       </div>
     </footer>
