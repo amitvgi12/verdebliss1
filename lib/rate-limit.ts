@@ -56,14 +56,6 @@ function createRedisLimiterClient(): Redis | null {
   })
 }
 
-function hasRedisLimiterEnv(): boolean {
-  return getRedisLimiterEnv() !== null
-}
-
-export function hasDistributedRateLimitEnv(): boolean {
-  return hasRedisLimiterEnv()
-}
-
 function memoryLimit(key: string, limit: number, windowSeconds: number): boolean {
   // Soft eviction so a leaky-bucket attack cannot pin the process.
   if (memoryBuckets.size > MEMORY_BUCKET_HARD_CAP) {

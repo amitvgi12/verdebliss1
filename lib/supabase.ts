@@ -13,7 +13,7 @@ assertPublicSupabaseEnv()
 if (!hasPublicSupabaseEnv() && canUseStaticSupabaseFallback()) {
   console.warn(
     '[VerdeBliss] NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not set. ' +
-      'Local/demo data will use the static fallback in constants/products.ts.'
+      'DB-backed product prices will be unavailable until Supabase public env vars are set.'
   )
 }
 

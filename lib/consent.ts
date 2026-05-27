@@ -64,12 +64,6 @@ export function hasFunctionalThirdPartyConsent(): boolean {
   return loadStoredConsent()?.functional_third_party === true
 }
 
-// Reserved for future optional/enhanced analytics. Vercel Web Analytics is
-// privacy-preserving site measurement and is disclosed separately from consent.
-export function hasAnalyticsConsent(): boolean {
-  return loadStoredConsent()?.analytics === true
-}
-
 export function openCookiePreferences() {
   if (typeof window === 'undefined') return
   window.dispatchEvent(new Event(COOKIE_PREFERENCES_EVENT))

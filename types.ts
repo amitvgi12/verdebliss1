@@ -71,6 +71,7 @@ export interface CartState {
   removeItem: (id: string) => void
   updateQty: (id: string, delta: number) => void
   clearCart: () => void
+  syncCatalogProducts: (products: Product[]) => void
   openCart: () => void
   closeCart: () => void
 }
@@ -83,7 +84,6 @@ export interface ToastMessage {
 
 export interface ToastState {
   toasts: ToastMessage[]
-  show: (msg: string, type?: ToastMessage['type']) => void
   push: (msg: string, type?: ToastMessage['type']) => void
   remove: (id: number) => void
 }

@@ -12,9 +12,9 @@
  *   3. Render the widget on the page (see TurnstileWidget.tsx).
  *   4. Send the resulting token in the request body as `turnstileToken`.
  *
- * If TURNSTILE_SECRET_KEY is not configured, this helper allows requests only
- * outside production so dev / preview environments don't break. Production
- * fails closed.
+ * If TURNSTILE_SECRET_KEY is not configured, protected requests fail closed.
+ * Local development can opt into an explicit bypass with
+ * TURNSTILE_ALLOW_DEV_BYPASS=true.
  */
 
 import { getClientIp } from '@/lib/client-ip'
@@ -46,16 +46,17 @@ export function isTurnstileConfigured(): boolean {
   return Boolean(process.env.TURNSTILE_SECRET_KEY)
 }
 
+export function isTurnstileDevBypassEnabled(): boolean {
+  return process.env.NODE_ENV !== 'production' && process.env.TURNSTILE_ALLOW_DEV_BYPASS === 'true'
+}
+
 export async function verifyTurnstileToken(
   token: string | undefined | null,
   remoteIp?: string | null
 ): Promise<TurnstileVerifyResult> {
   if (!isTurnstileConfigured()) {
-    if (process.env.NODE_ENV === 'production') {
-      return { ok: false, reason: 'turnstile_not_configured' }
-    }
-    // Dev / preview convenience: silently pass when not configured.
-    return { ok: true, reason: 'turnstile_not_configured' }
+    if (isTurnstileDevBypassEnabled()) return { ok: true, reason: 'turnstile_dev_bypass' }
+    return { ok: false, reason: 'turnstile_not_configured' }
   }
   if (!token || typeof token !== 'string') {
     return { ok: false, reason: 'missing_token' }

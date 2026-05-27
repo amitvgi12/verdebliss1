@@ -1,6 +1,5 @@
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
-import { PRODUCTS } from '@/constants/products'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 import { normalizeProductClaimList, normalizeProductClaims } from '@/lib/product-claims'
@@ -12,6 +11,8 @@ export interface ApprovedReview {
   body: string | null
   created_at: string
   verified_purchase?: boolean | null
+  review_source?: 'verified_purchase' | 'organic' | 'sampling' | 'pr_unit' | null
+  source_disclosure?: string | null
   profiles?: { full_name?: string | null } | null
 }
 
@@ -27,17 +28,12 @@ interface ApprovedReviewMetricRow {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-function staticProductByIdOrSlug(idOrSlug: string): Product | null {
-  const product = PRODUCTS.find((p) => p.id === idOrSlug || p.slug === idOrSlug)
-  return product ? normalizeProductClaims(product) : null
-}
-
 async function fetchProductsFromDb(): Promise<Product[]> {
-  if (!hasSupabaseAdminEnv()) return normalizeProductClaimList(PRODUCTS)
+  if (!hasSupabaseAdminEnv()) return []
   try {
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase.from('products').select('*').eq('active', true)
-    if (error || !data?.length) return normalizeProductClaimList(PRODUCTS)
+    if (error || !data?.length) return []
 
     const products = normalizeProductClaimList(data as Product[])
     const productIds = products.map((product) => product.id)
@@ -54,7 +50,7 @@ async function fetchProductsFromDb(): Promise<Product[]> {
 
     return productsWithReviewMetrics.sort((a, b) => (b.review_count ?? 0) - (a.review_count ?? 0))
   } catch {
-    return normalizeProductClaimList(PRODUCTS)
+    return []
   }
 }
 
@@ -97,7 +93,7 @@ export const getProductsServer = cache(
 )
 
 async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
-  if (!hasSupabaseAdminEnv()) return staticProductByIdOrSlug(idOrSlug)
+  if (!hasSupabaseAdminEnv()) return null
 
   try {
     const supabase = createSupabaseAdmin()
@@ -123,10 +119,10 @@ async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
       if (!byId.error && byId.data) return normalizeProductClaims(byId.data as Product)
     }
   } catch {
-    // Fall back to static catalogue below.
+    return null
   }
 
-  return staticProductByIdOrSlug(idOrSlug)
+  return null
 }
 
 export function getProductServer(idOrSlug: string): Promise<Product | null> {
@@ -146,7 +142,9 @@ export async function getApprovedReviewsServer(
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase
       .from('reviews')
-      .select('id, rating, title, body, created_at, verified_purchase, profiles(full_name)')
+      .select(
+        'id, rating, title, body, created_at, verified_purchase, review_source, source_disclosure, profiles(full_name)'
+      )
       .eq('product_id', productId)
       .eq('approved', true)
       .order('created_at', { ascending: false })

@@ -11,11 +11,8 @@ const noopStorage: StateStorage = {
   removeItem: () => undefined,
 }
 
-export const selectTotal = (s: CartState): number =>
-  s.items.reduce((sum: number, i: CartItem) => sum + i.price * i.qty, 0)
 export const selectItemCount = (s: CartState): number =>
   s.items.reduce((sum: number, i: CartItem) => sum + i.qty, 0)
-export const selectPointsToEarn = (s: CartState): number => Math.floor(selectTotal(s) / 10)
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -57,6 +54,20 @@ export const useCartStore = create<CartState>()(
         }))
       },
       clearCart: () => set({ items: [] }),
+      syncCatalogProducts: (products) => {
+        if (!products.length) return
+        const byId = new Map(products.map((product) => [product.id, product]))
+        const byName = new Map(products.map((product) => [product.name, product]))
+
+        set((state) => ({
+          items: state.items.map((item) => {
+            const product = byId.get(item.id) ?? byName.get(item.name)
+            if (!product) return item
+            const ceiling = Math.min(product.stock ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
+            return { ...product, qty: Math.min(item.qty, ceiling) }
+          }),
+        }))
+      },
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
     }),

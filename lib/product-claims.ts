@@ -94,23 +94,23 @@ export { FORBIDDEN_CLAIM_PATTERNS }
 // ---------------------------------------------------------------------------
 
 const BADGE_NORMALISATION: Record<string, string> = {
-  vegan: 'Vegan-friendly · pending cert',
-  'vegan-friendly': 'Vegan-friendly · pending cert',
-  'organic certified': 'Organic botanicals · pending cert',
-  'certified organic': 'Organic botanicals · pending cert',
-  'organic botanicals': 'Organic botanicals · pending cert',
-  'cruelty-free': 'No animal testing · pending cert',
-  'cruelty free': 'No animal testing · pending cert',
-  'cruelty-free*': 'No animal testing · pending cert',
+  vegan: 'Vegan-friendly · evidence review',
+  'vegan-friendly': 'Vegan-friendly · evidence review',
+  'organic certified': 'Organic botanicals · evidence review',
+  'certified organic': 'Organic botanicals · evidence review',
+  'organic botanicals': 'Organic botanicals · evidence review',
+  'cruelty-free': 'No animal testing · audit underway',
+  'cruelty free': 'No animal testing · audit underway',
+  'cruelty-free*': 'No animal testing · audit underway',
 }
 
 const BADGE_DISCLOSURES: Record<string, string> = {
-  'Vegan-friendly · pending cert':
-    'Vegan-friendly where formulation permits. Formal certification status is published in the Trust Centre.',
-  'Organic botanicals · pending cert':
-    'Organic botanical ingredient positioning. Third-party certification is in progress.',
-  'No animal testing · pending cert':
-    'No animal testing is conducted or commissioned. Formal cruelty-free certification is in progress.',
+  'Vegan-friendly · evidence review':
+    'Vegan-friendly where formulation permits. Evidence status is published in the Trust Centre.',
+  'Organic botanicals · evidence review':
+    'Organic botanical ingredient positioning. Evidence file is in review.',
+  'No animal testing · audit underway':
+    'No animal testing is conducted or commissioned. Third-party audit status is published in the Trust Centre.',
 }
 
 export function normalizeProductBadgeLabel(label: string): string | null {

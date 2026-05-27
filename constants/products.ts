@@ -1,7 +1,8 @@
 import type { Product } from '@/types'
+import { TIER_THRESHOLDS } from '@/lib/loyalty'
 
-// Used as fallback when Supabase is unavailable or during development.
-// rating and review_count are intentionally null/0 — real values come from the DB only.
+// Static product shells for routes, tests, and non-price metadata.
+// Prices, stock, discounts, ratings, and review counts are authoritative in Supabase only.
 export const PRODUCTS = [
   {
     id: '1',
@@ -9,7 +10,7 @@ export const PRODUCTS = [
     image_url: '/images/products/serum.webp',
     name: 'Bakuchiol Renewal Serum',
     category: 'Serum',
-    price: 250,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['Dry', 'Combination'],
@@ -25,7 +26,7 @@ export const PRODUCTS = [
     image_url: '/images/products/moisturiser.webp',
     name: 'Rose Hip Glow Moisturiser',
     category: 'Moisturiser',
-    price: 390,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['Dry', 'Sensitive'],
@@ -41,7 +42,7 @@ export const PRODUCTS = [
     image_url: '/images/products/toner.webp',
     name: 'Green Tea Clarity Toner',
     category: 'Toner',
-    price: 450,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['Oily', 'Combination'],
@@ -57,7 +58,7 @@ export const PRODUCTS = [
     image_url: '/images/products/cleanser.webp',
     name: 'Turmeric Brightening Cleanser',
     category: 'Cleanser',
-    price: 250,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['All Types'],
@@ -73,13 +74,13 @@ export const PRODUCTS = [
     image_url: '/images/products/spf.webp',
     name: 'Botanical Mineral Sun Shield',
     category: 'SPF',
-    price: 220,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['All Types'],
     badges: ['Vegan-Friendly', 'Cruelty-free*'],
     description:
-      'Mineral daily sun-care shield with zinc oxide and soothing aloe vera. SPF-rating documentation is pending.',
+      'Mineral daily sun-care shield with zinc oxide and soothing aloe vera. SPF-rating evidence is in review.',
     ingredient: 'Zinc Oxide',
     bg_color: '#FFF8E8',
     emoji: '☀️',
@@ -90,7 +91,7 @@ export const PRODUCTS = [
     image_url: '/images/products/lip-elixir.webp',
     name: 'Wild Berry Lip Elixir',
     category: 'Lip Care',
-    price: 490,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['All Types'],
@@ -106,7 +107,7 @@ export const PRODUCTS = [
     image_url: '/images/products/niacinamide-serum.webp',
     name: 'Niacinamide Pore Serum',
     category: 'Serum',
-    price: 350,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['Oily', 'Combination'],
@@ -122,7 +123,7 @@ export const PRODUCTS = [
     image_url: '/images/products/night-cream.webp',
     name: 'Shea Butter Night Cream',
     category: 'Moisturiser',
-    price: 550,
+    price: 0,
     rating: null,
     review_count: 0,
     skin_types: ['Dry', 'Sensitive'],
@@ -161,7 +162,19 @@ export interface LoyaltyTier {
 }
 
 export const TIERS: LoyaltyTier[] = [
-  { name: 'Green Leaf', min: 0, max: 499, color: '#3D6344', emoji: '🌿' },
-  { name: 'Gold Botanist', min: 500, max: 1499, color: '#BFA06A', emoji: '🏆' },
-  { name: 'Platinum Alchemist', min: 1500, max: Infinity, color: '#7B8FA6', emoji: '💎' },
+  { name: 'Green Leaf', min: 0, max: TIER_THRESHOLDS.GOLD - 1, color: '#3D6344', emoji: '🌿' },
+  {
+    name: 'Gold Botanist',
+    min: TIER_THRESHOLDS.GOLD,
+    max: TIER_THRESHOLDS.PLATINUM - 1,
+    color: '#BFA06A',
+    emoji: '🏆',
+  },
+  {
+    name: 'Platinum Alchemist',
+    min: TIER_THRESHOLDS.PLATINUM,
+    max: Infinity,
+    color: '#7B8FA6',
+    emoji: '💎',
+  },
 ]

@@ -1,5 +1,4 @@
 import crypto from 'node:crypto'
-import { PRODUCTS } from '@/constants/products'
 import { getShippingCost } from '@/constants/shipping'
 import { COD_MAX_TOTAL } from '@/constants/checkout'
 import { MAX_CART_ITEM_QTY } from '@/constants/cart'
@@ -187,10 +186,9 @@ async function queryProductsByIds(ids: string[]): Promise<Product[]> {
 }
 
 async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
-  const staticProducts = PRODUCTS.filter((product) => ids.includes(product.id))
-  const hasAdminCatalogue = hasSupabaseAdminEnv()
-  const isProductionCheckout = process.env.NODE_ENV === 'production'
-  if (!hasAdminCatalogue) return staticProducts
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE)
+  }
 
   const dbProducts: Product[] = []
   const found = new Set<string>()
@@ -218,18 +216,10 @@ async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
       }
     }
   } catch (error) {
-    if (isProductionCheckout) {
-      throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE, { cause: error })
-    }
-    console.warn('[commerce] Product DB lookup fell back where possible:', error)
+    throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE, { cause: error })
   }
 
-  if (isProductionCheckout) return dbProducts
-
-  const merged = new Map<string, Product>()
-  for (const product of staticProducts) merged.set(product.id, product)
-  for (const product of dbProducts) merged.set(product.id, product)
-  return [...merged.values()]
+  return dbProducts
 }
 
 export async function normalizeCart(rawItems: unknown) {

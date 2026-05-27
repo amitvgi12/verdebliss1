@@ -111,7 +111,7 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     pao: 12,
     inci: 'Aqua (Water), Zinc Oxide (20%) [Non-nano], Aloe Barbadensis Leaf Juice, Tocopherol (Vitamin E), Caprylic/Capric Triglyceride, Glycerin, Cetearyl Alcohol, Phenoxyethanol, Ethylhexylglycerin.',
     allergens:
-      'Free from: Oxybenzone, Octinoxate, Avobenzone, Parabens, Synthetic Fragrance. Contains Non-nano Zinc Oxide. Independent SPF and environmental-impact documentation is pending.',
+      'Free from: Oxybenzone, Octinoxate, Avobenzone, Parabens, Synthetic Fragrance. Contains Non-nano Zinc Oxide. Independent SPF and environmental-impact evidence is in review.',
     patchTest: false,
     agingNote:
       'Reapply every 2 hours when outdoors. For children or infants under 6 months, consult a paediatrician.',

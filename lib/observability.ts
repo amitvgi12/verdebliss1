@@ -1,8 +1,8 @@
 /**
  * Lightweight observability shim.
  *
- * Emits stable `[ALERT]`, `[EXCEPTION]`, and `[METRIC]` log-line prefixes that
- * log-drain tooling (Datadog, Logflare, Vercel log filters) can match against.
+ * Emits stable `[ALERT]` and `[EXCEPTION]` log-line prefixes that log-drain
+ * tooling (Datadog, Logflare, Vercel log filters) can match against.
  *
  * When a structured error reporter is registered via `setErrorReporter` (e.g.
  * Sentry, wired at startup from `instrumentation.ts`), every `reportError` and
@@ -51,10 +51,4 @@ export function reportException(error: unknown, context: ErrorContext = {}): voi
   const stack = error instanceof Error ? error.stack : undefined
   logSignal('error', `[EXCEPTION] ${message}`, { ...context, stack: stack ?? null })
   _reporter?.captureException(error, context)
-}
-
-export function reportMetric(name: string, value: number, context: ErrorContext = {}): void {
-  logSignal('log', `[METRIC] ${name}=${value}`, context)
-  // Metrics are not forwarded to the reporter: Sentry has no native metric
-  // capture, and forwarding count/gauge metrics is outside the SDK's scope.
 }
