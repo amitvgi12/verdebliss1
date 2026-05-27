@@ -24,7 +24,10 @@ const CF_ORIGIN_GATE_ENABLED = Boolean(CF_ORIGIN_SECRET)
 // Emitted as a response header (not a <meta> tag) to keep the build fingerprint
 // out of the rendered HTML where it could be scraped by bots.
 const BUILD_SHA =
-  process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? 'dev'
+  process.env.VERCEL_GIT_COMMIT_SHA ??
+  process.env.NEXT_PUBLIC_BUILD_SHA ??
+  process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ??
+  'dev'
 
 // When Sentry is configured, its ingest endpoint must be in connect-src so
 // error reports are not blocked by CSP. The pattern covers all Sentry org IDs.
@@ -87,9 +90,10 @@ export function proxy(request: NextRequest) {
   // Prevents the browser from DNS-prefetching linked domains, which would leak
   // user browsing patterns to external DNS resolvers. Aligns with privacy-first brand.
   response.headers.set('X-DNS-Prefetch-Control', 'off')
-  // NOTE: Cross-Origin-Embedder-Policy is intentionally absent. COEP: credentialless
-  // would strip cookies from the Razorpay checkout.razorpay.com iframe, breaking
-  // payment flows. Re-evaluate once Razorpay publishes COEP-compatible embed docs.
+  // NOTE: Cross-Origin-Embedder-Policy is intentionally absent. Razorpay
+  // Checkout runs in a cross-origin iframe and COEP can break payment embed
+  // behavior. Track this in docs/security-follow-ups.md and re-evaluate once
+  // Razorpay publishes COEP-compatible embed docs.
   return response
 }
 
@@ -124,7 +128,8 @@ export function buildContentSecurityPolicy(
     `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`,
     // Tailwind v4 + Next.js inject style tags. 'unsafe-inline' here is widely
     // accepted because style-based exfiltration is much weaker than script
-    // execution. Hashes/nonces for styles are possible but break Tailwind's JIT.
+    // execution. Hashes/nonces for styles are possible but can break Tailwind's
+    // JIT/runtime styles. Track removal in docs/security-follow-ups.md.
     "style-src 'self' 'unsafe-inline'",
     "style-src-elem 'self' 'unsafe-inline'",
     "font-src 'self' data:",

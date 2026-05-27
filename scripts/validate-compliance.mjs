@@ -36,6 +36,7 @@ const required = [
 
 const placeholder =
   /\b(DEMO|placeholder|example\.com|Demo House|Lorem|dummy|sample|fake|to be configured|configure me|pending verification|pending appointment|test value)\b/i
+const knownFakeGrievanceOfficerName = /^(Action Sharma|Demon Sharma)$/i
 const cin = /^[UL]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/
 const gstin = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/
 const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -87,10 +88,13 @@ if (displayLast10 && hrefLast10 && displayLast10 !== hrefLast10) {
 }
 
 const grievanceName = process.env.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME?.trim() ?? ''
-if (grievanceName && /^\d+$/.test(grievanceName)) {
+if (grievanceName && /^[\d\s+\-().]+$/.test(grievanceName)) {
   errors.push(
     "NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME must be a person's name, not a phone number"
   )
+}
+if (knownFakeGrievanceOfficerName.test(grievanceName)) {
+  errors.push('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME contains a fake value')
 }
 if (!email.test(supportEmail) || /\.(test|example)$/i.test(supportEmail)) {
   errors.push('NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL must be a real support email')

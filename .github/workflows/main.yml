@@ -8,6 +8,11 @@ on:
 
 env:
   NODE_VERSION: '24'
+  # Force clean Vercel builds. VERCEL_FORCE_NO_BUILD_CACHE skips Vercel's
+  # Build Cache, TURBO_FORCE skips Turborepo cache, and deploy uses --force.
+  VERCEL_FORCE_NO_BUILD_CACHE: '1'
+  TURBO_FORCE: 'true'
+  NEXT_PUBLIC_BUILD_SHA: ${{ github.sha }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   # Public seller/compliance disclosure. These are not browser secrets; they
@@ -81,6 +86,7 @@ jobs:
       - run: npm ci
       - run: npm run test:coverage
         env:
+          LAUNCH_MODE: 'false'
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'anon-key' }}
       - uses: actions/upload-artifact@v7
@@ -199,7 +205,7 @@ jobs:
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY || secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
       - id: deploy
-        run: echo "preview_url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> $GITHUB_OUTPUT
+        run: echo "preview_url=$(vercel deploy --prebuilt --force --token=${{ secrets.VERCEL_TOKEN }})" >> $GITHUB_OUTPUT
       # Revalidate the preview deployment's ISR cache so any compliance-identity
       # env vars baked at preview-build time are refreshed in the served HTML.
       # Soft-fail: preview REVALIDATE_SECRET may legitimately differ from prod.
@@ -207,17 +213,19 @@ jobs:
         env:
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           DEPLOY_URL: ${{ steps.deploy.outputs.preview_url }}
+          MIN_REVALIDATED_PRODUCTS: '0'
         run: |
           if [ -z "${REVALIDATE_SECRET}" ]; then
             echo "REVALIDATE_SECRET not set — skipping preview revalidation (non-fatal)."
             exit 0
           fi
           node scripts/trigger-revalidate.mjs
-      # Smoke test: fail the pipeline if placeholder legal data appears in the
-      # preview HTML. A fresh preview build should never carry DEMO values.
-      - name: Smoke test (preview — no placeholder legal data)
+      # Smoke test every sitemap URL and verify placeholder data plus build SHA
+      # consistency across the served preview HTML.
+      - name: Smoke test (preview — sitemap-wide served HTML)
         env:
           SMOKE_URL: ${{ steps.deploy.outputs.preview_url }}
+          EXPECTED_BUILD_SHA: ${{ github.sha }}
         run: node scripts/smoke-test.mjs
       - uses: actions/github-script@v9
         with:
@@ -228,10 +236,31 @@ jobs:
               body: `🌿 **Preview:** ${{ steps.deploy.outputs.preview_url }}`
             })
 
+  predeploy-production-gates:
+    name: Predeploy Production Gates
+    runs-on: ubuntu-latest
+    needs: [quality, typecheck, test, build, accessibility, e2e, schema-drift]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'npm' }
+      - run: npm ci
+      - name: Launch gates (production DB + active product claims)
+        run: npm run test:launch
+        env:
+          LAUNCH_MODE: 'true'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+          RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+          RAZORPAY_WEBHOOK_SECRET: ${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
+
   deploy-production:
     name: Production Deploy (Vercel)
     runs-on: ubuntu-latest
-    needs: [quality, typecheck, test, build, accessibility, e2e, schema-drift]
+    needs: [predeploy-production-gates]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v6
@@ -247,8 +276,9 @@ jobs:
           NEXT_PUBLIC_RAZORPAY_KEY_ID: ${{ secrets.NEXT_PUBLIC_RAZORPAY_KEY_ID }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY || secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
-      - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-      # Revalidate all product ISR caches immediately after the new build goes live.
+      - run: vercel deploy --prebuilt --prod --force --token=${{ secrets.VERCEL_TOKEN }}
+      # Revalidate every public sitemap route and every PDP immediately after
+      # the new build goes live.
       # IMPORTANT: A CDN cache purge alone does NOT fix stale ISR HTML — this step
       # is required. Missing REVALIDATE_SECRET is a hard failure (exit 1): a deploy
       # without revalidation leaves legally-mandated seller data potentially stale.
@@ -257,13 +287,14 @@ jobs:
         env:
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           DEPLOY_URL: 'https://www.verdebliss.com'
+          MIN_REVALIDATED_PRODUCTS: '1'
         run: node scripts/trigger-revalidate.mjs
-      # Smoke test: fetches /, /contact, and a PDP and fails the pipeline if any
-      # placeholder legal-identity string appears in the served HTML. Guards the
-      # live cache — the build gate guards the env, this guards what users see.
-      - name: Smoke test (production — no placeholder legal data in served HTML)
+      # Smoke test: fetches every URL from sitemap.xml and verifies placeholder
+      # legal data plus x-build-sha consistency across all public pages.
+      - name: Smoke test (production — sitemap-wide served HTML)
         env:
           SMOKE_URL: 'https://www.verdebliss.com'
+          EXPECTED_BUILD_SHA: ${{ github.sha }}
         run: node scripts/smoke-test.mjs
 
   lighthouse:
