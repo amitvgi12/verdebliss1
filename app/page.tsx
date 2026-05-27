@@ -131,12 +131,12 @@ export default async function Home() {
             <div className="premium-hero__product">
               <Image
                 src="/images/products/serum.webp"
-                alt="VerdeBliss Bakuchiol Renewal Serum"
-                priority
-                fetchPriority="high"
-                fill
+                alt="VerdeBliss Bakuchiol Renewal Serum — glass dropper bottle with plant-derived bakuchiol retinol alternative"
+                width={599}
+                height={900}
+                preload
                 sizes="(max-width: 768px) 90vw, 480px"
-                className="object-cover"
+                className="h-full w-full object-cover"
               />
             </div>
             <div className="premium-float premium-float--left">

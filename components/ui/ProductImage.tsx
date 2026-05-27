@@ -47,7 +47,11 @@ export default function ProductImage({
     <div className="relative h-full w-full overflow-hidden" style={{ background: bg }}>
       <Image
         src={src}
-        alt={product?.name ?? 'VerdeBliss product'}
+        alt={
+          product
+            ? `${product.name}${product.ingredient ? ` — ${product.ingredient} botanical formula` : ''}`
+            : 'VerdeBliss botanical skincare product'
+        }
         fill
         sizes={sizes}
         className="object-contain p-[10%]"

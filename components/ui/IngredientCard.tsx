@@ -43,7 +43,7 @@ export default function IngredientCard({
         {src ? (
           <Image
             src={src}
-            alt={ingredient}
+            alt={`${ingredient} botanical ingredient`}
             fill
             sizes="(max-width: 640px) 45vw, 220px"
             className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.06]"

@@ -4,9 +4,9 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import {
   getApprovedReviewsServer,
   getProductServer,
+  getProductsServer,
   getReviewAggregatesServer,
 } from '@/lib/products-server'
-import { PRODUCTS } from '@/constants/products'
 import ProductDetailClient from './ProductDetailClient'
 import {
   absoluteUrl,
@@ -117,8 +117,9 @@ export function productJsonLd(
 // Pre-build all known PDPs at deploy time so no PDP ever starts life as a
 // runtime ISR render from the previous build. dynamicParams=true (default)
 // keeps dynamic rendering available for any product added after the build.
-export function generateStaticParams() {
-  return PRODUCTS.map((p) => ({ id: p.slug ?? p.id }))
+export async function generateStaticParams() {
+  const products = await getProductsServer()
+  return products.map((p) => ({ id: p.slug ?? p.id }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -139,7 +140,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     openGraph: {
       title: `${p.name} | VerdeBliss`,
       description: p.description,
-      images: [{ url: ogImage, width: 1200, height: 630, alt: p.name }],
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${p.name}${p.ingredient ? ` — ${p.ingredient} formula` : ''} | VerdeBliss`,
+        },
+      ],
       url: canonical,
     },
     twitter: {
@@ -167,14 +175,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     getReviewAggregatesServer(product.id),
   ])
 
-  // Read compliance identity fresh from process.env at ISR-render time.
-  // NEXT_PUBLIC_* values are inlined as string literals in the client JS
-  // bundle at build time, so client components that rely on the module-level
-  // BUSINESS_COMPLIANCE constant may show stale data after a deploy until the
-  // bundle itself is rebuilt.  By computing these strings here (server
-  // component) and passing them as props, each ISR revalidation picks up the
-  // current env values — making it structurally impossible for stale
-  // legal-identity HTML to survive a revalidation triggered post-deploy.
+  // Keep PDP seller disclosures on the same compliance snapshot as the footer
+  // and legal pages. Env changes must go through a rebuild/redeploy so all
+  // static and ISR routes move together.
   const legalName = getLegalNameServer()
   const sellerDetails = getSellerDetailsServer()
 
