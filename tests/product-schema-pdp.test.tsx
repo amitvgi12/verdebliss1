@@ -5,15 +5,18 @@ import { getProductCompliance } from '@/constants/productCompliance'
 import { productJsonLd } from '@/app/products/[id]/page'
 import ProductAccordions from '@/app/products/[id]/_components/ProductAccordions'
 
+const pricedProduct = { ...PRODUCTS[0], price: 1495 }
+
 describe('PDP compliance and schema', () => {
   it('does not emit fake aggregate ratings when no approved reviews exist', () => {
-    const schema = productJsonLd(PRODUCTS[0], null)
+    const schema = productJsonLd(pricedProduct, null)
     expect(schema).not.toHaveProperty('aggregateRating')
     expect(schema).toMatchObject({
       brand: { '@type': 'Brand', name: 'VerdeBliss' },
-      sku: PRODUCTS[0].id,
+      sku: pricedProduct.id,
       offers: expect.objectContaining({
         '@type': 'Offer',
+        price: 1495,
         priceCurrency: 'INR',
         seller: expect.objectContaining({ name: 'VerdeBliss' }),
         hasMerchantReturnPolicy: expect.objectContaining({ merchantReturnDays: 14 }),
@@ -22,7 +25,7 @@ describe('PDP compliance and schema', () => {
   })
 
   it('includes approved review aggregate only when present', () => {
-    const schema = productJsonLd(PRODUCTS[0], { count: 2, average: 4.5 })
+    const schema = productJsonLd(pricedProduct, { count: 2, average: 4.5 })
     expect(schema.aggregateRating).toEqual({
       '@type': 'AggregateRating',
       ratingValue: '4.5',

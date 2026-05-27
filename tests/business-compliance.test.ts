@@ -110,6 +110,17 @@ describe('P1-1 — grievance officer name validation', () => {
     expect(errors.some((e) => /grievanceOfficer\.name/.test(e))).toBe(true)
   })
 
+  it('rejects known fake live grievance officer names', () => {
+    for (const name of ['Action Sharma', 'Demon Sharma']) {
+      const c = {
+        ...BASE,
+        grievanceOfficer: { ...BASE.grievanceOfficer, name },
+      }
+      const { errors } = validateBusinessCompliance(c, { strict: false })
+      expect(errors.some((e) => /grievanceOfficer\.name/.test(e))).toBe(true)
+    }
+  })
+
   it('rejects an empty grievance officer name in strict mode', () => {
     const c = {
       ...BASE,

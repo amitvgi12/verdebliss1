@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   reportError,
   reportException,
-  reportMetric,
   setErrorReporter,
   type ErrorReporter,
 } from '@/lib/observability'
@@ -38,12 +37,6 @@ describe('observability shim', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
       reportException('plain string error')
       expect(spy).toHaveBeenCalledWith('[EXCEPTION] plain string error', expect.any(String))
-    })
-
-    it('reportMetric emits [METRIC] prefix to stdout', () => {
-      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
-      reportMetric('checkout_duration_ms', 450)
-      expect(spy).toHaveBeenCalledWith('[METRIC] checkout_duration_ms=450', expect.any(String))
     })
   })
 
@@ -110,20 +103,6 @@ describe('observability shim', () => {
       // Both paths must fire so log-drain alerting survives an SDK outage.
       expect(errSpy).toHaveBeenCalled()
       expect(reporter.captureMessage).toHaveBeenCalled()
-    })
-
-    it('reportMetric does not forward to reporter (metrics outside SDK scope)', () => {
-      const reporter: ErrorReporter = {
-        captureException: vi.fn(),
-        captureMessage: vi.fn(),
-      }
-      setErrorReporter(reporter)
-      vi.spyOn(console, 'log').mockImplementation(() => {})
-
-      reportMetric('api_latency_ms', 120)
-
-      expect(reporter.captureException).not.toHaveBeenCalled()
-      expect(reporter.captureMessage).not.toHaveBeenCalled()
     })
   })
 })

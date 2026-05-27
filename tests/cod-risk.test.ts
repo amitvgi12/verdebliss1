@@ -14,7 +14,7 @@ const address: CheckoutAddress = {
 }
 
 const items: NormalizedCartItem[] = [
-  { id: '1', name: 'Bakuchiol Renewal Serum', price: 250, qty: 1 },
+  { id: '1', name: 'Bakuchiol Renewal Serum', price: 1495, qty: 1 },
 ]
 
 afterEach(() => {
@@ -25,7 +25,7 @@ describe('COD risk assessment', () => {
   it('allows normal COD orders below the configured cap', () => {
     const result = assessCodRisk(
       address,
-      { subtotal: 250, shipping: 79, total: 329, pointsToEarn: 25 },
+      { subtotal: 1495, shipping: 0, total: 1495, pointsToEarn: 149 },
       items
     )
     expect(result).toEqual({ decision: 'allow', allowed: true, flags: [] })
@@ -44,7 +44,7 @@ describe('COD risk assessment', () => {
   it('blocks low-entropy phone numbers', () => {
     const result = assessCodRisk(
       { ...address, phone: '1111111111' },
-      { subtotal: 250, shipping: 79, total: 329, pointsToEarn: 25 },
+      { subtotal: 1495, shipping: 0, total: 1495, pointsToEarn: 149 },
       items
     )
     expect(result.allowed).toBe(false)
@@ -55,7 +55,7 @@ describe('COD risk assessment', () => {
     vi.stubEnv('COD_REVIEW_PIN_PREFIXES', '411')
     const result = assessCodRisk(
       address,
-      { subtotal: 250, shipping: 79, total: 329, pointsToEarn: 25 },
+      { subtotal: 1495, shipping: 0, total: 1495, pointsToEarn: 149 },
       items
     )
     expect(result.allowed).toBe(true)

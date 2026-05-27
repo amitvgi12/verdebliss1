@@ -88,6 +88,8 @@ GEMINI_API_KEY=
 
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
+# Local development only: omit this in Vercel/production.
+# TURNSTILE_ALLOW_DEV_BYPASS=true
 
 # Public seller/compliance disclosure. Required for `npm run build` and all
 # production deploys when NODE_ENV=production, VERCEL_ENV=production,
@@ -106,6 +108,7 @@ NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_DISPLAY=
 # Optional; derived from DISPLAY when omitted.
 NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF=
 NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL=
+# Must be the appointed person's real name. Known test/fake values are blocked.
 NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME=
 NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL=
 
@@ -199,4 +202,6 @@ Full checklist is in `PRODUCTION_RUNBOOK.md`. Key steps:
 
 - `PRODUCTION_RUNBOOK.md` — release checklist, ISR purge, LAUNCH_MODE gates, payment reconciliation, Razorpay capture mode, backup drills
 - `CLOUDFLARE_WAF.md` — DNS setup, origin lock-down, WAF rules, rate-limit rules, bot management, rollback
+- `docs/security-follow-ups.md` — intentional low-risk CSP/COEP follow-ups to revisit after vendor or styling-pipeline changes
+- `docs/launch-review-seeding-plan.md` — sampling/PR-unit review plan with disclosure and launch coverage gates
 - `supabase/README_RUN_SCHEMA.md` — schema idempotency notes, recommended run order

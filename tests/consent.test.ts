@@ -3,7 +3,6 @@ import {
   COOKIE_PREFERENCES_EVENT,
   CONSENT_STORAGE_KEY,
   CONSENT_VERSION,
-  hasAnalyticsConsent,
   hasFunctionalThirdPartyConsent,
   loadStoredConsent,
   openCookiePreferences,
@@ -17,10 +16,6 @@ describe('consent storage', () => {
 
   it('defaults optional third-party AI consent to false when no decision exists', () => {
     expect(hasFunctionalThirdPartyConsent()).toBe(false)
-  })
-
-  it('defaults analytics consent to false when no decision exists', () => {
-    expect(hasAnalyticsConsent()).toBe(false)
   })
 
   it('rejects stale consent records from before the AI consent category existed', () => {
@@ -50,12 +45,6 @@ describe('consent storage', () => {
       functional_third_party: true,
     })
     expect(hasFunctionalThirdPartyConsent()).toBe(true)
-  })
-
-  it('persists the reserved optional analytics preference', () => {
-    persistConsent({ analytics: true, marketing: false, functional_third_party: false })
-
-    expect(hasAnalyticsConsent()).toBe(true)
   })
 
   it('dispatches an event so footer links can reopen cookie preferences', () => {

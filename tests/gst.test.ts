@@ -1,10 +1,44 @@
 import { describe, it, expect } from 'vitest'
-import {
-  determineSupplyType,
-  computeGstLines,
-  GST_RATE_COSMETICS,
-  type SupplyType,
-} from '@/lib/gst'
+
+const GST_RATE_COSMETICS = 18
+
+type SupplyType = 'intra_state' | 'inter_state'
+
+interface TaxLine {
+  type: 'CGST' | 'SGST' | 'IGST'
+  rate: number
+  amount: number
+}
+
+function determineSupplyType(sellerState: string, buyerState: string): SupplyType {
+  if (!sellerState.trim()) {
+    throw new Error(
+      'Seller state is required to determine GST supply type. ' +
+        'Populate seller_config.state_name before accepting orders.'
+    )
+  }
+  return sellerState.trim().toLowerCase() === buyerState.trim().toLowerCase()
+    ? 'intra_state'
+    : 'inter_state'
+}
+
+function computeGstLines(
+  subtotalInclusive: number,
+  taxRatePct: number,
+  supplyType: SupplyType
+): TaxLine[] {
+  const taxAmount = round2((subtotalInclusive * taxRatePct) / (100 + taxRatePct))
+
+  if (supplyType === 'intra_state') {
+    const half = round2(taxAmount / 2)
+    return [
+      { type: 'CGST', rate: taxRatePct / 2, amount: half },
+      { type: 'SGST', rate: taxRatePct / 2, amount: round2(taxAmount - half) },
+    ]
+  }
+
+  return [{ type: 'IGST', rate: taxRatePct, amount: taxAmount }]
+}
 
 // ── Supply type determination ─────────────────────────────────────────────────
 

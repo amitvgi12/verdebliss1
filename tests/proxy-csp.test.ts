@@ -22,4 +22,19 @@ describe('CSP proxy headers', () => {
       "'unsafe-eval'"
     )
   })
+
+  it('keeps inline allowance scoped to styles, never scripts', () => {
+    const csp = buildContentSecurityPolicy('test-nonce', { isProduction: true })
+    const directives = Object.fromEntries(
+      csp.split('; ').map((directive) => {
+        const [name, ...value] = directive.split(' ')
+        return [name, value.join(' ')]
+      })
+    )
+
+    expect(directives['script-src']).not.toContain("'unsafe-inline'")
+    expect(directives['script-src-elem']).not.toContain("'unsafe-inline'")
+    expect(directives['style-src']).toContain("'unsafe-inline'")
+    expect(directives['style-src-elem']).toContain("'unsafe-inline'")
+  })
 })

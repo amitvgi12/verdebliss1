@@ -123,6 +123,26 @@ describe('business compliance source of truth', () => {
     expect(configured.helpline.href).toBe('+912245678901')
   })
 
+  it('uses one clean grievance officer fallback when the deployed env contains known fake names', async () => {
+    vi.resetModules()
+    vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME', 'Demon Sharma')
+
+    const { BUSINESS_COMPLIANCE: configured } = await import('@/constants/businessCompliance')
+
+    expect(configured.grievanceOfficer.name).toBe('Ananya Rao')
+  })
+
+  it('blocks known fake grievance officer env values in strict validation', () => {
+    const env = {
+      ...fullProductionEnv(),
+      NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME: 'Action Sharma',
+    }
+
+    expect(validateBusinessCompliance(VALID_COMPLIANCE, { strict: true, env })).toMatchObject({
+      ok: false,
+    })
+  })
+
   it('omits unverified identifiers and addresses from Organization JSON-LD', () => {
     const unverified = {
       ...VALID_COMPLIANCE,

@@ -5,7 +5,7 @@ import type { Product } from '@/types'
 const baseProduct: Product = {
   id: '3',
   name: 'Green Tea Clarity Toner',
-  price: 450,
+  price: 795,
 }
 
 afterEach(() => {
@@ -14,8 +14,8 @@ afterEach(() => {
 
 describe('verifiable price offers', () => {
   it('does not expose an MRP discount without a valid-until date', () => {
-    expect(getVerifiablePriceOffer({ ...baseProduct, mrp: 563 })).toMatchObject({
-      price: 450,
+    expect(getVerifiablePriceOffer({ ...baseProduct, mrp: 994 })).toMatchObject({
+      price: 795,
       mrp: null,
       discountPercent: null,
       priceValidUntil: null,
@@ -29,7 +29,7 @@ describe('verifiable price offers', () => {
     expect(
       getVerifiablePriceOffer({
         ...baseProduct,
-        mrp: 563,
+        mrp: 994,
         price_valid_until: '2026-05-01T00:00:00.000Z',
       })
     ).toMatchObject({
@@ -46,12 +46,12 @@ describe('verifiable price offers', () => {
     expect(
       getVerifiablePriceOffer({
         ...baseProduct,
-        mrp: 563,
+        mrp: 994,
         price_valid_until: '2026-06-30T23:59:59.000Z',
       })
     ).toEqual({
-      price: 450,
-      mrp: 563,
+      price: 795,
+      mrp: 994,
       discountPercent: 20,
       priceValidUntil: '2026-06-30T23:59:59.000Z',
     })

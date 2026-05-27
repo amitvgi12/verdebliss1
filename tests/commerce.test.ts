@@ -71,34 +71,34 @@ describe('commerce validation and payment helpers', () => {
     expect(() => validateCartItems([{ id: '2', qty: 99 }])).toThrow('Invalid quantity')
   })
 
-  it('ignores client-supplied prices and calculates totals from the trusted catalogue', async () => {
+  it('ignores client-supplied prices and calculates totals from the DB catalogue', async () => {
     vi.stubEnv('NODE_ENV', 'development')
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true)
+    mockProductLookup({
+      data: [
+        {
+          id: '1',
+          name: 'Bakuchiol Renewal Serum',
+          price: 1495,
+          stock: 100,
+          active: true,
+        },
+      ],
+    })
 
     const result = await normalizeCart([{ id: '1', qty: 2, price: 1 }])
 
-    expect(result.items[0]).toMatchObject({ id: '1', price: 250, qty: 2 })
-    expect(result.totals.subtotal).toBe(500)
+    expect(result.items[0]).toMatchObject({ id: '1', price: 1495, qty: 2 })
+    expect(result.totals.subtotal).toBe(2990)
   })
 
-  it('allows static catalogue fallback outside production when product lookup fails', async () => {
+  it('requires the DB catalogue before calculating trusted prices', async () => {
     vi.stubEnv('NODE_ENV', 'development')
-    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true)
-    mockProductLookup({ error: { message: 'database unavailable' } })
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(false)
 
-    const result = await normalizeCart([{ id: '1', qty: 1 }])
-
-    expect(result.items[0]).toMatchObject({
-      id: '1',
-      name: 'Bakuchiol Renewal Serum',
-      price: 250,
-      qty: 1,
-    })
-    expect(warn).toHaveBeenCalledWith(
-      '[commerce] Product DB lookup fell back where possible:',
-      expect.anything()
+    await expect(normalizeCart([{ id: '1', qty: 1 }])).rejects.toThrow(
+      PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
     )
-    warn.mockRestore()
   })
 
   it('fails closed in production when the configured product catalogue is unavailable', async () => {

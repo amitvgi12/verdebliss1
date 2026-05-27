@@ -45,8 +45,8 @@ describe('RefundClient', () => {
               status: 'Delivered',
               payment_status: 'paid',
               created_at: '2026-05-16T10:00:00.000Z',
-              total: 429,
-              items: [{ name: 'Niacinamide Pore Serum', qty: 1, price: 350 }],
+              total: 895,
+              items: [{ name: 'Niacinamide Pore Serum', qty: 1, price: 895 }],
             },
           ],
         })

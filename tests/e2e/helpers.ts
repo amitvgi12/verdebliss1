@@ -22,7 +22,7 @@ export const E2E_PRODUCT = {
   slug: 'niacinamide-pore-serum',
   name: 'Niacinamide Pore Serum',
   category: 'Serum',
-  price: 350,
+  price: 895,
   description: 'Minimise pores and control sebum with a 10% niacinamide complex.',
   ingredient: 'Niacinamide',
   bg_color: '#E8EFF5',
@@ -214,8 +214,8 @@ export async function mockCheckoutApis(page: Page) {
         orderId: 'COD-E2E-ORDER',
         paymentId: 'COD-E2E-ORDER',
         paymentMethod: 'Cash on Delivery',
-        pointsPending: 35,
-        totals: { subtotal: 350, shipping: 79, total: 429 },
+        pointsPending: 89,
+        totals: { subtotal: 895, shipping: 0, total: 895 },
         verificationRequired: false,
       }),
     })
@@ -227,7 +227,7 @@ export async function mockCheckoutApis(page: Page) {
       contentType: 'application/json',
       body: JSON.stringify({
         orderId: 'order_e2e_success',
-        amount: 42900,
+        amount: 89500,
         currency: 'INR',
         key: 'rzp_test_playwright',
       }),
@@ -242,7 +242,7 @@ export async function mockCheckoutApis(page: Page) {
         orderId: 'order_e2e_success',
         paymentId: 'pay_e2e_success',
         paymentMethod: 'Razorpay · UPI',
-        totals: { subtotal: 350, shipping: 79, total: 429 },
+        totals: { subtotal: 895, shipping: 0, total: 895 },
       }),
     })
   })
@@ -360,7 +360,7 @@ export async function mockRefundApis(page: Page, duplicate = false) {
             status: 'Delivered',
             payment_status: 'paid',
             created_at: '2026-05-18T10:00:00.000Z',
-            total: 429,
+            total: 895,
             items: [
               { id: E2E_PRODUCT.id, name: E2E_PRODUCT.name, qty: 1, price: E2E_PRODUCT.price },
             ],

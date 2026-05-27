@@ -17,7 +17,7 @@ describe('PRODUCTS catalogue', () => {
     PRODUCTS.forEach((p) => {
       expect(p.id, `${p.name} missing id`).toBeTruthy()
       expect(p.name, `${p.name} missing name`).toBeTruthy()
-      expect(p.price, `${p.name} missing price`).toBeGreaterThan(0)
+      expect(Number.isFinite(p.price), `${p.name} missing price shell`).toBe(true)
       expect(p.category, `${p.name} missing category`).toBeTruthy()
       expect(p.ingredient, `${p.name} missing ingredient`).toBeTruthy()
       expect(p.skin_types, `${p.name} missing skin_types`).toBeInstanceOf(Array)
@@ -52,9 +52,15 @@ describe('PRODUCTS catalogue', () => {
     expect(product?.category).toBe('Serum')
   })
 
-  it('all products have review_count of 0 in the fallback constants', () => {
+  it('all products have review_count of 0 in the static route shell', () => {
     PRODUCTS.forEach((p) => {
       expect(p.review_count ?? 0).toBe(0)
+    })
+  })
+
+  it('does not carry storefront prices in the static route shell', () => {
+    PRODUCTS.forEach((p) => {
+      expect(p.price, `${p.name} price should come from DB`).toBe(0)
     })
   })
 

@@ -76,7 +76,7 @@ describe('checkout bot protection', () => {
     mocks.completeRazorpayCheckout.mockResolvedValue({
       orderId: 'order-final',
       pointsAwarded: true,
-      totals: { subtotal: 350, shipping: 79, total: 429, pointsToEarn: 35 },
+      totals: { subtotal: 895, shipping: 0, total: 895, pointsToEarn: 89 },
       idempotent: false,
       paymentMethod: 'Razorpay · UPI',
     })

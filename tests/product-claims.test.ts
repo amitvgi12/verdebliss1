@@ -145,11 +145,11 @@ describe('auditProductDescription — forbidden cosmetic claim detector', () => 
 
 describe('product claim normalization', () => {
   it('converts hard certification labels into Trust Centre-safe positioning labels', () => {
-    expect(normalizeProductBadgeLabel('Vegan')).toBe('Vegan-friendly · pending cert')
+    expect(normalizeProductBadgeLabel('Vegan')).toBe('Vegan-friendly · evidence review')
     expect(normalizeProductBadgeLabel('Organic Certified')).toBe(
-      'Organic botanicals · pending cert'
+      'Organic botanicals · evidence review'
     )
-    expect(normalizeProductBadgeLabel('Cruelty-Free')).toBe('No animal testing · pending cert')
+    expect(normalizeProductBadgeLabel('Cruelty-Free')).toBe('No animal testing · audit underway')
   })
 
   it('deduplicates equivalent badge labels from stale DB rows', () => {
@@ -162,9 +162,9 @@ describe('product claim normalization', () => {
         'Cruelty-Free',
       ])
     ).toEqual([
-      'Vegan-friendly · pending cert',
-      'Organic botanicals · pending cert',
-      'No animal testing · pending cert',
+      'Vegan-friendly · evidence review',
+      'Organic botanicals · evidence review',
+      'No animal testing · audit underway',
     ])
   })
 })

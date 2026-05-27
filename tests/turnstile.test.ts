@@ -7,13 +7,24 @@ describe('turnstile verification', () => {
     vi.unstubAllEnvs()
   })
 
-  it('allows missing Turnstile config outside production', async () => {
+  it('fails closed when Turnstile config is missing outside production', async () => {
     vi.stubEnv('NODE_ENV', 'development')
     vi.stubEnv('TURNSTILE_SECRET_KEY', '')
 
     await expect(verifyTurnstileToken(null)).resolves.toEqual({
-      ok: true,
+      ok: false,
       reason: 'turnstile_not_configured',
+    })
+  })
+
+  it('allows an explicit local Turnstile bypass outside production', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '')
+    vi.stubEnv('TURNSTILE_ALLOW_DEV_BYPASS', 'true')
+
+    await expect(verifyTurnstileToken(null)).resolves.toEqual({
+      ok: true,
+      reason: 'turnstile_dev_bypass',
     })
   })
 

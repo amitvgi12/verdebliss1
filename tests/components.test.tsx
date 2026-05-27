@@ -30,17 +30,17 @@ describe('Stars component', () => {
 describe('Badge component', () => {
   it('renders the label text in uppercase', () => {
     render(<Badge label="Vegan" />)
-    expect(screen.getByText('VEGAN-FRIENDLY · PENDING CERT')).toBeInTheDocument()
+    expect(screen.getByText('VEGAN-FRIENDLY · EVIDENCE REVIEW')).toBeInTheDocument()
   })
 
   it('renders cruelty-free as positioning copy', () => {
     render(<Badge label="Cruelty-Free" />)
-    expect(screen.getByText('NO ANIMAL TESTING · PENDING CERT')).toBeInTheDocument()
+    expect(screen.getByText('NO ANIMAL TESTING · AUDIT UNDERWAY')).toBeInTheDocument()
   })
 
   it('renders organic certification claims as botanical positioning', () => {
     render(<Badge label="Organic Certified" />)
-    expect(screen.getByText('ORGANIC BOTANICALS · PENDING CERT')).toBeInTheDocument()
+    expect(screen.getByText('ORGANIC BOTANICALS · EVIDENCE REVIEW')).toBeInTheDocument()
   })
 
   it('renders an unknown label without crashing', () => {
@@ -52,7 +52,7 @@ describe('ProductImage component', () => {
   const baseProduct = {
     id: '7',
     name: 'Niacinamide Pore Serum',
-    price: 350,
+    price: 895,
     ingredient: 'Niacinamide',
     image_url: null,
   }
@@ -65,7 +65,9 @@ describe('ProductImage component', () => {
 
   it('img has correct alt text', () => {
     render(<ProductImage product={baseProduct} />)
-    expect(screen.getByAltText('Niacinamide Pore Serum')).toBeInTheDocument()
+    expect(
+      screen.getByAltText('Niacinamide Pore Serum — Niacinamide botanical formula')
+    ).toBeInTheDocument()
   })
 
   it('falls back to serum.webp for unknown ingredient', () => {

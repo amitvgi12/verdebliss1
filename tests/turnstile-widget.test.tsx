@@ -33,6 +33,10 @@ describe('TurnstileWidget', () => {
     render(<Harness />)
 
     expect(renderTurnstile).toHaveBeenCalledTimes(1)
+    expect(renderTurnstile).toHaveBeenCalledWith(
+      expect.any(HTMLElement),
+      expect.objectContaining({ appearance: 'always' })
+    )
 
     act(() => {
       issueToken?.('fresh-token')

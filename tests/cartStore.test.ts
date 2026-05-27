@@ -128,6 +128,30 @@ describe('cartStore — total', () => {
   })
 })
 
+describe('cartStore — DB catalogue sync', () => {
+  it('refreshes persisted item identity and price from the DB catalogue', () => {
+    useCartStore.setState({
+      items: [{ id: '7', name: 'Niacinamide Pore Serum', price: 350, qty: 2 }],
+      isOpen: false,
+    })
+
+    useCartStore.getState().syncCatalogProducts([
+      {
+        id: 'db-niacinamide',
+        name: 'Niacinamide Pore Serum',
+        price: 895,
+        stock: 5,
+      },
+    ])
+
+    expect(useCartStore.getState().items[0]).toMatchObject({
+      id: 'db-niacinamide',
+      price: 895,
+      qty: 2,
+    })
+  })
+})
+
 describe('cartStore — cart open/close', () => {
   it('cart is closed (isOpen=false) after reset', () => {
     expect(useCartStore.getState().isOpen).toBe(false)

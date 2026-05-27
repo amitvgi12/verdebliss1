@@ -98,7 +98,7 @@ describe('chat API consent gate', () => {
         {
           id: '1',
           name: 'Bakuchiol Renewal Serum',
-          price: 250,
+          price: 1495,
           skin_types: ['Dry', 'Combination'],
         },
       ])
@@ -106,7 +106,7 @@ describe('chat API consent gate', () => {
         {
           id: '2',
           name: 'Rose Hip Glow Moisturiser',
-          price: 390,
+          price: 1095,
           skin_types: ['Dry', 'Sensitive'],
         },
       ])
@@ -163,7 +163,7 @@ describe('chat API consent gate', () => {
           {
             id: 'order_attack_123',
             status: 'Processing',
-            total: 429,
+            total: 895,
             payment_status: 'paid',
             created_at: '2026-05-20T08:00:00.000Z',
             items: [
@@ -240,7 +240,7 @@ describe('chat API consent gate', () => {
           {
             id: '9740352c-processing',
             status: 'Processing',
-            total: 670,
+            total: 1590,
             payment_status: 'paid',
             created_at: '2026-05-21T08:00:00.000Z',
             items: [
@@ -251,7 +251,7 @@ describe('chat API consent gate', () => {
           {
             id: 'bd6b19bd-shipped',
             status: 'Shipped',
-            total: 429,
+            total: 895,
             payment_status: 'paid',
             created_at: '2026-05-17T08:00:00.000Z',
             items: [{ name: 'Niacinamide Pore Serum', qty: 1 }],
