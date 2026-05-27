@@ -29,4 +29,4 @@ It uses:
 
 ## Existing UUID product tables
 
-If your existing `products.id` column is `uuid`, the script preserves it and skips static text-ID product seeding. The app checkout API supports UUID product IDs from Supabase and text IDs from the static fallback.
+If your existing `products.id` column is `uuid`, the script preserves it and skips static text-ID product seeding. The app checkout API uses Supabase product IDs as the authoritative source for prices and order totals.

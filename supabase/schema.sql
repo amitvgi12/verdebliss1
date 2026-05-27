@@ -308,6 +308,8 @@ create table if not exists public.reviews (
   user_id            uuid references public.profiles on delete set null,
   order_item_id      uuid references public.order_items on delete set null,
   verified_purchase  boolean default false,
+  review_source      text default 'organic' not null,
+  source_disclosure  text,
   rating             int check (rating between 1 and 5),
   title              text,
   body               text,
@@ -321,9 +323,39 @@ alter table public.reviews add column if not exists approved boolean default fal
 alter table public.reviews add column if not exists updated_at timestamptz default now();
 alter table public.reviews add column if not exists order_item_id uuid references public.order_items on delete set null;
 alter table public.reviews add column if not exists verified_purchase boolean default false;
+alter table public.reviews add column if not exists review_source text default 'organic';
+alter table public.reviews add column if not exists source_disclosure text;
+update public.reviews
+   set review_source = case
+     when verified_purchase is true then 'verified_purchase'
+     else 'organic'
+   end
+ where review_source is null
+    or trim(review_source) = ''
+    or review_source not in ('verified_purchase', 'organic', 'sampling', 'pr_unit');
+alter table public.reviews alter column review_source set default 'organic';
+alter table public.reviews alter column review_source set not null;
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.reviews'::regclass
+      and conname = 'reviews_review_source_check'
+  ) then
+    alter table public.reviews
+      add constraint reviews_review_source_check
+      check (review_source in ('verified_purchase', 'organic', 'sampling', 'pr_unit'))
+      not valid;
+  end if;
+end $$;
+alter table public.reviews validate constraint reviews_review_source_check;
 create unique index if not exists reviews_one_per_user_product_idx
   on public.reviews (user_id, product_id)
   where user_id is not null;
+create index if not exists reviews_approved_product_source_idx
+  on public.reviews (product_id, review_source)
+  where approved = true;
 
 create table if not exists public.addresses (
   id          uuid primary key default uuid_generate_v4(),
@@ -966,14 +998,14 @@ begin
 
   if product_id_type in ('text', 'character varying') then
     insert into public.products (id, slug, name, description, price, mrp, price_valid_until, category, skin_types, badges, ingredient, emoji, bg_color, image_url, rating, review_count, stock, compliance_flags) values
-    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for a smoother-looking night ritual.', 250, null, null, 'Serum', array['Dry','Combination'], array['Vegan-Friendly','Organic Botanicals'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null, 0, 100, array[]::text[]),
-    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 390, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-free*','Vegan-Friendly'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null, 0, 100, array[]::text[]),
-    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Helps oily and combination skin feel balanced with green tea extract and 0.5% salicylic acid (BHA). Recommended for ages 12+.', 450, null, null, 'Toner', array['Oily','Combination'], array['Vegan-Friendly','Organic Botanicals'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null, 0, 100, array['contains_bha','age_restricted_12plus','pregnancy_caution']),
-    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a fresh-looking complexion.', 250, null, null, 'Cleanser', array['All Types'], array['Cruelty-free*','Organic Botanicals'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null, 0, 100, array[]::text[]),
-    ('5', 'botanical-spf-50-shield', 'Botanical Mineral Sun Shield', 'Mineral daily sun-care shield with zinc oxide and soothing aloe vera. SPF-rating documentation is pending.', 220, null, null, 'SPF', array['All Types'], array['Vegan-Friendly','Cruelty-free*'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null, 0, 100, array[]::text[]),
-    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with berry extract and shea for soft-feeling lips.', 490, null, null, 'Lip Care', array['All Types'], array['Organic Botanicals'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null, 0, 100, array[]::text[]),
-    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Refines the look of pores and helps skin feel balanced with niacinamide.', 350, null, null, 'Serum', array['Oily','Combination'], array['Vegan-Friendly','Cruelty-free*'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null, 0, 100, array[]::text[]),
-    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Cushiony overnight cream with shea butter and vitamin E for a rested-looking glow.', 550, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Organic Botanicals','Cruelty-free*'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null, 0, 100, array[]::text[])
+    ('1', 'bakuchiol-renewal-serum', 'Bakuchiol Renewal Serum', 'Plant-based retinol alternative for a smoother-looking night ritual.', 1495, null, null, 'Serum', array['Dry','Combination'], array['Vegan-Friendly','Organic Botanicals'], 'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null, 0, 100, array[]::text[]),
+    ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 1095, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-free*','Vegan-Friendly'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null, 0, 100, array[]::text[]),
+    ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Helps oily and combination skin feel balanced with green tea extract and 0.5% salicylic acid (BHA). Recommended for ages 12+.', 795, null, null, 'Toner', array['Oily','Combination'], array['Vegan-Friendly','Organic Botanicals'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null, 0, 100, array['contains_bha','age_restricted_12plus','pregnancy_caution']),
+    ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a fresh-looking complexion.', 695, null, null, 'Cleanser', array['All Types'], array['Cruelty-free*','Organic Botanicals'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null, 0, 100, array[]::text[]),
+    ('5', 'botanical-spf-50-shield', 'Botanical Mineral Sun Shield', 'Mineral daily sun-care shield with zinc oxide and soothing aloe vera. SPF-rating evidence is in review.', 795, null, null, 'SPF', array['All Types'], array['Vegan-Friendly','Cruelty-free*'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null, 0, 100, array[]::text[]),
+    ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with berry extract and shea for soft-feeling lips.', 595, null, null, 'Lip Care', array['All Types'], array['Organic Botanicals'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null, 0, 100, array[]::text[]),
+    ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Refines the look of pores and helps skin feel balanced with niacinamide.', 895, null, null, 'Serum', array['Oily','Combination'], array['Vegan-Friendly','Cruelty-free*'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null, 0, 100, array[]::text[]),
+    ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Cushiony overnight cream with shea butter and vitamin E for a rested-looking glow.', 1595, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Organic Botanicals','Cruelty-free*'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null, 0, 100, array[]::text[])
     on conflict (id) do update set
       slug = excluded.slug,
       name = excluded.name,

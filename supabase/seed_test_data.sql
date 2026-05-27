@@ -126,7 +126,7 @@ begin
         'bakuchiol-renewal-serum',
         'Bakuchiol Renewal Serum',
         'Plant-based retinol alternative for visible cell renewal without irritation.',
-        250.00::numeric, null::numeric, null::timestamptz, 'Serum',
+        1495.00::numeric, null::numeric, null::timestamptz, 'Serum',
         array['Dry','Combination']::text[], array['Vegan-Friendly','Organic Botanicals']::text[],
         'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null::numeric, 0, 100
       ),
@@ -135,7 +135,7 @@ begin
         'rose-hip-glow-moisturiser',
         'Rose Hip Glow Moisturiser',
         'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.',
-        390.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
+        1095.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
         array['Dry','Sensitive']::text[], array['Cruelty-free*','Vegan-Friendly']::text[],
         'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null::numeric, 0, 100
       ),
@@ -144,7 +144,7 @@ begin
         'green-tea-clarity-toner',
         'Green Tea Clarity Toner',
         'Balance oil and refine pores with antioxidant-rich green tea extract.',
-        450.00::numeric, null::numeric, null::timestamptz, 'Toner',
+        795.00::numeric, null::numeric, null::timestamptz, 'Toner',
         array['Oily','Combination']::text[], array['Vegan-Friendly','Organic Botanicals']::text[],
         'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null::numeric, 0, 100
       ),
@@ -153,7 +153,7 @@ begin
         'turmeric-brightening-cleanser',
         'Turmeric Brightening Cleanser',
         'Gentle foam cleanser with turmeric and neem for a luminous complexion.',
-        250.00::numeric, null::numeric, null::timestamptz, 'Cleanser',
+        695.00::numeric, null::numeric, null::timestamptz, 'Cleanser',
         array['All Types']::text[], array['Cruelty-free*','Organic Botanicals']::text[],
         'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null::numeric, 0, 100
       ),
@@ -162,7 +162,7 @@ begin
         'botanical-spf-50-shield',
         'Botanical Mineral Sun Shield',
         'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.',
-        220.00::numeric, null::numeric, null::timestamptz, 'SPF',
+        795.00::numeric, null::numeric, null::timestamptz, 'SPF',
         array['All Types']::text[], array['Vegan-Friendly','Cruelty-free*']::text[],
         'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null::numeric, 0, 100
       ),
@@ -171,7 +171,7 @@ begin
         'wild-berry-lip-elixir',
         'Wild Berry Lip Elixir',
         'Nourishing lip treatment with acai berry and shea for pillowy softness.',
-        490.00::numeric, null::numeric, null::timestamptz, 'Lip Care',
+        595.00::numeric, null::numeric, null::timestamptz, 'Lip Care',
         array['All Types']::text[], array['Organic Botanicals']::text[],
         'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null::numeric, 0, 100
       ),
@@ -180,7 +180,7 @@ begin
         'niacinamide-pore-serum',
         'Niacinamide Pore Serum',
         'Minimise pores and control sebum with a 10% niacinamide complex.',
-        350.00::numeric, null::numeric, null::timestamptz, 'Serum',
+        895.00::numeric, null::numeric, null::timestamptz, 'Serum',
         array['Oily','Combination']::text[], array['Vegan-Friendly','Cruelty-free*']::text[],
         'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null::numeric, 0, 100
       ),
@@ -189,7 +189,7 @@ begin
         'shea-butter-night-cream',
         'Shea Butter Night Cream',
         'Intensive overnight repair with shea butter and vitamin E for morning glow.',
-        550.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
+        1595.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
         array['Dry','Sensitive']::text[], array['Organic Botanicals','Cruelty-free*']::text[],
         'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null::numeric, 0, 100
       )
@@ -424,80 +424,80 @@ begin
     payment_id, payment_order_id, payment_method, payment_status, created_at, updated_at
   ) values
   (
-    uid_kavya, 'Delivered', 640, 0, 640, 64,
+    uid_kavya, 'Delivered', 2590, 0, 2590, 259,
     jsonb_build_array(
-      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 250, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
-      jsonb_build_object('id', pid_rosehip, 'name', 'Rose Hip Glow Moisturiser', 'price', 390, 'qty', 1, 'ingredient', 'Rose Hip', 'emoji', '🌹', 'bg_color', '#F6EDE8', 'image_url', '/images/products/moisturiser.webp')
+      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 1495, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
+      jsonb_build_object('id', pid_rosehip, 'name', 'Rose Hip Glow Moisturiser', 'price', 1095, 'qty', 1, 'ingredient', 'Rose Hip', 'emoji', '🌹', 'bg_color', '#F6EDE8', 'image_url', '/images/products/moisturiser.webp')
     ),
     kavya_addr || '{"payment_method":"Razorpay"}'::jsonb,
     'pay_test_Kav001Delivered', 'order_test_Kav001', 'Razorpay · UPI', 'paid', now() - interval '45 days', now() - interval '38 days'
   ),
   (
-    uid_kavya, 'Shipped', 350, 79, 429, 35,
+    uid_kavya, 'Shipped', 895, 0, 895, 89,
     jsonb_build_array(
-      jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 350, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp')
+      jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 895, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp')
     ),
     kavya_addr || '{"payment_method":"Razorpay"}'::jsonb,
     'pay_test_Kav002Shipped', 'order_test_Kav002', 'Razorpay · Card', 'paid', now() - interval '5 days', now() - interval '3 days'
   ),
   (
-    uid_kavya, 'Processing', 670, 0, 670, 67,
+    uid_kavya, 'Processing', 1590, 0, 1590, 159,
     jsonb_build_array(
-      jsonb_build_object('id', pid_spf, 'name', 'Botanical Mineral Sun Shield', 'price', 220, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp'),
-      jsonb_build_object('id', pid_toner, 'name', 'Green Tea Clarity Toner', 'price', 450, 'qty', 1, 'ingredient', 'Green Tea', 'emoji', '🍃', 'bg_color', '#E8F2EA', 'image_url', '/images/products/toner.webp')
+      jsonb_build_object('id', pid_spf, 'name', 'Botanical Mineral Sun Shield', 'price', 795, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp'),
+      jsonb_build_object('id', pid_toner, 'name', 'Green Tea Clarity Toner', 'price', 795, 'qty', 1, 'ingredient', 'Green Tea', 'emoji', '🍃', 'bg_color', '#E8F2EA', 'image_url', '/images/products/toner.webp')
     ),
     kavya_addr || '{"payment_method":"Razorpay"}'::jsonb,
     'pay_test_Kav003Processing', 'order_test_Kav003', 'Razorpay · Net Banking', 'paid', now() - interval '1 day', now() - interval '1 day'
   ),
   (
-    uid_rahul, 'Processing', 800, 0, 800, 80,
+    uid_rahul, 'Processing', 1690, 0, 1690, 169,
     jsonb_build_array(
-      jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 350, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp'),
-      jsonb_build_object('id', pid_toner, 'name', 'Green Tea Clarity Toner', 'price', 450, 'qty', 1, 'ingredient', 'Green Tea', 'emoji', '🍃', 'bg_color', '#E8F2EA', 'image_url', '/images/products/toner.webp')
+      jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 895, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp'),
+      jsonb_build_object('id', pid_toner, 'name', 'Green Tea Clarity Toner', 'price', 795, 'qty', 1, 'ingredient', 'Green Tea', 'emoji', '🍃', 'bg_color', '#E8F2EA', 'image_url', '/images/products/toner.webp')
     ),
     rahul_addr || '{"payment_method":"Razorpay"}'::jsonb,
     'pay_test_Rah001Processing', 'order_test_Rah001', 'Razorpay · Wallet', 'paid', now() - interval '2 days', now() - interval '2 days'
   ),
   (
-    uid_priya, 'Delivered', 1290, 0, 1290, 129,
+    uid_priya, 'Delivered', 3685, 0, 3685, 368,
     jsonb_build_array(
-      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 250, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
-      jsonb_build_object('id', pid_nightcream, 'name', 'Shea Butter Night Cream', 'price', 550, 'qty', 1, 'ingredient', 'Shea Butter', 'emoji', '🌙', 'bg_color', '#F5EBF0', 'image_url', '/images/products/night-cream.webp'),
-      jsonb_build_object('id', pid_lip, 'name', 'Wild Berry Lip Elixir', 'price', 490, 'qty', 1, 'ingredient', 'Acai Berry', 'emoji', '🫐', 'bg_color', '#F0E8F5', 'image_url', '/images/products/lip-elixir.webp')
+      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 1495, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
+      jsonb_build_object('id', pid_nightcream, 'name', 'Shea Butter Night Cream', 'price', 1595, 'qty', 1, 'ingredient', 'Shea Butter', 'emoji', '🌙', 'bg_color', '#F5EBF0', 'image_url', '/images/products/night-cream.webp'),
+      jsonb_build_object('id', pid_lip, 'name', 'Wild Berry Lip Elixir', 'price', 595, 'qty', 1, 'ingredient', 'Acai Berry', 'emoji', '🫐', 'bg_color', '#F0E8F5', 'image_url', '/images/products/lip-elixir.webp')
     ),
     priya_addr || '{"payment_method":"Razorpay"}'::jsonb,
     'pay_test_Pri001Delivered', 'order_test_Pri001', 'Razorpay · UPI', 'paid', now() - interval '120 days', now() - interval '115 days'
   ),
   (
-    uid_priya, 'Delivered', 640, 0, 640, 64,
+    uid_priya, 'Delivered', 2590, 0, 2590, 259,
     jsonb_build_array(
-      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 250, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
-      jsonb_build_object('id', pid_rosehip, 'name', 'Rose Hip Glow Moisturiser', 'price', 390, 'qty', 1, 'ingredient', 'Rose Hip', 'emoji', '🌹', 'bg_color', '#F6EDE8', 'image_url', '/images/products/moisturiser.webp')
+      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 1495, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
+      jsonb_build_object('id', pid_rosehip, 'name', 'Rose Hip Glow Moisturiser', 'price', 1095, 'qty', 1, 'ingredient', 'Rose Hip', 'emoji', '🌹', 'bg_color', '#F6EDE8', 'image_url', '/images/products/moisturiser.webp')
     ),
     priya_addr || '{"payment_method":"Razorpay"}'::jsonb,
     'pay_test_Pri002Delivered', 'order_test_Pri002', 'Razorpay · Card', 'paid', now() - interval '90 days', now() - interval '83 days'
   ),
   (
-    uid_priya, 'Delivered', 220, 79, 299, 22,
+    uid_priya, 'Delivered', 795, 0, 795, 79,
     jsonb_build_array(
-      jsonb_build_object('id', pid_spf, 'name', 'Botanical Mineral Sun Shield', 'price', 220, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp')
+      jsonb_build_object('id', pid_spf, 'name', 'Botanical Mineral Sun Shield', 'price', 795, 'qty', 1, 'ingredient', 'Zinc Oxide', 'emoji', '☀️', 'bg_color', '#FFF8E8', 'image_url', '/images/products/spf.webp')
     ),
     priya_addr || '{"payment_method":"Cash on Delivery"}'::jsonb,
     'pay_test_Pri003Delivered', 'order_test_Pri003', 'Cash on Delivery', 'cod_pending', now() - interval '60 days', now() - interval '54 days'
   ),
   (
-    uid_priya, 'Shipped', 600, 0, 600, 60,
+    uid_priya, 'Shipped', 2390, 0, 2390, 239,
     jsonb_build_array(
-      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 250, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
-      jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 350, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp')
+      jsonb_build_object('id', pid_bakuchiol, 'name', 'Bakuchiol Renewal Serum', 'price', 1495, 'qty', 1, 'ingredient', 'Bakuchiol', 'emoji', '🌿', 'bg_color', '#EBF0E9', 'image_url', '/images/products/serum.webp'),
+      jsonb_build_object('id', pid_niacinamide, 'name', 'Niacinamide Pore Serum', 'price', 895, 'qty', 1, 'ingredient', 'Niacinamide', 'emoji', '💧', 'bg_color', '#E8EFF5', 'image_url', '/images/products/niacinamide-serum.webp')
     ),
     priya_addr || '{"payment_method":"Razorpay"}'::jsonb,
     'pay_test_Pri004Shipped', 'order_test_Pri004', 'Razorpay · UPI', 'paid', now() - interval '8 days', now() - interval '6 days'
   ),
   (
-    uid_priya, 'Processing', 250, 79, 329, 25,
+    uid_priya, 'Processing', 695, 0, 695, 69,
     jsonb_build_array(
-      jsonb_build_object('id', pid_cleanser, 'name', 'Turmeric Brightening Cleanser', 'price', 250, 'qty', 1, 'ingredient', 'Turmeric', 'emoji', '✨', 'bg_color', '#F5F0E4', 'image_url', '/images/products/cleanser.webp')
+      jsonb_build_object('id', pid_cleanser, 'name', 'Turmeric Brightening Cleanser', 'price', 695, 'qty', 1, 'ingredient', 'Turmeric', 'emoji', '✨', 'bg_color', '#F5F0E4', 'image_url', '/images/products/cleanser.webp')
     ),
     priya_addr || '{"payment_method":"Cash on Delivery"}'::jsonb,
     'pay_test_Pri005Processing', 'order_test_Pri005', 'Cash on Delivery', 'cod_pending', now() - interval '6 hours', now() - interval '6 hours'
@@ -651,12 +651,15 @@ begin
     (uid_priya, pid_lip, now() - interval '16 days')
   on conflict (user_id, product_id) do nothing;
 
-  insert into public.reviews (product_id, user_id, rating, title, body, approved, created_at, updated_at) values
-    (pid_bakuchiol, uid_kavya, 5, 'Visible glow without irritation', 'My dry skin handled this serum well and looked smoother after two weeks.', true, now() - interval '35 days', now() - interval '35 days'),
-    (pid_rosehip, uid_priya, 5, 'Soft hydrated finish', 'Lightweight but nourishing. Works well under sunscreen.', true, now() - interval '30 days', now() - interval '30 days'),
-    (pid_toner, uid_rahul, 4, 'Good for oily skin', 'Helped control shine without making my skin feel tight.', true, now() - interval '12 days', now() - interval '12 days'),
-    (pid_spf, uid_priya, 5, 'No heavy white cast', 'Comfortable mineral SPF for daily wear.', true, now() - interval '8 days', now() - interval '8 days'),
-    (pid_cleanser, uid_priya, 4, 'Gentle cleanser', 'Good morning cleanser and does not feel harsh.', false, now() - interval '2 days', now() - interval '2 days');
+  insert into public.reviews (
+    product_id, user_id, rating, title, body, approved, review_source,
+    source_disclosure, created_at, updated_at
+  ) values
+    (pid_bakuchiol, uid_kavya, 5, 'Visible glow without irritation', 'My dry skin handled this serum well and looked smoother after two weeks.', true, 'organic', null, now() - interval '35 days', now() - interval '35 days'),
+    (pid_rosehip, uid_priya, 5, 'Soft hydrated finish', 'Lightweight but nourishing. Works well under sunscreen.', true, 'organic', null, now() - interval '30 days', now() - interval '30 days'),
+    (pid_toner, uid_rahul, 4, 'Good for oily skin', 'Helped control shine without making my skin feel tight.', true, 'organic', null, now() - interval '12 days', now() - interval '12 days'),
+    (pid_spf, uid_priya, 5, 'No heavy white cast', 'Comfortable mineral SPF for daily wear.', true, 'organic', null, now() - interval '8 days', now() - interval '8 days'),
+    (pid_cleanser, uid_priya, 4, 'Gentle cleanser', 'Good morning cleanser and does not feel harsh.', false, 'organic', null, now() - interval '2 days', now() - interval '2 days');
 
   -- Product-card review summaries must mirror real approved reviews, never
   -- screenshot-era marketing numbers.
