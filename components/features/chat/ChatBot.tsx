@@ -20,6 +20,7 @@ import { C } from '@/constants/theme'
 import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 import {
   CONSENT_UPDATED_EVENT,
+  hasFunctionalThirdPartyConsent,
   loadStoredConsent,
   persistConsent,
   type StoredConsent,
@@ -163,7 +164,7 @@ export default function ChatBot() {
   }, [user?.id, welcomeMsg])
 
   useEffect(() => {
-    setAiConsent(loadStoredConsent()?.functional_third_party === true)
+    setAiConsent(hasFunctionalThirdPartyConsent())
 
     const handleConsentUpdate = (event: Event) => {
       const consent = (event as CustomEvent<StoredConsent>).detail

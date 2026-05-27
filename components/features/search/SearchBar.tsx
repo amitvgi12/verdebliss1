@@ -3,14 +3,13 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, ArrowRight } from 'lucide-react'
-import { PRODUCTS } from '@/constants/products'
 import { C } from '@/constants/theme'
 import { productPath } from '@/lib/seo'
 import type { Product } from '@/types'
 
 const STORAGE_KEY = 'verdebliss-recent-searches'
 
-export default function SearchBar() {
+export default function SearchBar({ products }: { products: Product[] }) {
   const router = useRouter()
   const [q, setQ] = useState('')
   const [focused, setFocused] = useState(false)
@@ -45,9 +44,9 @@ export default function SearchBar() {
 
   const results: Product[] =
     q.length > 1
-      ? PRODUCTS.filter(
-          (p) => fuzzy(`${p.name}${p.category ?? ''}${p.ingredient ?? ''}`, q) > 0.4
-        ).slice(0, 6)
+      ? products
+          .filter((p) => fuzzy(`${p.name}${p.category ?? ''}${p.ingredient ?? ''}`, q) > 0.4)
+          .slice(0, 6)
       : []
 
   const saveRecent = (term: string) => {

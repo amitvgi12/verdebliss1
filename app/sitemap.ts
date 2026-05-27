@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { PUBLIC_STATIC_ROUTES } from '@/constants/publicRoutes'
 import { getProductsServer } from '@/lib/products-server'
 import { productPath } from '@/lib/seo'
 import routeModified from './route-modified.json'
@@ -18,39 +19,20 @@ function routeLastModified(route: string) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes = [
-    '',
-    '/products',
-    '/quiz',
-    '/ingredients',
-    '/our-story',
-    '/sustainability',
-    '/blog',
-    '/faq',
-    '/certifications',
-    '/contact',
-    '/press',
-    '/privacy-policy',
-    '/terms',
-    '/cookie-policy',
-    '/returns-refunds',
-    '/shipping-policy',
-  ]
-
-  const routes: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
-    url: `${BASE_URL}${route}`,
+  const routes: MetadataRoute.Sitemap = PUBLIC_STATIC_ROUTES.map((route) => ({
+    url: `${BASE_URL}${route === '/' ? '' : route}`,
     lastModified: routeLastModified(route),
-    changeFrequency: route === '' ? 'daily' : 'weekly',
-    priority: route === '' ? 1 : 0.7,
+    changeFrequency: route === '/' ? 'daily' : 'weekly',
+    priority: route === '/' ? 1 : 0.7,
   }))
 
-  // Catalogue is DB-first via getProductsServer(), with static fallback for local
-  // builds. That keeps public URLs aligned with the canonical product source.
+  // Catalogue URLs come from the DB-backed product source so price-bearing
+  // product records stay canonical.
   const products = await getProductsServer()
   const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${BASE_URL}${productPath(product)}`,
     // Prefer updated_at so edits move the lastModified date; fall back to
-    // created_at, then to the static fallback for local/static builds.
+    // created_at, then to the fixed fallback date.
     lastModified: product.updated_at
       ? new Date(product.updated_at)
       : product.created_at

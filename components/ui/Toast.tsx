@@ -1,29 +1,30 @@
+'use client'
+
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, Info, Award, AlertTriangle, type LucideIcon } from 'lucide-react'
+import { Check, X, Info, AlertTriangle, type LucideIcon } from 'lucide-react'
 import { useToastStore } from '@/store/toastStore'
 import { C } from '@/constants/theme'
 import type { ToastMessage } from '@/types'
 
-const ICONS: Record<ToastMessage['type'] | 'points', LucideIcon> = {
+const ICONS: Record<ToastMessage['type'], LucideIcon> = {
   success: Check,
   error: X,
   info: Info,
   warning: AlertTriangle,
-  points: Award,
 }
-const BG: Record<ToastMessage['type'] | 'points', string> = {
+const BG: Record<ToastMessage['type'], string> = {
   success: C.forest,
   error: '#A32D2D',
   info: '#185FA5',
   warning: '#B45309',
-  points: C.gold,
 }
 
-// ── Toast renderer (mount once in App) ───────────────
 export function Toaster() {
   const { toasts, remove } = useToastStore()
   return (
     <div
+      aria-live="polite"
+      aria-atomic="true"
       style={{
         position: 'fixed',
         bottom: 96,
@@ -40,6 +41,7 @@ export function Toaster() {
           return (
             <motion.div
               key={t.id}
+              role="status"
               initial={{ opacity: 0, x: 60, scale: 0.92 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 60, scale: 0.9 }}

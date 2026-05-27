@@ -10,7 +10,7 @@ import { useWishlistStore } from '@/store/wishlistStore'
 import { supabase } from '@/lib/supabase'
 import { apiPost } from '@/lib/api-client'
 import { productPath } from '@/lib/seo'
-import { PRODUCTS } from '@/constants/products'
+import { useProducts } from '@/hooks/useProducts'
 import { C, FONT } from '@/constants/theme'
 
 // ── Login / Register ───────────────────────────────────
@@ -566,6 +566,7 @@ function Dashboard({
 }) {
   const signOut = useAuthStore((s) => s.signOut)
   const { ids: wishIds } = useWishlistStore()
+  const { products: catalog } = useProducts({})
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
   const [orderNotice, setOrderNotice] = useState<{
@@ -615,7 +616,7 @@ function Dashboard({
     }
   }
 
-  const wishProducts = PRODUCTS.filter((p) => wishIds.includes(p.id))
+  const wishProducts = catalog.filter((p) => wishIds.includes(p.id))
 
   return (
     <div style={{ background: C.bg, minHeight: '80vh' }}>

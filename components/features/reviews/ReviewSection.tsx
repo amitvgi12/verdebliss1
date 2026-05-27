@@ -17,6 +17,8 @@ interface ReviewRow {
   body: string | null
   created_at: string
   verified_purchase?: boolean | null
+  review_source?: 'verified_purchase' | 'organic' | 'sampling' | 'pr_unit' | null
+  source_disclosure?: string | null
   profiles?: { full_name?: string | null } | null
 }
 
@@ -54,7 +56,9 @@ export default function ReviewSection({
     setLoading(true)
     const { data } = await supabase
       .from('reviews')
-      .select('id, rating, title, body, created_at, verified_purchase, profiles(full_name)')
+      .select(
+        'id, rating, title, body, created_at, verified_purchase, review_source, source_disclosure, profiles(full_name)'
+      )
       .eq('product_id', productId)
       .eq('approved', true)
       .order('created_at', { ascending: false })
@@ -398,20 +402,7 @@ export default function ReviewSection({
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {r.verified_purchase && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: C.forest,
-                        background: C.sagePale,
-                        padding: '2px 8px',
-                        borderRadius: 99,
-                      }}
-                    >
-                      VERIFIED PURCHASE
-                    </span>
-                  )}
+                  <ReviewSourceBadge review={r} />
                   <span style={{ fontSize: 11, color: C.muted }}>
                     {new Date(r.created_at).toLocaleDateString('en-IN', {
                       day: 'numeric',
@@ -424,6 +415,11 @@ export default function ReviewSection({
               <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: '0 0 8px' }}>
                 {r.body ?? ''}
               </p>
+              {r.source_disclosure && (
+                <p style={{ fontSize: 11, color: C.light, lineHeight: 1.5, margin: '0 0 8px' }}>
+                  {r.source_disclosure}
+                </p>
+              )}
               <p style={{ fontSize: 11, color: C.light }}>
                 — {r.profiles?.full_name ?? 'Customer'}
               </p>
@@ -432,5 +428,34 @@ export default function ReviewSection({
         </div>
       )}
     </section>
+  )
+}
+
+function ReviewSourceBadge({ review }: { review: ReviewRow }) {
+  const source = review.review_source ?? (review.verified_purchase ? 'verified_purchase' : null)
+  const config =
+    source === 'verified_purchase'
+      ? { label: 'VERIFIED PURCHASE', color: C.forest, background: C.sagePale }
+      : source === 'sampling'
+        ? { label: 'SAMPLE REVIEW', color: '#5d4200', background: '#fff8e1' }
+        : source === 'pr_unit'
+          ? { label: 'PR SAMPLE', color: '#664A08', background: '#FFF5E4' }
+          : null
+
+  if (!config) return null
+
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        color: config.color,
+        background: config.background,
+        padding: '2px 8px',
+        borderRadius: 99,
+      }}
+    >
+      {config.label}
+    </span>
   )
 }

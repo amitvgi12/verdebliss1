@@ -6,9 +6,12 @@ import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import type { CartItem } from '@/types'
 import type { CheckoutForm } from '../checkout-types'
 
+type ReviewCartItem = CartItem & { priceAvailable?: boolean }
+
 interface ReviewStepProps {
   form: CheckoutForm
-  items: CartItem[]
+  items: ReviewCartItem[]
+  pricesReady: boolean
   onEditAddress: () => void
   onBackToAddress: () => void
   onContinueToPayment: () => void
@@ -21,6 +24,7 @@ interface ReviewStepProps {
 export default function ReviewStep({
   form,
   items,
+  pricesReady,
   onEditAddress,
   onBackToAddress,
   onContinueToPayment,
@@ -85,7 +89,9 @@ export default function ReviewStep({
                   <div className="checkout-review-item__copy">
                     <div className="checkout-review-item__name">{item.name}</div>
                     <div className="checkout-review-item__price">
-                      ₹{item.price.toLocaleString('en-IN')} each
+                      {item.priceAvailable === false
+                        ? 'Refreshing price...'
+                        : `₹${item.price.toLocaleString('en-IN')} each`}
                     </div>
                   </div>
 
@@ -113,7 +119,9 @@ export default function ReviewStep({
                   </div>
 
                   <div className="checkout-review-item__total">
-                    ₹{(item.price * item.qty).toLocaleString('en-IN')}
+                    {item.priceAvailable === false
+                      ? 'Refreshing...'
+                      : `₹${(item.price * item.qty).toLocaleString('en-IN')}`}
                   </div>
 
                   <button
@@ -141,8 +149,13 @@ export default function ReviewStep({
             <ArrowLeft size={15} aria-hidden />
             Back to Address
           </button>
-          <button type="button" onClick={onContinueToPayment} className="checkout-step-primary">
-            Continue to Payment
+          <button
+            type="button"
+            onClick={onContinueToPayment}
+            disabled={!pricesReady}
+            className="checkout-step-primary"
+          >
+            {pricesReady ? 'Continue to Payment' : 'Refreshing Prices'}
             <CreditCard size={15} aria-hidden />
           </button>
         </div>

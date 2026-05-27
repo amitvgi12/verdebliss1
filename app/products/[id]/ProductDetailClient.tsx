@@ -43,32 +43,32 @@ const CERTIFICATIONS = [
     label: 'No animal testing stance',
     emoji: '🐰',
     url: '/certifications',
-    org: 'Formal cruelty-free certification is in progress',
-    status: 'Pending verification',
+    org: 'No animal testing is conducted or commissioned; third-party audit status is published in the Trust Centre',
+    status: 'Audit underway',
     matches: ['cruelty'],
   },
   {
     label: 'Vegan-friendly formula',
     emoji: '🌱',
     url: '/certifications',
-    org: 'Formula scope varies; formal vegan certification is in progress',
-    status: 'Pending verification',
+    org: 'Formula scope varies by SKU; evidence status is published in the Trust Centre',
+    status: 'Evidence review',
     matches: ['vegan'],
   },
   {
     label: 'Skin compatibility notes',
     emoji: '🏥',
     url: '/certifications',
-    org: 'Internal assessment only; independent review documentation pending',
-    status: 'Pending documentation',
+    org: 'Internal skin-compatibility assessment is complete; independent evidence file is in review',
+    status: 'Evidence file',
     matches: [],
   },
   {
     label: 'Packaging documentation',
     emoji: '♻️',
     url: '/certifications',
-    org: 'Packaging certification documentation in progress',
-    status: 'Pending documentation',
+    org: 'Packaging material evidence and supplier documentation are being prepared for review',
+    status: 'Evidence file',
     matches: [],
   },
 ]
@@ -219,7 +219,7 @@ export default function ProductDetailClient({
     ? { display: 'flex', flexDirection: 'column', gap: 0 }
     : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }
 
-  /* Applicable claim-status badges — all link to the Trust Centre and are visibly pending. */
+  /* Applicable claim-status badges link to the Trust Centre without making certificate claims. */
   const prodCerts = CERTIFICATIONS.filter((c) => {
     if (c.label === 'Skin compatibility notes') return true
     if (c.label === 'Packaging documentation') return true

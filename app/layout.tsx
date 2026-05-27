@@ -6,6 +6,7 @@ import AuthInitializer from '@/components/ui/AuthInitializer'
 import MotionProvider from '@/components/ui/MotionProvider'
 import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import VercelInsightsLoader from '@/components/ui/VercelInsightsLoader'
+import { Toaster } from '@/components/ui/Toast'
 import { StructuredData } from '@/lib/structured-data'
 import './globals.css'
 import type { ReactNode } from 'react'
@@ -15,6 +16,7 @@ import {
   assertProductionBusinessCompliance,
 } from '@/constants/businessCompliance'
 import { organizationJsonLd, websiteJsonLd } from '@/lib/site-schema'
+import { getProductsServer } from '@/lib/products-server'
 
 assertProductionBusinessCompliance()
 
@@ -24,6 +26,8 @@ const sans = localFont({
     { path: './fonts/dm-sans-italic-latin.woff2', style: 'italic', weight: '100 900' },
   ],
   display: 'swap',
+  adjustFontFallback: 'Arial',
+  fallback: ['Arial', 'Helvetica', 'sans-serif'],
   variable: '--font-sans',
 })
 
@@ -37,6 +41,8 @@ const serif = localFont({
     },
   ],
   display: 'swap',
+  adjustFontFallback: 'Times New Roman',
+  fallback: ['Times New Roman', 'Georgia', 'serif'],
   variable: '--font-serif',
 })
 
@@ -87,7 +93,9 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com' },
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const navProducts = await getProductsServer()
+
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`} data-scroll-behavior="smooth">
       <head>
@@ -106,12 +114,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Initialize auth on client */}
         <AuthInitializer />
         <MotionProvider>
-          <Nav />
+          <Nav products={navProducts} />
           <main id="main-content">{children}</main>
           <Footer />
           <CartDrawerLoader />
           <ChatBotLoader />
           <VercelInsightsLoader />
+          <Toaster />
           <CookieConsent />
         </MotionProvider>
       </body>

@@ -63,6 +63,7 @@ export default function TurnstileWidget({ onToken, onExpire, className }: Turnst
           sitekey: siteKey,
           theme: 'light',
           size: 'normal',
+          appearance: 'always',
           callback: (token) => onTokenRef.current(token),
           'expired-callback': () => onExpireRef.current?.(),
           'error-callback': () => onExpireRef.current?.(),

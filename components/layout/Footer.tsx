@@ -72,7 +72,7 @@ export default function Footer() {
   const hasPhone = hasVerifiedPhone() && BUSINESS_COMPLIANCE.helpline.href
 
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" aria-label="Site footer" data-footer-treatment="unified">
       {/* ── Main: link columns + contact info ─────────────────── */}
       <div className="footer-main site-container">
         {/* Left: 4 link columns */}

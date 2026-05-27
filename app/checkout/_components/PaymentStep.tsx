@@ -102,7 +102,7 @@ export default function PaymentStep({
             )}
             <span className="checkout-turnstile-status">
               {turnstileToken
-                ? 'Verified'
+                ? 'Ready for server check'
                 : turnstileConfigured
                   ? 'Verification required'
                   : 'Site key missing'}

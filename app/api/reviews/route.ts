@@ -78,6 +78,8 @@ export async function POST(request: Request) {
       user_id: user.id,
       order_item_id: eligibleItem.id,
       verified_purchase: true,
+      review_source: 'verified_purchase',
+      source_disclosure: null,
       rating,
       title,
       body: reviewBody,

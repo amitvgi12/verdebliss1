@@ -47,7 +47,7 @@ const CLAIMS: ClaimRow[] = [
     requiredProof:
       'Issuer listing URL or certificate ID confirming no animal-derived ingredients at any stage',
     status: 'in-progress',
-    note: 'Most formulas are vegan-friendly. Wild Berry Lip Elixir contains Beeswax — not vegan. Formal certification pending.',
+    note: 'Most formulas are vegan-friendly. Wild Berry Lip Elixir contains Beeswax and is not vegan. Formal certification scope is being documented.',
   },
   {
     claim: 'Cruelty-free positioning',
@@ -61,21 +61,21 @@ const CLAIMS: ClaimRow[] = [
     requiredProof:
       'Lab or dermatologist report: name of assessor, date, test method, product scope',
     status: 'pending',
-    note: 'Internal skin-compatibility testing conducted. Independent dermatologist review documentation pending.',
+    note: 'Internal skin-compatibility testing conducted. Independent dermatologist evidence file is in review.',
   },
   {
     claim: 'SPF rating efficacy',
     requiredProof:
       'SPF test lab report: lab name, accreditation, test standard (ISO 24444 or equivalent), batch/formula scope',
     status: 'pending',
-    note: 'Botanical Mineral Sun Shield contains 20% non-nano Zinc Oxide. Independent SPF-rating efficacy documentation is pending.',
+    note: 'Botanical Mineral Sun Shield contains 20% non-nano Zinc Oxide. Independent SPF-rating efficacy evidence is in review.',
   },
   {
     claim: 'Recyclable / eco-friendly packaging',
     requiredProof:
       'FSC licence or equivalent packaging certification: licence number, scope, packaging type covered',
     status: 'pending',
-    note: 'Recyclable packaging materials in use. Formal FSC or equivalent certification in progress.',
+    note: 'Recyclable packaging materials in use. Formal FSC or equivalent evidence file is being prepared.',
   },
 ]
 
@@ -84,8 +84,8 @@ const STATUS_CONFIG: Record<
   { label: string; color: string; bg: string; Icon: typeof Clock }
 > = {
   verified: { label: 'Verified', color: '#2d6a4f', bg: '#e8f5e9', Icon: CheckCircle2 },
-  'in-progress': { label: 'In progress', color: '#7d5a00', bg: '#fff8e1', Icon: Clock },
-  pending: { label: 'Pending', color: '#7a4040', bg: '#fce8e8', Icon: AlertCircle },
+  'in-progress': { label: 'Audit underway', color: '#7d5a00', bg: '#fff8e1', Icon: Clock },
+  pending: { label: 'Evidence file', color: '#5d6548', bg: '#eef3e8', Icon: AlertCircle },
 }
 
 export default function CertificationsPage() {
@@ -122,10 +122,10 @@ export default function CertificationsPage() {
               marginInline: 'auto',
             }}
           >
-            <strong>Until certifications are verified:</strong> product pages and marketing copy use
-            positioning language — &ldquo;organic botanical ingredients&rdquo;,
-            &ldquo;vegan-friendly where formulation permits&rdquo;, &ldquo;cruelty-free
-            positioning&rdquo; — rather than certification assertions. We will replace positioning
+            <strong>Before third-party certificates are issued:</strong> product pages and marketing
+            copy use positioning language — &ldquo;organic botanical ingredients&rdquo;,
+            &ldquo;vegan-friendly where formulation permits&rdquo;, &ldquo;no animal testing
+            stance&rdquo; — rather than certification assertions. We will replace positioning
             language with verified claim language as each third-party certificate is issued and
             published here.
           </div>

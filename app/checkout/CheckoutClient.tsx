@@ -19,7 +19,8 @@ import { ArrowLeft } from 'lucide-react'
 import { getShippingCost } from '@/constants/shipping'
 import { COD_MAX_TOTAL } from '@/constants/checkout'
 import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
-import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
+import { useCartStore, selectItemCount } from '@/store/cartStore'
+import { useProducts } from '@/hooks/useProducts'
 import Steps from './_components/Steps'
 import AddressStep from './_components/AddressStep'
 import ReviewStep from './_components/ReviewStep'
@@ -231,11 +232,34 @@ export default function Checkout() {
   const clearCart = useCartStore((s) => s.clearCart)
   const removeItem = useCartStore((s) => s.removeItem)
   const updateQty = useCartStore((s) => s.updateQty)
-  const total = useCartStore(selectTotal)
+  const syncCatalogProducts = useCartStore((s) => s.syncCatalogProducts)
   const itemCount = useCartStore(selectItemCount)
-  const pointsToEarn = useCartStore(selectPointsToEarn)
   const user = useAuthStore((s) => s.user)
   const profile = useAuthStore((s) => s.profile)
+  const { products: catalog, loading: catalogLoading } = useProducts({})
+
+  useEffect(() => {
+    syncCatalogProducts(catalog)
+  }, [catalog, syncCatalogProducts])
+
+  const productById = new Map(catalog.map((product) => [product.id, product]))
+  const productByName = new Map(catalog.map((product) => [product.name, product]))
+  const currentItems = items.map((item) => {
+    const currentProduct = productById.get(item.id) ?? productByName.get(item.name)
+    return {
+      ...(currentProduct ?? item),
+      cartId: item.id,
+      price: currentProduct ? Number(currentProduct.price) : 0,
+      priceAvailable: Boolean(currentProduct && Number(currentProduct.price) > 0),
+      qty: item.qty,
+    }
+  })
+  const hasCurrentPrices =
+    currentItems.length === 0 || currentItems.every((item) => item.priceAvailable)
+  const total = hasCurrentPrices
+    ? currentItems.reduce((sum, item) => sum + Number(item.price) * item.qty, 0)
+    : 0
+  const pointsToEarn = Math.floor(total / 10)
 
   const [step, setStep] = useState(0) // 0=address, 1=review, 2=payment
   const [status, setStatus] = useState<CheckoutStatus>(null) // null | 'success' | 'failed'
@@ -355,10 +379,20 @@ export default function Checkout() {
 
   function checkoutPayload() {
     return {
-      items: cartPayload(items),
+      items: cartPayload(currentItems),
       address: form,
       turnstileToken,
     }
+  }
+
+  function requireCurrentPrices() {
+    if (hasCurrentPrices) return true
+    setCheckoutError(
+      catalogLoading
+        ? 'Current product prices are still loading. Please wait a moment.'
+        : 'Current product prices are unavailable. Please refresh the cart and try again.'
+    )
+    return false
   }
 
   function requireCheckoutVerification() {
@@ -394,6 +428,7 @@ export default function Checkout() {
 
   /* ── Launch Razorpay ─────────────────────────────────────────────── */
   async function launchRazorpay() {
+    if (!requireCurrentPrices()) return
     if (!requireCheckoutVerification()) return
 
     const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
@@ -432,7 +467,7 @@ export default function Checkout() {
 
         notes: {
           address: `${form.line1}, ${form.line2 ? form.line2 + ', ' : ''}${form.city}, ${form.state} - ${form.pincode}`,
-          items: items.map((i) => `${i.name} ×${i.qty}`).join('; '),
+          items: currentItems.map((i) => `${i.name} ×${i.qty}`).join('; '),
           payment_method: 'Razorpay',
         },
 
@@ -515,6 +550,7 @@ export default function Checkout() {
   }
 
   async function placeCodOrder() {
+    if (!requireCurrentPrices()) return
     if (!requireCheckoutVerification()) return
 
     if (grandTotal > COD_MAX_TOTAL) {
@@ -597,7 +633,8 @@ export default function Checkout() {
               {step === 1 && (
                 <ReviewStep
                   form={form}
-                  items={items}
+                  items={currentItems}
+                  pricesReady={hasCurrentPrices}
                   onEditAddress={() => setStep(0)}
                   onBackToAddress={() => setStep(0)}
                   onContinueToPayment={() => {
@@ -606,9 +643,15 @@ export default function Checkout() {
                     setStep(2)
                   }}
                   onContinueShopping={() => router.push('/products')}
-                  onIncreaseQty={(id) => updateQty(id, 1)}
-                  onDecreaseQty={(id) => updateQty(id, -1)}
-                  onRemoveItem={removeItem}
+                  onIncreaseQty={(id) =>
+                    updateQty(currentItems.find((item) => item.id === id)?.cartId ?? id, 1)
+                  }
+                  onDecreaseQty={(id) =>
+                    updateQty(currentItems.find((item) => item.id === id)?.cartId ?? id, -1)
+                  }
+                  onRemoveItem={(id) =>
+                    removeItem(currentItems.find((item) => item.id === id)?.cartId ?? id)
+                  }
                 />
               )}
 
@@ -647,7 +690,7 @@ export default function Checkout() {
 
           {/* ── RIGHT: Order summary ────────────────────── */}
           <OrderSummary
-            items={items}
+            items={currentItems}
             itemCount={itemCount}
             total={total}
             shipping={shipping}

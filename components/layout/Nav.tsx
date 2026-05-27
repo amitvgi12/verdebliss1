@@ -22,6 +22,7 @@ import SearchBar from '@/components/features/search/SearchBar'
 import { useCartStore, selectItemCount } from '@/store/cartStore'
 import { useAuthStore } from '@/store/authStore'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
+import type { Product } from '@/types'
 
 const LINKS = [
   { path: '/', label: 'Home', icon: Home },
@@ -32,7 +33,7 @@ const LINKS = [
   { path: '/account', label: 'Account', icon: UserRound },
 ]
 
-export default function Nav() {
+export default function Nav({ products }: { products: Product[] }) {
   const pathname = usePathname()
   const openCart = useCartStore((s) => s.openCart)
   const itemCount = useCartStore(selectItemCount)
@@ -108,7 +109,7 @@ export default function Nav() {
 
           {/* Desktop search */}
           <div className="hidden min-w-0 flex-1 md:block">
-            <SearchBar />
+            <SearchBar products={products} />
           </div>
           {/* Mobile spacer */}
           <div className="flex-1 md:hidden" />
@@ -189,7 +190,7 @@ export default function Nav() {
               className="overflow-hidden border-t border-border md:hidden"
             >
               <div className="px-4 py-2.5">
-                <SearchBar />
+                <SearchBar products={products} />
               </div>
             </motion.div>
           )}

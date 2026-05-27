@@ -14,7 +14,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, ArrowRight, ArrowLeft, Check, ShoppingBag } from 'lucide-react'
-import { PRODUCTS } from '@/constants/products'
 import { useProducts } from '@/hooks/useProducts'
 import { useCartStore } from '@/store/cartStore'
 import ProductCard from '@/components/ui/ProductCard'
@@ -77,47 +76,57 @@ const QUESTIONS = [
   },
 ]
 
+const PRODUCT_TARGETS = {
+  bakuchiol: { id: '1', name: 'Bakuchiol Renewal Serum' },
+  roseHip: { id: '2', name: 'Rose Hip Glow Moisturiser' },
+  toner: { id: '3', name: 'Green Tea Clarity Toner' },
+  cleanser: { id: '4', name: 'Turmeric Brightening Cleanser' },
+  spf: { id: '5', name: 'Botanical Mineral Sun Shield' },
+  lip: { id: '6', name: 'Wild Berry Lip Elixir' },
+  niacinamide: { id: '7', name: 'Niacinamide Pore Serum' },
+  nightCream: { id: '8', name: 'Shea Butter Night Cream' },
+} as const
+
+type ProductTargetKey = keyof typeof PRODUCT_TARGETS
+
 /**
  * Recommendation logic — maps answers to product IDs.
  * Always includes: cleanser + moisturiser + SPF (universal essentials).
  * Adds targeted treatments based on concern + age + skin type.
  */
-function findCatalogProduct(catalog: Product[], fallbackId: string): Product | undefined {
-  const fallback = PRODUCTS.find((p) => p.id === fallbackId)
+function findCatalogProduct(catalog: Product[], targetKey: ProductTargetKey): Product | undefined {
+  const target = PRODUCT_TARGETS[targetKey]
   return (
-    catalog.find((p) => String(p.id) === String(fallbackId)) ||
-    catalog.find((p) => fallback && p.name === fallback.name) ||
-    fallback
+    catalog.find((p) => String(p.id) === target.id) ||
+    catalog.find((p) => p.slug === target.name.toLowerCase().replaceAll(' ', '-')) ||
+    catalog.find((p) => p.name === target.name)
   )
 }
 
-function recommend(
-  answers: Record<string, string>,
-  catalog: Product[] = PRODUCTS as Product[]
-): Product[] {
-  const set = new Set<string>()
+function recommend(answers: Record<string, string>, catalog: Product[]): Product[] {
+  const set = new Set<ProductTargetKey>()
 
   // Universal essentials
-  set.add('4') // Turmeric Brightening Cleanser
+  set.add('cleanser')
 
   // SPF — always
-  set.add('5') // Botanical Mineral Sun Shield
+  set.add('spf')
 
   // Moisturiser by skin type
-  if (['Dry', 'Sensitive'].includes(answers.skin_type)) set.add('2') // Rose Hip
-  if (['Oily', 'Combination'].includes(answers.skin_type)) set.add('3') // Green Tea Toner
+  if (['Dry', 'Sensitive'].includes(answers.skin_type)) set.add('roseHip')
+  if (['Oily', 'Combination'].includes(answers.skin_type)) set.add('toner')
 
   // Concern-driven serum
   if (answers.concern === 'Anti-Ageing' || answers.age === 'over_45' || answers.age === '35_45') {
-    set.add('1') // Bakuchiol Renewal Serum
-    if (answers.budget !== 'under_3k') set.add('8') // Shea Butter Night Cream
+    set.add('bakuchiol')
+    if (answers.budget !== 'under_3k') set.add('nightCream')
   }
-  if (answers.concern === 'Acne' || answers.skin_type === 'Oily') set.add('7') // Niacinamide Pore Serum
-  if (answers.concern === 'Brightening' || answers.concern === 'Pigmentation') set.add('1') // Bakuchiol
-  if (answers.concern === 'Hydration') set.add('2') // Rose Hip
+  if (answers.concern === 'Acne' || answers.skin_type === 'Oily') set.add('niacinamide')
+  if (answers.concern === 'Brightening' || answers.concern === 'Pigmentation') set.add('bakuchiol')
+  if (answers.concern === 'Hydration') set.add('roseHip')
 
   // Lip — always nice
-  set.add('6') // Wild Berry Lip Elixir
+  set.add('lip')
 
   // Budget cap
   let products = Array.from(set)
@@ -157,14 +166,16 @@ export default function QuizClient() {
   }
 
   function addBundleToCart() {
-    const products = recommend(answers, (catalog.length ? catalog : PRODUCTS) as Product[])
+    const products = recommend(answers, catalog)
+    if (!products.length) return
     products.forEach((p) => addItem(p))
     openCart()
   }
 
   /* ── Result screen ────────────────────────────────────────── */
   if (done) {
-    const products = recommend(answers, (catalog.length ? catalog : PRODUCTS) as Product[])
+    const products = recommend(answers, catalog)
+    const hasCurrentCatalogue = products.length > 0
     const subtotal = products.reduce((s, p) => s + p.price, 0)
     const bundle = Math.round(subtotal * 0.9)
 
@@ -215,25 +226,44 @@ export default function QuizClient() {
           </motion.div>
 
           {/* Products grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: 16,
-              marginBottom: 32,
-            }}
-          >
-            {products.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06 }}
-              >
-                <ProductCard product={p} />
-              </motion.div>
-            ))}
-          </div>
+          {hasCurrentCatalogue ? (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                gap: 16,
+                marginBottom: 32,
+              }}
+            >
+              {products.map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                >
+                  <ProductCard product={p} />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div
+              role="status"
+              style={{
+                background: C.card,
+                border: `1px solid ${C.border}`,
+                borderRadius: 16,
+                color: C.muted,
+                fontSize: 14,
+                lineHeight: 1.6,
+                marginBottom: 32,
+                padding: 24,
+                textAlign: 'center',
+              }}
+            >
+              Current catalogue prices are temporarily unavailable.
+            </div>
+          )}
 
           {/* Bundle CTA */}
           <div
@@ -304,6 +334,7 @@ export default function QuizClient() {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={addBundleToCart}
+                disabled={!hasCurrentCatalogue}
                 style={{
                   background: C.goldText,
                   color: 'white',
@@ -312,11 +343,12 @@ export default function QuizClient() {
                   padding: '13px 24px',
                   fontSize: 14,
                   fontWeight: 700,
-                  cursor: 'pointer',
+                  cursor: hasCurrentCatalogue ? 'pointer' : 'not-allowed',
                   fontFamily: 'inherit',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
+                  opacity: hasCurrentCatalogue ? 1 : 0.6,
                 }}
               >
                 <ShoppingBag size={15} /> Add Routine to Cart

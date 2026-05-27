@@ -1,15 +1,15 @@
 /**
  * POST /api/revalidate
  *
- * On-demand ISR cache purge for all public routes.
+ * On-demand ISR cache purge for all public sitemap routes and PDPs.
  * Requires the REVALIDATE_SECRET env var to match the x-revalidate-secret header.
  *
  * Body (JSON, all optional):
  *   { productId: string }  — purge one specific PDP only
  *   {}                     — purge everything (default, used post-deploy)
  *
- * Skipped routes (force-dynamic — always render fresh, revalidatePath is a no-op):
- *   /contact  /checkout  /quiz  /refund  /account/**
+ * force-dynamic routes are included deliberately. revalidatePath is a no-op for
+ * those pages, but including them keeps this endpoint aligned with sitemap.xml.
  *
  * Use cases:
  *   - Post-deploy CI step: purge every ISR route so new env values take effect
@@ -26,26 +26,8 @@
  */
 import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
+import { PUBLIC_STATIC_ROUTES } from '@/constants/publicRoutes'
 import { getProductsServer } from '@/lib/products-server'
-
-// All ISR / statically-prerendered public page routes.
-// force-dynamic routes (/contact /checkout /quiz /refund /account/**) are
-// intentionally excluded — they always render fresh.
-const STATIC_ROUTES = [
-  '/',
-  '/products',
-  '/certifications',
-  '/cookie-policy',
-  '/faq',
-  '/ingredients',
-  '/our-story',
-  '/press',
-  '/privacy-policy',
-  '/returns-refunds',
-  '/shipping-policy',
-  '/sustainability',
-  '/terms',
-]
 
 export async function POST(request: Request) {
   const secret = process.env.REVALIDATE_SECRET
@@ -69,8 +51,8 @@ export async function POST(request: Request) {
     // body is optional — no productId means purge everything
   }
 
-  // --- Static / ISR routes ---
-  for (const path of STATIC_ROUTES) {
+  // --- Public sitemap routes ---
+  for (const path of PUBLIC_STATIC_ROUTES) {
     revalidatePath(path, 'page')
   }
 
@@ -115,7 +97,7 @@ export async function POST(request: Request) {
   }
 
   const revalidatedPaths = [
-    ...STATIC_ROUTES,
+    ...PUBLIC_STATIC_ROUTES,
     '/blog (layout — includes all /blog/[slug])',
     ...productSlugs.map((s) => `/products/${s}`),
   ]
@@ -125,6 +107,6 @@ export async function POST(request: Request) {
     productId: productId ?? 'all',
     paths: revalidatedPaths,
     productCount: productSlugs.length,
-    staticCount: STATIC_ROUTES.length + 1, // +1 for /blog layout
+    staticCount: PUBLIC_STATIC_ROUTES.length + 1, // +1 for /blog layout
   })
 }

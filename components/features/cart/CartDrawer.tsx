@@ -1,12 +1,14 @@
 'use client'
+import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Minus, Award } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { FREE_SHIPPING_THRESHOLD } from '@/constants/shipping'
-import { useCartStore, selectTotal, selectItemCount, selectPointsToEarn } from '@/store/cartStore'
+import { useCartStore, selectItemCount } from '@/store/cartStore'
 import ProductImage from '@/components/ui/ProductImage'
 import { C, FONT } from '@/constants/theme'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
+import { useProducts } from '@/hooks/useProducts'
 
 export default function CartDrawer() {
   const router = useRouter()
@@ -15,9 +17,32 @@ export default function CartDrawer() {
   const closeCart = useCartStore((s) => s.closeCart)
   const removeItem = useCartStore((s) => s.removeItem)
   const updateQty = useCartStore((s) => s.updateQty)
-  const total = useCartStore(selectTotal)
+  const syncCatalogProducts = useCartStore((s) => s.syncCatalogProducts)
   const itemCount = useCartStore(selectItemCount)
-  const pointsToEarn = useCartStore(selectPointsToEarn)
+  const { products: catalog, loading: catalogLoading } = useProducts({})
+
+  useEffect(() => {
+    syncCatalogProducts(catalog)
+  }, [catalog, syncCatalogProducts])
+
+  const productById = new Map(catalog.map((product) => [product.id, product]))
+  const productByName = new Map(catalog.map((product) => [product.name, product]))
+  const currentItems = items.map((item) => {
+    const currentProduct = productById.get(item.id) ?? productByName.get(item.name)
+    return {
+      ...(currentProduct ?? item),
+      cartId: item.id,
+      price: currentProduct ? Number(currentProduct.price) : 0,
+      priceAvailable: Boolean(currentProduct && Number(currentProduct.price) > 0),
+      qty: item.qty,
+    }
+  })
+  const hasCurrentPrices =
+    currentItems.length === 0 || currentItems.every((item) => item.priceAvailable)
+  const total = hasCurrentPrices
+    ? currentItems.reduce((sum, item) => sum + Number(item.price) * item.qty, 0)
+    : 0
+  const pointsToEarn = Math.floor(total / 10)
 
   // WCAG 2.1 SC 2.1.2 + dialog pattern: trap focus inside the drawer while
   // open and restore it to the trigger element when closed.
@@ -221,9 +246,9 @@ export default function CartDrawer() {
                   </button>
                 </div>
               ) : (
-                items.map((item) => (
+                currentItems.map((item) => (
                   <div
-                    key={item.id}
+                    key={item.cartId}
                     style={{
                       display: 'flex',
                       gap: 14,
@@ -259,14 +284,18 @@ export default function CartDrawer() {
                         {item.name}
                       </div>
                       <div style={{ fontSize: 13, color: C.muted, marginBottom: 10 }}>
-                        ₹{item.price?.toLocaleString()}
+                        {item.priceAvailable
+                          ? `₹${Number(item.price).toLocaleString()}`
+                          : catalogLoading
+                            ? 'Refreshing price...'
+                            : 'Price unavailable'}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {/* WCAG 2.2 SC 2.5.8: minimum 24×24 px; using 32 px for
                             adequate touch target with the 8 px gap on either side */}
                         <button
                           type="button"
-                          onClick={() => updateQty(item.id, -1)}
+                          onClick={() => updateQty(item.cartId, -1)}
                           aria-label={
                             item.qty <= 1
                               ? `Remove ${item.name} from cart`
@@ -298,7 +327,7 @@ export default function CartDrawer() {
                         </span>
                         <button
                           type="button"
-                          onClick={() => updateQty(item.id, 1)}
+                          onClick={() => updateQty(item.cartId, 1)}
                           aria-label={`Increase ${item.name} quantity`}
                           style={{
                             width: 32,
@@ -316,7 +345,7 @@ export default function CartDrawer() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeItem(item.cartId)}
                           aria-label={`Remove ${item.name} from cart`}
                           style={{
                             marginLeft: 'auto',
@@ -375,7 +404,7 @@ export default function CartDrawer() {
                   <span
                     style={{ fontSize: 18, fontWeight: 700, color: C.text, fontFamily: FONT.serif }}
                   >
-                    ₹{total.toLocaleString()}
+                    {hasCurrentPrices ? `₹${total.toLocaleString()}` : 'Refreshing...'}
                   </span>
                 </div>
                 <div style={{ fontSize: 11, color: C.muted, marginBottom: 16 }}>
@@ -386,6 +415,7 @@ export default function CartDrawer() {
                 <button
                   type="button"
                   onClick={handleCheckout}
+                  disabled={!hasCurrentPrices}
                   style={{
                     width: '100%',
                     background: C.forest,
@@ -395,19 +425,24 @@ export default function CartDrawer() {
                     padding: '14px',
                     fontSize: 15,
                     fontWeight: 600,
-                    cursor: 'pointer',
+                    cursor: hasCurrentPrices ? 'pointer' : 'not-allowed',
                     fontFamily: 'inherit',
                     marginBottom: 8,
                     transition: 'background 0.2s',
+                    opacity: hasCurrentPrices ? 1 : 0.65,
                   }}
                   onMouseEnter={(e) => {
+                    if (!hasCurrentPrices) return
                     e.currentTarget.style.background = C.forestLight
                   }}
                   onMouseLeave={(e) => {
+                    if (!hasCurrentPrices) return
                     e.currentTarget.style.background = C.forest
                   }}
                 >
-                  Proceed to Checkout — ₹{total.toLocaleString()}
+                  {hasCurrentPrices
+                    ? `Proceed to Checkout — ₹${total.toLocaleString()}`
+                    : 'Refreshing current prices'}
                 </button>
                 <button
                   type="button"

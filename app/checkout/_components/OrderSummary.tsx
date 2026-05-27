@@ -4,8 +4,10 @@ import ProductImage from '@/components/ui/ProductImage'
 import type { CartItem } from '@/types'
 import { FREE_SHIPPING_THRESHOLD } from '@/constants/shipping'
 
+type SummaryCartItem = CartItem & { priceAvailable?: boolean }
+
 interface OrderSummaryProps {
-  items: CartItem[]
+  items: SummaryCartItem[]
   itemCount: number
   total: number
   shipping: number
@@ -87,6 +89,8 @@ export default function OrderSummary({
   grandTotal,
   pointsToEarn,
 }: OrderSummaryProps) {
+  const pricesReady = items.every((item) => item.priceAvailable !== false)
+
   return (
     <aside className="lg:sticky lg:top-20">
       <div className="checkout-panel checkout-panel--summary">
@@ -115,7 +119,9 @@ export default function OrderSummary({
                 </div>
               </div>
               <div className="checkout-summary-item__amount">
-                ₹{(item.price * item.qty).toLocaleString('en-IN')}
+                {item.priceAvailable === false
+                  ? 'Refreshing...'
+                  : `₹${(item.price * item.qty).toLocaleString('en-IN')}`}
               </div>
             </li>
           ))}
@@ -124,17 +130,25 @@ export default function OrderSummary({
         <div className="border-t border-border pt-4">
           <div className="checkout-summary-row">
             <span>Subtotal</span>
-            <span>₹{total.toLocaleString('en-IN')}</span>
+            <span>{pricesReady ? `₹${total.toLocaleString('en-IN')}` : 'Refreshing...'}</span>
           </div>
           <div className={`checkout-summary-row ${shipping === 0 ? 'text-sage' : ''}`}>
             <span>Shipping</span>
-            <span>{shipping === 0 ? 'FREE' : `₹${shipping.toLocaleString('en-IN')}`}</span>
+            <span>
+              {pricesReady
+                ? shipping === 0
+                  ? 'FREE'
+                  : `₹${shipping.toLocaleString('en-IN')}`
+                : 'Refreshing...'}
+            </span>
           </div>
           <div className="checkout-summary-total">
             <span className="font-serif">Total</span>
-            <span>₹{grandTotal.toLocaleString('en-IN')}</span>
+            <span>{pricesReady ? `₹${grandTotal.toLocaleString('en-IN')}` : 'Refreshing...'}</span>
           </div>
-          <p className="checkout-summary-total-words">{rupeesInWords(grandTotal)}</p>
+          {pricesReady && (
+            <p className="checkout-summary-total-words">{rupeesInWords(grandTotal)}</p>
+          )}
         </div>
 
         {/* Loyalty + delivery info */}
