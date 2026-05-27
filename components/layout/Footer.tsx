@@ -45,25 +45,6 @@ const POLICY_LINKS: Array<[string, string]> = [
   ['Grievance Redressal', '/contact'],
 ]
 
-const PAYMENT_METHODS = [
-  'UPI',
-  'Visa',
-  'Mastercard',
-  'Maestro',
-  'RuPay',
-  'Net Banking',
-  'EMI',
-  'COD',
-]
-
-const BOTTOM_LEGAL: Array<[string, string]> = [
-  ['Privacy', '/privacy-policy'],
-  ['Terms', '/terms'],
-  ['Returns', '/returns-refunds'],
-  ['Shipping', '/shipping-policy'],
-  ['Cookies', '/cookie-policy'],
-]
-
 function ColHead({ children }: { children: React.ReactNode }) {
   return <h3 className="footer-col-head">{children}</h3>
 }
@@ -85,6 +66,26 @@ function LinkColumn({ title, links }: { title: string; links: Array<[string, str
   )
 }
 
+function PolicyColumn() {
+  return (
+    <div>
+      <ColHead>POLICIES</ColHead>
+      <ul className="footer-link-list">
+        {POLICY_LINKS.map(([label, path]) => (
+          <li key={label}>
+            <Link href={path} className="footer-link">
+              {label}
+            </Link>
+          </li>
+        ))}
+        <li>
+          <CookiePreferencesButton className="footer-link footer-link--button" />
+        </li>
+      </ul>
+    </div>
+  )
+}
+
 export default function Footer() {
   const cinLabel = hasVerifiedCin() ? BUSINESS_COMPLIANCE.cin : null
   const gstinLabel = hasVerifiedGstin() ? BUSINESS_COMPLIANCE.gstin : null
@@ -99,7 +100,7 @@ export default function Footer() {
           <LinkColumn title="SHOP" links={SHOP_LINKS} />
           <LinkColumn title="COMPANY" links={COMPANY_LINKS} />
           <LinkColumn title="HELP" links={HELP_LINKS} />
-          <LinkColumn title="POLICIES" links={POLICY_LINKS} />
+          <PolicyColumn />
         </div>
 
         {/* Vertical divider */}
@@ -171,23 +172,6 @@ export default function Footer() {
           <span className="footer-bottom__copy">
             © {new Date().getFullYear()} {BUSINESS_COMPLIANCE.legalName}
           </span>
-
-          <div className="footer-bottom__legal">
-            {BOTTOM_LEGAL.map(([label, href]) => (
-              <Link key={href} href={href} className="footer-bottom__legal-link">
-                {label}
-              </Link>
-            ))}
-            <CookiePreferencesButton />
-          </div>
-
-          <div className="footer-bottom__payments" aria-label="Accepted payment methods">
-            {PAYMENT_METHODS.map((method) => (
-              <span key={method} className="footer-payment-badge">
-                {method}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
     </footer>
