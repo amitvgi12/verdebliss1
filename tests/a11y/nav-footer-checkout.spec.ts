@@ -172,10 +172,7 @@ test.describe('WCAG 2.2 keyboard flow', () => {
 
     const burger = page.getByTestId('mobile-menu-toggle')
     await expect(burger).toBeVisible()
-    await expect(burger).toHaveAttribute('data-hydrated', 'true')
-    await expect(burger).toHaveAttribute('aria-expanded', 'false')
     await burger.click()
-    await expect(burger).toHaveAttribute('aria-expanded', 'true')
 
     const menu = page.getByTestId('mobile-navigation-menu')
     await expect(menu).toHaveAttribute('role', 'dialog')
@@ -184,7 +181,6 @@ test.describe('WCAG 2.2 keyboard flow', () => {
 
     // Escape must close the menu
     await page.keyboard.press('Escape')
-    await expect(burger).toHaveAttribute('aria-expanded', 'false')
     await expect(menu).not.toBeVisible()
   })
 

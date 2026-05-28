@@ -41,23 +41,35 @@ export default function Nav({ products }: { products: Product[] }) {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [navHydrated, setNavHydrated] = useState(false)
-
-  useEffect(() => {
-    setNavHydrated(true)
-  }, [])
 
   const isActive = (path: string) =>
     pathname === path || (path === '/products' && pathname?.startsWith('/products'))
 
-  const closeMenus = () => {
+  function closeMobileMenu() {
+    menuRef.current?.hidePopover?.()
     setMenuOpen(false)
+  }
+
+  const closeMenus = () => {
+    closeMobileMenu()
     setSearchOpen(false)
   }
 
   // WCAG 2.1 SC 2.1.2 + dialog pattern for the overlay mobile menu:
   // trap focus within the menu while open, restore it to the burger on close.
-  const menuRef = useFocusTrap<HTMLElement>(menuOpen, () => setMenuOpen(false))
+  const menuRef = useFocusTrap<HTMLElement>(menuOpen, closeMobileMenu)
+
+  useEffect(() => {
+    const menu = menuRef.current
+    if (!menu) return
+
+    const syncMenuState = () => {
+      setMenuOpen(menu.matches(':popover-open'))
+    }
+
+    menu.addEventListener('toggle', syncMenuState)
+    return () => menu.removeEventListener('toggle', syncMenuState)
+  }, [menuRef])
 
   return (
     <>
@@ -126,7 +138,7 @@ export default function Nav({ products }: { products: Product[] }) {
               type="button"
               onClick={() => {
                 setSearchOpen((o) => !o)
-                setMenuOpen(false)
+                closeMobileMenu()
               }}
               aria-label="Search"
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent md:hidden"
@@ -170,12 +182,13 @@ export default function Nav({ products }: { products: Product[] }) {
             {/* Mobile-only burger */}
             <button
               type="button"
-              onClick={() => setMenuOpen((o) => !o)}
+              onClick={() => setSearchOpen(false)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen ? 'true' : 'false'}
               aria-haspopup="dialog"
+              popoverTarget="mobile-navigation-menu"
+              popoverTargetAction="toggle"
               data-testid="mobile-menu-toggle"
-              data-hydrated={navHydrated ? 'true' : 'false'}
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent md:hidden"
             >
               {menuOpen ? (
@@ -205,88 +218,73 @@ export default function Nav({ products }: { products: Product[] }) {
       </nav>
 
       {/* Mobile menu */}
-      <AnimatePresence>
-        {menuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-[98] bg-[#17241b]/38 backdrop-blur-[2px] md:hidden"
-            />
-            <motion.aside
-              ref={menuRef}
-              initial={{ opacity: 0, y: -8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Navigation menu"
-              data-testid="mobile-navigation-menu"
-              className="fixed inset-x-4 top-[68px] z-[99] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-[#d7c7b6] bg-[#fffaf4] p-3 shadow-[0_26px_80px_rgba(23,36,27,0.32)] backdrop-blur-xl md:hidden"
-            >
-              <div className="mb-3 flex items-start justify-between rounded-[18px] bg-[#254f32] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
-                <div>
-                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#d7b978]">
-                    Pages
-                  </p>
-                  <p className="mt-2 text-base font-semibold leading-tight text-[#fffaf4]">
-                    Explore VerdeBliss
-                  </p>
-                </div>
-                {/* Explicit close button — keyboard users can close without navigating */}
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen(false)}
-                  aria-label="Close navigation menu"
-                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
+      <aside
+        ref={menuRef}
+        id="mobile-navigation-menu"
+        popover="auto"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        data-testid="mobile-navigation-menu"
+        className="fixed inset-x-4 top-[68px] z-[99] m-0 max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-[#d7c7b6] bg-[#fffaf4] p-3 shadow-[0_26px_80px_rgba(23,36,27,0.32)] backdrop-blur-xl md:hidden"
+      >
+        <div className="mb-3 flex items-start justify-between rounded-[18px] bg-[#254f32] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+          <div>
+            <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#d7b978]">
+              Pages
+            </p>
+            <p className="mt-2 text-base font-semibold leading-tight text-[#fffaf4]">
+              Explore VerdeBliss
+            </p>
+          </div>
+          {/* Explicit close button — keyboard users can close without navigating */}
+          <button
+            type="button"
+            onClick={closeMobileMenu}
+            popoverTarget="mobile-navigation-menu"
+            popoverTargetAction="hide"
+            aria-label="Close navigation menu"
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white/70 hover:bg-white/20"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        <div className="grid gap-2">
+          {LINKS.map(({ path, label, icon: Icon }) => {
+            const active = isActive(path)
+            return (
+              <Link
+                key={path}
+                href={path}
+                aria-current={active ? 'page' : undefined}
+                onClick={closeMenus}
+                className={`group flex min-h-12 w-full items-center gap-3 rounded-[18px] border px-3.5 py-2.5 text-left text-sm transition ${
+                  active
+                    ? 'border-[#254f32] bg-[#254f32] font-semibold text-[#fffaf4] shadow-sm'
+                    : 'border-[#eadfd4] bg-[#fdf7ef] font-semibold text-text hover:border-sage hover:bg-sagePale hover:text-forest'
+                }`}
+              >
+                <span
+                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+                    active ? 'bg-white/18 text-[#fffaf4]' : 'bg-sagePale text-forest'
+                  }`}
                 >
-                  <X size={14} />
-                </button>
-              </div>
-              <div className="grid gap-2">
-                {LINKS.map(({ path, label, icon: Icon }) => {
-                  const active = isActive(path)
-                  return (
-                    <Link
-                      key={path}
-                      href={path}
-                      aria-current={active ? 'page' : undefined}
-                      onClick={closeMenus}
-                      className={`group flex min-h-12 w-full items-center gap-3 rounded-[18px] border px-3.5 py-2.5 text-left text-sm transition ${
-                        active
-                          ? 'border-[#254f32] bg-[#254f32] font-semibold text-[#fffaf4] shadow-sm'
-                          : 'border-[#eadfd4] bg-[#fdf7ef] font-semibold text-text hover:border-sage hover:bg-sagePale hover:text-forest'
-                      }`}
-                    >
-                      <span
-                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-                          active ? 'bg-white/18 text-[#fffaf4]' : 'bg-sagePale text-forest'
-                        }`}
-                      >
-                        <Icon size={16} />
-                      </span>
-                      <span className={`flex-1 ${active ? 'text-[#fffaf4]' : 'text-text'}`}>
-                        {label}
-                      </span>
-                      <ArrowRight
-                        size={14}
-                        className={
-                          active
-                            ? 'text-[#fffaf4] opacity-85'
-                            : 'text-muted group-hover:text-forest'
-                        }
-                      />
-                    </Link>
-                  )
-                })}
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+                  <Icon size={16} />
+                </span>
+                <span className={`flex-1 ${active ? 'text-[#fffaf4]' : 'text-text'}`}>
+                  {label}
+                </span>
+                <ArrowRight
+                  size={14}
+                  className={
+                    active ? 'text-[#fffaf4] opacity-85' : 'text-muted group-hover:text-forest'
+                  }
+                />
+              </Link>
+            )
+          })}
+        </div>
+      </aside>
     </>
   )
 }
