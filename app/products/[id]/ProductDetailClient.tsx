@@ -25,7 +25,12 @@ import ReviewSection from '@/components/features/reviews/ReviewSection'
 import { C, FONT } from '@/constants/theme'
 import { getProductCompliance } from '@/constants/productCompliance'
 import { MAX_CART_ITEM_QTY } from '@/constants/cart'
-import { formatPriceValidUntil, getVerifiablePriceOffer } from '@/lib/pricing'
+import {
+  PRICE_UNAVAILABLE_COPY,
+  formatPriceValidUntil,
+  getVerifiablePriceOffer,
+  hasProductPrice,
+} from '@/lib/pricing'
 import { formatApprovedReviewCount } from '@/lib/review-copy'
 import type { ApprovedReview, ReviewAggregate } from '@/lib/products-server'
 import type { Product } from '@/types'
@@ -114,7 +119,7 @@ export default function ProductDetailClient({
 
   const handleAdd = () => {
     if (!p) return
-    if (stockOut || maxQty < 1) return
+    if (stockOut || !hasProductPrice(p) || maxQty < 1) return
     addItem(p)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
@@ -203,9 +208,10 @@ export default function ProductDetailClient({
     : _baseCompliance
   const related = all.filter((r) => r.id !== p.id && r.category === p.category).slice(0, 4)
   const priceOffer = getVerifiablePriceOffer(p)
+  const priceAvailable = hasProductPrice(p)
   const mrp = priceOffer.mrp
   const discount = priceOffer.discountPercent
-  const loyalPts = Math.floor((p.price ?? 0) / 10)
+  const loyalPts = priceAvailable ? Math.floor(priceOffer.price / 10) : 0
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
   const stockCount = typeof p.stock === 'number' ? p.stock : null
   const stockOut = stockCount === 0
@@ -374,75 +380,104 @@ export default function ProductDetailClient({
             <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 20 }} />
 
             <div style={{ marginBottom: 4 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-                <span
-                  style={{
-                    fontFamily: FONT.serif,
-                    fontSize: isMobile ? 28 : 34,
-                    fontWeight: 600,
-                    color: C.text,
-                  }}
-                >
-                  ₹{priceOffer.price.toLocaleString()}
-                </span>
-                {mrp !== null && (
-                  <span style={{ fontSize: 14, color: C.light, textDecoration: 'line-through' }}>
-                    MRP ₹{mrp.toLocaleString()}
-                  </span>
-                )}
-                {discount !== null && (
+              {priceAvailable ? (
+                <>
+                  <div
+                    style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: FONT.serif,
+                        fontSize: isMobile ? 28 : 34,
+                        fontWeight: 600,
+                        color: C.text,
+                      }}
+                    >
+                      ₹{priceOffer.price.toLocaleString()}
+                    </span>
+                    {mrp !== null && (
+                      <span
+                        style={{ fontSize: 14, color: C.light, textDecoration: 'line-through' }}
+                      >
+                        MRP ₹{mrp.toLocaleString()}
+                      </span>
+                    )}
+                    {discount !== null && (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          background: C.goldText,
+                          color: 'white',
+                          padding: '3px 10px',
+                          borderRadius: 99,
+                        }}
+                      >
+                        {discount}% OFF
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>
+                    MRP inclusive of all taxes
+                  </div>
+                </>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <span
                     style={{
-                      fontSize: 11,
+                      width: 'fit-content',
+                      fontSize: 13,
                       fontWeight: 700,
-                      background: C.goldText,
-                      color: 'white',
-                      padding: '3px 10px',
+                      background: C.terraPale,
+                      color: C.terra,
+                      padding: '7px 12px',
                       borderRadius: 99,
                     }}
                   >
-                    {discount}% OFF
+                    {PRICE_UNAVAILABLE_COPY}
                   </span>
-                )}
-              </div>
-              <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>
-                MRP inclusive of all taxes
-              </div>
+                  <span style={{ fontSize: 12, color: C.muted }}>
+                    We are refreshing live pricing before checkout.
+                  </span>
+                </div>
+              )}
               {priceOffer.priceValidUntil && (
                 <div style={{ marginTop: 4, fontSize: 12, color: C.muted }}>
                   Launch price valid until {formatPriceValidUntil(priceOffer.priceValidUntil)}.
                 </div>
               )}
-              <div
-                style={{
-                  fontSize: 12,
-                  color: C.goldText,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  marginTop: 6,
-                }}
-              >
-                <Award size={12} />
-                {user ? (
-                  <span>Earn {loyalPts} loyalty points with this purchase</span>
-                ) : (
-                  <span>
-                    <Link
-                      href="/account"
-                      style={{
-                        color: C.goldText,
-                        fontWeight: 600,
-                        textDecoration: 'underline',
-                        textUnderlineOffset: '2px',
-                      }}
-                    >
-                      Sign in
-                    </Link>{' '}
-                    to earn {loyalPts} loyalty points with this purchase
-                  </span>
-                )}
-              </div>
+              {priceAvailable && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: C.goldText,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    marginTop: 6,
+                  }}
+                >
+                  <Award size={12} />
+                  {user ? (
+                    <span>Earn {loyalPts} loyalty points with this purchase</span>
+                  ) : (
+                    <span>
+                      <Link
+                        href="/account"
+                        style={{
+                          color: C.goldText,
+                          fontWeight: 600,
+                          textDecoration: 'underline',
+                          textUnderlineOffset: '2px',
+                        }}
+                      >
+                        Sign in
+                      </Link>{' '}
+                      to earn {loyalPts} loyalty points with this purchase
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             <ProductPurchaseActions
@@ -450,6 +485,7 @@ export default function ProductDetailClient({
               cartQty={cartItem?.qty ?? null}
               maxQty={maxQty}
               stockOut={stockOut}
+              priceAvailable={priceAvailable}
               added={added}
               isWishlisted={has(p.id)}
               onAdd={handleAdd}

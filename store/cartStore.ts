@@ -2,6 +2,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware'
 import { MAX_CART_ITEM_QTY } from '@/constants/cart'
+import { PRICE_UNAVAILABLE_COPY, hasProductPrice } from '@/lib/pricing'
 import { useToastStore } from '@/store/toastStore'
 import type { CartItem, CartState } from '@/types'
 
@@ -20,6 +21,10 @@ export const useCartStore = create<CartState>()(
       items: [],
       isOpen: false,
       addItem: (product) => {
+        if (!hasProductPrice(product)) {
+          useToastStore.getState().push(PRICE_UNAVAILABLE_COPY, 'warning')
+          return
+        }
         const existing = get().items.find((i) => i.id === product.id)
         const ceiling = Math.min(product.stock ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
         if (existing && existing.qty >= ceiling) {
@@ -63,6 +68,7 @@ export const useCartStore = create<CartState>()(
           items: state.items.map((item) => {
             const product = byId.get(item.id) ?? byName.get(item.name)
             if (!product) return item
+            if (!hasProductPrice(product)) return item
             const ceiling = Math.min(product.stock ?? MAX_CART_ITEM_QTY, MAX_CART_ITEM_QTY)
             return { ...product, qty: Math.min(item.qty, ceiling) }
           }),

@@ -3,6 +3,7 @@ import { getShippingCost } from '@/constants/shipping'
 import { COD_MAX_TOTAL } from '@/constants/checkout'
 import { MAX_CART_ITEM_QTY } from '@/constants/cart'
 import { pointsForSubtotal } from '@/lib/loyalty'
+import { hasProductPrice } from '@/lib/pricing'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
@@ -231,6 +232,7 @@ export async function normalizeCart(rawItems: unknown) {
   const items: NormalizedCartItem[] = incoming.map((item) => {
     const product = byId.get(item.id)
     if (!product) throw new Error(`Product not found: ${item.id}`)
+    assertLineItemPriceAvailable(product)
     if (typeof product.stock === 'number' && product.stock < item.qty) {
       throw new Error(`${product.name} has only ${product.stock} item(s) left`)
     }
@@ -252,6 +254,16 @@ export async function normalizeCart(rawItems: unknown) {
   const pointsToEarn = pointsForSubtotal(subtotal)
 
   return { items, totals: { subtotal, shipping, total, pointsToEarn } satisfies CartTotals }
+}
+
+function assertLineItemPriceAvailable(item: Pick<NormalizedCartItem, 'name' | 'price'>) {
+  if (!hasProductPrice(item)) {
+    throw new Error(`${item.name} price is temporarily unavailable`)
+  }
+}
+
+function assertOrderItemsHavePrices(items: NormalizedCartItem[]) {
+  for (const item of items) assertLineItemPriceAvailable(item)
 }
 
 export function toOrderSnapshot(items: NormalizedCartItem[]) {
@@ -477,6 +489,8 @@ export async function persistOrder(input: {
   awardPoints: boolean
   rawPaymentPayload?: Record<string, unknown>
 }): Promise<PersistedOrderResult> {
+  assertOrderItemsHavePrices(input.items)
+
   const existing = await getExistingOrderByPaymentId(input.paymentId)
   if (existing) {
     return {
@@ -569,6 +583,7 @@ export async function completeRazorpayCheckout(input: {
   if (session.expires_at && new Date(session.expires_at).getTime() < Date.now()) {
     throw new Error('Checkout session expired. Please start checkout again.')
   }
+  assertOrderItemsHavePrices(session.cart_snapshot)
 
   const payment = input.payment ?? (await fetchRazorpayPayment(input.razorpayPaymentId))
   if (payment.order_id !== input.razorpayOrderId) {

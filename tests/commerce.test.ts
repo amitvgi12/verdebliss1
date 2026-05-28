@@ -119,6 +119,26 @@ describe('commerce validation and payment helpers', () => {
     await expect(normalizeCart([{ id: '1', qty: 1 }])).rejects.toThrow('Product not found: 1')
   })
 
+  it('blocks checkout when a catalogue product has no authoritative price', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.mocked(hasSupabaseAdminEnv).mockReturnValue(true)
+    mockProductLookup({
+      data: [
+        {
+          id: '1',
+          name: 'Bakuchiol Renewal Serum',
+          price: 0,
+          stock: 100,
+          active: true,
+        },
+      ],
+    })
+
+    await expect(normalizeCart([{ id: '1', qty: 1 }])).rejects.toThrow(
+      'Bakuchiol Renewal Serum price is temporarily unavailable'
+    )
+  })
+
   it('verifies Razorpay HMAC signatures server-side', () => {
     vi.stubEnv('RAZORPAY_KEY_SECRET', 'test_secret')
     const orderId = 'order_123'

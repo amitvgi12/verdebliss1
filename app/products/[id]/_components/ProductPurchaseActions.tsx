@@ -9,6 +9,7 @@ interface ProductPurchaseActionsProps {
   cartQty: number | null
   maxQty: number
   stockOut: boolean
+  priceAvailable: boolean
   added: boolean
   isWishlisted: boolean
   onAdd: () => void
@@ -23,6 +24,7 @@ export default function ProductPurchaseActions({
   cartQty,
   maxQty,
   stockOut,
+  priceAvailable,
   added,
   isWishlisted,
   onAdd,
@@ -31,8 +33,9 @@ export default function ProductPurchaseActions({
   onIncreaseCartQty,
   onWishlist,
 }: ProductPurchaseActionsProps) {
-  const showCartQty = cartQty !== null && cartQty > 0
+  const showCartQty = priceAvailable && cartQty !== null && cartQty > 0
   const inCart = showCartQty
+  const primaryDisabled = stockOut || !priceAvailable
 
   return (
     <>
@@ -92,13 +95,15 @@ export default function ProductPurchaseActions({
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={inCart ? onGoToCart : onAdd}
-          disabled={stockOut}
+          disabled={primaryDisabled}
           aria-label={
             stockOut
               ? `${productName} is sold out`
+              : !priceAvailable
+                ? `${productName} price temporarily unavailable`
               : inCart
-                ? `View ritual — ${productName} is in your cart`
-                : `Add ${productName} to ritual`
+                ? `View cart — ${productName} is in your cart`
+                : `Add ${productName} to cart`
           }
           style={{
             flex: 1,
@@ -106,7 +111,7 @@ export default function ProductPurchaseActions({
             height: 52,
             borderRadius: 12,
             border: 'none',
-            cursor: stockOut ? 'not-allowed' : 'pointer',
+            cursor: primaryDisabled ? 'not-allowed' : 'pointer',
             fontFamily: 'inherit',
             fontSize: 14,
             fontWeight: 700,
@@ -115,7 +120,7 @@ export default function ProductPurchaseActions({
             justifyContent: 'center',
             gap: 6,
             whiteSpace: 'nowrap',
-            background: stockOut ? C.light : inCart ? C.sage : C.forest,
+            background: primaryDisabled ? C.light : inCart ? C.sage : C.forest,
             color: 'white',
             transition: 'background 0.25s',
           }}
@@ -131,6 +136,16 @@ export default function ProductPurchaseActions({
               >
                 <ShoppingBag size={15} /> Sold out
               </motion.span>
+            ) : !priceAvailable ? (
+              <motion.span
+                key="price-unavailable"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <ShoppingBag size={15} /> Price unavailable
+              </motion.span>
             ) : inCart ? (
               <motion.span
                 key="go-to-cart"
@@ -139,7 +154,7 @@ export default function ProductPurchaseActions({
                 exit={{ opacity: 0, y: -6 }}
                 style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                <ShoppingBag size={15} /> View ritual
+                <ShoppingBag size={15} /> View Cart
               </motion.span>
             ) : added ? (
               <motion.span
@@ -159,7 +174,7 @@ export default function ProductPurchaseActions({
                 exit={{ opacity: 0, y: -6 }}
                 style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                <ShoppingBag size={15} /> Add to ritual
+                <ShoppingBag size={15} /> Add to Cart
               </motion.span>
             )}
           </AnimatePresence>

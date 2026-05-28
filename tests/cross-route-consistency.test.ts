@@ -4,8 +4,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { PRODUCTS } from '@/constants/products'
 
-// Use the first seeded product as the fixture.
-const FIXTURE = PRODUCTS[0]
+// Use the first seeded product shell with an explicit DB-like price fixture.
+const FIXTURE = { ...PRODUCTS[0], price: 1495 }
 
 beforeEach(() => {
   vi.resetModules()
@@ -64,5 +64,11 @@ describe('cross-route price/badge/review consistency (Q1)', () => {
     const schema = productJsonLd(FIXTURE, null)
     const offer = schema.offers as Record<string, unknown>
     expect(typeof offer.price).toBe('number')
+  })
+
+  it('omits JSON-LD offers when product price is unavailable', async () => {
+    const { productJsonLd } = await import('@/lib/seo')
+    const schema = productJsonLd({ ...FIXTURE, price: 0 }, null)
+    expect(schema).not.toHaveProperty('offers')
   })
 })

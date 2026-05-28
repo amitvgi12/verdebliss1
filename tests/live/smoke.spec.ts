@@ -131,6 +131,9 @@ test.describe('live smoke checks', () => {
 
       // Extract visible prices from rendered HTML (skip script tags)
       const htmlWithoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+      expect(htmlWithoutScripts, `[/products/${slug}] PDP must never render ₹0`).not.toMatch(
+        /₹\s*0\b/
+      )
       const visiblePrices = new Set<number>()
       for (const m of htmlWithoutScripts.matchAll(pricePattern)) {
         visiblePrices.add(parseInt(m[1].replace(/,/g, ''), 10))
@@ -140,14 +143,24 @@ test.describe('live smoke checks', () => {
       let schemaPrice: number | null = null
       if (apiRes.status() === 200 && apiRes.headers()['content-type']?.includes('ld+json')) {
         const schemas = flattenJsonLd(JSON.parse(await apiRes.text()))
-        const offer = schemas.find((s) => s['@type'] === 'Offer') as
+        const product = schemas.find((s) => s['@type'] === 'Product')
+        const offer = (schemas.find((s) => s['@type'] === 'Offer') ??
+          (product?.offers as Record<string, unknown> | undefined)) as
           | Record<string, unknown>
           | undefined
-        if (typeof offer?.price === 'number') schemaPrice = offer.price
+        if (typeof offer?.price === 'number') {
+          expect(offer.price, `[/api/schema/product/${slug}] Offer price must be positive`).toBeGreaterThan(
+            0
+          )
+          schemaPrice = offer.price
+        }
       } else {
         const product = findJsonLd(html, (s) => s['@type'] === 'Product')
         const offer = product?.offers as Record<string, unknown> | undefined
-        if (typeof offer?.price === 'number') schemaPrice = offer.price
+        if (typeof offer?.price === 'number') {
+          expect(offer.price, `[/products/${slug}] Offer price must be positive`).toBeGreaterThan(0)
+          schemaPrice = offer.price
+        }
       }
 
       if (schemaPrice !== null) {

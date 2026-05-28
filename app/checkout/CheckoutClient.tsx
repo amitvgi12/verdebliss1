@@ -21,6 +21,7 @@ import { COD_MAX_TOTAL } from '@/constants/checkout'
 import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 import { useCartStore, selectItemCount } from '@/store/cartStore'
 import { useProducts } from '@/hooks/useProducts'
+import { hasProductPrice } from '@/lib/pricing'
 import Steps from './_components/Steps'
 import AddressStep from './_components/AddressStep'
 import ReviewStep from './_components/ReviewStep'
@@ -250,7 +251,7 @@ export default function Checkout() {
       ...(currentProduct ?? item),
       cartId: item.id,
       price: currentProduct ? Number(currentProduct.price) : 0,
-      priceAvailable: Boolean(currentProduct && Number(currentProduct.price) > 0),
+      priceAvailable: Boolean(currentProduct && hasProductPrice(currentProduct)),
       qty: item.qty,
     }
   })
@@ -390,7 +391,7 @@ export default function Checkout() {
     setCheckoutError(
       catalogLoading
         ? 'Current product prices are still loading. Please wait a moment.'
-        : 'Current product prices are unavailable. Please refresh the cart and try again.'
+        : 'Current product prices are temporarily unavailable. Please refresh the cart and try again.'
     )
     return false
   }

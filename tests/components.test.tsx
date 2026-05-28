@@ -132,6 +132,7 @@ describe('ProductPurchaseActions', () => {
     cartQty: null as number | null,
     maxQty: 5,
     stockOut: false,
+    priceAvailable: true,
     added: false,
     isWishlisted: false,
     onAdd: vi.fn(),
@@ -141,14 +142,14 @@ describe('ProductPurchaseActions', () => {
     onWishlist: vi.fn(),
   }
 
-  it('shows "Add to ritual" when the item is not in the cart', () => {
+  it('shows "Add to Cart" when the item is not in the cart', () => {
     render(<ProductPurchaseActions {...base} />)
-    expect(screen.getByText('Add to ritual')).toBeInTheDocument()
+    expect(screen.getByText('Add to Cart')).toBeInTheDocument()
   })
 
-  it('shows "View ritual" when the item is already in the cart', () => {
+  it('shows "View Cart" when the item is already in the cart', () => {
     render(<ProductPurchaseActions {...base} cartQty={2} />)
-    expect(screen.getByText('View ritual')).toBeInTheDocument()
+    expect(screen.getByText('View Cart')).toBeInTheDocument()
   })
 
   it('shows "Sold out" when stock is empty', () => {
@@ -156,9 +157,9 @@ describe('ProductPurchaseActions', () => {
     expect(screen.getByText('Sold out')).toBeInTheDocument()
   })
 
-  it('does not show "Add to ritual" when item is in the cart', () => {
+  it('does not show "Add to Cart" when item is in the cart', () => {
     render(<ProductPurchaseActions {...base} cartQty={1} />)
-    expect(screen.queryByText('Add to ritual')).not.toBeInTheDocument()
+    expect(screen.queryByText('Add to Cart')).not.toBeInTheDocument()
   })
 
   it('shows quantity stepper when item is in the cart', () => {
@@ -171,17 +172,24 @@ describe('ProductPurchaseActions', () => {
     expect(screen.queryByLabelText('Bakuchiol Serum quantity in cart')).not.toBeInTheDocument()
   })
 
-  it('calls onAdd when "Add to ritual" is clicked', async () => {
+  it('calls onAdd when "Add to Cart" is clicked', async () => {
     const onAdd = vi.fn()
     render(<ProductPurchaseActions {...base} onAdd={onAdd} />)
-    screen.getByText('Add to ritual').closest('button')?.click()
+    screen.getByText('Add to Cart').closest('button')?.click()
     expect(onAdd).toHaveBeenCalledTimes(1)
   })
 
-  it('calls onGoToCart when "View ritual" is clicked', async () => {
+  it('does not call onAdd when price is unavailable', async () => {
+    const onAdd = vi.fn()
+    render(<ProductPurchaseActions {...base} priceAvailable={false} onAdd={onAdd} />)
+    screen.getByText('Price unavailable').closest('button')?.click()
+    expect(onAdd).not.toHaveBeenCalled()
+  })
+
+  it('calls onGoToCart when "View Cart" is clicked', async () => {
     const onGoToCart = vi.fn()
     render(<ProductPurchaseActions {...base} cartQty={1} onGoToCart={onGoToCart} />)
-    screen.getByText('View ritual').closest('button')?.click()
+    screen.getByText('View Cart').closest('button')?.click()
     expect(onGoToCart).toHaveBeenCalledTimes(1)
   })
 })

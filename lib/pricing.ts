@@ -1,5 +1,7 @@
 import type { Product } from '@/types'
 
+export const PRICE_UNAVAILABLE_COPY = 'Price temporarily unavailable'
+
 export interface VerifiablePriceOffer {
   price: number
   mrp: number | null
@@ -7,10 +9,23 @@ export interface VerifiablePriceOffer {
   priceValidUntil: string | null
 }
 
+export function hasProductPrice(product?: Pick<Product, 'price'> | null): boolean {
+  return normalizeMoney(product?.price) > 0
+}
+
 export function getVerifiablePriceOffer(product: Product): VerifiablePriceOffer {
   const price = normalizeMoney(product.price)
   const mrp = normalizeOptionalMoney(product.mrp)
   const priceValidUntil = normalizeFutureIso(product.price_valid_until)
+
+  if (price <= 0) {
+    return {
+      price,
+      mrp: null,
+      discountPercent: null,
+      priceValidUntil: null,
+    }
+  }
 
   if (mrp === null || mrp <= price || priceValidUntil === null) {
     return {

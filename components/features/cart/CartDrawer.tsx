@@ -9,6 +9,7 @@ import ProductImage from '@/components/ui/ProductImage'
 import { C, FONT } from '@/constants/theme'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useProducts } from '@/hooks/useProducts'
+import { PRICE_UNAVAILABLE_COPY, hasProductPrice } from '@/lib/pricing'
 
 export default function CartDrawer() {
   const router = useRouter()
@@ -33,7 +34,7 @@ export default function CartDrawer() {
       ...(currentProduct ?? item),
       cartId: item.id,
       price: currentProduct ? Number(currentProduct.price) : 0,
-      priceAvailable: Boolean(currentProduct && Number(currentProduct.price) > 0),
+      priceAvailable: Boolean(currentProduct && hasProductPrice(currentProduct)),
       qty: item.qty,
     }
   })
@@ -288,7 +289,7 @@ export default function CartDrawer() {
                           ? `₹${Number(item.price).toLocaleString()}`
                           : catalogLoading
                             ? 'Refreshing price...'
-                            : 'Price unavailable'}
+                            : PRICE_UNAVAILABLE_COPY}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {/* WCAG 2.2 SC 2.5.8: minimum 24×24 px; using 32 px for

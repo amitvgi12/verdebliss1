@@ -33,6 +33,11 @@ describe('PDP compliance and schema', () => {
     })
   })
 
+  it('does not emit an Offer when the authoritative price is unavailable', () => {
+    const schema = productJsonLd({ ...pricedProduct, price: 0 }, null)
+    expect(schema).not.toHaveProperty('offers')
+  })
+
   it('renders how-to usage steps without duplicated visual numbering text', () => {
     const product = PRODUCTS[0]
     render(

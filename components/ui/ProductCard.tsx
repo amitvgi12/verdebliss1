@@ -9,10 +9,9 @@ import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
 import { useCompareStore, MAX_COMPARE_PRODUCTS } from '@/store/compareStore'
-import { getVerifiablePriceOffer } from '@/lib/pricing'
+import { PRICE_UNAVAILABLE_COPY, getVerifiablePriceOffer, hasProductPrice } from '@/lib/pricing'
 import { formatApprovedReviewCount } from '@/lib/review-copy'
 import { productPath } from '@/lib/seo'
-import { getProductBadgeDisclosure, normalizeProductBadges } from '@/lib/product-claims'
 import type { Product } from '@/types'
 
 export default function ProductCard({
@@ -35,11 +34,12 @@ export default function ProductCard({
   const priceOffer = getVerifiablePriceOffer(p)
   const price = priceOffer.price
   const mrp = priceOffer.mrp
+  const priceAvailable = hasProductPrice(p)
   const href = productPath(p)
   const inWishlist = has(p.id)
   const stockOut = p.stock === 0
+  const canAddToCart = !stockOut && priceAvailable
   const hasApprovedReviews = p.rating != null && (p.review_count ?? 0) > 0
-  const visibleBadges = normalizeProductBadges(p.badges).slice(0, 2)
 
   const decreaseQty = () => {
     if (!cartItem) return
@@ -48,13 +48,20 @@ export default function ProductCard({
   }
 
   const increaseQty = () => {
-    if (!stockOut) updateQty(p.id, 1)
+    if (canAddToCart) updateQty(p.id, 1)
   }
 
   return (
     <motion.article whileTap={{ scale: 0.985 }} className="vb-product-card">
       <div className="vb-product-card__media">
-        <Link href={href} aria-label={`View ${p.name}, ₹${price.toLocaleString()}`}>
+        <Link
+          href={href}
+          aria-label={
+            priceAvailable
+              ? `View ${p.name}, ₹${price.toLocaleString()}`
+              : `View ${p.name}, ${PRICE_UNAVAILABLE_COPY.toLowerCase()}`
+          }
+        >
           <ProductImage
             product={p}
             priority={priority}
@@ -75,9 +82,9 @@ export default function ProductCard({
           />
         </button>
 
-        {stockOut && (
+        {(stockOut || !priceAvailable) && (
           <div className="vb-product-card__badges">
-            <ProductBadge label="SOLD OUT" tone="danger" />
+            <ProductBadge label={stockOut ? 'SOLD OUT' : 'PRICE UNAVAILABLE'} tone="danger" />
           </div>
         )}
       </div>
@@ -85,22 +92,14 @@ export default function ProductCard({
       <div className="vb-product-card__body">
         <div className="vb-product-card__category">{p.category}</div>
 
-        {((p.compliance_flags ?? []).includes('age_restricted_12plus') ||
-          visibleBadges.length > 0) && (
+        {(p.compliance_flags ?? []).includes('age_restricted_12plus') && (
           <div className="vb-product-card__claim-row">
-            {(p.compliance_flags ?? []).includes('age_restricted_12plus') && (
-              <span
-                className="vb-product-card__claim"
-                title="Contains 0.5% salicylic acid (BHA). Recommended for ages 12+."
-              >
-                Contains BHA · 12+
-              </span>
-            )}
-            {visibleBadges.map((b) => (
-              <span key={b} className="vb-product-card__claim" title={getProductBadgeDisclosure(b)}>
-                {b}
-              </span>
-            ))}
+            <span
+              className="vb-product-card__claim"
+              title="Contains 0.5% salicylic acid (BHA). Recommended for ages 12+."
+            >
+              Contains BHA · 12+
+            </span>
           </div>
         )}
 
@@ -116,7 +115,7 @@ export default function ProductCard({
             </span>
           </div>
         ) : (
-          <div className="vb-product-card__review-state">Verified reviews after purchase</div>
+          <div className="vb-product-card__review-state">Reviews open after purchase</div>
         )}
 
         <p className="vb-product-card__subcopy">{p.description}</p>
@@ -127,18 +126,24 @@ export default function ProductCard({
         </div>
 
         <div className="vb-product-card__price-row">
-          <div className="vb-product-card__prices">
-            <span className="vb-product-card__price">₹{price.toLocaleString()}</span>
-            {mrp && (
-              <span className="vb-product-card__mrp" aria-label={`MRP ₹${mrp.toLocaleString()}`}>
-                MRP ₹{mrp.toLocaleString()}
-              </span>
-            )}
-          </div>
-          <span className="vb-product-card__tax-note">Inclusive of all taxes</span>
+          {priceAvailable ? (
+            <>
+              <div className="vb-product-card__prices">
+                <span className="vb-product-card__price">₹{price.toLocaleString()}</span>
+                {mrp && (
+                  <span className="vb-product-card__mrp" aria-label={`MRP ₹${mrp.toLocaleString()}`}>
+                    MRP ₹{mrp.toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <span className="vb-product-card__tax-note">Inclusive of all taxes</span>
+            </>
+          ) : (
+            <span className="vb-product-card__price-unavailable">{PRICE_UNAVAILABLE_COPY}</span>
+          )}
         </div>
 
-        {cartItem ? (
+        {cartItem && priceAvailable ? (
           <div aria-label={`${p.name} quantity in cart`} className="vb-product-card__qty">
             <button
               type="button"
@@ -161,14 +166,20 @@ export default function ProductCard({
         ) : (
           <button
             type="button"
-            aria-label={stockOut ? `${p.name} sold out` : `Add ${p.name} to cart`}
-            disabled={stockOut}
+            aria-label={
+              stockOut
+                ? `${p.name} sold out`
+                : priceAvailable
+                  ? `Add ${p.name} to cart`
+                  : `${p.name} price temporarily unavailable`
+            }
+            disabled={!canAddToCart}
             onClick={() => {
-              if (!stockOut) addItem(p)
+              if (canAddToCart) addItem(p)
             }}
             className="vb-product-card__add"
           >
-            {stockOut ? 'Sold Out' : 'Add to ritual'}
+            {stockOut ? 'Sold Out' : priceAvailable ? 'Add to Cart' : 'Unavailable'}
           </button>
         )}
 

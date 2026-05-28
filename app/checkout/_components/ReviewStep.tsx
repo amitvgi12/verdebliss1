@@ -90,7 +90,7 @@ export default function ReviewStep({
                     <div className="checkout-review-item__name">{item.name}</div>
                     <div className="checkout-review-item__price">
                       {item.priceAvailable === false
-                        ? 'Refreshing price...'
+                        ? 'Price temporarily unavailable'
                         : `₹${item.price.toLocaleString('en-IN')} each`}
                     </div>
                   </div>
@@ -120,7 +120,7 @@ export default function ReviewStep({
 
                   <div className="checkout-review-item__total">
                     {item.priceAvailable === false
-                      ? 'Refreshing...'
+                      ? 'Unavailable'
                       : `₹${(item.price * item.qty).toLocaleString('en-IN')}`}
                   </div>
 
@@ -155,7 +155,7 @@ export default function ReviewStep({
             disabled={!pricesReady}
             className="checkout-step-primary"
           >
-            {pricesReady ? 'Continue to Payment' : 'Refreshing Prices'}
+            {pricesReady ? 'Continue to Payment' : 'Price Unavailable'}
             <CreditCard size={15} aria-hidden />
           </button>
         </div>

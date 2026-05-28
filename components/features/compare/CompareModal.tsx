@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import { useCompareStore } from '@/store/compareStore'
 import ProductImage from '@/components/ui/ProductImage'
+import { PRICE_UNAVAILABLE_COPY, hasProductPrice } from '@/lib/pricing'
 import { productPath } from '@/lib/seo'
 import Link from 'next/link'
 import type { Product } from '@/types'
@@ -10,7 +11,14 @@ import type { Product } from '@/types'
 const ROWS: Array<{ label: string; render: (p: Product) => React.ReactNode }> = [
   {
     label: 'Price',
-    render: (p) => <span className="compare-modal__price">₹{p.price.toLocaleString()}</span>,
+    render: (p) =>
+      hasProductPrice(p) ? (
+        <span className="compare-modal__price">₹{p.price.toLocaleString()}</span>
+      ) : (
+        <span className="compare-modal__stock compare-modal__stock--out">
+          {PRICE_UNAVAILABLE_COPY}
+        </span>
+      ),
   },
   { label: 'Category', render: (p) => p.category ?? '—' },
   { label: 'Key ingredient', render: (p) => p.ingredient ?? '—' },
@@ -106,14 +114,14 @@ export default function CompareModal() {
                   <td key={p.id} className="compare-modal__cell">
                     <button
                       type="button"
-                      disabled={p.stock === 0}
+                      disabled={!isPurchasable(p)}
                       onClick={() => {
-                        if (p.stock !== 0) addItem(p)
+                        if (isPurchasable(p)) addItem(p)
                       }}
                       className="compare-modal__add"
-                      aria-label={p.stock === 0 ? `${p.name} sold out` : `Add ${p.name} to cart`}
+                      aria-label={compareAddAriaLabel(p)}
                     >
-                      {p.stock === 0 ? 'Sold out' : 'Add to cart'}
+                      {compareAddLabel(p)}
                     </button>
                   </td>
                 ))}
@@ -124,4 +132,20 @@ export default function CompareModal() {
       </div>
     </div>
   )
+}
+
+function isPurchasable(product: Product): boolean {
+  return product.stock !== 0 && hasProductPrice(product)
+}
+
+function compareAddLabel(product: Product): string {
+  if (product.stock === 0) return 'Sold out'
+  return hasProductPrice(product) ? 'Add to cart' : 'Unavailable'
+}
+
+function compareAddAriaLabel(product: Product): string {
+  if (product.stock === 0) return `${product.name} sold out`
+  return hasProductPrice(product)
+    ? `Add ${product.name} to cart`
+    : `${product.name} price temporarily unavailable`
 }

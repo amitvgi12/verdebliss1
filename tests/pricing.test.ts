@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { formatPriceValidUntil, getVerifiablePriceOffer } from '@/lib/pricing'
+import { formatPriceValidUntil, getVerifiablePriceOffer, hasProductPrice } from '@/lib/pricing'
 import type { Product } from '@/types'
 
 const baseProduct: Product = {
@@ -13,6 +13,16 @@ afterEach(() => {
 })
 
 describe('verifiable price offers', () => {
+  it('treats zero or invalid prices as unavailable', () => {
+    expect(hasProductPrice({ ...baseProduct, price: 0 })).toBe(false)
+    expect(getVerifiablePriceOffer({ ...baseProduct, price: 0, mrp: 994 })).toEqual({
+      price: 0,
+      mrp: null,
+      discountPercent: null,
+      priceValidUntil: null,
+    })
+  })
+
   it('does not expose an MRP discount without a valid-until date', () => {
     expect(getVerifiablePriceOffer({ ...baseProduct, mrp: 994 })).toMatchObject({
       price: 795,
