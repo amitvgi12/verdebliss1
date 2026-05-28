@@ -97,13 +97,91 @@ test.describe('live smoke checks', () => {
   }
 
   test('product schema validates on a PDP', async ({ request }) => {
-    const response = await request.get('/products/bakuchiol-renewal-serum')
-    expect(response.status()).toBe(200)
-    const product = findJsonLd(await response.text(), (schema) => schema['@type'] === 'Product')
+    const slug = 'bakuchiol-renewal-serum'
+    const pdpRes = await request.get(`/products/${slug}`)
+    expect(pdpRes.status()).toBe(200)
+    const html = await pdpRes.text()
 
-    expect(product).toBeTruthy()
+    // Schema is now served via /api/schema/product/[id] (same-origin src).
+    // Try that first; fall back to inline for pre-externalization builds.
+    const apiRes = await request.get(`/api/schema/product/${slug}`)
+    const product =
+      apiRes.status() === 200 && apiRes.headers()['content-type']?.includes('ld+json')
+        ? flattenJsonLd(JSON.parse(await apiRes.text())).find((s) => s['@type'] === 'Product') ??
+          null
+        : findJsonLd(html, (s) => s['@type'] === 'Product')
+
+    expect(product, 'Product JSON-LD not found in PDP or schema API').toBeTruthy()
     expect(product?.name).toBe('Bakuchiol Renewal Serum')
     expect(product?.offers).toMatchObject({ '@type': 'Offer', priceCurrency: 'INR' })
+  })
+
+  // Q2: price parity — JSON-LD offer.price must match the visible price in HTML
+  test('JSON-LD offer.price matches visible price in HTML across all PDPs', async ({ request }) => {
+    const pricePattern = /₹([\d,]+)/g
+
+    for (const slug of PRODUCT_SLUGS) {
+      const [pdpRes, apiRes] = await Promise.all([
+        request.get(`/products/${slug}`),
+        request.get(`/api/schema/product/${slug}`),
+      ])
+      expect(pdpRes.status()).toBe(200)
+
+      const html = await pdpRes.text()
+
+      // Extract visible prices from rendered HTML (skip script tags)
+      const htmlWithoutScripts = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+      const visiblePrices = new Set<number>()
+      for (const m of htmlWithoutScripts.matchAll(pricePattern)) {
+        visiblePrices.add(parseInt(m[1].replace(/,/g, ''), 10))
+      }
+
+      // Get schema price
+      let schemaPrice: number | null = null
+      if (apiRes.status() === 200 && apiRes.headers()['content-type']?.includes('ld+json')) {
+        const schemas = flattenJsonLd(JSON.parse(await apiRes.text()))
+        const offer = schemas.find((s) => s['@type'] === 'Offer') as
+          | Record<string, unknown>
+          | undefined
+        if (typeof offer?.price === 'number') schemaPrice = offer.price
+      } else {
+        const product = findJsonLd(html, (s) => s['@type'] === 'Product')
+        const offer = product?.offers as Record<string, unknown> | undefined
+        if (typeof offer?.price === 'number') schemaPrice = offer.price
+      }
+
+      if (schemaPrice !== null) {
+        expect(
+          visiblePrices.has(schemaPrice),
+          `[/products/${slug}] JSON-LD price ₹${schemaPrice} not found in visible HTML prices: ${[...visiblePrices].join(', ')}`
+        ).toBe(true)
+      }
+    }
+  })
+
+  // Q2: x-build-sha must be consistent across /, /products, and all PDPs
+  test('x-build-sha is identical across home, catalogue, and all PDPs', async ({ request }) => {
+    const routes = ['/', '/products', ...PRODUCT_SLUGS.map((s) => `/products/${s}`)]
+    const shaByPath = new Map<string, string | null>()
+
+    await Promise.all(
+      routes.map(async (path) => {
+        const res = await request.get(path)
+        shaByPath.set(path, res.headers()['x-build-sha'] ?? null)
+      })
+    )
+
+    const rootSha = shaByPath.get('/')
+    const expectedSha = process.env.EXPECTED_BUILD_SHA
+    expect(rootSha, 'x-build-sha missing on /').toBeTruthy()
+    if (expectedSha) expect(rootSha).toBe(expectedSha)
+
+    for (const path of routes.slice(1)) {
+      expect(
+        shaByPath.get(path),
+        `x-build-sha mismatch on ${path} — possible stale ISR from a previous deploy`
+      ).toBe(rootSha)
+    }
   })
 
   test('PDP reflects current build freshness sentinels', async ({ request }) => {

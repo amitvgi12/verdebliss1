@@ -39,6 +39,24 @@ const SENTRY_CONNECT_SRC = process.env.SENTRY_DSN ? ' https://o*.ingest.sentry.i
 const CF_ORIGIN_GATE_EXEMPT = (path: string) =>
   path.startsWith('/api/webhooks/') || path === '/api/version' || path === '/api/csp-report'
 
+// Marketing/catalogue routes: no per-request nonce, ISR-cacheable once JSON-LD is external.
+// Authenticated routes (account, cart, checkout) keep nonce + strict-dynamic.
+function isMarketingRoute(pathname: string): boolean {
+  if (pathname === '/') return true
+  return [
+    '/products',
+    '/our-story',
+    '/ingredients',
+    '/sustainability',
+    '/blog',
+    '/faq',
+    '/press',
+    '/contact',
+    '/quiz',
+    '/api/schema',
+  ].some((prefix) => pathname.startsWith(prefix))
+}
+
 export function proxy(request: NextRequest) {
   // 1) Optional Cloudflare origin gate — runs before any other work so direct
   //    -to-origin abuse pays the absolute minimum cost.
@@ -53,15 +71,18 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  const nonce = generateNonce()
   const isProduction = process.env.NODE_ENV === 'production'
+  const marketing = isMarketingRoute(request.nextUrl.pathname)
 
+  const nonce = marketing ? '' : generateNonce()
   const cspDirectives = buildContentSecurityPolicy(nonce, {
     isProduction,
     sentryConnectSrc: SENTRY_CONNECT_SRC,
+    marketing,
   })
 
-  // Forward nonce to Server Components.
+  // Forward nonce to Server Components (empty string on marketing routes so
+  // StructuredData on faq/blog still works without a no-op header).
   const requestHeaders = withSecurityRequestHeaders(request.headers, nonce, cspDirectives)
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
@@ -112,20 +133,31 @@ export function buildContentSecurityPolicy(
   {
     isProduction,
     sentryConnectSrc = '',
+    marketing = false,
   }: {
     isProduction: boolean
     sentryConnectSrc?: string
+    marketing?: boolean
   }
 ): string {
+  // Marketing/catalogue routes: no nonce; 'unsafe-inline' allows Next.js's
+  // inline RSC hydration payload. These routes have no auth context so the
+  // trade-off is acceptable and matches common ISR deployments.
+  // Authenticated routes: nonce + strict-dynamic for stronger inline-script control.
+  const scriptSrc = marketing
+    ? `'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com${
+        isProduction ? '' : " 'unsafe-eval'"
+      }`
+    : `'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com${
+        isProduction ? '' : " 'unsafe-eval'"
+      }`
+
   return [
     "default-src 'self'",
-    // strict-dynamic lets nonce'd scripts load further scripts; we still keep
-    // an allow-list for Razorpay because their checkout JS lives at a fixed
-    // origin and is loaded directly by client code.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com${
-      isProduction ? '' : " 'unsafe-eval'"
-    }`,
-    `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`,
+    `script-src ${scriptSrc}`,
+    marketing
+      ? `script-src-elem 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`
+      : `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`,
     // Tailwind v4 + Next.js inject style tags. 'unsafe-inline' here is widely
     // accepted because style-based exfiltration is much weaker than script
     // execution. Hashes/nonces for styles are possible but can break Tailwind's

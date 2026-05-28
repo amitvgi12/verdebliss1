@@ -1,5 +1,7 @@
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
+import CompareBar from '@/components/features/compare/CompareBar'
+import CompareModal from '@/components/features/compare/CompareModal'
 import CartDrawerLoader from '@/components/ui/CartDrawerLoader'
 import CookieConsent from '@/components/ui/CookieConsent'
 import AuthInitializer from '@/components/ui/AuthInitializer'
@@ -7,8 +9,6 @@ import MotionProvider from '@/components/ui/MotionProvider'
 import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import VercelInsightsLoader from '@/components/ui/VercelInsightsLoader'
 import { Toaster } from '@/components/ui/Toast'
-import { StructuredData } from '@/lib/structured-data'
-import { connection } from 'next/server'
 import './globals.css'
 import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
@@ -16,7 +16,6 @@ import {
   BUSINESS_COMPLIANCE,
   assertProductionBusinessCompliance,
 } from '@/constants/businessCompliance'
-import { organizationJsonLd, websiteJsonLd } from '@/lib/site-schema'
 import { getProductsServer } from '@/lib/products-server'
 
 assertProductionBusinessCompliance()
@@ -95,9 +94,6 @@ export const metadata = {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  // Nonce-based CSP only works when Next renders with the incoming request,
-  // because framework scripts need the per-request nonce from proxy.ts.
-  await connection()
   const navProducts = await getProductsServer()
 
   return (
@@ -106,9 +102,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {/* Preconnect / DNS-prefetch for the payment iframe so first-checkout RTT is minimal */}
         <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
-        {/* JSON-LD with nonce — see proxy.ts + lib/structured-data.tsx */}
-        <StructuredData data={organizationJsonLd()} />
-        <StructuredData data={websiteJsonLd()} />
+        {/* Site JSON-LD served from same-origin route — covered by script-src 'self' */}
+        <script async type="application/ld+json" src="/api/schema/site" />
       </head>
       <body>
         {/* Skip-to-content (WCAG 2.4.1) */}
@@ -126,6 +121,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <VercelInsightsLoader />
           <Toaster />
           <CookieConsent />
+          <CompareBar />
+          <CompareModal />
         </MotionProvider>
       </body>
     </html>

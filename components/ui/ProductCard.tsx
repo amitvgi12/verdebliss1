@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowRight, Heart, Minus, Plus } from 'lucide-react'
+import { ArrowRight, Heart, Minus, Plus, ArrowLeftRight } from 'lucide-react'
 import ProductImage from '@/components/ui/ProductImage'
 import Stars from '@/components/ui/Stars'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
+import { useCompareStore, MAX_COMPARE_PRODUCTS } from '@/store/compareStore'
 import { getVerifiablePriceOffer } from '@/lib/pricing'
 import { formatApprovedReviewCount } from '@/lib/review-copy'
 import { productPath } from '@/lib/seo'
@@ -27,6 +28,9 @@ export default function ProductCard({
   const cartItem = useCartStore((s) => s.items.find((item) => item.id === p.id))
   const { toggle, has } = useWishlistStore()
   const user = useAuthStore((s) => s.user)
+  const { toggle: compareToggle, products: compareProducts } = useCompareStore()
+  const inCompare = compareProducts.some((cp) => cp.id === p.id)
+  const compareDisabled = !inCompare && compareProducts.length >= MAX_COMPARE_PRODUCTS
 
   const priceOffer = getVerifiablePriceOffer(p)
   const price = priceOffer.price
@@ -175,6 +179,24 @@ export default function ProductCard({
         >
           View details <ArrowRight size={13} />
         </Link>
+
+        <button
+          type="button"
+          onClick={() => compareToggle(p)}
+          disabled={compareDisabled}
+          aria-pressed={inCompare ? true : false}
+          aria-label={
+            inCompare
+              ? `Remove ${p.name} from comparison`
+              : compareDisabled
+                ? `Comparison full — remove a product first`
+                : `Add ${p.name} to comparison`
+          }
+          className={`vb-product-card__compare${inCompare ? ' vb-product-card__compare--active' : ''}`}
+        >
+          <ArrowLeftRight size={12} />
+          {inCompare ? 'Remove' : 'Compare'}
+        </button>
       </div>
     </motion.article>
   )

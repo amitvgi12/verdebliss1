@@ -8,111 +8,8 @@ import {
   getReviewAggregatesServer,
 } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
-import {
-  absoluteUrl,
-  breadcrumbJsonLd,
-  productImagePath,
-  productOgImagePath,
-  productPath,
-} from '@/lib/seo'
-import { StructuredData } from '@/lib/structured-data'
-import { FREE_SHIPPING_THRESHOLD, STANDARD_SHIPPING_COST } from '@/constants/shipping'
-import { getVerifiablePriceOffer } from '@/lib/pricing'
-import {
-  BUSINESS_COMPLIANCE,
-  getLegalNameServer,
-  getSellerDetailsServer,
-} from '@/constants/businessCompliance'
-import type { Product } from '@/types'
-
-interface ReviewAggregate {
-  count: number
-  average: number
-}
-
-export function productJsonLd(
-  product: Product,
-  aggregate: ReviewAggregate | null,
-  legalName = BUSINESS_COMPLIANCE.legalName
-) {
-  const priceOffer = getVerifiablePriceOffer(product)
-  const offer: Record<string, unknown> = {
-    '@type': 'Offer',
-    price: priceOffer.price,
-    priceCurrency: 'INR',
-    availability:
-      (product.stock ?? 1) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-    url: absoluteUrl(productPath(product)),
-    seller: {
-      '@type': 'Organization',
-      name: BUSINESS_COMPLIANCE.brandName,
-      legalName,
-    },
-    hasMerchantReturnPolicy: {
-      '@type': 'MerchantReturnPolicy',
-      applicableCountry: 'IN',
-      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-      merchantReturnDays: 14,
-      returnMethod: 'https://schema.org/ReturnByMail',
-      returnFees: 'https://schema.org/FreeReturn',
-    },
-    // Honest shipping disclosure: Free shipping kicks in on cart subtotal,
-    // not single-product price. Quote the standard rate; the threshold is
-    // surfaced via the checkout UI / FAQ, not Schema-level conditional rates.
-    shippingDetails: {
-      '@type': 'OfferShippingDetails',
-      shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
-      shippingRate: {
-        '@type': 'MonetaryAmount',
-        value: STANDARD_SHIPPING_COST,
-        currency: 'INR',
-      },
-      deliveryTime: {
-        '@type': 'ShippingDeliveryTime',
-        handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
-        transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 3, unitCode: 'DAY' },
-      },
-    },
-  }
-
-  if (priceOffer.priceValidUntil) {
-    offer.priceValidUntil = priceOffer.priceValidUntil.slice(0, 10)
-  }
-
-  const data: Record<string, unknown> = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    description: product.description,
-    image: absoluteUrl(productImagePath(product)),
-    sku: product.id,
-    brand: { '@type': 'Brand', name: 'VerdeBliss' },
-    offers: offer,
-    // FREE_SHIPPING_THRESHOLD is surfaced at checkout, not in offer schema —
-    // Google penalises offer schema that mismatches the on-page experience.
-    // Reading this constant keeps the import wired so future schema additions
-    // can use it without an extra import line.
-    additionalProperty: [
-      {
-        '@type': 'PropertyValue',
-        name: 'Free shipping cart threshold',
-        value: `INR ${FREE_SHIPPING_THRESHOLD}`,
-      },
-    ],
-  }
-
-  // Only emit aggregateRating when we actually have approved reviews. Hard-coded
-  // counts are a Google policy violation (rich-result manual action risk).
-  if (aggregate && aggregate.count > 0) {
-    data.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: aggregate.average.toFixed(1),
-      reviewCount: aggregate.count,
-    }
-  }
-
-  return data
-}
+import { absoluteUrl, productOgImagePath, productPath } from '@/lib/seo'
+import { getSellerDetailsServer } from '@/constants/businessCompliance'
 
 // Pre-build all known PDPs at deploy time so no PDP ever starts life as a
 // runtime ISR render from the previous build. dynamicParams=true (default)
@@ -175,22 +72,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     getReviewAggregatesServer(product.id),
   ])
 
-  // Keep PDP seller disclosures on the same compliance snapshot as the footer
-  // and legal pages. Env changes must go through a rebuild/redeploy so all
-  // static and ISR routes move together.
-  const legalName = getLegalNameServer()
   const sellerDetails = getSellerDetailsServer()
 
   return (
     <>
-      <StructuredData data={productJsonLd(product, aggregate, legalName)} />
-      <StructuredData
-        data={breadcrumbJsonLd([
-          { name: 'Home', path: '/' },
-          { name: 'Shop', path: '/products' },
-          { name: product.name, path: productPath(product) },
-        ])}
-      />
+      {/* JSON-LD served from same-origin route — covered by script-src 'self', no nonce needed */}
+      <script async type="application/ld+json" src={`/api/schema/product/${id}`} />
       <ProductDetailClient
         id={id}
         initialProduct={product}

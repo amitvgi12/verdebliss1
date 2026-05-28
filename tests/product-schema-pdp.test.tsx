@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { PRODUCTS } from '@/constants/products'
 import { getProductCompliance } from '@/constants/productCompliance'
-import { productJsonLd } from '@/app/products/[id]/page'
+import { productJsonLd } from '@/lib/seo'
 import ProductAccordions from '@/app/products/[id]/_components/ProductAccordions'
 
 const pricedProduct = { ...PRODUCTS[0], price: 1495 }
