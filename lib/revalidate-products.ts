@@ -11,7 +11,9 @@ import { revalidatePath, revalidateTag } from 'next/cache'
  */
 export function revalidateProductsCache(productIds?: string[]) {
   revalidateTag('products', 'max')
+  revalidatePath('/', 'page')
   revalidatePath('/products', 'layout')
+  revalidatePath('/products/[id]', 'page')
 
   for (const id of productIds ?? []) {
     revalidateTag(`product-${id}`, 'max')

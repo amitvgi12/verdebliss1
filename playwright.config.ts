@@ -23,7 +23,9 @@ export default defineConfig({
   fullyParallel: true,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://127.0.0.1:3010',
+    // PLAYWRIGHT_BASE_URL lets you point the suite at the live production site
+    // (or any already-running server) without starting a local server at all.
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3010',
     trace: 'retain-on-failure',
   },
   projects: [
@@ -32,22 +34,25 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  // Skip webServer entirely when an external base URL is provided.
   // CI: verify script runs `npm run build` before `test:a11y`, so the app is
   // already built here — just start it. Local dev: reuse the existing dev server
   // if one is running, otherwise start one.
-  webServer: process.env.CI
-    ? {
-        command: 'npm run start -- --hostname 127.0.0.1 --port 3010',
-        url: 'http://127.0.0.1:3010',
-        reuseExistingServer: false,
-        timeout: 30_000,
-        env: sharedEnv,
-      }
-    : {
-        command: 'npm run dev -- --hostname 127.0.0.1 --port 3010',
-        url: 'http://127.0.0.1:3010',
-        reuseExistingServer: true,
-        timeout: 120_000,
-        env: sharedEnv,
-      },
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : process.env.CI
+      ? {
+          command: 'npm run start -- --hostname 127.0.0.1 --port 3010',
+          url: 'http://127.0.0.1:3010',
+          reuseExistingServer: false,
+          timeout: 30_000,
+          env: sharedEnv,
+        }
+      : {
+          command: 'npm run dev -- --hostname 127.0.0.1 --port 3010',
+          url: 'http://127.0.0.1:3010',
+          reuseExistingServer: true,
+          timeout: 120_000,
+          env: sharedEnv,
+        },
 })
