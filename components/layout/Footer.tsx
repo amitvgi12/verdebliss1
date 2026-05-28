@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import CookiePreferencesButton from '@/components/ui/CookiePreferencesButton'
 import SocialButtons from '@/components/layout/SocialButtons'
-import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
 import {
   BUSINESS_COMPLIANCE,
   formatPostalAddress,
@@ -143,22 +142,6 @@ export default function Footer() {
                 </span>
               )}
             </address>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Newsletter strip ────────────────────────────────────── */}
-      <div className="footer-newsletter">
-        <div className="footer-newsletter__inner site-container">
-          <div className="footer-newsletter__copy">
-            <p className="footer-newsletter__eyebrow">JOIN THE CIRCLE</p>
-            <p className="footer-newsletter__heading">Subscribe &amp; earn 50 bonus points</p>
-            <p className="footer-newsletter__sub">
-              New launches, rituals, and exclusive offers — delivered to your inbox. No spam, ever.
-            </p>
-          </div>
-          <div className="footer-newsletter__form">
-            <NewsletterForm source="footer_newsletter" />
           </div>
         </div>
       </div>

@@ -212,12 +212,9 @@ video {
 }
 
 .btn-primary,
-.btn-terra {
-  color: #fff;
-}
-
+.btn-terra,
 .btn-gold {
-  color: var(--color-text);
+  color: #fff;
 }
 
 .btn-outline {
@@ -1566,52 +1563,6 @@ video {
 
 .footer-socials-wrap {
   margin-top: 14px;
-}
-
-/* ── Newsletter strip (in footer) ────────────────────────── */
-.footer-newsletter {
-  background: rgb(255 255 255 / 5%);
-  border-top: 1px solid rgb(255 255 255 / 8%);
-  padding: 40px 16px;
-}
-
-.footer-newsletter__inner {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  flex-wrap: wrap;
-}
-
-.footer-newsletter__copy {
-  flex: 1;
-  min-width: 220px;
-}
-
-.footer-newsletter__eyebrow {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: rgb(255 255 255 / 88%);
-  margin-bottom: 6px;
-}
-
-.footer-newsletter__heading {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 4px;
-}
-
-.footer-newsletter__sub {
-  font-size: 0.8rem;
-  color: rgb(255 255 255 / 74%);
-  line-height: 1.5;
-}
-
-.footer-newsletter__form {
-  flex: 1;
-  min-width: 260px;
-  max-width: 420px;
 }
 
 /* ── Bottom strip ─────────────────────────────────────────── */

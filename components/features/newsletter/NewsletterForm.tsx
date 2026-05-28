@@ -53,7 +53,7 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
     >
       <div className="vb-newsletter-row">
         <label htmlFor="newsletter-email" className="sr-only">
-          Newsletter signup email
+          Email address
         </label>
         <input
           id="newsletter-email"
@@ -75,7 +75,6 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
           tabIndex={-1}
           autoComplete="off"
           className="hidden"
-          aria-label="Leave this field blank"
           aria-hidden
         />
         <button
