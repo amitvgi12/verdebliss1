@@ -53,7 +53,7 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
     >
       <div className="vb-newsletter-row">
         <label htmlFor="newsletter-email" className="sr-only">
-          Email address
+          Newsletter signup email
         </label>
         <input
           id="newsletter-email"
