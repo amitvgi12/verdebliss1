@@ -98,8 +98,9 @@ export default function ProductDetailClient({
   const router = useRouter()
   const isMobile = useIsMobile()
 
-  const { product: serverProduct, loading } = useProduct(initialProduct ? undefined : id)
-  const p = initialProduct ?? serverProduct
+  const shouldFetchProduct = !initialProduct || !hasProductPrice(initialProduct)
+  const { product: serverProduct, loading } = useProduct(shouldFetchProduct ? id : undefined)
+  const p = serverProduct ?? initialProduct
   const isLoading = !initialProduct && loading
   const { products: all } = useProducts({})
   const addItem = useCartStore((s) => s.addItem)

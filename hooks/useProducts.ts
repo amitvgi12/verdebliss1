@@ -45,6 +45,18 @@ export function useProducts(filters: ProductFilters = {}) {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+function pickProduct(data: unknown, id: string): Product | null {
+  if (Array.isArray(data)) {
+    return (
+      (data as Product[]).find((product) => product.slug === id || String(product.id) === id) ??
+      null
+    )
+  }
+
+  if (data && typeof data === 'object') return data as Product
+  return null
+}
+
 export function useProduct(id?: string) {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(Boolean(id))
@@ -71,8 +83,9 @@ export function useProduct(id?: string) {
           .maybeSingle()
 
         if (!active) return
-        if (bySlug.data) {
-          setProduct(bySlug.data as Product)
+        const slugProduct = pickProduct(bySlug.data, id)
+        if (slugProduct) {
+          setProduct(slugProduct)
           return
         }
 
@@ -87,8 +100,9 @@ export function useProduct(id?: string) {
             .maybeSingle()
 
           if (!active) return
-          if (byId.data) {
-            setProduct(byId.data as Product)
+          const idProduct = pickProduct(byId.data, id)
+          if (idProduct) {
+            setProduct(idProduct)
             return
           }
         }

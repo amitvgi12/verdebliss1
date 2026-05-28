@@ -460,6 +460,7 @@ export async function fillCheckoutAddress(page: Page) {
 
 export async function waitForPdpReady(page: Page, productName = E2E_PRODUCT.name) {
   await expect(page.getByRole('heading', { name: productName })).toBeVisible()
+  await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
 }
 
 export async function goToCheckoutReview(page: Page) {

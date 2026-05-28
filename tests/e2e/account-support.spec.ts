@@ -19,11 +19,11 @@ test.describe('account, support, and consent flows', () => {
     await mockWishlistPersistence(page)
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
-    await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
+    await waitForPdpReady(page)
     await page.getByRole('button', { name: 'Save to wishlist' }).click()
 
     await page.reload()
-    await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
+    await waitForPdpReady(page)
     await expect(
       page.getByRole('button', { name: 'Save to wishlist' }).locator('svg')
     ).toHaveAttribute('fill', /#|rgb|[a-z]/i)
