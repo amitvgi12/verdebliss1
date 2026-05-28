@@ -272,9 +272,7 @@ export default function Nav({ products }: { products: Product[] }) {
                 >
                   <Icon size={16} />
                 </span>
-                <span className={`flex-1 ${active ? 'text-[#fffaf4]' : 'text-text'}`}>
-                  {label}
-                </span>
+                <span className={`flex-1 ${active ? 'text-[#fffaf4]' : 'text-text'}`}>{label}</span>
                 <ArrowRight
                   size={14}
                   className={

@@ -103,9 +103,7 @@ describe('ProductImage component', () => {
       'Niacinamide',
     ]
     const backgrounds = ingredients.map((ingredient) => {
-      const { container } = render(
-        <ProductImage product={{ name: 'Test', ingredient }} />
-      )
+      const { container } = render(<ProductImage product={{ name: 'Test', ingredient }} />)
       return (container.firstChild as HTMLElement).style.background
     })
     expect(new Set(backgrounds).size, 'all ingredients must share one background').toBe(1)
@@ -121,9 +119,7 @@ describe('ProductImage component', () => {
 
   it('does not use the old blue gradient for Zinc Oxide', () => {
     const { container } = render(
-      <ProductImage
-        product={{ name: 'Mineral SPF', ingredient: 'Zinc Oxide' }}
-      />
+      <ProductImage product={{ name: 'Mineral SPF', ingredient: 'Zinc Oxide' }} />
     )
     const bg = (container.firstChild as HTMLElement).style.background
     expect(bg).not.toMatch(/#90caf9|#e3f2fd/i)
@@ -167,16 +163,12 @@ describe('ProductPurchaseActions', () => {
 
   it('shows quantity stepper when item is in the cart', () => {
     render(<ProductPurchaseActions {...base} cartQty={2} />)
-    expect(
-      screen.getByLabelText('Bakuchiol Serum quantity in cart')
-    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Bakuchiol Serum quantity in cart')).toBeInTheDocument()
   })
 
   it('does not show quantity stepper when item is not in the cart', () => {
     render(<ProductPurchaseActions {...base} />)
-    expect(
-      screen.queryByLabelText('Bakuchiol Serum quantity in cart')
-    ).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Bakuchiol Serum quantity in cart')).not.toBeInTheDocument()
   })
 
   it('calls onAdd when "Add to ritual" is clicked', async () => {

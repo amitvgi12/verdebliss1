@@ -568,6 +568,8 @@ function Dashboard({
   const { ids: wishIds } = useWishlistStore()
   const { products: catalog } = useProducts({})
   const [orders, setOrders] = useState<OrderRow[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+  const [ordersError, setOrdersError] = useState('')
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null)
   const [orderNotice, setOrderNotice] = useState<{
     type: 'success' | 'error'
@@ -575,13 +577,17 @@ function Dashboard({
   } | null>(null)
 
   useEffect(() => {
+    setOrdersLoading(true)
+    setOrdersError('')
     supabase
       .from('orders')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        if (Array.isArray(data)) setOrders(data as OrderRow[])
+      .then(({ data, error }) => {
+        if (error) setOrdersError('Could not load orders. Please refresh to try again.')
+        else if (Array.isArray(data)) setOrders(data as OrderRow[])
+        setOrdersLoading(false)
       })
   }, [user.id])
 
@@ -825,9 +831,50 @@ function Dashboard({
                   {orderNotice.text}
                 </div>
               ))}
-            {orders.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '28px 0', color: C.muted, fontSize: 13 }}>
-                No orders yet — time to shop! 🌿
+            {ordersLoading ? (
+              <div aria-busy="true" aria-label="Loading your orders">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="account-skeleton-row">
+                    <div className="account-skeleton-row__top">
+                      <div className="account-skeleton__block" style={{ width: 80, height: 14 }} />
+                      <div
+                        className="account-skeleton__block"
+                        style={{ width: 60, height: 20, borderRadius: 99, animationDelay: '0.2s' }}
+                      />
+                    </div>
+                    <div
+                      className="account-skeleton__block"
+                      style={{ width: '55%', height: 12, animationDelay: '0.1s' }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : ordersError ? (
+              <div
+                role="alert"
+                style={{
+                  background: '#FCEBEB',
+                  border: '1px solid #F7C1C1',
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                  fontSize: 13,
+                  color: '#A32D2D',
+                }}
+              >
+                {ordersError}
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="account-orders-empty">
+                <div className="account-orders-empty__icon">
+                  <Leaf size={20} color={C.forest} />
+                </div>
+                <p className="account-orders-empty__title">No orders yet</p>
+                <p className="account-orders-empty__sub">
+                  Your botanical routine is waiting to be built.
+                </p>
+                <Link href="/products" className="account-orders-empty__cta">
+                  Shop the collection
+                </Link>
               </div>
             ) : (
               orders.map((o) => (
@@ -972,8 +1019,17 @@ function Dashboard({
               <Heart size={15} color={C.terra} /> Wishlist ({wishProducts.length})
             </div>
             {wishProducts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: C.muted, fontSize: 13 }}>
-                No items wishlisted yet
+              <div className="account-wishlist-empty">
+                <div className="account-wishlist-empty__icon">
+                  <Heart size={18} color={C.forest} />
+                </div>
+                <p className="account-wishlist-empty__title">Nothing wishlisted yet</p>
+                <p className="account-wishlist-empty__sub">
+                  Save products you want to revisit and track your routine.
+                </p>
+                <Link href="/quiz" className="account-wishlist-empty__cta">
+                  Take the skin quiz
+                </Link>
               </div>
             ) : (
               <div

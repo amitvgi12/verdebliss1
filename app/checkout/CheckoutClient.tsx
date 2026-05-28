@@ -215,13 +215,13 @@ function readGuestCheckoutForm(): CheckoutForm | null {
 function hasAddressDraft(form: CheckoutForm): boolean {
   return Boolean(
     form.name ||
-    form.email ||
-    form.phone ||
-    form.line1 ||
-    form.line2 ||
-    form.city ||
-    form.state ||
-    form.pincode
+      form.email ||
+      form.phone ||
+      form.line1 ||
+      form.line2 ||
+      form.city ||
+      form.state ||
+      form.pincode
   )
 }
 

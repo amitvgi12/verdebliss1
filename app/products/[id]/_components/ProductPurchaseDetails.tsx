@@ -96,18 +96,38 @@ export default function ProductPurchaseDetails({
             placeholder="Enter PIN code"
           />
           <button type="button" onClick={onDeliveryCheck} disabled={checkingDelivery}>
-            {checkingDelivery ? 'Checking...' : 'Check'}
+            {checkingDelivery ? (
+              <span className="product-conversion__checking" aria-label="Checking delivery">
+                <span />
+                <span />
+                <span />
+              </span>
+            ) : (
+              'Check'
+            )}
           </button>
         </div>
-        {deliveryError && <small className="product-conversion__error">{deliveryError}</small>}
+        {deliveryError && (
+          <small className="product-conversion__error" role="alert">
+            {deliveryError}
+          </small>
+        )}
         {deliveryResult && (
           <div className="product-conversion__delivery-result" aria-live="polite">
-            <strong>
-              <MapPin size={14} />
-              {deliveryResult.deliveryEstimate} after dispatch
+            <div className="product-conversion__delivery-result__header">
+              <MapPin size={13} />
+              <span>Delivery to {deliveryResult.pincode}</span>
+            </div>
+            <strong className="product-conversion__delivery-result__eta">
+              {deliveryResult.deliveryEstimate}
             </strong>
-            <span>
-              {deliveryResult.dispatchWindow}. {codCopy(deliveryResult.codDecision)}
+            <span className="product-conversion__delivery-result__dispatch">
+              {deliveryResult.dispatchWindow}
+            </span>
+            <span
+              className={`product-conversion__delivery-result__cod product-conversion__delivery-result__cod--${deliveryResult.codDecision}`}
+            >
+              {codCopy(deliveryResult.codDecision)}
             </span>
           </div>
         )}

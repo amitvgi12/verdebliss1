@@ -70,9 +70,9 @@ export function getEnvironmentCapabilities() {
     ),
     razorpay: Boolean(
       process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID &&
-      process.env.RAZORPAY_KEY_ID &&
-      process.env.RAZORPAY_KEY_SECRET &&
-      process.env.RAZORPAY_WEBHOOK_SECRET
+        process.env.RAZORPAY_KEY_ID &&
+        process.env.RAZORPAY_KEY_SECRET &&
+        process.env.RAZORPAY_WEBHOOK_SECRET
     ),
     turnstile: REQUIRED_PRODUCTION_TURNSTILE_ENV.every((key) => Boolean(process.env[key])),
     distributedRateLimiter: hasDistributedRateLimiterEnv(),

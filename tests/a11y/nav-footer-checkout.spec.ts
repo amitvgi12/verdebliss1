@@ -73,21 +73,27 @@ async function mockProductsCatalog(page: Page) {
 async function addCheckoutItem(page: Page) {
   await suppressCookieModal(page)
   await mockProductsCatalog(page)
-  await page.addInitScript(({ product }) => {
-    window.localStorage.setItem(
-      'verdebliss-cart',
-      JSON.stringify({
-        state: { items: [{ ...product, qty: 1 }] },
-        version: 0,
-      })
-    )
-  }, { product: A11Y_PRODUCT })
+  await page.addInitScript(
+    ({ product }) => {
+      window.localStorage.setItem(
+        'verdebliss-cart',
+        JSON.stringify({
+          state: { items: [{ ...product, qty: 1 }] },
+          version: 0,
+        })
+      )
+    },
+    { product: A11Y_PRODUCT }
+  )
 }
 
 async function seedGuestCheckoutAddress(page: Page) {
-  await page.addInitScript(({ address }) => {
-    window.sessionStorage.setItem('verdebliss-checkout-address', JSON.stringify(address))
-  }, { address: A11Y_ADDRESS })
+  await page.addInitScript(
+    ({ address }) => {
+      window.sessionStorage.setItem('verdebliss-checkout-address', JSON.stringify(address))
+    },
+    { address: A11Y_ADDRESS }
+  )
 }
 
 test.describe('core accessibility surfaces', () => {

@@ -93,6 +93,13 @@ export default function ProductPurchaseActions({
           whileTap={{ scale: 0.97 }}
           onClick={inCart ? onGoToCart : onAdd}
           disabled={stockOut}
+          aria-label={
+            stockOut
+              ? `${productName} is sold out`
+              : inCart
+                ? `View ritual — ${productName} is in your cart`
+                : `Add ${productName} to ritual`
+          }
           style={{
             flex: 1,
             minWidth: 0,

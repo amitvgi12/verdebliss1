@@ -103,6 +103,35 @@ function findCatalogProduct(catalog: Product[], targetKey: ProductTargetKey): Pr
   )
 }
 
+function getRecommendationReason(product: Product, answers: Record<string, string>): string {
+  const name = product.name
+  const concern = answers.concern?.toLowerCase() ?? ''
+  const skinType = answers.skin_type?.toLowerCase() ?? ''
+  const age = answers.age ?? ''
+
+  if (/bakuchiol/i.test(name)) {
+    if (concern === 'anti-ageing' || age === 'over_45' || age === '35_45')
+      return 'Bakuchiol retinol-alternative — matched to your anti-ageing concern.'
+    return 'Bakuchiol renewal — chosen for brightening and glow concern.'
+  }
+  if (/niacinamide/i.test(name)) {
+    if (concern === 'acne') return 'Pore-refining niacinamide — directly targets your acne concern.'
+    return 'Niacinamide serum — supports oil balance for your skin type.'
+  }
+  if (/rose hip/i.test(name)) {
+    if (skinType === 'dry') return 'Rose hip moisturiser — hydrating choice for dry skin.'
+    return 'Rose hip moisturiser — nourishing barrier support for sensitive skin.'
+  }
+  if (/toner/i.test(name))
+    return 'Green tea toner — balancing step suited to oily and combination skin.'
+  if (/cleanser/i.test(name)) return 'Daily cleanser — every routine starts here.'
+  if (/spf/i.test(name)) return 'Mineral SPF — the most important morning step for any concern.'
+  if (/lip/i.test(name)) return 'Botanical lip care — daily essential in every routine.'
+  if (/night cream/i.test(name))
+    return 'Overnight recovery cream — added for your age range and budget.'
+  return 'Recommended for your skin profile.'
+}
+
 function recommend(answers: Record<string, string>, catalog: Product[]): Product[] {
   const set = new Set<ProductTargetKey>()
 
@@ -241,8 +270,13 @@ export default function QuizClient() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.06 }}
+                  className="quiz-result-card"
                 >
                   <ProductCard product={p} />
+                  <p className="quiz-reason-pill">
+                    <span aria-hidden>✦ </span>
+                    {getRecommendationReason(p, answers)}
+                  </p>
                 </motion.div>
               ))}
             </div>

@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { ArrowRight, CheckCircle2, Leaf, ShieldCheck, Truck } from 'lucide-react'
 import ProductCard from '@/components/ui/ProductCard'
 import IngredientCard from '@/components/ui/IngredientCard'
-import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
 import FadeIn from '@/components/ui/FadeIn'
 import { getProductsServer } from '@/lib/products-server'
 import { TRUST_METRICS } from '@/constants/trust'
@@ -134,7 +133,7 @@ export default async function Home() {
                 alt="VerdeBliss Bakuchiol Renewal Serum — glass dropper bottle with plant-derived bakuchiol retinol alternative"
                 width={599}
                 height={900}
-                preload
+                priority
                 sizes="(max-width: 768px) 90vw, 480px"
                 className="h-full w-full object-cover"
               />
@@ -160,8 +159,8 @@ export default async function Home() {
         </div>
         <FadeIn delay={0.1}>
           <div className="product-grid product-grid-compact">
-            {featured.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {featured.map((p, i) => (
+              <ProductCard key={p.id} product={p} priority={i === 0} />
             ))}
           </div>
         </FadeIn>
@@ -313,19 +312,6 @@ export default async function Home() {
             </ul>
           </FadeIn>
         </div>
-      </section>
-
-      <section className="home-newsletter-section bg-ivory px-4 text-center">
-        <FadeIn className="home-newsletter-content">
-          <p className="label-eyebrow mb-2.5">JOIN THE CIRCLE</p>
-          <h2 className="mb-2 font-serif text-[clamp(1.5rem,2.5vw,2.2rem)] font-normal text-text">
-            Subscribe &amp; earn 50 bonus points
-          </h2>
-          <p className="mx-auto mb-7 max-w-[560px] text-center text-sm leading-relaxed text-muted">
-            New launches, rituals, and exclusive offers — delivered to your inbox. No spam, ever.
-          </p>
-          <NewsletterForm />
-        </FadeIn>
       </section>
     </div>
   )

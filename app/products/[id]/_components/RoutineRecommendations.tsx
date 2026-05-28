@@ -64,7 +64,9 @@ function overlapsSkinTypes(a?: string[], b?: string[]) {
 }
 
 function pickRoutineProduct(products: Product[], current: Product, category: string) {
-  if (current.category === category) return current
+  // Never suggest the current product as its own companion — it reads as a bug
+  // when the same product appears in both AM and PM cross-sell slots.
+  // Skin-type affinity first, then any in-stock match.
   return (
     products.find(
       (product) =>
