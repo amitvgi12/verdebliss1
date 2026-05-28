@@ -63,8 +63,9 @@ export default function Nav({ products }: { products: Product[] }) {
     const menu = menuRef.current
     if (!menu) return
 
-    const syncMenuState = () => {
-      setMenuOpen(menu.matches(':popover-open'))
+    const syncMenuState = (event: Event) => {
+      const { newState } = event as Event & { newState?: string }
+      setMenuOpen(newState === 'open')
     }
 
     menu.addEventListener('toggle', syncMenuState)
