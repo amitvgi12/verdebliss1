@@ -17,28 +17,43 @@ async function expectNoAxeViolations(page: Page, selectors: string[]) {
   expect(results.violations).toEqual([])
 }
 
+const A11Y_PRODUCT = {
+  id: '1',
+  slug: 'bakuchiol-renewal-serum',
+  name: 'Bakuchiol Renewal Serum',
+  category: 'Serum',
+  price: 250,
+  description: 'Plant-based retinol alternative for a smoother-looking night ritual.',
+  ingredient: 'Bakuchiol',
+  bg_color: '#EBF0E9',
+  image_url: '/images/products/serum.webp',
+  stock: 100,
+}
+
+// Seed consent + cart via localStorage before each navigation so the cookie
+// modal never appears and the cart is pre-populated without relying on the
+// products listing page rendering (which is dynamic and slow in CI).
 async function addCheckoutItem(page: Page) {
-  // Inject consent into localStorage before the page loads so the cookie
-  // modal never mounts visible and cannot intercept pointer events.
-  await page.addInitScript(() => {
+  await page.addInitScript(({ product }) => {
     window.localStorage.setItem(
       'vb_cookie_consent',
       JSON.stringify({
         version: '1.2',
         essential: true,
-        timestamp: new Date().toISOString(),
         analytics: false,
         marketing: false,
         functional_third_party: false,
+        timestamp: '2026-05-20T00:00:00.000Z',
       })
     )
-  })
-  await page.goto('/products')
-  await page
-    .getByRole('button', { name: /Add .* to cart/i })
-    .first()
-    .click()
-  await expect(page.getByRole('button', { name: /Cart, 1 items/i })).toBeVisible()
+    window.localStorage.setItem(
+      'verdebliss-cart',
+      JSON.stringify({
+        state: { items: [{ ...product, qty: 1 }] },
+        version: 0,
+      })
+    )
+  }, { product: A11Y_PRODUCT })
 }
 
 async function seedGuestCheckoutAddress(page: Page) {
