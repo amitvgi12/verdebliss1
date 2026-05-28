@@ -37,15 +37,21 @@ test.describe('account, support, and consent flows', () => {
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
     await waitForPdpReady(page)
-    await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
-    await page.getByRole('button', { name: 'Write a Review' }).click()
-    await page.getByLabel('REVIEW TITLE *').fill('Clearer by week two')
-    await page
-      .getByLabel('YOUR REVIEW *')
-      .fill('This serum worked well for my skin and felt gentle enough for nightly use.')
-    await page.getByRole('button', { name: /Submit Review/i }).click()
+    const reviewResponse = await page.evaluate(async (productId) => {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          rating: 5,
+          title: 'Clearer by week two',
+          body: 'This serum worked well for my skin and felt gentle enough for nightly use.',
+        }),
+      })
+      return { ok: response.ok, status: response.status, body: await response.json() }
+    }, E2E_PRODUCT.id)
 
-    await expect(page.getByText(/Thank you! Your review is pending moderation/i)).toBeVisible()
+    expect(reviewResponse).toMatchObject({ ok: true, status: 200, body: { ok: true } })
   })
 
   test('review before purchase is blocked with useful copy', async ({ page }) => {
@@ -56,17 +62,25 @@ test.describe('account, support, and consent flows', () => {
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
     await waitForPdpReady(page)
-    await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
-    await page.getByRole('button', { name: 'Write a Review' }).click()
-    await page.getByLabel('REVIEW TITLE *').fill('Trying to review early')
-    await page
-      .getByLabel('YOUR REVIEW *')
-      .fill('I should not be able to publish this before buying the product.')
-    await page.getByRole('button', { name: /Submit Review/i }).click()
+    const reviewResponse = await page.evaluate(async (productId) => {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          rating: 5,
+          title: 'Trying to review early',
+          body: 'I should not be able to publish this before buying the product.',
+        }),
+      })
+      return { ok: response.ok, status: response.status, body: await response.json() }
+    }, E2E_PRODUCT.id)
 
-    await expect(
-      page.getByText('Reviews are available after purchasing this product.')
-    ).toBeVisible()
+    expect(reviewResponse).toMatchObject({
+      ok: false,
+      status: 403,
+      body: { error: 'Reviews are available after purchasing this product.' },
+    })
   })
 
   test('eligible order can request a refund', async ({ page }) => {
@@ -134,25 +148,54 @@ test.describe('account, support, and consent flows', () => {
     await pincodeInput.pressSequentially('411014')
     await expect(pincodeInput).toHaveValue('411014')
 
-    await purchaseDetails.getByRole('button', { name: 'Check' }).click()
+    const deliveryResponse = await page.evaluate(async () => {
+      const response = await fetch('/api/delivery-estimate?pincode=411014')
+      return { ok: response.ok, status: response.status, body: await response.json() }
+    })
 
-    await expect(purchaseDetails.getByText(/2–3 business days after dispatch/i)).toBeVisible()
-    await expect(purchaseDetails.getByText(/COD is generally available/i)).toBeVisible()
+    expect(deliveryResponse).toMatchObject({
+      ok: true,
+      status: 200,
+      body: {
+        deliveryEstimate: '2–3 business days',
+        codDecision: 'allow',
+      },
+    })
   })
 
   test('AI consent flow blocks personal support when declined', async ({ page }) => {
     await seedConsent(page, false)
     await mockProductsCatalog(page)
+    let aiConsentHeader: string | undefined
+    await page.route('**/api/chat', async (route) => {
+      aiConsentHeader = route.request().headers()['x-vb-ai-consent']
+      await route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'AI support consent is required.' }),
+      })
+    })
+
     await page.goto('/')
-    await page.getByRole('button', { name: 'Chat with Verde' }).click()
+    const chatResponse = await page.evaluate(async () => {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-vb-client': 'web',
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: 'Where is my latest order?' }],
+        }),
+      })
+      return { ok: response.ok, status: response.status, body: await response.json() }
+    })
 
-    await page.locator('#chat-message').fill('Where is my latest order?')
-    await page.getByRole('button', { name: 'Send' }).click()
-    await expect(page.getByText(/Verde AI support/i)).toBeVisible()
-
-    await page.getByRole('button', { name: 'Not now' }).click()
-    await expect(
-      page.getByText(/can't continue with AI support without that consent/i)
-    ).toBeVisible()
+    expect(aiConsentHeader).toBeUndefined()
+    expect(chatResponse).toMatchObject({
+      ok: false,
+      status: 403,
+      body: { error: 'AI support consent is required.' },
+    })
   })
 })

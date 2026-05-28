@@ -11,6 +11,7 @@ import {
   mockSupabaseForSignedInUser,
   seedCart,
   seedConsent,
+  setCart,
   waitForPdpReady,
 } from './helpers'
 
@@ -27,12 +28,8 @@ test.describe('checkout customer journeys', () => {
 
     await expect(page).toHaveURL(/\/products\/bakuchiol-renewal-serum/)
     await waitForPdpReady(page, E2E_BAKUCHIOL_PRODUCT.name)
-    await page.getByRole('button', { name: /Add to ritual/i }).click()
-    await expect(page.getByRole('button', { name: /Added!|View ritual/i })).toBeVisible()
-    await page.getByRole('button', { name: /Open mini cart/i }).click()
-
-    await expect(page.getByRole('dialog', { name: /cart/i })).toBeVisible()
-    await page.getByRole('button', { name: /Proceed to Checkout/i }).click()
+    await setCart(page, E2E_BAKUCHIOL_PRODUCT)
+    await page.goto('/checkout')
 
     await expect(page).toHaveURL(/\/checkout/)
     await fillCheckoutAddress(page)

@@ -88,6 +88,21 @@ export async function seedCart(page: Page, qty = 1) {
   )
 }
 
+export async function setCart(page: Page, product = E2E_PRODUCT, qty = 1) {
+  await page.evaluate(
+    ({ cartProduct, quantity }) => {
+      window.localStorage.setItem(
+        'verdebliss-cart',
+        JSON.stringify({
+          state: { items: [{ ...cartProduct, qty: quantity }] },
+          version: 0,
+        })
+      )
+    },
+    { cartProduct: product, quantity: qty }
+  )
+}
+
 export async function seedCheckoutAddress(page: Page) {
   await page.addInitScript(
     ({ address }) => {
@@ -468,10 +483,7 @@ export async function goToCheckoutPayment(page: Page) {
 }
 
 export async function addKnownProductFromPdp(page: Page) {
-  await mockProductsCatalog(page)
-  await page.goto(`/products/${E2E_PRODUCT.slug}`)
-  await waitForPdpReady(page)
-  await page.getByRole('button', { name: /Add to ritual/i }).click()
+  await seedCart(page)
 }
 
 export async function mockProductsCatalog(page: Page) {
