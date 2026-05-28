@@ -1,14 +1,17 @@
 // JSON-LD structured data for server entry points (layout.tsx, page.tsx, etc.).
-// type="application/ld+json" is a data block, not executable — CSP script-src
-// nonce is not required and must not call headers() here because this component
-// is used inside ISR/static pages (revalidate=300). Calling headers() at runtime
-// on a statically-rendered page triggers the Next.js static→dynamic error.
+// The root layout forces request-time rendering so nonce-based CSP can protect
+// Next's bootstrap scripts. Add the same nonce here because browsers still
+// apply script CSP checks to application/ld+json script elements.
+import { headers } from 'next/headers'
 import { safeJsonLd } from '@/lib/seo'
 
-export function StructuredData({ data }: { data: unknown }) {
+export async function StructuredData({ data }: { data: unknown }) {
+  const nonce = (await headers()).get('x-nonce') ?? undefined
+
   return (
     <script
       type="application/ld+json"
+      nonce={nonce}
       suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
     />

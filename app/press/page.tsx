@@ -2,8 +2,6 @@ import Link from 'next/link'
 import { Mail, Download, ArrowRight, ExternalLink } from 'lucide-react'
 import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
 
-export const dynamic = 'force-static'
-
 export const metadata = {
   title: 'Press & Media',
   description:

@@ -8,6 +8,7 @@ import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import VercelInsightsLoader from '@/components/ui/VercelInsightsLoader'
 import { Toaster } from '@/components/ui/Toast'
 import { StructuredData } from '@/lib/structured-data'
+import { connection } from 'next/server'
 import './globals.css'
 import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
@@ -94,6 +95,9 @@ export const metadata = {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Nonce-based CSP only works when Next renders with the incoming request,
+  // because framework scripts need the per-request nonce from proxy.ts.
+  await connection()
   const navProducts = await getProductsServer()
 
   return (
