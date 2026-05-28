@@ -34,7 +34,7 @@ function getStaticProductShell(idOrSlug: string): Product | null {
 }
 
 async function fetchProductsFromDb(): Promise<Product[]> {
-  if (!hasSupabaseAdminEnv()) return []
+  if (!hasSupabaseAdminEnv()) return PRODUCTS
   try {
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase.from('products').select('*').eq('active', true)

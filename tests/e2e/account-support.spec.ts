@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import {
   E2E_PRODUCT,
   mockPasswordReset,
+  mockProductsCatalog,
   mockRefundApis,
   mockReviewsApi,
   mockSupabaseForSignedInUser,
@@ -13,6 +14,7 @@ test.describe('account, support, and consent flows', () => {
   test('wishlist persists after login and page reload', async ({ page }) => {
     await seedConsent(page)
     await mockSupabaseForSignedInUser(page)
+    await mockProductsCatalog(page)
     await mockWishlistPersistence(page)
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
@@ -29,6 +31,7 @@ test.describe('account, support, and consent flows', () => {
   test('verified purchaser can submit a review', async ({ page }) => {
     await seedConsent(page)
     await mockSupabaseForSignedInUser(page)
+    await mockProductsCatalog(page)
     await mockReviewsApi(page, 'verified')
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
@@ -45,6 +48,7 @@ test.describe('account, support, and consent flows', () => {
   test('review before purchase is blocked with useful copy', async ({ page }) => {
     await seedConsent(page)
     await mockSupabaseForSignedInUser(page)
+    await mockProductsCatalog(page)
     await mockReviewsApi(page, 'blocked')
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
@@ -100,6 +104,7 @@ test.describe('account, support, and consent flows', () => {
 
   test('delivery checker returns ETA and COD status', async ({ page }) => {
     await seedConsent(page)
+    await mockProductsCatalog(page)
     await page.route(/\/api\/delivery-estimate(?:\?.*)?$/, async (route) => {
       await route.fulfill({
         status: 200,
@@ -140,6 +145,7 @@ test.describe('account, support, and consent flows', () => {
     await page.addInitScript(() => {
       window.localStorage.removeItem('vb_cookie_consent')
     })
+    await mockProductsCatalog(page)
     await page.goto('/')
     await page.getByRole('button', { name: 'Reject', exact: true }).click()
     await page.getByRole('button', { name: 'Chat with Verde' }).click()

@@ -30,6 +30,19 @@ export const E2E_PRODUCT = {
   stock: 100,
 }
 
+export const E2E_BAKUCHIOL_PRODUCT = {
+  id: '1',
+  slug: 'bakuchiol-renewal-serum',
+  name: 'Bakuchiol Renewal Serum',
+  category: 'Serum',
+  price: 1495,
+  description: 'Plant-based retinol alternative for a smoother-looking night ritual.',
+  ingredient: 'Bakuchiol',
+  bg_color: '#EBF0E9',
+  image_url: '/images/products/serum.webp',
+  stock: 100,
+}
+
 function supabaseAuthStorageKeys() {
   const keys = ['sb-localhost-auth-token', 'sb-127-auth-token', 'sb-placeholder-auth-token']
   try {
@@ -204,6 +217,7 @@ export async function mockWishlistPersistence(page: Page, initialIds: string[] =
 }
 
 export async function mockCheckoutApis(page: Page) {
+  await mockProductsCatalog(page)
   await mockTurnstileWidget(page)
 
   await page.route('**/api/checkout/cod', async (route) => {
@@ -430,6 +444,7 @@ export async function fillCheckoutAddress(page: Page) {
 }
 
 export async function goToCheckoutReview(page: Page) {
+  await mockProductsCatalog(page)
   await seedCheckoutAddress(page)
   await page.goto('/checkout')
   await expect(page.locator('#checkout-name')).toHaveValue(E2E_ADDRESS.name)
@@ -444,6 +459,7 @@ export async function goToCheckoutPayment(page: Page) {
 }
 
 export async function addKnownProductFromPdp(page: Page) {
+  await mockProductsCatalog(page)
   await page.goto(`/products/${E2E_PRODUCT.slug}`)
   await expect(page.getByRole('heading', { name: E2E_PRODUCT.name })).toBeVisible()
   await page.getByRole('button', { name: /Add to ritual/i }).click()
@@ -454,7 +470,7 @@ export async function mockProductsCatalog(page: Page) {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify([E2E_PRODUCT]),
+      body: JSON.stringify([E2E_BAKUCHIOL_PRODUCT, E2E_PRODUCT]),
     })
   })
 }

@@ -11,11 +11,25 @@ export default function ChatBotLoader() {
   const [shouldLoad, setShouldLoad] = useState(false)
 
   useEffect(() => {
+    let loaded = false
+    const load = () => {
+      if (loaded) return
+      loaded = true
+      setShouldLoad(true)
+    }
+
+    const fallback = window.setTimeout(load, 1500)
+    let idleId: number | undefined
+
     if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(() => setShouldLoad(true))
+      idleId = window.requestIdleCallback(load, { timeout: 1500 })
     } else {
-      const t = setTimeout(() => setShouldLoad(true), 1500)
-      return () => clearTimeout(t)
+      load()
+    }
+
+    return () => {
+      window.clearTimeout(fallback)
+      if (idleId !== undefined) window.cancelIdleCallback?.(idleId)
     }
   }, [])
 
