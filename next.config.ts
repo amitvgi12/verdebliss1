@@ -10,10 +10,10 @@ const sentryTurbopackStub = './lib/sentry-stub.ts'
 /**
  * CSP is set in proxy.ts (per-request nonce). Static headers stay here.
  *
- * `unsafe-inline` for scripts has been removed. JSON-LD blocks are emitted via
- * <script nonce={...}> (see app/layout.tsx and lib/seo.tsx). Razorpay's iframe
- * checkout runs at checkout.razorpay.com — its own scripts don't need our CSP
- * nonce because they execute in their own iframe origin.
+ * `unsafe-inline` for scripts has been removed. JSON-LD is served from
+ * same-origin schema endpoints so it is covered by `script-src 'self'`.
+ * Razorpay's iframe checkout runs at checkout.razorpay.com — its own scripts
+ * don't need our CSP nonce because they execute in their own iframe origin.
  */
 const nextConfig: NextConfig = {
   images: {
