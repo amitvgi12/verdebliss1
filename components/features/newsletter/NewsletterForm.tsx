@@ -75,6 +75,7 @@ export default function NewsletterForm({ source = 'homepage_newsletter' }: Newsl
           tabIndex={-1}
           autoComplete="off"
           className="hidden"
+          aria-label="Leave this field blank"
           aria-hidden
         />
         <button

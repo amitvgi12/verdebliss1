@@ -47,8 +47,9 @@ test.describe('PDP, quiz, and account accessibility', () => {
     // Auth/bootstrap listeners can keep the page from ever reaching
     // Playwright's networkidle state in CI. Wait for the actual unauthenticated
     // UI that axe will scan instead.
-    await expect(page.getByRole('heading', { name: /welcome back|join verdebliss/i })).toBeVisible()
-    await expect(page.getByLabel(/email address/i)).toBeVisible()
+    const main = page.getByRole('main')
+    await expect(main.getByRole('heading', { name: /welcome back|join verdebliss/i })).toBeVisible()
+    await expect(main.getByLabel(/^email address$/i)).toBeVisible()
     await expectNoAxeViolations(page, 'main')
   })
 })

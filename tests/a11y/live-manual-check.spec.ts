@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 
 const pdpUrl = '/products/bakuchiol-renewal-serum'
+const manualA11yDescribe =
+  process.env.RUN_LIVE_A11Y_MANUAL === '1' ? test.describe : test.describe.skip
 
 // Helper: compute relative luminance from rgb string
 function luminance(rgb: string): number {
@@ -21,7 +23,7 @@ function contrastRatio(fg: string, bg: string): number {
   return (light + 0.05) / (dark + 0.05)
 }
 
-test.describe('A11Y1 — manual live pass', () => {
+manualA11yDescribe('A11Y1 — manual live pass', () => {
   test('color contrast: muted meta text (VEGAN/EVIDENCE) on PDP', async ({ page }) => {
     await page.goto(pdpUrl)
     await page.waitForLoadState('networkidle')

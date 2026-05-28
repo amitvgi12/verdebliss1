@@ -139,6 +139,12 @@ video {
   scroll-margin-top: 68px;
 }
 
+:where(a, button, input, select, textarea, [tabindex]:not([tabindex='-1'])):focus-visible {
+  outline: 3px solid var(--color-goldText) !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgb(245 237 216 / 90%) !important;
+}
+
 /* ── Reduced motion (WCAG 2.3.3) ────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -206,9 +212,12 @@ video {
 }
 
 .btn-primary,
-.btn-terra,
-.btn-gold {
+.btn-terra {
   color: #fff;
+}
+
+.btn-gold {
+  color: var(--color-text);
 }
 
 .btn-outline {
@@ -1577,7 +1586,7 @@ video {
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.16em;
-  color: var(--color-sage);
+  color: rgb(255 255 255 / 88%);
   margin-bottom: 6px;
 }
 
