@@ -443,12 +443,22 @@ export async function fillCheckoutAddress(page: Page) {
   await page.locator('#checkout-pincode').fill(E2E_ADDRESS.pincode)
 }
 
+export async function waitForPdpReady(page: Page, productName = E2E_PRODUCT.name) {
+  await expect(page.getByRole('heading', { name: productName })).toBeVisible()
+  await expect(page.getByTestId('pdp-shell')).toHaveAttribute('data-hydrated', 'true')
+}
+
 export async function goToCheckoutReview(page: Page) {
   await mockProductsCatalog(page)
   await seedCheckoutAddress(page)
   await page.goto('/checkout')
   await expect(page.locator('#checkout-name')).toHaveValue(E2E_ADDRESS.name)
-  await page.getByRole('button', { name: /Continue to Review/i }).click()
+  await expect(page.locator('#checkout-pincode')).toHaveValue(E2E_ADDRESS.pincode)
+  await expect(async () => {
+    const button = page.getByRole('button', { name: /Continue to Review/i })
+    await button.click({ trial: true, timeout: 1000 })
+    await button.click({ timeout: 1000 })
+  }).toPass({ timeout: 10_000 })
   await expect(page.getByRole('heading', { name: 'Review Your Order' })).toBeVisible()
 }
 
@@ -461,7 +471,7 @@ export async function goToCheckoutPayment(page: Page) {
 export async function addKnownProductFromPdp(page: Page) {
   await mockProductsCatalog(page)
   await page.goto(`/products/${E2E_PRODUCT.slug}`)
-  await expect(page.getByRole('heading', { name: E2E_PRODUCT.name })).toBeVisible()
+  await waitForPdpReady(page)
   await page.getByRole('button', { name: /Add to ritual/i }).click()
 }
 

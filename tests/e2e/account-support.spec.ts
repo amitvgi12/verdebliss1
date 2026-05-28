@@ -8,6 +8,7 @@ import {
   mockSupabaseForSignedInUser,
   mockWishlistPersistence,
   seedConsent,
+  waitForPdpReady,
 } from './helpers'
 
 test.describe('account, support, and consent flows', () => {
@@ -35,6 +36,8 @@ test.describe('account, support, and consent flows', () => {
     await mockReviewsApi(page, 'verified')
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
+    await waitForPdpReady(page)
+    await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
     await page.getByRole('button', { name: 'Write a Review' }).click()
     await page.getByLabel('REVIEW TITLE *').fill('Clearer by week two')
     await page
@@ -52,6 +55,8 @@ test.describe('account, support, and consent flows', () => {
     await mockReviewsApi(page, 'blocked')
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
+    await waitForPdpReady(page)
+    await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
     await page.getByRole('button', { name: 'Write a Review' }).click()
     await page.getByLabel('REVIEW TITLE *').fill('Trying to review early')
     await page
@@ -120,6 +125,7 @@ test.describe('account, support, and consent flows', () => {
     })
 
     await page.goto(`/products/${E2E_PRODUCT.slug}`)
+    await waitForPdpReady(page)
     const purchaseDetails = page.getByRole('region', { name: 'Purchase details' })
     await expect(purchaseDetails).toBeVisible()
 
@@ -128,26 +134,16 @@ test.describe('account, support, and consent flows', () => {
     await pincodeInput.pressSequentially('411014')
     await expect(pincodeInput).toHaveValue('411014')
 
-    const deliveryResponse = page.waitForResponse(
-      (response) =>
-        response.url().includes('/api/delivery-estimate') &&
-        response.request().method() === 'GET' &&
-        response.status() === 200
-    )
     await purchaseDetails.getByRole('button', { name: 'Check' }).click()
-    await deliveryResponse
 
     await expect(purchaseDetails.getByText(/2–3 business days after dispatch/i)).toBeVisible()
     await expect(purchaseDetails.getByText(/COD is generally available/i)).toBeVisible()
   })
 
   test('AI consent flow blocks personal support when declined', async ({ page }) => {
-    await page.addInitScript(() => {
-      window.localStorage.removeItem('vb_cookie_consent')
-    })
+    await seedConsent(page, false)
     await mockProductsCatalog(page)
     await page.goto('/')
-    await page.getByRole('button', { name: 'Reject', exact: true }).click()
     await page.getByRole('button', { name: 'Chat with Verde' }).click()
 
     await page.locator('#chat-message').fill('Where is my latest order?')

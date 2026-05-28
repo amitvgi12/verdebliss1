@@ -11,7 +11,7 @@
  */
 
 import Link from 'next/link'
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Award, ArrowLeft, ChevronRight } from 'lucide-react'
@@ -110,6 +110,11 @@ export default function ProductDetailClient({
   const [deliveryResult, setDeliveryResult] = useState<DeliveryEstimate | null>(null)
   const [deliveryError, setDeliveryError] = useState('')
   const [checkingDelivery, setCheckingDelivery] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
 
   /* ── Dynamic SEO with Product JSON-LD ─── */
 
@@ -229,7 +234,7 @@ export default function ProductDetailClient({
   })
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg" data-testid="pdp-shell" data-hydrated={hydrated}>
       {/* Breadcrumb */}
       <div className="overflow-x-hidden border-b border-border bg-bg">
         <div className="site-container">

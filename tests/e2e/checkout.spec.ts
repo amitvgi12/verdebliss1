@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import {
   addKnownProductFromPdp,
   E2E_ADDRESS,
+  E2E_BAKUCHIOL_PRODUCT,
   fillCheckoutAddress,
   goToCheckoutPayment,
   mockCheckoutApis,
@@ -10,6 +11,7 @@ import {
   mockSupabaseForSignedInUser,
   seedCart,
   seedConsent,
+  waitForPdpReady,
 } from './helpers'
 
 test.describe('checkout customer journeys', () => {
@@ -24,7 +26,9 @@ test.describe('checkout customer journeys', () => {
       .click()
 
     await expect(page).toHaveURL(/\/products\/bakuchiol-renewal-serum/)
+    await waitForPdpReady(page, E2E_BAKUCHIOL_PRODUCT.name)
     await page.getByRole('button', { name: /Add to ritual/i }).click()
+    await expect(page.getByRole('button', { name: /Added!|View ritual/i })).toBeVisible()
     await page.getByRole('button', { name: /Open mini cart/i }).click()
 
     await expect(page.getByRole('dialog', { name: /cart/i })).toBeVisible()
