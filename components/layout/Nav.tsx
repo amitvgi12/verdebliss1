@@ -1,7 +1,7 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -41,6 +41,11 @@ export default function Nav({ products }: { products: Product[] }) {
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [navHydrated, setNavHydrated] = useState(false)
+
+  useEffect(() => {
+    setNavHydrated(true)
+  }, [])
 
   const isActive = (path: string) =>
     pathname === path || (path === '/products' && pathname?.startsWith('/products'))
@@ -169,6 +174,8 @@ export default function Nav({ products }: { products: Product[] }) {
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen ? 'true' : 'false'}
               aria-haspopup="dialog"
+              data-testid="mobile-menu-toggle"
+              data-hydrated={navHydrated ? 'true' : 'false'}
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-none bg-transparent md:hidden"
             >
               {menuOpen ? (
@@ -217,6 +224,7 @@ export default function Nav({ products }: { products: Product[] }) {
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
+              data-testid="mobile-navigation-menu"
               className="fixed inset-x-4 top-[68px] z-[99] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-[#d7c7b6] bg-[#fffaf4] p-3 shadow-[0_26px_80px_rgba(23,36,27,0.32)] backdrop-blur-xl md:hidden"
             >
               <div className="mb-3 flex items-start justify-between rounded-[18px] bg-[#254f32] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">

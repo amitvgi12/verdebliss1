@@ -170,20 +170,21 @@ test.describe('WCAG 2.2 keyboard flow', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/')
 
-    const burger = page.getByRole('button', { name: /Open menu|Close menu/i })
-    const menu = page.getByRole('dialog', { name: /Navigation menu/i })
+    const burger = page.getByTestId('mobile-menu-toggle')
+    await expect(burger).toBeVisible()
+    await expect(burger).toHaveAttribute('data-hydrated', 'true')
+    await expect(burger).toHaveAttribute('aria-expanded', 'false')
+    await burger.click()
+    await expect(burger).toHaveAttribute('aria-expanded', 'true')
 
-    await expect(async () => {
-      if (!(await menu.isVisible().catch(() => false))) {
-        await burger.click()
-      }
-      await expect(menu).toBeVisible({ timeout: 1000 })
-    }).toPass({ timeout: 10_000 })
-
+    const menu = page.getByTestId('mobile-navigation-menu')
+    await expect(menu).toHaveAttribute('role', 'dialog')
+    await expect(menu).toHaveAttribute('aria-label', 'Navigation menu')
     await expect(menu).toBeVisible()
 
     // Escape must close the menu
     await page.keyboard.press('Escape')
+    await expect(burger).toHaveAttribute('aria-expanded', 'false')
     await expect(menu).not.toBeVisible()
   })
 

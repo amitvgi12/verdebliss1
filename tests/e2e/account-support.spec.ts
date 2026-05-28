@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test'
 import {
   E2E_PRODUCT,
   mockPasswordReset,
-  mockProductsCatalog,
   mockRefundApis,
   mockReviewsApi,
   mockSupabaseForSignedInUser,
