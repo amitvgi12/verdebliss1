@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import {
   E2E_PRODUCT,
   mockPasswordReset,
+  mockProductsCatalog,
   mockRefundApis,
   mockReviewsApi,
   mockSupabaseForSignedInUser,
@@ -137,6 +138,9 @@ test.describe('account, support, and consent flows', () => {
   })
 
   test('AI consent flow blocks personal support when declined', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem('vb_cookie_consent')
+    })
     await page.goto('/')
     await page.getByRole('button', { name: 'Reject', exact: true }).click()
     await page.getByRole('button', { name: 'Chat with Verde' }).click()

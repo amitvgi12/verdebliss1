@@ -30,11 +30,19 @@ const A11Y_PRODUCT = {
   stock: 100,
 }
 
-// Seed consent + cart via localStorage before each navigation so the cookie
-// modal never appears and the cart is pre-populated without relying on the
-// products listing page rendering (which is dynamic and slow in CI).
-async function addCheckoutItem(page: Page) {
-  await page.addInitScript(({ product }) => {
+const A11Y_ADDRESS = {
+  name: 'Kavya Menon',
+  email: 'kavya@verdebliss.test',
+  phone: '9876543210',
+  line1: 'Flat 4B, Green Heights',
+  line2: '',
+  city: 'Pune',
+  state: 'Maharashtra',
+  pincode: '411014',
+}
+
+async function suppressCookieModal(page: Page) {
+  await page.addInitScript(() => {
     window.localStorage.setItem(
       'vb_cookie_consent',
       JSON.stringify({
@@ -46,6 +54,26 @@ async function addCheckoutItem(page: Page) {
         timestamp: '2026-05-20T00:00:00.000Z',
       })
     )
+  })
+}
+
+async function mockProductsCatalog(page: Page) {
+  await page.route('**/rest/v1/products*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([A11Y_PRODUCT]),
+    })
+  })
+}
+
+// Seed consent + cart via localStorage before each navigation so the cookie
+// modal never appears and the cart is pre-populated without relying on the
+// products listing page rendering (which is dynamic and slow in CI).
+async function addCheckoutItem(page: Page) {
+  await suppressCookieModal(page)
+  await mockProductsCatalog(page)
+  await page.addInitScript(({ product }) => {
     window.localStorage.setItem(
       'verdebliss-cart',
       JSON.stringify({
@@ -57,21 +85,9 @@ async function addCheckoutItem(page: Page) {
 }
 
 async function seedGuestCheckoutAddress(page: Page) {
-  await page.evaluate(() => {
-    window.sessionStorage.setItem(
-      'verdebliss-checkout-address',
-      JSON.stringify({
-        name: 'Kavya Menon',
-        email: 'kavya@verdebliss.test',
-        phone: '9876543210',
-        line1: 'Flat 4B, Green Heights',
-        line2: '',
-        city: 'Pune',
-        state: 'Maharashtra',
-        pincode: '411014',
-      })
-    )
-  })
+  await page.addInitScript(({ address }) => {
+    window.sessionStorage.setItem('verdebliss-checkout-address', JSON.stringify(address))
+  }, { address: A11Y_ADDRESS })
 }
 
 test.describe('core accessibility surfaces', () => {
@@ -150,13 +166,20 @@ test.describe('WCAG 2.2 keyboard flow', () => {
   })
 
   test('mobile nav menu opens, traps focus, and closes on Escape', async ({ page }) => {
+    await suppressCookieModal(page)
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/')
 
-    const burger = page.getByRole('button', { name: /Open menu/i })
-    await burger.click()
-
+    const burger = page.getByRole('button', { name: /Open menu|Close menu/i })
     const menu = page.getByRole('dialog', { name: /Navigation menu/i })
+
+    await expect(async () => {
+      if (!(await menu.isVisible().catch(() => false))) {
+        await burger.click()
+      }
+      await expect(menu).toBeVisible({ timeout: 1000 })
+    }).toPass({ timeout: 10_000 })
+
     await expect(menu).toBeVisible()
 
     // Escape must close the menu

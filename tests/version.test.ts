@@ -38,6 +38,7 @@ describe('version API', () => {
     expect(JSON.stringify(body)).not.toContain('rzp_server')
     expect(body.gitSha).toBe('redacted')
     expect(body.deployedAt).toBe('2026-05-20T08:00:00.000Z')
+    expect(body.schemaVersion).toBe('2026-05-27-retail-prices-review-disclosures-invoice-trigger')
     expect(JSON.stringify(body)).not.toContain('1234567890abcdef')
   })
 

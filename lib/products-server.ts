@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 import { normalizeProductClaimList, normalizeProductClaims } from '@/lib/product-claims'
+import { PRODUCTS } from '@/constants/products'
 
 export interface ApprovedReview {
   id: string
@@ -27,6 +28,10 @@ interface ApprovedReviewMetricRow {
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+function getStaticProductShell(idOrSlug: string): Product | null {
+  return PRODUCTS.find((product) => product.id === idOrSlug || product.slug === idOrSlug) ?? null
+}
 
 async function fetchProductsFromDb(): Promise<Product[]> {
   if (!hasSupabaseAdminEnv()) return []
@@ -93,7 +98,7 @@ export const getProductsServer = cache(
 )
 
 async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
-  if (!hasSupabaseAdminEnv()) return null
+  if (!hasSupabaseAdminEnv()) return getStaticProductShell(idOrSlug)
 
   try {
     const supabase = createSupabaseAdmin()

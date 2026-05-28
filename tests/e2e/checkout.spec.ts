@@ -5,6 +5,7 @@ import {
   fillCheckoutAddress,
   goToCheckoutPayment,
   mockCheckoutApis,
+  mockProductsCatalog,
   mockRazorpayCheckout,
   mockSupabaseForSignedInUser,
   seedCart,
@@ -23,7 +24,7 @@ test.describe('checkout customer journeys', () => {
       .click()
 
     await expect(page).toHaveURL(/\/products\/bakuchiol-renewal-serum/)
-    await page.getByRole('button', { name: /Add to Cart/i }).click()
+    await page.getByRole('button', { name: /Add to ritual/i }).click()
     await page.getByRole('button', { name: /Open mini cart/i }).click()
 
     await expect(page.getByRole('dialog', { name: /cart/i })).toBeVisible()
@@ -54,6 +55,7 @@ test.describe('checkout customer journeys', () => {
     await seedConsent(page)
     await seedCart(page)
     await mockSupabaseForSignedInUser(page)
+    await mockProductsCatalog(page)
     await mockCheckoutApis(page)
 
     await page.goto('/checkout')

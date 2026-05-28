@@ -205,6 +205,20 @@ video {
   }
 }
 
+.btn-primary,
+.btn-terra,
+.btn-gold {
+  color: #fff;
+}
+
+.btn-outline {
+  color: var(--color-forest);
+}
+
+.btn-outline:hover {
+  color: #fff;
+}
+
 /* ── Layout safety helpers ─────────────────────────────────────
  * The live screenshots showed pages stretching to the viewport edge and footer
  * content visually crowding page sections. These plain CSS helpers are used on
@@ -488,6 +502,27 @@ video {
   letter-spacing: 0.1em;
   line-height: 1.25;
   text-transform: uppercase;
+}
+
+.vb-product-card__claim-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.vb-product-card__claim {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.vb-product-card__claim + .vb-product-card__claim::before {
+  content: '·';
+  margin-right: 4px;
+  color: var(--color-border);
 }
 
 .vb-product-card__title {

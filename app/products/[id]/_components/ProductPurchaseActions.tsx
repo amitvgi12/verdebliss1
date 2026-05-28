@@ -132,7 +132,7 @@ export default function ProductPurchaseActions({
                 exit={{ opacity: 0, y: -6 }}
                 style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                <ShoppingBag size={15} /> Go to Cart
+                <ShoppingBag size={15} /> View ritual
               </motion.span>
             ) : added ? (
               <motion.span
@@ -152,7 +152,7 @@ export default function ProductPurchaseActions({
                 exit={{ opacity: 0, y: -6 }}
                 style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                <ShoppingBag size={15} /> Add to Cart
+                <ShoppingBag size={15} /> Add to ritual
               </motion.span>
             )}
           </AnimatePresence>

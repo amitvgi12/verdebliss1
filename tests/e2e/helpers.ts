@@ -446,7 +446,17 @@ export async function goToCheckoutPayment(page: Page) {
 export async function addKnownProductFromPdp(page: Page) {
   await page.goto(`/products/${E2E_PRODUCT.slug}`)
   await expect(page.getByRole('heading', { name: E2E_PRODUCT.name })).toBeVisible()
-  await page.getByRole('button', { name: /Add to Cart/i }).click()
+  await page.getByRole('button', { name: /Add to ritual/i }).click()
+}
+
+export async function mockProductsCatalog(page: Page) {
+  await page.route('**/rest/v1/products*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([E2E_PRODUCT]),
+    })
+  })
 }
 
 export async function fulfillJson(route: Route, body: unknown, status = 200) {

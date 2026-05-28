@@ -71,23 +71,34 @@ export default function ProductCard({
           />
         </button>
 
-        <div className="vb-product-card__badges">
-          {stockOut && <ProductBadge label="SOLD OUT" tone="danger" />}
-          {(p.compliance_flags ?? []).includes('age_restricted_12plus') && (
-            <ProductBadge
-              label="Contains BHA · 12+"
-              tone="warning"
-              title="Contains 0.5% salicylic acid (BHA). Recommended for ages 12+."
-            />
-          )}
-          {visibleBadges.map((b) => (
-            <ProductBadge key={b} label={b} tone="forest" title={getProductBadgeDisclosure(b)} />
-          ))}
-        </div>
+        {stockOut && (
+          <div className="vb-product-card__badges">
+            <ProductBadge label="SOLD OUT" tone="danger" />
+          </div>
+        )}
       </div>
 
       <div className="vb-product-card__body">
         <div className="vb-product-card__category">{p.category}</div>
+
+        {((p.compliance_flags ?? []).includes('age_restricted_12plus') ||
+          visibleBadges.length > 0) && (
+          <div className="vb-product-card__claim-row">
+            {(p.compliance_flags ?? []).includes('age_restricted_12plus') && (
+              <span
+                className="vb-product-card__claim"
+                title="Contains 0.5% salicylic acid (BHA). Recommended for ages 12+."
+              >
+                Contains BHA · 12+
+              </span>
+            )}
+            {visibleBadges.map((b) => (
+              <span key={b} className="vb-product-card__claim" title={getProductBadgeDisclosure(b)}>
+                {b}
+              </span>
+            ))}
+          </div>
+        )}
 
         <Link href={href} className="vb-product-card__title">
           {p.name}

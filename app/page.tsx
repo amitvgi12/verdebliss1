@@ -249,7 +249,7 @@ export default async function Home() {
               <div className="home-philosophy-cert-grid">
                 {[
                   { value: 'INCI', label: 'Full disclosure', accent: '#bfa06a' },
-                  { value: String(products.length), label: 'Current formulas', accent: '#7d9b76' },
+                  { value: 'Zero', label: 'Unsubstantiated claims', accent: '#7d9b76' },
                   { value: '14 days', label: 'Return window', accent: '#bfa06a' },
                   { value: 'Verified', label: 'Review standard', accent: '#7d9b76' },
                 ].map((item) => (
