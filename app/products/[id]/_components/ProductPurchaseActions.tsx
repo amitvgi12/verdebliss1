@@ -101,9 +101,9 @@ export default function ProductPurchaseActions({
               ? `${productName} is sold out`
               : !priceAvailable
                 ? `${productName} price temporarily unavailable`
-              : inCart
-                ? `View cart — ${productName} is in your cart`
-                : `Add ${productName} to cart`
+                : inCart
+                  ? `View cart — ${productName} is in your cart`
+                  : `Add ${productName} to cart`
           }
           style={{
             flex: 1,

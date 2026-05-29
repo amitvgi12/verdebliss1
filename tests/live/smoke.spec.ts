@@ -107,8 +107,8 @@ test.describe('live smoke checks', () => {
     const apiRes = await request.get(`/api/schema/product/${slug}`)
     const product =
       apiRes.status() === 200 && apiRes.headers()['content-type']?.includes('ld+json')
-        ? flattenJsonLd(JSON.parse(await apiRes.text())).find((s) => s['@type'] === 'Product') ??
-          null
+        ? (flattenJsonLd(JSON.parse(await apiRes.text())).find((s) => s['@type'] === 'Product') ??
+          null)
         : findJsonLd(html, (s) => s['@type'] === 'Product')
 
     expect(product, 'Product JSON-LD not found in PDP or schema API').toBeTruthy()
@@ -149,9 +149,10 @@ test.describe('live smoke checks', () => {
           | Record<string, unknown>
           | undefined
         if (typeof offer?.price === 'number') {
-          expect(offer.price, `[/api/schema/product/${slug}] Offer price must be positive`).toBeGreaterThan(
-            0
-          )
+          expect(
+            offer.price,
+            `[/api/schema/product/${slug}] Offer price must be positive`
+          ).toBeGreaterThan(0)
           schemaPrice = offer.price
         }
       } else {

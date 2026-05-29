@@ -115,7 +115,12 @@ export function productJsonLd(
               maxValue: 1,
               unitCode: 'DAY',
             },
-            transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 3, unitCode: 'DAY' },
+            transitTime: {
+              '@type': 'QuantitativeValue',
+              minValue: 2,
+              maxValue: 3,
+              unitCode: 'DAY',
+            },
           },
         },
       }

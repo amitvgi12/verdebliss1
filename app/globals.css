@@ -449,8 +449,7 @@ video {
 }
 
 .vb-product-card__media > a > div {
-  background:
-    radial-gradient(circle at 50% 58%, rgb(255 255 255 / 80%) 0 34%, transparent 35%),
+  background: radial-gradient(circle at 50% 58%, rgb(255 255 255 / 80%) 0 34%, transparent 35%),
     linear-gradient(145deg, #f8f2e9 0%, #eaf0e8 100%) !important;
 }
 

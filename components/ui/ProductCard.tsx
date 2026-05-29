@@ -131,7 +131,10 @@ export default function ProductCard({
               <div className="vb-product-card__prices">
                 <span className="vb-product-card__price">₹{price.toLocaleString()}</span>
                 {mrp && (
-                  <span className="vb-product-card__mrp" aria-label={`MRP ₹${mrp.toLocaleString()}`}>
+                  <span
+                    className="vb-product-card__mrp"
+                    aria-label={`MRP ₹${mrp.toLocaleString()}`}
+                  >
                     MRP ₹{mrp.toLocaleString()}
                   </span>
                 )}

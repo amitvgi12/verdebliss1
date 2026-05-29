@@ -460,7 +460,9 @@ export async function fillCheckoutAddress(page: Page) {
 
 export async function waitForPdpReady(page: Page, productName = E2E_PRODUCT.name) {
   await expect(page.getByRole('heading', { name: productName })).toBeVisible()
-  await expect(page.getByText(/Earn \d+ loyalty points/i)).toBeVisible()
+  // Shipping strip is unconditionally rendered by the client-side PurchaseActions
+  // component — its presence confirms React has hydrated the PDP.
+  await expect(page.getByText(/Free shipping on orders above/i)).toBeVisible()
 }
 
 export async function goToCheckoutReview(page: Page) {
