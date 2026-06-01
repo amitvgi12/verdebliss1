@@ -56,7 +56,9 @@ flowchart TB
 - Inventory and loyalty updates run inside the database transaction.
 - Redis/KV-first API rate limiting with Supabase durable fallback and per-identity (user/email/cart) second bucket.
 - Per-request CSP nonce in `proxy.ts` with `strict-dynamic`; no `unsafe-inline` in `script-src`.
-- Optional Cloudflare origin gate: `CF_ORIGIN_SECRET` header checked on `/api/*` (see `CLOUDFLARE_WAF.md`).
+- Optional Cloudflare origin gate: `CF_ORIGIN_SECRET` header checked on protected `/api/*`
+  routes; set `CF_ORIGIN_GATE_REQUIRED=true` to fail closed in production (see
+  `CLOUDFLARE_WAF.md`).
 - ISR product pages purged post-deploy via `/api/revalidate` (requires `REVALIDATE_SECRET`).
 - `LAUNCH_MODE=true` arms `tests/launch-gates.test.ts` compliance gates before live orders.
 
@@ -126,6 +128,7 @@ NEXT_PUBLIC_APP_VERSION=
 
 # Optional
 CF_ORIGIN_SECRET=           # Cloudflare origin gate (see CLOUDFLARE_WAF.md)
+CF_ORIGIN_GATE_REQUIRED=    # Set true in production when Cloudflare header injection is live
 SENTRY_DSN=                 # Enables observability shim → Sentry forwarding
 EXPOSE_BUILD_METADATA=      # Set true only for diagnostic windows; redacts Git rev in /api/version otherwise
 LAUNCH_MODE=                # Set true in production before live orders; arms launch-gates tests

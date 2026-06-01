@@ -38,22 +38,21 @@ Vercel does not support IP allow-lists on the free / Pro plan. Two options:
 1. In Cloudflare dashboard → your zone → **Rules → Transform Rules → Modify
    Request Header**: add a static custom header to every request to your
    origin, e.g. `x-cf-origin-secret: <random 32+ char value>`.
-2. In `proxy.ts` (or a new middleware on the API routes), reject any
-   request to `/api/*` that does not carry the matching header. Treat the
-   secret as a rotated env var:
+2. `proxy.ts` rejects protected `/api/*` requests that do not carry the
+   matching header and stamps verified requests with `x-vb-origin-verified`
+   before route handlers read client-IP headers. Treat the secret as a rotated
+   env var:
 
 ```ts
-// Inside proxy.ts, before CSP processing:
-if (request.nextUrl.pathname.startsWith('/api/')) {
-  const expected = process.env.CF_ORIGIN_SECRET
-  if (expected && request.headers.get('x-cf-origin-secret') !== expected) {
-    return new Response('Forbidden', { status: 403 })
-  }
-}
+// Implemented in proxy.ts before CSP processing.
+// Set CF_ORIGIN_SECRET to enable the header check.
+// Set CF_ORIGIN_GATE_REQUIRED=true after Cloudflare header injection is live
+// so production fails closed if the secret is accidentally removed.
 ```
 
 3. Set `CF_ORIGIN_SECRET` in Vercel's environment **and** in the Cloudflare
-   header-rewrite rule. Rotate quarterly.
+   header-rewrite rule. Once verified, set `CF_ORIGIN_GATE_REQUIRED=true` in
+   production. Rotate quarterly.
 
 ### Option B — Authenticated Origin Pulls (Cloudflare Enterprise / Vercel Enterprise)
 
@@ -181,9 +180,11 @@ curl -i https://verdebliss.com/api/checkout/cod -H "x-vb-client: web" \
      -H "Content-Type: application/json" -d '{"items":[]}'
 # Expect: 400 (bad input) — proves WAF + middleware passed
 
-# 3. CF-Connecting-IP propagates
+# 3. CF-Connecting-IP propagates only after origin verification
 curl -i https://verdebliss.com/api/version
-# Server logs should show source: 'cf' for client IP resolution
+# Exempt endpoint sanity check. Protected API route logs should show source:
+# 'cf' only when Cloudflare supplied x-cf-origin-secret and proxy.ts stamped
+# x-vb-origin-verified.
 
 # 4. Webhook IP allow-list
 curl -i https://verdebliss.com/api/webhooks/razorpay -H "x-razorpay-signature: x"
@@ -194,5 +195,5 @@ curl -i https://verdebliss.com/api/webhooks/razorpay -H "x-razorpay-signature: x
 
 Cloudflare's "Pause Cloudflare on this site" is a single click. DNS still
 resolves to Vercel directly. The `CF_ORIGIN_SECRET` proxy check **must
-not** activate when Cloudflare is paused — keep `CF_ORIGIN_SECRET` unset in
-the rollback environment, or wrap the check in a feature flag (`process.env.CF_ENABLED === 'true'`).
+not** activate when Cloudflare is paused — keep `CF_ORIGIN_SECRET` unset and
+`CF_ORIGIN_GATE_REQUIRED` empty/false in the rollback environment.
