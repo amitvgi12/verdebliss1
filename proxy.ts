@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import {
-  CF_ORIGIN_SECRET_HEADER,
+  ORIGIN_SECRET_HEADER,
   ORIGIN_VERIFIED_CLOUDFLARE,
   ORIGIN_VERIFIED_HEADER,
 } from '@/lib/origin-trust'
@@ -18,7 +18,7 @@ import {
  *   nonce + `'strict-dynamic'` for always-dynamic routes, and `'unsafe-inline'`
  *   for static/ISR routes whose cached HTML cannot embed a per-request nonce.
  * - When `CF_ORIGIN_SECRET` is set, rejects protected `/api/*` requests that
- *   don't carry the matching `x-cf-origin-secret` header. See
+ *   don't carry the matching `x-vb-origin-secret` header. See
  *   `CLOUDFLARE_WAF.md`.
  *
  * Why strict-dynamic + nonce: it lets Next's chunk loader (which is itself
@@ -108,7 +108,7 @@ export function checkCloudflareOriginGate(
     return { allowed: true, verified: false }
   }
 
-  if (headers.get(CF_ORIGIN_SECRET_HEADER) !== secret) {
+  if (headers.get(ORIGIN_SECRET_HEADER) !== secret) {
     return { allowed: false, verified: false, status: 403, message: 'Forbidden' }
   }
 
@@ -237,7 +237,7 @@ export function withSecurityRequestHeaders(
   { cloudflareOriginVerified = false }: { cloudflareOriginVerified?: boolean } = {}
 ): Headers {
   const requestHeaders = new Headers(headers)
-  requestHeaders.delete(CF_ORIGIN_SECRET_HEADER)
+  requestHeaders.delete(ORIGIN_SECRET_HEADER)
   requestHeaders.delete(ORIGIN_VERIFIED_HEADER)
 
   if (cloudflareOriginVerified) {

@@ -7,7 +7,7 @@ import {
   withSecurityRequestHeaders,
 } from '@/proxy'
 import {
-  CF_ORIGIN_SECRET_HEADER,
+  ORIGIN_SECRET_HEADER,
   ORIGIN_VERIFIED_CLOUDFLARE,
   ORIGIN_VERIFIED_HEADER,
 } from '@/lib/origin-trust'
@@ -26,7 +26,7 @@ describe('CSP proxy headers', () => {
     const csp = buildContentSecurityPolicy('test-nonce', { isProduction: true })
     const requestHeaders = withSecurityRequestHeaders(
       new Headers({
-        [CF_ORIGIN_SECRET_HEADER]: 'origin-secret',
+        [ORIGIN_SECRET_HEADER]: 'origin-secret',
         [ORIGIN_VERIFIED_HEADER]: 'spoofed',
       }),
       'test-nonce',
@@ -36,7 +36,7 @@ describe('CSP proxy headers', () => {
     expect(csp).toContain("'nonce-test-nonce'")
     expect(csp).toContain("'strict-dynamic'")
     expect(csp).not.toContain("'unsafe-eval'")
-    expect(requestHeaders.get(CF_ORIGIN_SECRET_HEADER)).toBeNull()
+    expect(requestHeaders.get(ORIGIN_SECRET_HEADER)).toBeNull()
     expect(requestHeaders.get(ORIGIN_VERIFIED_HEADER)).toBeNull()
     expect(requestHeaders.get('x-nonce')).toBe('test-nonce')
     expect(requestHeaders.get('x-csp')).toBe(csp)
@@ -108,7 +108,7 @@ describe('Cloudflare origin gate', () => {
     expect(
       checkCloudflareOriginGate(
         '/api/checkout/cod',
-        new Headers({ [CF_ORIGIN_SECRET_HEADER]: 'wrong' }),
+        new Headers({ [ORIGIN_SECRET_HEADER]: 'wrong' }),
         {
           NODE_ENV: 'production',
           CF_ORIGIN_SECRET: 'expected',
@@ -121,7 +121,7 @@ describe('Cloudflare origin gate', () => {
     expect(
       checkCloudflareOriginGate(
         '/api/checkout/cod',
-        new Headers({ [CF_ORIGIN_SECRET_HEADER]: 'expected' }),
+        new Headers({ [ORIGIN_SECRET_HEADER]: 'expected' }),
         {
           NODE_ENV: 'production',
           CF_ORIGIN_SECRET: 'expected',

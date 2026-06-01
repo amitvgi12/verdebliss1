@@ -37,7 +37,9 @@ Vercel does not support IP allow-lists on the free / Pro plan. Two options:
 
 1. In Cloudflare dashboard → your zone → **Rules → Transform Rules → Modify
    Request Header**: add a static custom header to every request to your
-   origin, e.g. `x-cf-origin-secret: <random 32+ char value>`.
+   origin, e.g. `x-vb-origin-secret: <random 32+ char value>`.
+   Do not use a header beginning with `x-cf-` or `cf-`; Cloudflare reserves
+   those names and will reject transform rules that try to set them.
 2. `proxy.ts` rejects protected `/api/*` requests that do not carry the
    matching header and stamps verified requests with `x-vb-origin-verified`
    before route handlers read client-IP headers. Treat the secret as a rotated
@@ -183,7 +185,7 @@ curl -i https://verdebliss.com/api/checkout/cod -H "x-vb-client: web" \
 # 3. CF-Connecting-IP propagates only after origin verification
 curl -i https://verdebliss.com/api/version
 # Exempt endpoint sanity check. Protected API route logs should show source:
-# 'cf' only when Cloudflare supplied x-cf-origin-secret and proxy.ts stamped
+# 'cf' only when Cloudflare supplied x-vb-origin-secret and proxy.ts stamped
 # x-vb-origin-verified.
 
 # 4. Webhook IP allow-list

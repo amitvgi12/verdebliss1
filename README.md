@@ -56,7 +56,8 @@ flowchart TB
 - Inventory and loyalty updates run inside the database transaction.
 - Redis/KV-first API rate limiting with Supabase durable fallback and per-identity (user/email/cart) second bucket.
 - Per-request CSP nonce in `proxy.ts` with `strict-dynamic`; no `unsafe-inline` in `script-src`.
-- Optional Cloudflare origin gate: `CF_ORIGIN_SECRET` header checked on protected `/api/*`
+- Optional Cloudflare origin gate: `CF_ORIGIN_SECRET` checked against
+  Cloudflare's `x-vb-origin-secret` request header on protected `/api/*`
   routes; set `CF_ORIGIN_GATE_REQUIRED=true` to fail closed in production (see
   `CLOUDFLARE_WAF.md`).
 - ISR product pages purged post-deploy via `/api/revalidate` (requires `REVALIDATE_SECRET`).

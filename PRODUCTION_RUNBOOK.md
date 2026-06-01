@@ -132,7 +132,7 @@ Before launch:
 1. With `CF_ORIGIN_SECRET` unset, confirm the direct Vercel deployment URL is
    reachable. This is the bypassable baseline.
 2. Set `CF_ORIGIN_SECRET` in Vercel and configure the matching Cloudflare
-   Transform Rule.
+   Transform Rule to send `x-vb-origin-secret`.
 3. Confirm the direct Vercel deployment URL returns `403`.
 4. Confirm `https://www.verdebliss.com/` still succeeds through Cloudflare.
 
