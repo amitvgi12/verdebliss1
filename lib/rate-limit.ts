@@ -11,9 +11,9 @@ import { getClientIp } from '@/lib/client-ip'
  *    writable REST aliases, to make this limiter span serverless
  *    instances/regions. KV_REST_API_READ_ONLY_TOKEN is intentionally ignored:
  *    rate limiting requires write commands.
- *  - Client IP extraction is centralised in `lib/client-ip.ts`. The order
- *    prefers `cf-connecting-ip` (Cloudflare edge), then `x-vercel-forwarded-for`,
- *    then `x-forwarded-for`. See `CLOUDFLARE_WAF.md` for proxy hardening.
+ *  - Client IP extraction is centralised in `lib/client-ip.ts`. It trusts
+ *    `cf-connecting-ip` only after proxy.ts verifies the Cloudflare origin
+ *    secret, then falls back to Vercel's verified forwarding header.
  *  - Callers can pass an `additionalKey` (e.g. user id, email, cart id) so a
  *    single attacker cannot bypass the limiter merely by rotating IPs.
  *  - Ingress traffic from CGNAT / corporate proxies will share an IP. Limits

@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import {
+  CF_ORIGIN_SECRET_HEADER,
+  ORIGIN_VERIFIED_CLOUDFLARE,
+  ORIGIN_VERIFIED_HEADER,
+} from '@/lib/origin-trust'
 
 /**
  * Per-request CSP nonce proxy + optional Cloudflare origin gate.
@@ -9,17 +14,21 @@ import type { NextRequest } from 'next/server'
  *   for code that needs to emit nonce-bearing scripts.
  * - Forwards the CSP itself on the request. Next parses that request header to
  *   attach the same nonce to its framework/bootstrap scripts.
- * - Sets a strict CSP that drops `'unsafe-inline'` for scripts.
- * - When `CF_ORIGIN_SECRET` is set, rejects requests to `/api/*` that don't
- *   carry the matching `x-cf-origin-secret` header. See `CLOUDFLARE_WAF.md`.
+ * - Sets a route-aware script CSP (see `requiresScriptNonce`): a per-request
+ *   nonce + `'strict-dynamic'` for always-dynamic routes, and `'unsafe-inline'`
+ *   for static/ISR routes whose cached HTML cannot embed a per-request nonce.
+ * - When `CF_ORIGIN_SECRET` is set, rejects protected `/api/*` requests that
+ *   don't carry the matching `x-cf-origin-secret` header. See
+ *   `CLOUDFLARE_WAF.md`.
  *
  * Why strict-dynamic + nonce: it lets Next's chunk loader (which is itself
  * loaded with the nonce) load further chunks without us having to nonce every
- * generated <script>.
+ * generated <script>. The catch is that the nonce is generated per request, so
+ * it can only match a page that is rendered per request. A statically generated
+ * or ISR-cached page bakes its <script> tags ahead of time with no nonce; under
+ * `'strict-dynamic'` those nonce-less scripts are blocked and the page renders
+ * blank. Such routes therefore fall back to `'unsafe-inline'`.
  */
-
-const CF_ORIGIN_SECRET = process.env.CF_ORIGIN_SECRET
-const CF_ORIGIN_GATE_ENABLED = Boolean(CF_ORIGIN_SECRET)
 
 // Emitted as a response header (not a <meta> tag) to keep the build fingerprint
 // out of the rendered HTML where it could be scraped by bots.
@@ -39,29 +48,97 @@ const SENTRY_CONNECT_SRC = process.env.SENTRY_DSN ? ' https://o*.ingest.sentry.i
 const CF_ORIGIN_GATE_EXEMPT = (path: string) =>
   path.startsWith('/api/webhooks/') || path === '/api/version' || path === '/api/csp-report'
 
-export function proxy(request: NextRequest) {
-  // 1) Optional Cloudflare origin gate — runs before any other work so direct
-  //    -to-origin abuse pays the absolute minimum cost.
-  if (
-    CF_ORIGIN_GATE_ENABLED &&
-    request.nextUrl.pathname.startsWith('/api/') &&
-    !CF_ORIGIN_GATE_EXEMPT(request.nextUrl.pathname)
-  ) {
-    const presented = request.headers.get('x-cf-origin-secret')
-    if (presented !== CF_ORIGIN_SECRET) {
-      return new NextResponse('Forbidden', { status: 403 })
+interface CloudflareOriginGateEnv {
+  CF_ORIGIN_SECRET?: string
+  CF_ORIGIN_GATE_REQUIRED?: string
+  NODE_ENV?: string
+}
+
+interface CloudflareOriginGateDecision {
+  allowed: boolean
+  verified: boolean
+  status?: 403 | 503
+  message?: string
+}
+
+// Routes that always render per-request (authenticated account pages, payment
+// checkout, and the interactive forms) can carry a fresh per-request nonce, so
+// they get the strict `'nonce-…' 'strict-dynamic'` script policy.
+//
+// Every other route is static / ISR-cacheable: its HTML is generated ahead of
+// the request, so it cannot embed the per-request nonce and must use
+// `'unsafe-inline'` instead — the standard ISR-compatible compromise for pages
+// that carry no authenticated context. Defaulting *unknown* routes to the
+// inline policy is deliberate: it means a newly added static page (e.g. a legal
+// or marketing page) can never silently blank out under a nonce it cannot
+// satisfy. Only this explicit, rarely-changing set opts into nonce enforcement.
+const NONCE_ROUTE_PREFIXES = ['/account', '/checkout', '/contact', '/quiz', '/refund']
+
+export function requiresScriptNonce(pathname: string): boolean {
+  return NONCE_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  )
+}
+
+export function isCloudflareOriginGateProtected(pathname: string): boolean {
+  return pathname.startsWith('/api/') && !CF_ORIGIN_GATE_EXEMPT(pathname)
+}
+
+export function checkCloudflareOriginGate(
+  pathname: string,
+  headers: Headers,
+  env: CloudflareOriginGateEnv = process.env
+): CloudflareOriginGateDecision {
+  if (!isCloudflareOriginGateProtected(pathname)) {
+    return { allowed: true, verified: false }
+  }
+
+  const secret = env.CF_ORIGIN_SECRET
+  const required = env.NODE_ENV === 'production' && env.CF_ORIGIN_GATE_REQUIRED === 'true'
+
+  if (!secret) {
+    if (required) {
+      return {
+        allowed: false,
+        verified: false,
+        status: 503,
+        message: 'Origin protection is not configured',
+      }
     }
+    return { allowed: true, verified: false }
+  }
+
+  if (headers.get(CF_ORIGIN_SECRET_HEADER) !== secret) {
+    return { allowed: false, verified: false, status: 403, message: 'Forbidden' }
+  }
+
+  return { allowed: true, verified: true }
+}
+
+export function proxy(request: NextRequest) {
+  // 1) Cloudflare origin gate runs before any other work so direct-to-origin
+  // abuse pays the absolute minimum cost. CF_ORIGIN_GATE_REQUIRED=true makes
+  // production fail closed if the secret is missing.
+  const originGate = checkCloudflareOriginGate(request.nextUrl.pathname, request.headers)
+  if (!originGate.allowed) {
+    return new NextResponse(originGate.message, { status: originGate.status })
   }
 
   const isProduction = process.env.NODE_ENV === 'production'
-  const nonce = generateNonce()
+  const useNonce = requiresScriptNonce(request.nextUrl.pathname)
+  // Empty on inline routes so StructuredData and other x-nonce consumers fall
+  // back cleanly (an empty nonce attribute is still allowed under unsafe-inline).
+  const nonce = useNonce ? generateNonce() : ''
   const cspDirectives = buildContentSecurityPolicy(nonce, {
     isProduction,
     sentryConnectSrc: SENTRY_CONNECT_SRC,
+    useNonce,
   })
 
   // Forward nonce to Server Components and to Next's framework script nonce parser.
-  const requestHeaders = withSecurityRequestHeaders(request.headers, nonce, cspDirectives)
+  const requestHeaders = withSecurityRequestHeaders(request.headers, nonce, cspDirectives, {
+    cloudflareOriginVerified: originGate.verified,
+  })
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
   response.headers.set('Content-Security-Policy', cspDirectives)
@@ -111,19 +188,27 @@ export function buildContentSecurityPolicy(
   {
     isProduction,
     sentryConnectSrc = '',
+    useNonce = true,
   }: {
     isProduction: boolean
     sentryConnectSrc?: string
+    useNonce?: boolean
   }
 ): string {
-  const scriptSrc = `'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com${
-    isProduction ? '' : " 'unsafe-eval'"
-  }`
+  const scriptHosts =
+    'https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com'
+  // Per-request (dynamic) routes: nonce + 'strict-dynamic'. Static/ISR routes:
+  // 'unsafe-inline' so Next's nonce-less bootstrap and RSC hydration scripts in
+  // the cached HTML are allowed to run. See `requiresScriptNonce` above.
+  const scriptCore = useNonce
+    ? `'self' 'nonce-${nonce}' 'strict-dynamic' ${scriptHosts}`
+    : `'self' 'unsafe-inline' ${scriptHosts}`
 
   return [
     "default-src 'self'",
-    `script-src ${scriptSrc}`,
-    `script-src-elem 'self' 'nonce-${nonce}' 'strict-dynamic' https://checkout.razorpay.com https://cdn.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com`,
+    // 'unsafe-eval' is enabled only outside production for Next's dev tooling.
+    `script-src ${scriptCore}${isProduction ? '' : " 'unsafe-eval'"}`,
+    `script-src-elem ${scriptCore}`,
     // Tailwind v4 + Next.js inject style tags. 'unsafe-inline' here is widely
     // accepted because style-based exfiltration is much weaker than script
     // execution. Hashes/nonces for styles are possible but can break Tailwind's
@@ -148,9 +233,17 @@ export function buildContentSecurityPolicy(
 export function withSecurityRequestHeaders(
   headers: Headers,
   nonce: string,
-  cspDirectives: string
+  cspDirectives: string,
+  { cloudflareOriginVerified = false }: { cloudflareOriginVerified?: boolean } = {}
 ): Headers {
   const requestHeaders = new Headers(headers)
+  requestHeaders.delete(CF_ORIGIN_SECRET_HEADER)
+  requestHeaders.delete(ORIGIN_VERIFIED_HEADER)
+
+  if (cloudflareOriginVerified) {
+    requestHeaders.set(ORIGIN_VERIFIED_HEADER, ORIGIN_VERIFIED_CLOUDFLARE)
+  }
+
   requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('x-csp', cspDirectives)
   requestHeaders.set('Content-Security-Policy', cspDirectives)

@@ -8,12 +8,14 @@ const sentryStubPath = path.resolve(process.cwd(), 'lib/sentry-stub.ts')
 const sentryTurbopackStub = './lib/sentry-stub.ts'
 
 /**
- * CSP is set in proxy.ts (per-request nonce). Static headers stay here.
+ * CSP is set in proxy.ts (route-aware: per-request nonce on always-dynamic
+ * routes, 'unsafe-inline' on static/ISR routes whose cached HTML cannot embed a
+ * per-request nonce — see `requiresScriptNonce`). Static headers stay here.
  *
- * `unsafe-inline` for scripts has been removed. JSON-LD is served from
- * same-origin schema endpoints so it is covered by `script-src 'self'`.
- * Razorpay's iframe checkout runs at checkout.razorpay.com — its own scripts
- * don't need our CSP nonce because they execute in their own iframe origin.
+ * JSON-LD is served from same-origin schema endpoints so it is covered by
+ * `script-src 'self'`. Razorpay's iframe checkout runs at checkout.razorpay.com
+ * — its own scripts don't need our CSP nonce because they execute in their own
+ * iframe origin.
  */
 const nextConfig: NextConfig = {
   images: {
