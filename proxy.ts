@@ -141,6 +141,14 @@ export function proxy(request: NextRequest) {
   })
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
+  // Defence-in-depth: our origin must never emit the origin-trust headers to the
+  // client. ORIGIN_SECRET_HEADER is the Cloudflare→origin shared secret (injected
+  // on the *request*); reflecting it into any response would leak the secret and
+  // defeat the origin gate. ORIGIN_VERIFIED_HEADER is internal request-routing
+  // state only. Both are normally absent here, so these deletes are a no-op on the
+  // happy path — they exist so a future handler or edge reflection can't leak them.
+  response.headers.delete(ORIGIN_SECRET_HEADER)
+  response.headers.delete(ORIGIN_VERIFIED_HEADER)
   response.headers.set('Content-Security-Policy', cspDirectives)
   response.headers.set('Reporting-Endpoints', 'csp-endpoint="/api/csp-report"')
   response.headers.set(
