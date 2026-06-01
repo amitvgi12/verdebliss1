@@ -22,7 +22,7 @@ const A11Y_PRODUCT = {
   slug: 'bakuchiol-renewal-serum',
   name: 'Bakuchiol Renewal Serum',
   category: 'Serum',
-  price: 250,
+  price: 1495,
   description: 'Plant-based retinol alternative for a smoother-looking night ritual.',
   ingredient: 'Bakuchiol',
   bg_color: '#EBF0E9',
