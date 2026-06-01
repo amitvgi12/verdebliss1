@@ -10,13 +10,12 @@ export async function GET() {
 
   return NextResponse.json({
     name: pkg.name,
-    version: pkg.version,
+    schemaVersion: '2026-05-27-retail-prices-review-disclosures-invoice-trigger',
     gitSha: getPublicRevision(isProduction),
     environment,
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
     deployedAt:
       process.env.VERCEL_DEPLOYMENT_CREATED_AT ?? process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
-    schemaVersion: '2026-05-27-retail-prices-review-disclosures-invoice-trigger',
     capabilities: getEnvironmentCapabilities(),
     compliance: {
       ok: compliance.ok,
