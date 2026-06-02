@@ -19,7 +19,7 @@ const FAQ_DATA = [
   },
   {
     q: 'How do loyalty points work?',
-    a: 'You earn 1 point per ₹10 spent after successful payment verification. Tiers: Green Leaf (0–499), Gold Botanist (500–1499), Platinum Alchemist (1500+). Higher tiers unlock early access, free samples, and special discounts.',
+    a: 'You earn 1 point per ₹20 spent after successful payment verification. Tiers: Green Leaf (0–499), Gold Botanist (500–1499), Platinum Alchemist (1500+). Higher tiers unlock early access, free samples, and special discounts.',
   },
   {
     q: 'Can I use VerdeBliss products during pregnancy?',

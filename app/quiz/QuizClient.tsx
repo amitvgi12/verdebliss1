@@ -362,7 +362,7 @@ export default function QuizClient() {
               </span>
             </div>
             <p style={{ fontSize: 12, opacity: 0.7, marginBottom: 20 }}>
-              Free shipping included · Earn {Math.floor(bundle / 10)} loyalty points
+              Free shipping included · Earn {Math.floor(bundle / 20)} loyalty points
             </p>
 
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>

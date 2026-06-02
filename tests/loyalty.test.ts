@@ -17,12 +17,12 @@ describe('loyalty tier logic', () => {
     expect(tierForPoints(99_999)).toBe('Platinum Alchemist')
   })
 
-  it('points are 1 per ₹10, floored', () => {
+  it('points are 1 per ₹20, floored', () => {
     expect(pointsForSubtotal(0)).toBe(0)
-    expect(pointsForSubtotal(9)).toBe(0)
-    expect(pointsForSubtotal(10)).toBe(1)
-    expect(pointsForSubtotal(99)).toBe(9)
-    expect(pointsForSubtotal(1000)).toBe(100)
+    expect(pointsForSubtotal(19)).toBe(0)
+    expect(pointsForSubtotal(20)).toBe(1)
+    expect(pointsForSubtotal(99)).toBe(4)
+    expect(pointsForSubtotal(1000)).toBe(50)
     // Negative subtotals should clamp to 0
     expect(pointsForSubtotal(-50)).toBe(0)
   })

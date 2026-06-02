@@ -43,7 +43,7 @@ export default function CartDrawer() {
   const total = hasCurrentPrices
     ? currentItems.reduce((sum, item) => sum + Number(item.price) * item.qty, 0)
     : 0
-  const pointsToEarn = Math.floor(total / 10)
+  const pointsToEarn = Math.floor(total / 20)
 
   // WCAG 2.1 SC 2.1.2 + dialog pattern: trap focus inside the drawer while
   // open and restore it to the trigger element when closed.

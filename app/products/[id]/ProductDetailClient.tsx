@@ -212,7 +212,7 @@ export default function ProductDetailClient({
   const priceAvailable = hasProductPrice(p)
   const mrp = priceOffer.mrp
   const discount = priceOffer.discountPercent
-  const loyalPts = priceAvailable ? Math.floor(priceOffer.price / 10) : 0
+  const loyalPts = priceAvailable ? Math.floor(priceOffer.price / 20) : 0
   const catLabel = (p.category ?? 'Skincare').toUpperCase()
   const stockCount = typeof p.stock === 'number' ? p.stock : null
   const stockOut = stockCount === 0

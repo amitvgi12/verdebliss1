@@ -115,7 +115,7 @@ export default function LoyaltyPanel({ profile }: LoyaltyPanelProps) {
           {[
             ['50 pts', 'First Purchase'],
             ['20 pts', 'Per Review'],
-            ['1 pt', 'Per ₹10 Spent'],
+            ['1 pt', 'Per ₹20 Spent'],
           ].map(([v, l]) => (
             <div key={l}>
               <div style={{ fontSize: 14, fontWeight: 700, color: C.gold }}>{v}</div>

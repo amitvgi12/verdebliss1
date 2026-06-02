@@ -197,7 +197,7 @@ function buildSystemPrompt(ctx: TrustedContext, products: Product[]): string {
 
   const policies = `
 Key policies: Free shipping ₹499+. Returns within 14 days (unopened). Refund 3–7 business days.
-Loyalty: 1 point per ₹10. Green Leaf → Gold Botanist → Platinum Alchemist.
+Loyalty: 1 point per ₹20. Green Leaf → Gold Botanist → Platinum Alchemist.
 Refund requests: verdebliss.com/refund (log in, eligible orders appear automatically).
 Contact: ${BUSINESS_COMPLIANCE.emails.reactions} | ${BUSINESS_COMPLIANCE.emails.support}`
 

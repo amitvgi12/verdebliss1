@@ -260,7 +260,7 @@ export default function Checkout() {
   const total = hasCurrentPrices
     ? currentItems.reduce((sum, item) => sum + Number(item.price) * item.qty, 0)
     : 0
-  const pointsToEarn = Math.floor(total / 10)
+  const pointsToEarn = Math.floor(total / 20)
 
   const [step, setStep] = useState(0) // 0=address, 1=review, 2=payment
   const [status, setStatus] = useState<CheckoutStatus>(null) // null | 'success' | 'failed'

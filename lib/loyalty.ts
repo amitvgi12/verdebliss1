@@ -20,6 +20,6 @@ export function tierForPoints(points: number): TierName {
 }
 
 export function pointsForSubtotal(subtotal: number): number {
-  // 1 point per ₹10 of subtotal (rounded down). Shipping does not earn points.
-  return Math.max(0, Math.floor(subtotal / 10))
+  // 1 point per ₹20 of subtotal (rounded down). Shipping does not earn points.
+  return Math.max(0, Math.floor(subtotal / 20))
 }
