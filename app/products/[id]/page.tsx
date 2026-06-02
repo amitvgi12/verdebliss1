@@ -10,15 +10,19 @@ import {
 import ProductDetailClient from './ProductDetailClient'
 import { absoluteUrl, productOgImagePath, productPath } from '@/lib/seo'
 import { getSellerDetailsServer } from '@/constants/businessCompliance'
-import { isPublishedProduct } from '@/lib/pricing'
+import { hasProductPrice, isPublishedProduct } from '@/lib/pricing'
 import { hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
-// Pre-build all known PDPs at deploy time so no PDP ever starts life as a
-// runtime ISR render from the previous build. dynamicParams=true (default)
-// keeps dynamic rendering available for any product added after the build.
+// Pre-build PDPs that have a real price. If the build environment lacks the
+// Supabase admin key (SUPABASE_SERVICE_ROLE_KEY), getProductsServer returns
+// price-0 static shells; prerendering those would bake "Price temporarily
+// unavailable" into the PDP HTML. Filtering to priced products means a key-less
+// build prerenders nothing, so each PDP renders on-demand at runtime (where the
+// key is present) and ISR-caches the real price. dynamicParams=true (default)
+// keeps that on-demand path available.
 export async function generateStaticParams() {
   const products = await getProductsServer()
-  return products.map((p) => ({ id: p.slug ?? p.id }))
+  return products.filter((p) => hasProductPrice(p)).map((p) => ({ id: p.slug ?? p.id }))
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
