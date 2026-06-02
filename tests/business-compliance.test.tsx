@@ -89,6 +89,17 @@ describe('business compliance source of truth', () => {
     ).toMatchObject({ ok: true, errors: [] })
   })
 
+  it('requires documentary legal verification in strict production validation', () => {
+    const { LEGAL_DATA_VERIFIED: _omitted, ...env } = fullProductionEnv()
+
+    expect(validateBusinessCompliance(VALID_COMPLIANCE, { strict: true, env })).toMatchObject({
+      ok: false,
+      errors: expect.arrayContaining([
+        'LEGAL_DATA_VERIFIED=true is required after documentary legal verification',
+      ]),
+    })
+  })
+
   it('accepts a derived phone href when the duplicate href env is omitted', () => {
     const { NEXT_PUBLIC_VERDEBLISS_SUPPORT_PHONE_HREF: _omitted, ...env } = fullProductionEnv()
 
@@ -199,6 +210,7 @@ function fullProductionEnv(): NodeJS.ProcessEnv {
     NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL: VALID_COMPLIANCE.emails.support,
     NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME: VALID_COMPLIANCE.grievanceOfficer.name,
     NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL: VALID_COMPLIANCE.grievanceOfficer.email,
+    LEGAL_DATA_VERIFIED: 'true',
   }
 }
 

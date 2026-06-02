@@ -58,6 +58,7 @@ const REQUIRED_ENV_KEYS = [
   'NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL',
 ] as const
 
+const LEGAL_DATA_VERIFIED_ENV_KEY = 'LEGAL_DATA_VERIFIED'
 const PLACEHOLDER_PATTERN =
   /\b(DEMO|placeholder|example\.com|Demo House|Lorem|dummy|sample|fake|to be configured|configure me|pending verification|pending appointment|test value)\b/i
 const DEFAULT_GRIEVANCE_OFFICER_NAME = 'Ananya Rao'
@@ -266,6 +267,9 @@ export function validateBusinessCompliance(
     const envSource = options.env ?? process.env
     for (const key of REQUIRED_ENV_KEYS) {
       if (!envSource[key]) errors.push(`${key} is required`)
+    }
+    if (envSource[LEGAL_DATA_VERIFIED_ENV_KEY] !== 'true') {
+      errors.push(`${LEGAL_DATA_VERIFIED_ENV_KEY}=true is required after documentary legal verification`)
     }
     const configuredGrievanceName =
       envSource.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME?.trim() ?? ''

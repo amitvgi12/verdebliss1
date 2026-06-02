@@ -201,6 +201,35 @@ describe('chat API consent gate', () => {
     expect(prompt).not.toMatch(/ignore previous instructions|RAZORPAY_KEY_SECRET/i)
   })
 
+  it('does not expose server configuration names when Gemini is unavailable', async () => {
+    vi.stubEnv('GEMINI_API_KEY', '')
+
+    const response = await POST(chatRequest('Suggest a serum'))
+
+    expect(response.status).toBe(500)
+    const body = await response.json()
+    expect(body.error).toBe('AI support is temporarily unavailable. Please try again later.')
+    expect(JSON.stringify(body)).not.toMatch(/GEMINI_API_KEY|server configuration/i)
+  })
+
+  it('does not expose provider details when Gemini rejects the request', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        text: vi.fn().mockResolvedValue('provider key rejected'),
+      })
+    )
+
+    const response = await POST(chatRequest('Suggest a serum'))
+
+    expect(response.status).toBe(502)
+    const body = await response.json()
+    expect(body.error).toBe('AI support is temporarily unavailable. Please try again later.')
+    expect(JSON.stringify(body)).not.toMatch(/Gemini|GEMINI_API_KEY|API key/i)
+  })
+
   it('labels the newest order and instructs Gemini to answer latest-order questions singularly', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

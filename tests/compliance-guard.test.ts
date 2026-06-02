@@ -21,6 +21,7 @@ const MOCK_ENV = {
   NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL: 'support@verdebliss.com',
   NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME: 'Priya Sharma',
   NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL: 'grievance@verdebliss.com',
+  LEGAL_DATA_VERIFIED: 'true',
 } as unknown as NodeJS.ProcessEnv
 
 const VALID_BASE: BusinessCompliance = {

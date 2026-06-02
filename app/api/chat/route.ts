@@ -39,6 +39,8 @@ interface TrustedContext {
 
 const CATALOGUE_CACHE_TTL_MS = 60_000
 const GEMINI_THINKING_BUDGET = 512
+const CHAT_SERVICE_UNAVAILABLE_ERROR =
+  'AI support is temporarily unavailable. Please try again later.'
 let catalogueCache: { value: string; expiresAt: number } | null = null
 
 /**
@@ -330,10 +332,7 @@ export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     console.error('[chat] GEMINI_API_KEY not set')
-    return NextResponse.json(
-      { error: 'Server configuration error — GEMINI_API_KEY missing' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: CHAT_SERVICE_UNAVAILABLE_ERROR }, { status: 500 })
   }
 
   const ctx = await buildTrustedContext(request, needsOrderContext)
@@ -349,15 +348,12 @@ export async function POST(request: Request) {
     if (!result.ok) {
       console.error(`[chat] Gemini ${result.status}:`, result.errorBody)
       if (result.status === 403) {
-        return NextResponse.json(
-          { error: 'API key invalid. Check GEMINI_API_KEY.' },
-          { status: 502 }
-        )
+        return NextResponse.json({ error: CHAT_SERVICE_UNAVAILABLE_ERROR }, { status: 502 })
       }
       if (result.status === 429) {
         return NextResponse.json({ error: 'Rate limit reached. Try again.' }, { status: 429 })
       }
-      return NextResponse.json({ error: `Gemini error ${result.status}` }, { status: 502 })
+      return NextResponse.json({ error: CHAT_SERVICE_UNAVAILABLE_ERROR }, { status: 502 })
     }
 
     const data = result.data as GeminiResponseShape | null
