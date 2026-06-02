@@ -84,4 +84,5 @@ function stubValidProductionComplianceEnv() {
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_SUPPORT_EMAIL', 'hello@verdebliss.com')
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME', 'Ananya Rao')
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_EMAIL', 'grievance@verdebliss.com')
+  vi.stubEnv('LEGAL_DATA_VERIFIED', 'true')
 }
