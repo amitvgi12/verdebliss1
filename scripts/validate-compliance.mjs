@@ -43,6 +43,10 @@ const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const errors = []
 
+if (process.env.LEGAL_DATA_VERIFIED !== 'true') {
+  errors.push('LEGAL_DATA_VERIFIED=true is required after documentary legal verification')
+}
+
 for (const key of required) {
   const value = process.env[key]?.trim() ?? ''
   if (!value) {
