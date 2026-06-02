@@ -3,6 +3,9 @@ import pkg from '@/package.json'
 import { getEnvironmentCapabilities } from '@/lib/runtime-env'
 import { BUSINESS_COMPLIANCE, validateBusinessCompliance } from '@/constants/businessCompliance'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET() {
   const environment = process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'development'
   const isProduction = environment === 'production'
