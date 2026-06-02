@@ -13,6 +13,22 @@ export function hasProductPrice(product?: Pick<Product, 'price'> | null): boolea
   return normalizeMoney(product?.price) > 0
 }
 
+/**
+ * A product may render as a buyable PDP / emit an InStock offer only when it has
+ * a real price. With a live catalogue (`hasCatalogue` true — Supabase configured)
+ * a priceless product is treated as not-found, so a stale ISR prerender or a
+ * price-0 static shell can never render "Price temporarily unavailable" next to a
+ * working Add to Cart. Without a catalogue (local dev) static shells pass through
+ * so the page stays inspectable.
+ */
+export function isPublishedProduct(
+  product: Product | null,
+  hasCatalogue: boolean
+): product is Product {
+  if (!product) return false
+  return !hasCatalogue || hasProductPrice(product)
+}
+
 export function getVerifiablePriceOffer(product: Product): VerifiablePriceOffer {
   const price = normalizeMoney(product.price)
   const mrp = normalizeOptionalMoney(product.mrp)

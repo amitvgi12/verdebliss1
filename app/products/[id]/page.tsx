@@ -10,6 +10,8 @@ import {
 import ProductDetailClient from './ProductDetailClient'
 import { absoluteUrl, productOgImagePath, productPath } from '@/lib/seo'
 import { getSellerDetailsServer } from '@/constants/businessCompliance'
+import { isPublishedProduct } from '@/lib/pricing'
+import { hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
 // Pre-build all known PDPs at deploy time so no PDP ever starts life as a
 // runtime ISR render from the previous build. dynamicParams=true (default)
@@ -22,7 +24,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProductServer(id)
-  if (!p) {
+  if (!isPublishedProduct(p, hasSupabaseAdminEnv())) {
     return {
       title: 'Product Not Found',
       robots: { index: false, follow: false },
@@ -61,7 +63,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { id } = await params
   const product = await getProductServer(id)
 
-  if (!product) notFound()
+  // Fail closed: never render a buyable PDP for a missing or priceless product.
+  if (!isPublishedProduct(product, hasSupabaseAdminEnv())) notFound()
 
   if (product.slug && product.slug !== id) {
     permanentRedirect(productPath(product))

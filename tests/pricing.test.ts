@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { formatPriceValidUntil, getVerifiablePriceOffer, hasProductPrice } from '@/lib/pricing'
+import {
+  formatPriceValidUntil,
+  getVerifiablePriceOffer,
+  hasProductPrice,
+  isPublishedProduct,
+} from '@/lib/pricing'
 import type { Product } from '@/types'
 
 const baseProduct: Product = {
@@ -69,5 +74,27 @@ describe('verifiable price offers', () => {
 
   it('formats offer expiry in India-friendly copy', () => {
     expect(formatPriceValidUntil('2026-06-30T23:59:59.000Z')).toBe('1 Jul 2026')
+  })
+})
+
+describe('isPublishedProduct (PDP fail-closed guard)', () => {
+  // Regression guard for the live PDP bug: a price-0 product (stale prerender or
+  // static shell) must not render a buyable PDP / emit an InStock offer when a
+  // live catalogue is present.
+  it('rejects a missing product regardless of catalogue', () => {
+    expect(isPublishedProduct(null, true)).toBe(false)
+    expect(isPublishedProduct(null, false)).toBe(false)
+  })
+
+  it('rejects a priceless product when a live catalogue is present', () => {
+    expect(isPublishedProduct({ ...baseProduct, price: 0 }, true)).toBe(false)
+  })
+
+  it('accepts a priced product when a live catalogue is present', () => {
+    expect(isPublishedProduct(baseProduct, true)).toBe(true)
+  })
+
+  it('lets price-0 static shells through in dev (no live catalogue)', () => {
+    expect(isPublishedProduct({ ...baseProduct, price: 0 }, false)).toBe(true)
   })
 })
