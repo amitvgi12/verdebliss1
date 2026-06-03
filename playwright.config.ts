@@ -7,6 +7,9 @@ const sharedEnv = {
   NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? 'rzp_test_accessibility',
   RAZORPAY_WEBHOOK_SECRET:
     process.env.RAZORPAY_WEBHOOK_SECRET ?? process.env.E2E_RAZORPAY_WEBHOOK_SECRET ?? '',
+  // Allows the production-mode test server to serve price-0 static product shells
+  // instead of returning 404. Never set on Vercel — only for Playwright test runs.
+  E2E_STATIC_CATALOGUE: '1',
 }
 
 export default defineConfig({

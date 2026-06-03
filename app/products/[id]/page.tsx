@@ -28,7 +28,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProductServer(id)
-  if (!isPublishedProduct(p, { hasCatalogue: hasSupabaseAdminEnv(), isProduction: isProductionRuntime() })) {
+  const e2eMode = Boolean(process.env.E2E_STATIC_CATALOGUE)
+  if (!isPublishedProduct(p, { hasCatalogue: hasSupabaseAdminEnv(), isProduction: isProductionRuntime() && !e2eMode })) {
     return {
       title: 'Product Not Found',
       robots: { index: false, follow: false },
@@ -66,13 +67,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const product = await getProductServer(id)
+  const e2eMode = Boolean(process.env.E2E_STATIC_CATALOGUE)
 
   // Fail closed: never render a buyable PDP for a missing or priceless product.
   // In production this requires a real price regardless of catalogue/env state.
+  // E2E_STATIC_CATALOGUE lets Playwright test runs (no Supabase) render price-0 shells.
   if (
     !isPublishedProduct(product, {
       hasCatalogue: hasSupabaseAdminEnv(),
-      isProduction: isProductionRuntime(),
+      isProduction: isProductionRuntime() && !e2eMode,
     })
   ) {
     notFound()
