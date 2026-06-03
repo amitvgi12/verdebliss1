@@ -69,10 +69,9 @@ export async function POST(request: Request) {
     const isPersistenceConfig = lower.includes('commerce persistence')
     return NextResponse.json(
       {
-        error: isSecretConfig
-          ? 'Online payment verification is not enabled yet. Set RAZORPAY_KEY_SECRET in the server environment.'
-          : isPersistenceConfig
-            ? 'Online payment verification is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+        error:
+          isSecretConfig || isPersistenceConfig
+            ? 'Online payment is temporarily unavailable. Please try again later.'
             : message,
         code: isSecretConfig
           ? 'RAZORPAY_SECRET_MISSING'

@@ -104,8 +104,7 @@ export async function POST(request: Request) {
       code = 'PRODUCT_CATALOGUE_UNAVAILABLE'
       status = 503
     } else if (isPersistenceConfig) {
-      responseError =
-        'Cash on Delivery is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+      responseError = 'Cash on Delivery is temporarily unavailable. Please try again later.'
       code = 'COMMERCE_PERSISTENCE_MISSING'
       status = 503
     }

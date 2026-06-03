@@ -77,8 +77,7 @@ export async function POST(request: Request) {
     let status = 400
 
     if (isRazorpayConfig) {
-      responseError =
-        'Online payment is not enabled yet. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the server environment.'
+      responseError = 'Online payment is temporarily unavailable. Please try again later.'
       code = 'RAZORPAY_SERVER_CREDENTIALS_MISSING'
       status = 503
     } else if (isCatalogueUnavailable) {
@@ -86,8 +85,7 @@ export async function POST(request: Request) {
       code = 'PRODUCT_CATALOGUE_UNAVAILABLE'
       status = 503
     } else if (isPersistenceConfig) {
-      responseError =
-        'Online payment is not enabled yet. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+      responseError = 'Online payment is temporarily unavailable. Please try again later.'
       code = 'COMMERCE_PERSISTENCE_MISSING'
       status = 503
     }
