@@ -435,7 +435,7 @@ export default function Checkout() {
     const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
     if (!publicKey) {
       setCheckoutError(
-        'Online payment is not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID in Vercel/local env.'
+        'Online payment is temporarily unavailable. Please try again later or choose another payment method.'
       )
       return
     }
