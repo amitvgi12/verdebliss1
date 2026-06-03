@@ -6,6 +6,10 @@
  * deployment. Fails if rendered HTML contains known placeholder/demo legal data
  * or if the x-build-sha response header drifts between public pages.
  *
+ * Also runs a PDP pricing-consistency check: every product card price on
+ * /products must appear on its PDP, and no PDP may render "price unavailable"
+ * (guards P0-1 — listing price must equal PDP price).
+ *
  * This guards the *served cache*, not just the build.  The prebuild validator
  * guards the build env; this script confirms the live site is clean after
  * ISR revalidation has run.
@@ -129,6 +133,17 @@ for (const route of sitemapRoutes) {
   }
 }
 
+// PDP pricing consistency: every priced product card on /products must show the
+// same price on its PDP, and no PDP may render "price unavailable" (guards P0-1).
+const pdpPricingFailures = await checkProductPdpPricing(baseUrl)
+if (pdpPricingFailures.length === 0) {
+  console.log('PASS  PDP pricing consistency (listing price == PDP price, no "price unavailable")')
+  passed++
+} else {
+  for (const failure of pdpPricingFailures) console.error(`FAIL  ${failure}`)
+  failed++
+}
+
 console.log(`\n${passed} passed, ${failed} failed`)
 if (expectedBuildSha) console.log(`Expected x-build-sha: ${expectedBuildSha}`)
 
@@ -173,6 +188,45 @@ async function getSitemapRoutes(baseUrl) {
     if (b === '/') return 1
     return a.localeCompare(b)
   })
+}
+
+async function checkProductPdpPricing(baseUrl) {
+  const failures = []
+  let listingHtml
+  try {
+    const res = await fetch(`${baseUrl}/products`, { redirect: 'follow' })
+    if (!res.ok) return [`/products — listing returned HTTP ${res.status}`]
+    // React splits the ₹ symbol from the number with a comment node; strip it.
+    listingHtml = (await res.text()).replaceAll('<!-- -->', '')
+  } catch (err) {
+    return [`/products — listing fetch error: ${err.message}`]
+  }
+
+  // ProductCard media link: <a aria-label="View <name>, ₹<price>" href="/products/<slug>">
+  const cards = [
+    ...listingHtml.matchAll(/aria-label="View [^"]*?, (₹[\d,]+)"\s+href="\/products\/([a-z0-9-]+)"/g),
+  ].map((m) => ({ price: m[1], slug: m[2] }))
+
+  if (cards.length === 0) return ['/products — no priced product cards found in listing HTML']
+
+  for (const { slug, price } of cards) {
+    try {
+      const res = await fetch(`${baseUrl}/products/${slug}`, { redirect: 'follow' })
+      if (!res.ok) {
+        failures.push(`/products/${slug} — PDP returned HTTP ${res.status}`)
+        continue
+      }
+      const html = (await res.text()).replaceAll('<!-- -->', '')
+      if (/price (temporarily )?unavailable/i.test(html)) {
+        failures.push(`/products/${slug} — PDP renders "price unavailable"`)
+      } else if (!html.includes(price)) {
+        failures.push(`/products/${slug} — PDP does not show the listing price ${price}`)
+      }
+    } catch (err) {
+      failures.push(`/products/${slug} — PDP fetch error: ${err.message}`)
+    }
+  }
+  return failures
 }
 
 function decodeXml(value) {
