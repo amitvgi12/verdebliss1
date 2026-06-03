@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import {
+  CheckoutValidationError,
   PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE,
   createCheckoutSession,
   createRazorpayOrder,
@@ -72,11 +73,16 @@ export async function POST(request: Request) {
     const isPersistenceConfig = lower.includes('commerce persistence')
     const isCatalogueUnavailable = message === PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
 
-    let responseError = message
+    // Fail safe: default to a generic message and only echo the raw message for
+    // customer-safe validation errors. Unmapped internal errors (Supabase/DB,
+    // Razorpay API descriptions, env/config) must never reach the customer.
+    let responseError = 'Unable to start checkout right now. Please try again.'
     let code = 'CHECKOUT_CREATE_FAILED'
     let status = 400
 
-    if (isRazorpayConfig) {
+    if (error instanceof CheckoutValidationError) {
+      responseError = message
+    } else if (isRazorpayConfig) {
       responseError = 'Online payment is temporarily unavailable. Please try again later.'
       code = 'RAZORPAY_SERVER_CREDENTIALS_MISSING'
       status = 503

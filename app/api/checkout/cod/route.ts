@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import {
+  CheckoutValidationError,
   PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE,
   normalizeCart,
   persistOrder,
@@ -95,11 +96,15 @@ export async function POST(request: Request) {
     const isPersistenceConfig = message.toLowerCase().includes('commerce persistence')
     const isCatalogueUnavailable = message === PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
 
-    let responseError = message
+    // Fail safe: generic by default; echo the raw message only for customer-safe
+    // validation errors so internal details never reach customer-facing output.
+    let responseError = 'Unable to place your order right now. Please try again.'
     let code = 'CHECKOUT_COD_FAILED'
     let status = 400
 
-    if (isCatalogueUnavailable) {
+    if (error instanceof CheckoutValidationError) {
+      responseError = message
+    } else if (isCatalogueUnavailable) {
       responseError = PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE
       code = 'PRODUCT_CATALOGUE_UNAVAILABLE'
       status = 503

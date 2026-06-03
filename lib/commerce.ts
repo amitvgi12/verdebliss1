@@ -15,6 +15,21 @@ export { COD_MAX_TOTAL }
 // re-exported above for back-compat.
 export const CURRENCY = 'INR'
 
+/**
+ * Error subclass for checkout failures whose message is safe to surface to the
+ * customer — address/cart validation, out-of-stock, expired session. The API
+ * route catch blocks echo `error.message` ONLY for this class; every other
+ * thrown Error falls back to a generic message, so internal details (raw
+ * Supabase/DB errors, Razorpay API descriptions, env/config identifiers) can
+ * never reach customer-facing output.
+ */
+export class CheckoutValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'CheckoutValidationError'
+  }
+}
+
 export interface CheckoutAddress {
   name: string
   email: string
@@ -137,13 +152,15 @@ export function validateAddress(raw: unknown): CheckoutAddress {
     pincode: asText(source.pincode),
   }
 
-  if (!address.name) throw new Error('Full name is required')
-  if (!EMAIL_RE.test(address.email)) throw new Error('A valid email is required')
-  if (!PHONE_RE.test(address.phone)) throw new Error('A valid 10-digit phone number is required')
-  if (!address.line1) throw new Error('Address line 1 is required')
-  if (!address.city) throw new Error('City is required')
-  if (!address.state) throw new Error('State is required')
-  if (!PIN_RE.test(address.pincode)) throw new Error('A valid 6-digit PIN code is required')
+  if (!address.name) throw new CheckoutValidationError('Full name is required')
+  if (!EMAIL_RE.test(address.email)) throw new CheckoutValidationError('A valid email is required')
+  if (!PHONE_RE.test(address.phone))
+    throw new CheckoutValidationError('A valid 10-digit phone number is required')
+  if (!address.line1) throw new CheckoutValidationError('Address line 1 is required')
+  if (!address.city) throw new CheckoutValidationError('City is required')
+  if (!address.state) throw new CheckoutValidationError('State is required')
+  if (!PIN_RE.test(address.pincode))
+    throw new CheckoutValidationError('A valid 6-digit PIN code is required')
 
   return address
 }
@@ -155,16 +172,16 @@ export function formatRazorpayPaymentMethod(method: unknown): string {
 }
 
 export function validateCartItems(raw: unknown): IncomingCartItem[] {
-  if (!Array.isArray(raw) || raw.length === 0) throw new Error('Cart is empty')
-  if (raw.length > 30) throw new Error('Cart has too many line items')
+  if (!Array.isArray(raw) || raw.length === 0) throw new CheckoutValidationError('Cart is empty')
+  if (raw.length > 30) throw new CheckoutValidationError('Cart has too many line items')
 
   const items = raw.map((item) => {
     const source = item && typeof item === 'object' ? (item as Record<string, unknown>) : {}
     const id = asText(source.id)
     const qty = Number(source.qty)
-    if (!id) throw new Error('Invalid product in cart')
+    if (!id) throw new CheckoutValidationError('Invalid product in cart')
     if (!Number.isInteger(qty) || qty < 1 || qty > MAX_CART_ITEM_QTY) {
-      throw new Error(`Invalid quantity for product ${id}`)
+      throw new CheckoutValidationError(`Invalid quantity for product ${id}`)
     }
     return { id, qty }
   })
@@ -231,10 +248,10 @@ export async function normalizeCart(rawItems: unknown) {
 
   const items: NormalizedCartItem[] = incoming.map((item) => {
     const product = byId.get(item.id)
-    if (!product) throw new Error(`Product not found: ${item.id}`)
+    if (!product) throw new CheckoutValidationError(`Product not found: ${item.id}`)
     assertLineItemPriceAvailable(product)
     if (typeof product.stock === 'number' && product.stock < item.qty) {
-      throw new Error(`${product.name} has only ${product.stock} item(s) left`)
+      throw new CheckoutValidationError(`${product.name} has only ${product.stock} item(s) left`)
     }
     return {
       id: product.id,
@@ -258,7 +275,7 @@ export async function normalizeCart(rawItems: unknown) {
 
 function assertLineItemPriceAvailable(item: Pick<NormalizedCartItem, 'name' | 'price'>) {
   if (!hasProductPrice(item)) {
-    throw new Error(`${item.name} price is temporarily unavailable`)
+    throw new CheckoutValidationError(`${item.name} price is temporarily unavailable`)
   }
 }
 
@@ -581,7 +598,7 @@ export async function completeRazorpayCheckout(input: {
   }
 
   if (session.expires_at && new Date(session.expires_at).getTime() < Date.now()) {
-    throw new Error('Checkout session expired. Please start checkout again.')
+    throw new CheckoutValidationError('Checkout session expired. Please start checkout again.')
   }
   assertOrderItemsHavePrices(session.cart_snapshot)
 

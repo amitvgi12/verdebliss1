@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import { requireSameOriginRequest } from '@/lib/csrf'
-import { completeRazorpayCheckout, verifyRazorpaySignature } from '@/lib/commerce'
+import {
+  CheckoutValidationError,
+  completeRazorpayCheckout,
+  verifyRazorpaySignature,
+} from '@/lib/commerce'
 import { scheduleProductsRevalidation } from '@/lib/revalidate-products'
 import { sendOrderConfirmationEmail } from '@/lib/order-email'
 
@@ -67,19 +71,23 @@ export async function POST(request: Request) {
     const lower = message.toLowerCase()
     const isSecretConfig = lower.includes('razorpay secret')
     const isPersistenceConfig = lower.includes('commerce persistence')
-    return NextResponse.json(
-      {
-        error:
-          isSecretConfig || isPersistenceConfig
-            ? 'Online payment is temporarily unavailable. Please try again later.'
-            : message,
-        code: isSecretConfig
-          ? 'RAZORPAY_SECRET_MISSING'
-          : isPersistenceConfig
-            ? 'COMMERCE_PERSISTENCE_MISSING'
-            : 'PAYMENT_VERIFY_FAILED',
-      },
-      { status: isSecretConfig || isPersistenceConfig ? 503 : 400 }
-    )
+
+    // Fail safe: generic by default. Only customer-safe validation errors (e.g.
+    // an expired checkout session) echo their message. Config errors map to a
+    // generic 503; payment-integrity/tamper details stay generic on purpose so
+    // a probing client learns nothing about which check failed.
+    let responseError = 'We could not verify your payment. Please contact support if you were charged.'
+    let code = 'PAYMENT_VERIFY_FAILED'
+    let status = 400
+
+    if (error instanceof CheckoutValidationError) {
+      responseError = message
+    } else if (isSecretConfig || isPersistenceConfig) {
+      responseError = 'Online payment is temporarily unavailable. Please try again later.'
+      code = isSecretConfig ? 'RAZORPAY_SECRET_MISSING' : 'COMMERCE_PERSISTENCE_MISSING'
+      status = 503
+    }
+
+    return NextResponse.json({ error: responseError, code }, { status })
   }
 }

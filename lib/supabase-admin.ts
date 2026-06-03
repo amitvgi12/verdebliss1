@@ -9,7 +9,9 @@ export function createSupabaseAdmin() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+    // Message intentionally omits the env var names: this can surface in server
+    // logs and must never leak internal config identifiers to customer output.
+    throw new Error('Supabase admin credentials are not configured')
   }
 
   return createClient(supabaseUrl, serviceRoleKey, {
