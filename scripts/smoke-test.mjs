@@ -6,9 +6,12 @@
  * deployment. Fails if rendered HTML contains known placeholder/demo legal data
  * or if the x-build-sha response header drifts between public pages.
  *
- * Also runs a PDP pricing-consistency check: every product card price on
- * /products must appear on its PDP, and no PDP may render "price unavailable"
- * (guards P0-1 — listing price must equal PDP price).
+ * Also runs a PDP pricing-consistency check (guards P0-1). For every priced
+ * product card on /products it asserts:
+ *   1. the PDP shows the same price (listing price === PDP price),
+ *   2. the PDP never renders "price unavailable", and
+ *   3. the Product JSON-LD (/api/schema/product/:slug) carries a valid offer
+ *      price (> 0) equal to the listing price.
  *
  * This guards the *served cache*, not just the build.  The prebuild validator
  * guards the build env; this script confirms the live site is clean after
@@ -210,20 +213,44 @@ async function checkProductPdpPricing(baseUrl) {
   if (cards.length === 0) return ['/products — no priced product cards found in listing HTML']
 
   for (const { slug, price } of cards) {
+    const listingNum = Number(price.replace(/[^\d]/g, ''))
+
+    // (1) listing price === PDP price, and (2) PDP never renders "price unavailable".
     try {
       const res = await fetch(`${baseUrl}/products/${slug}`, { redirect: 'follow' })
       if (!res.ok) {
         failures.push(`/products/${slug} — PDP returned HTTP ${res.status}`)
-        continue
-      }
-      const html = (await res.text()).replaceAll('<!-- -->', '')
-      if (/price (temporarily )?unavailable/i.test(html)) {
-        failures.push(`/products/${slug} — PDP renders "price unavailable"`)
-      } else if (!html.includes(price)) {
-        failures.push(`/products/${slug} — PDP does not show the listing price ${price}`)
+      } else {
+        const html = (await res.text()).replaceAll('<!-- -->', '')
+        if (/price (temporarily )?unavailable/i.test(html)) {
+          failures.push(`/products/${slug} — PDP renders "price unavailable"`)
+        } else if (!html.includes(price)) {
+          failures.push(`/products/${slug} — PDP does not show the listing price ${price}`)
+        }
       }
     } catch (err) {
       failures.push(`/products/${slug} — PDP fetch error: ${err.message}`)
+    }
+
+    // (3) Product JSON-LD must carry a valid offer price equal to the listing price.
+    try {
+      const res = await fetch(`${baseUrl}/api/schema/product/${slug}`, { redirect: 'follow' })
+      if (!res.ok) {
+        failures.push(`/api/schema/product/${slug} — no Product offer schema (HTTP ${res.status})`)
+      } else {
+        const json = await res.text()
+        const match = json.match(/"price":\s*"?(\d+(?:\.\d+)?)"?/)
+        const schemaNum = match ? Number(match[1]) : NaN
+        if (!Number.isFinite(schemaNum) || schemaNum <= 0) {
+          failures.push(`/api/schema/product/${slug} — offer schema missing a valid price`)
+        } else if (schemaNum !== listingNum) {
+          failures.push(
+            `/api/schema/product/${slug} — offer price ${schemaNum} != listing price ${listingNum}`
+          )
+        }
+      }
+    } catch (err) {
+      failures.push(`/api/schema/product/${slug} — schema fetch error: ${err.message}`)
     }
   }
   return failures
