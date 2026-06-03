@@ -3,9 +3,9 @@
  * Tests the static product catalogue, image mapping, and
  * category/skin-type constants. All assertions are strict-mode safe.
  */
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { PRODUCTS, CATEGORIES, SKIN_TYPES, SORT_OPTIONS, TIERS } from '@/constants/products'
-import { applyApprovedReviewMetrics } from '@/lib/products-server'
+import { applyApprovedReviewMetrics, getStaticProductShell } from '@/lib/products-server'
 import { breadcrumbJsonLd } from '@/lib/seo'
 
 describe('PRODUCTS catalogue', () => {
@@ -193,6 +193,24 @@ describe('server product filtering', () => {
 
     expect(results).toHaveLength(1)
     expect(results[0]?.name).toBe('Niacinamide Pore Serum')
+  })
+})
+
+describe('production catalogue lockdown', () => {
+  // Architecture rule: a production PDP must be backed by a real DB product
+  // (active=true, price>0) — never a price-0 static shell. Shells are a local-dev
+  // affordance only.
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('refuses to return a price-0 static shell in production', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(getStaticProductShell('bakuchiol-renewal-serum')).toBeNull()
+    expect(getStaticProductShell('1')).toBeNull()
+  })
+
+  it('returns the static shell outside production for local dev previews', () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    expect(getStaticProductShell('bakuchiol-renewal-serum')?.slug).toBe('bakuchiol-renewal-serum')
   })
 })
 

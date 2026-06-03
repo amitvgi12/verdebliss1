@@ -29,12 +29,18 @@ interface ApprovedReviewMetricRow {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-function getStaticProductShell(idOrSlug: string): Product | null {
+export function getStaticProductShell(idOrSlug: string): Product | null {
+  // Price-0 static shells are a local-dev affordance only. A production PDP must
+  // be backed by a real DB product (active=true, price>0), never a shell — so we
+  // refuse to return one in production and let callers fail closed (notFound).
+  if (process.env.NODE_ENV === 'production') return null
   return PRODUCTS.find((product) => product.id === idOrSlug || product.slug === idOrSlug) ?? null
 }
 
 async function fetchProductsFromDb(): Promise<Product[]> {
-  if (!hasSupabaseAdminEnv()) return PRODUCTS
+  // No live catalogue: serve static shells in dev only. Production never lists
+  // price-0 shells — fail closed to an empty catalogue. See getStaticProductShell.
+  if (!hasSupabaseAdminEnv()) return process.env.NODE_ENV === 'production' ? [] : PRODUCTS
   try {
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase.from('products').select('*').eq('active', true)
