@@ -13,20 +13,29 @@ export function hasProductPrice(product?: Pick<Product, 'price'> | null): boolea
   return normalizeMoney(product?.price) > 0
 }
 
+/** True for Vercel/Node production (and Vercel preview, which builds in prod mode). */
+export function isProductionRuntime(): boolean {
+  return process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production'
+}
+
 /**
  * A product may render as a buyable PDP / emit an InStock offer only when it has
- * a real price. With a live catalogue (`hasCatalogue` true — Supabase configured)
- * a priceless product is treated as not-found, so a stale ISR prerender or a
- * price-0 static shell can never render "Price temporarily unavailable" next to a
- * working Add to Cart. Without a catalogue (local dev) static shells pass through
- * so the page stays inspectable.
+ * a real price. Fail-closed model:
+ *  - production: ALWAYS require a real price. No exception — a price-0 static
+ *    shell (e.g. a key-less build/runtime missing SUPABASE_SERVICE_ROLE_KEY)
+ *    must never render a buyable PDP. Callers `notFound()` instead.
+ *  - non-production with a live catalogue (Supabase configured): require a price.
+ *  - non-production without a catalogue (local dev): allow price-0 static shells
+ *    so the page stays inspectable.
  */
 export function isPublishedProduct(
   product: Product | null,
-  hasCatalogue: boolean
+  context: { hasCatalogue: boolean; isProduction: boolean }
 ): product is Product {
   if (!product) return false
-  return !hasCatalogue || hasProductPrice(product)
+  if (context.isProduction) return hasProductPrice(product)
+  if (context.hasCatalogue) return hasProductPrice(product)
+  return true
 }
 
 export function getVerifiablePriceOffer(product: Product): VerifiablePriceOffer {

@@ -3,7 +3,7 @@ export const revalidate = 300
 import { getProductServer, getReviewAggregatesServer } from '@/lib/products-server'
 import { breadcrumbJsonLd, productJsonLd, productPath, safeJsonLd } from '@/lib/seo'
 import { getLegalNameServer } from '@/constants/businessCompliance'
-import { isPublishedProduct } from '@/lib/pricing'
+import { isProductionRuntime, isPublishedProduct } from '@/lib/pricing'
 import { hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -16,7 +16,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   // Never emit a Product offer for a missing or priceless product (with a live
   // catalogue). Keeps the offer schema consistent with the PDP, which 404s the
   // same case — no InStock offer without a real price.
-  if (!isPublishedProduct(product, hasSupabaseAdminEnv())) {
+  if (
+    !isPublishedProduct(product, {
+      hasCatalogue: hasSupabaseAdminEnv(),
+      isProduction: isProductionRuntime(),
+    })
+  ) {
     return new Response('Not Found', { status: 404 })
   }
 

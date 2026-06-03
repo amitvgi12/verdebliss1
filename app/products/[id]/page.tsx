@@ -10,7 +10,7 @@ import {
 import ProductDetailClient from './ProductDetailClient'
 import { absoluteUrl, productOgImagePath, productPath } from '@/lib/seo'
 import { getSellerDetailsServer } from '@/constants/businessCompliance'
-import { hasProductPrice, isPublishedProduct } from '@/lib/pricing'
+import { hasProductPrice, isProductionRuntime, isPublishedProduct } from '@/lib/pricing'
 import { hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
 // Pre-build PDPs that have a real price. If the build environment lacks the
@@ -28,7 +28,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const p = await getProductServer(id)
-  if (!isPublishedProduct(p, hasSupabaseAdminEnv())) {
+  if (!isPublishedProduct(p, { hasCatalogue: hasSupabaseAdminEnv(), isProduction: isProductionRuntime() })) {
     return {
       title: 'Product Not Found',
       robots: { index: false, follow: false },
@@ -68,7 +68,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const product = await getProductServer(id)
 
   // Fail closed: never render a buyable PDP for a missing or priceless product.
-  if (!isPublishedProduct(product, hasSupabaseAdminEnv())) notFound()
+  // In production this requires a real price regardless of catalogue/env state.
+  if (
+    !isPublishedProduct(product, {
+      hasCatalogue: hasSupabaseAdminEnv(),
+      isProduction: isProductionRuntime(),
+    })
+  ) {
+    notFound()
+  }
 
   if (product.slug && product.slug !== id) {
     permanentRedirect(productPath(product))

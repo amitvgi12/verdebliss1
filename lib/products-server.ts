@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache'
 import type { Product } from '@/types'
 import { createSupabaseAdmin, hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 import { normalizeProductClaimList, normalizeProductClaims } from '@/lib/product-claims'
+import { isProductionRuntime } from '@/lib/pricing'
 import { PRODUCTS } from '@/constants/products'
 
 export interface ApprovedReview {
@@ -33,14 +34,14 @@ export function getStaticProductShell(idOrSlug: string): Product | null {
   // Price-0 static shells are a local-dev affordance only. A production PDP must
   // be backed by a real DB product (active=true, price>0), never a shell — so we
   // refuse to return one in production and let callers fail closed (notFound).
-  if (process.env.NODE_ENV === 'production') return null
+  if (isProductionRuntime()) return null
   return PRODUCTS.find((product) => product.id === idOrSlug || product.slug === idOrSlug) ?? null
 }
 
 async function fetchProductsFromDb(): Promise<Product[]> {
   // No live catalogue: serve static shells in dev only. Production never lists
   // price-0 shells — fail closed to an empty catalogue. See getStaticProductShell.
-  if (!hasSupabaseAdminEnv()) return process.env.NODE_ENV === 'production' ? [] : PRODUCTS
+  if (!hasSupabaseAdminEnv()) return isProductionRuntime() ? [] : PRODUCTS
   try {
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase.from('products').select('*').eq('active', true)

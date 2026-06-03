@@ -3,6 +3,7 @@ import {
   formatPriceValidUntil,
   getVerifiablePriceOffer,
   hasProductPrice,
+  isProductionRuntime,
   isPublishedProduct,
 } from '@/lib/pricing'
 import type { Product } from '@/types'
@@ -77,24 +78,46 @@ describe('verifiable price offers', () => {
   })
 })
 
-describe('isPublishedProduct (PDP fail-closed guard)', () => {
-  // Regression guard for the live PDP bug: a price-0 product (stale prerender or
-  // static shell) must not render a buyable PDP / emit an InStock offer when a
-  // live catalogue is present.
-  it('rejects a missing product regardless of catalogue', () => {
-    expect(isPublishedProduct(null, true)).toBe(false)
-    expect(isPublishedProduct(null, false)).toBe(false)
+describe('isPublishedProduct (production fail-closed guard)', () => {
+  const zero = { ...baseProduct, price: 0 }
+
+  it('rejects a missing product in every context', () => {
+    expect(isPublishedProduct(null, { hasCatalogue: true, isProduction: true })).toBe(false)
+    expect(isPublishedProduct(null, { hasCatalogue: false, isProduction: false })).toBe(false)
   })
 
-  it('rejects a priceless product when a live catalogue is present', () => {
-    expect(isPublishedProduct({ ...baseProduct, price: 0 }, true)).toBe(false)
+  it('requires a real price in production regardless of catalogue/env (no fail-open)', () => {
+    expect(isPublishedProduct(zero, { hasCatalogue: true, isProduction: true })).toBe(false)
+    // The key case: even with no catalogue (missing SUPABASE_SERVICE_ROLE_KEY),
+    // production must NOT pass a price-0 shell.
+    expect(isPublishedProduct(zero, { hasCatalogue: false, isProduction: true })).toBe(false)
+    expect(isPublishedProduct(baseProduct, { hasCatalogue: false, isProduction: true })).toBe(true)
   })
 
-  it('accepts a priced product when a live catalogue is present', () => {
-    expect(isPublishedProduct(baseProduct, true)).toBe(true)
+  it('requires a price in non-production when a live catalogue is configured', () => {
+    expect(isPublishedProduct(zero, { hasCatalogue: true, isProduction: false })).toBe(false)
+    expect(isPublishedProduct(baseProduct, { hasCatalogue: true, isProduction: false })).toBe(true)
   })
 
-  it('lets price-0 static shells through in dev (no live catalogue)', () => {
-    expect(isPublishedProduct({ ...baseProduct, price: 0 }, false)).toBe(true)
+  it('allows price-0 static shells only in local dev (no catalogue, not production)', () => {
+    expect(isPublishedProduct(zero, { hasCatalogue: false, isProduction: false })).toBe(true)
+  })
+})
+
+describe('isProductionRuntime', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('is true when NODE_ENV or VERCEL_ENV is production', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(isProductionRuntime()).toBe(true)
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    expect(isProductionRuntime()).toBe(true)
+  })
+
+  it('is false in local dev (no production signal)', () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv('VERCEL_ENV', 'preview')
+    expect(isProductionRuntime()).toBe(false)
   })
 })
