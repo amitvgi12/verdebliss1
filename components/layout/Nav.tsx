@@ -227,23 +227,24 @@ export default function Nav({ products }: { products: Product[] }) {
         aria-modal="true"
         aria-label="Navigation menu"
         data-testid="mobile-navigation-menu"
-        className="fixed left-auto right-4 top-[68px] z-[99] m-0 w-[86vw] max-w-[320px] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] bg-transparent p-3 md:hidden"
+        style={{ padding: 10 }}
+        className="fixed left-auto right-4 top-[68px] z-[99] m-0 w-[84vw] max-w-[300px] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-white/25 bg-white/12 shadow-[0_20px_60px_rgba(20,30,22,0.38)] backdrop-blur-2xl md:hidden"
       >
         {/* Padding/margins are set inline because the global `*{padding:0;margin:0}`
             reset is un-layered and overrides Tailwind's layered p-/m- utilities, so
             px-5/py-4/mb-3/mt-2 collapse to 0 and the eyebrow clips against the top. */}
         <div
-          style={{ padding: '16px 20px', marginBottom: 12 }}
-          className="flex items-start justify-between rounded-[18px] bg-[#356b45] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
+          style={{ padding: '12px 16px', marginBottom: 10 }}
+          className="flex items-start justify-between rounded-[18px] bg-[#2a5638] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
         >
           <div>
-            {/* Champagne (not the darker gold) keeps AA contrast on the lighter pill. */}
-            <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#f0e3c4]">
+            {/* Gold stays AA (~4.5:1) on this only-slightly-lighter pill (#2a5638). */}
+            <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#d7b978]">
               Pages
             </p>
             <p
-              style={{ marginTop: 8 }}
-              className="text-base font-semibold leading-tight text-[#fffaf4]"
+              style={{ marginTop: 5 }}
+              className="text-[15px] font-semibold leading-tight text-[#fffaf4]"
             >
               Explore VerdeBliss
             </p>
@@ -269,22 +270,23 @@ export default function Nav({ products }: { products: Product[] }) {
                 href={path}
                 aria-current={active ? 'page' : undefined}
                 onClick={closeMenus}
-                className={`group flex min-h-12 w-full items-center gap-3 rounded-[18px] border px-3.5 py-2.5 text-left text-sm transition ${
+                style={{ padding: '7px 12px' }}
+                className={`group flex w-full items-center gap-2.5 rounded-2xl border text-left text-[13px] backdrop-blur-md transition ${
                   active
-                    ? 'border-[#254f32] bg-[#254f32] font-semibold text-[#fffaf4] shadow-sm'
-                    : 'border-[#eadfd4] bg-[#fdf7ef] font-semibold text-text hover:border-sage hover:bg-sagePale hover:text-forest'
+                    ? 'border-[#2a5638] bg-[#2a5638] font-semibold text-[#fffaf4] shadow-sm'
+                    : 'border-white/55 bg-[#fdf7ef]/80 font-semibold text-text hover:border-sage hover:bg-sagePale/90 hover:text-forest'
                 }`}
               >
                 <span
-                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
-                    active ? 'bg-white/18 text-[#fffaf4]' : 'bg-sagePale text-forest'
+                  className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${
+                    active ? 'bg-white/20 text-[#fffaf4]' : 'bg-sagePale text-forest'
                   }`}
                 >
-                  <Icon size={16} />
+                  <Icon size={15} />
                 </span>
                 <span className={`flex-1 ${active ? 'text-[#fffaf4]' : 'text-text'}`}>{label}</span>
                 <ArrowRight
-                  size={14}
+                  size={13}
                   className={
                     active ? 'text-[#fffaf4] opacity-85' : 'text-muted group-hover:text-forest'
                   }
