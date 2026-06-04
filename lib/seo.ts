@@ -66,6 +66,24 @@ export function breadcrumbJsonLd(items: readonly BreadcrumbItem[]) {
   }
 }
 
+/**
+ * ItemList of featured products for the homepage — lets crawlers associate the
+ * highlighted catalogue entries with their canonical PDP URLs.
+ */
+export function featuredItemListJsonLd(products: Pick<Product, 'id' | 'slug' | 'name'>[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Featured VerdeBliss products',
+    itemListElement: products.map((product, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: product.name,
+      url: absoluteUrl(productPath(product)),
+    })),
+  }
+}
+
 export interface ReviewAggregate {
   count: number
   average: number

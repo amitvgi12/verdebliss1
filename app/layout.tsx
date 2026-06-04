@@ -102,8 +102,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {/* Preconnect / DNS-prefetch for the payment iframe so first-checkout RTT is minimal */}
         <link rel="preconnect" href="https://checkout.razorpay.com" crossOrigin="" />
         <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
-        {/* Site JSON-LD served from same-origin route — covered by script-src 'self' */}
-        <script async type="application/ld+json" src="/api/schema/site" />
+        {/* Organization + WebSite JSON-LD is declared inline on the homepage (app/page.tsx),
+            not via an external-src data block here (a `<script type=ld+json src>` is ignored
+            by crawlers). Homepage is the canonical place for sitewide entity schema. */}
       </head>
       <body>
         {/* Skip-to-content (WCAG 2.4.1) */}

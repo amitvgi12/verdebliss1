@@ -17,3 +17,27 @@ export async function StructuredData({ data }: { data: unknown }) {
     />
   )
 }
+
+/**
+ * Inline JSON-LD for static / ISR routes (home, PDP, products, blog, faq) whose
+ * CSP serves `script-src 'unsafe-inline'` — so the block needs no nonce.
+ *
+ * Unlike {@link StructuredData} this does NOT call headers(), so it never opts
+ * the route out of static/ISR rendering (reading a request header is a Next.js
+ * dynamic API). Use it on non-nonce routes; reserve StructuredData for the
+ * nonce-enforced routes in `proxy.ts` `NONCE_ROUTE_PREFIXES`.
+ *
+ * Emitting JSON-LD inline (not via a `<script type="application/ld+json" src>`)
+ * is mandatory: a non-JS script type is an HTML *data block* whose `src` is
+ * ignored, so an external-src JSON-LD block never enters the DOM and crawlers
+ * never parse it.
+ */
+export function InlineStructuredData({ data }: { data: unknown }) {
+  return (
+    <script
+      type="application/ld+json"
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: safeJsonLd(data) }}
+    />
+  )
+}

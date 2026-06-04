@@ -102,8 +102,9 @@ test.describe('live smoke checks', () => {
     expect(pdpRes.status()).toBe(200)
     const html = await pdpRes.text()
 
-    // Schema is now served via /api/schema/product/[id] (same-origin src).
-    // Try that first; fall back to inline for pre-externalization builds.
+    // Product schema is delivered INLINE in the PDP HTML (crawler-parseable).
+    // The same schema is also exposed at /api/schema/product/[id] as a
+    // machine-readable endpoint; prefer it here when present, else read inline.
     const apiRes = await request.get(`/api/schema/product/${slug}`)
     const product =
       apiRes.status() === 200 && apiRes.headers()['content-type']?.includes('ld+json')

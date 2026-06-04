@@ -8,8 +8,15 @@ import {
   getReviewAggregatesServer,
 } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
-import { absoluteUrl, productOgImagePath, productPath } from '@/lib/seo'
-import { getSellerDetailsServer } from '@/constants/businessCompliance'
+import {
+  absoluteUrl,
+  breadcrumbJsonLd,
+  productJsonLd,
+  productOgImagePath,
+  productPath,
+} from '@/lib/seo'
+import { InlineStructuredData } from '@/lib/structured-data'
+import { getLegalNameServer, getSellerDetailsServer } from '@/constants/businessCompliance'
 import { hasProductPrice, isProductionRuntime, isPublishedProduct } from '@/lib/pricing'
 import { hasSupabaseAdminEnv } from '@/lib/supabase-admin'
 
@@ -92,10 +99,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const sellerDetails = getSellerDetailsServer()
 
+  // Inline JSON-LD so crawlers actually parse it. A `<script type="application/ld+json" src>`
+  // is an HTML data block whose src is ignored — the schema never enters the DOM. PDPs are
+  // ISR/non-nonce routes (script-src 'unsafe-inline'), so the inline block needs no nonce.
+  // The same schema is also exposed at /api/schema/product/[id] for the post-deploy smoke test.
+  const productSchema = [
+    productJsonLd(product, aggregate, getLegalNameServer()),
+    breadcrumbJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'Shop', path: '/products' },
+      { name: product.name, path: productPath(product) },
+    ]),
+  ]
+
   return (
     <>
-      {/* JSON-LD served from same-origin route — covered by script-src 'self', no nonce needed */}
-      <script async type="application/ld+json" src={`/api/schema/product/${id}`} />
+      <InlineStructuredData data={productSchema} />
       <ProductDetailClient
         id={id}
         initialProduct={product}

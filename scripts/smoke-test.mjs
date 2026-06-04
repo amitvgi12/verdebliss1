@@ -147,6 +147,18 @@ if (pdpPricingFailures.length === 0) {
   failed++
 }
 
+// Structured-data delivery: schema must be an INLINE application/ld+json block,
+// never an external-src data block (whose src is ignored, so crawlers never see
+// it). Guards audit F1.
+const structuredDataFailures = await checkInlineStructuredData(baseUrl)
+if (structuredDataFailures.length === 0) {
+  console.log('PASS  inline JSON-LD delivery (homepage Organization + PDP Product, no external src)')
+  passed++
+} else {
+  for (const failure of structuredDataFailures) console.error(`FAIL  ${failure}`)
+  failed++
+}
+
 console.log(`\n${passed} passed, ${failed} failed`)
 if (expectedBuildSha) console.log(`Expected x-build-sha: ${expectedBuildSha}`)
 
@@ -251,6 +263,56 @@ async function checkProductPdpPricing(baseUrl) {
       }
     } catch (err) {
       failures.push(`/api/schema/product/${slug} — schema fetch error: ${err.message}`)
+    }
+  }
+  return failures
+}
+
+/**
+ * Asserts the served HTML carries INLINE JSON-LD, not an external-src data block.
+ * The presence of a `"@type":"Organization"` / `"@type":"Product"` substring in
+ * the raw HTML proves the schema is inline — an external-src block would leave
+ * the HTML without it. Also flags any regression to a `<script …ld+json… src=>`.
+ */
+async function checkInlineStructuredData(baseUrl) {
+  const failures = []
+  const externalSrc = /<script[^>]*application\/ld\+json[^>]*\bsrc=/i
+
+  // Resolve a real product slug from the listing for the PDP check.
+  let firstSlug = null
+  try {
+    const res = await fetch(`${baseUrl}/products`, { redirect: 'follow' })
+    if (res.ok) {
+      const html = (await res.text()).replaceAll('<!-- -->', '')
+      firstSlug = html.match(/href="\/products\/([a-z0-9-]+)"/)?.[1] ?? null
+    }
+  } catch {
+    // handled by the missing-slug failure below
+  }
+
+  const targets = [{ path: '/', needle: '"@type":"Organization"', label: 'homepage Organization' }]
+  if (firstSlug) {
+    targets.push({ path: `/products/${firstSlug}`, needle: '"@type":"Product"', label: 'PDP Product' })
+  } else {
+    failures.push('/products — could not resolve a product slug for the inline JSON-LD check')
+  }
+
+  for (const { path, needle, label } of targets) {
+    try {
+      const res = await fetch(`${baseUrl}${path}`, { redirect: 'follow' })
+      if (!res.ok) {
+        failures.push(`${path} — HTTP ${res.status}`)
+        continue
+      }
+      const html = (await res.text()).replaceAll('<!-- -->', '')
+      if (externalSrc.test(html)) {
+        failures.push(`${path} — JSON-LD served via external src (data-block src is ignored by crawlers)`)
+      }
+      if (!html.includes(needle)) {
+        failures.push(`${path} — no inline ${label} JSON-LD (${needle} absent from served HTML)`)
+      }
+    } catch (err) {
+      failures.push(`${path} — fetch error: ${err.message}`)
     }
   }
   return failures

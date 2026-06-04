@@ -7,6 +7,9 @@ import NewsletterForm from '@/components/features/newsletter/NewsletterForm'
 import FadeIn from '@/components/ui/FadeIn'
 import { getProductsServer } from '@/lib/products-server'
 import { TRUST_METRICS } from '@/constants/trust'
+import { InlineStructuredData } from '@/lib/structured-data'
+import { organizationJsonLd, websiteJsonLd } from '@/lib/site-schema'
+import { featuredItemListJsonLd } from '@/lib/seo'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
@@ -96,6 +99,11 @@ export default async function Home() {
 
   return (
     <div className="bg-bg">
+      {/* Inline JSON-LD (data block needs no nonce on this ISR route). Declares
+          the Organization + WebSite once on the homepage and lists featured PDPs. */}
+      <InlineStructuredData
+        data={[organizationJsonLd(), websiteJsonLd(), featuredItemListJsonLd(featured)]}
+      />
       <section className="premium-hero px-4">
         <div className="site-container premium-hero__grid">
           <div className="premium-hero__copy">
