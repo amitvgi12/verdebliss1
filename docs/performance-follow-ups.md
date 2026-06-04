@@ -2,6 +2,36 @@
 
 These items are launch-relevant performance debts that should stay visible during CWV reviews.
 
+## TTFB / server latency (Speed Insights)
+
+Speed Insights showed **TTFB as the bottleneck** (P75 ~2s, Poor), which dragged
+FCP (2.28s) and LCP (2.71s) into "needs improvement" — note `LCP − TTFB ≈ 0.74s`,
+so the page render is fast and the server response is the problem. INP/CLS/FID
+are all great. On a very low-traffic site (≈13–21 samples/route/day) P75 is
+noise-dominated and skewed by serverless cold starts + ISR cache evictions.
+
+Done:
+
+- **Region co-location** — `vercel.json` now pins functions to `bom1` (Mumbai) to
+  match the Supabase region and the India audience, cutting cross-region DB
+  latency and user distance on every render.
+- **Cache-warming cron** — `/api/cron/warm` (every 10 min) pings `/`, `/products`,
+  a PDP, and `/faq` so a stale/evicted ISR entry re-renders on the cron instead
+  of for the next real visitor. Requires a Pro plan (sub-daily crons) and
+  `CRON_SECRET` set; on Hobby, point an external pinger (e.g. cron-job.org) at
+  the same endpoint instead.
+
+Still worth doing:
+
+- Lighten the root layout's per-request `getProductsServer()` (Nav) so dynamic
+  routes don't block on Supabase; cache it longer or source nav from the static
+  shell.
+- `/faq` and `/blog/[slug]` render dynamically because `<StructuredData>` calls
+  `headers()`; switch them to the headers-free `InlineStructuredData` so they
+  become ISR again (lower TTFB).
+- Re-measure after a few deploy-free days and at P90/P95 — current P75 over ~13
+  samples is not trustworthy.
+
 ## P1: Split and Audit Global CSS
 
 - Current state: `app/globals.css` is ~85 KB / 4,246 lines (was 90 KB / 4,423), still render-blocking on every route.

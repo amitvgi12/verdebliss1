@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci",
   "outputDirectory": ".next",
+  "regions": ["bom1"],
   "build": {
     "env": {
       "VERCEL_FORCE_NO_BUILD_CACHE": "1",
@@ -13,6 +14,10 @@
     {
       "path": "/api/cron/reconciliation-alert",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/warm",
+      "schedule": "*/10 * * * *"
     }
   ]
 }
