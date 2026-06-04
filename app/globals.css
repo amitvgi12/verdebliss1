@@ -50,6 +50,14 @@
 }
 
 /* ── Reset ───────────────────────────────────────────────────── */
+/* KNOWN ISSUE: this reset is un-layered, so its `margin/padding: 0` overrides
+   Tailwind v4's *layered* p-/m- utilities (un-layered rules beat any @layer).
+   Net effect: bare `px-4`/`py-2`/`mt-2` etc. collapse to 0 sitewide. Components
+   work around it with custom CSS classes (which are also un-layered and win on
+   specificity) or inline styles. The proper fix is to wrap this block in
+   `@layer base` so utilities win again — but that is a sitewide visual change
+   and must be done with full visual-regression coverage. Until then, use a
+   custom class or inline style for spacing rather than a bare Tailwind p-/m-. */
 *,
 *::before,
 *::after {
@@ -978,7 +986,7 @@ video {
 }
 
 .compare-modal__th--label {
-  width: 100px;
+  width: 108px;
 }
 
 .compare-modal__product-head {
@@ -1045,7 +1053,10 @@ video {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   vertical-align: middle;
-  white-space: nowrap;
+  /* Allow long labels (e.g. "Key ingredient") to wrap within the fixed label
+     column instead of overflowing into the value cell. */
+  line-height: 1.3;
+  overflow-wrap: break-word;
 }
 
 .compare-modal__cell {
