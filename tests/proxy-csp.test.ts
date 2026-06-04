@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildContentSecurityPolicy,
+  canonicalHostRedirect,
   checkCloudflareOriginGate,
   isCloudflareOriginGateProtected,
   requiresScriptNonce,
@@ -158,6 +159,40 @@ describe('CSP for static/ISR routes (useNonce: false)', () => {
     expect(directives['object-src']).toBe("'none'")
     expect(directives['frame-ancestors']).toBe("'none'")
     expect(directives['base-uri']).toBe("'self'")
+  })
+})
+
+describe('canonical host redirect (apex → www)', () => {
+  it('redirects the bare apex to www, preserving path and query', () => {
+    expect(canonicalHostRedirect('verdebliss.com', '/products', '?cat=Serum')).toBe(
+      'https://www.verdebliss.com/products?cat=Serum'
+    )
+    expect(canonicalHostRedirect('verdebliss.com', '/', '')).toBe('https://www.verdebliss.com/')
+  })
+
+  it('ignores a port on the apex host', () => {
+    expect(canonicalHostRedirect('verdebliss.com:443', '/faq', '')).toBe(
+      'https://www.verdebliss.com/faq'
+    )
+  })
+
+  it('matches the apex case-insensitively', () => {
+    expect(canonicalHostRedirect('VerdeBliss.COM', '/', '')).toBe('https://www.verdebliss.com/')
+  })
+
+  it('never redirects the canonical www host (no redirect loop)', () => {
+    expect(canonicalHostRedirect('www.verdebliss.com', '/products', '?q=serum')).toBeNull()
+  })
+
+  it('leaves preview deploys, localhost, and missing hosts untouched', () => {
+    expect(canonicalHostRedirect('verdebliss-git-main.vercel.app', '/', '')).toBeNull()
+    expect(canonicalHostRedirect('localhost:3010', '/', '')).toBeNull()
+    expect(canonicalHostRedirect(null, '/', '')).toBeNull()
+  })
+
+  it('does not match unrelated hosts that merely contain the apex string', () => {
+    expect(canonicalHostRedirect('notverdebliss.com', '/', '')).toBeNull()
+    expect(canonicalHostRedirect('verdebliss.com.evil.test', '/', '')).toBeNull()
   })
 })
 

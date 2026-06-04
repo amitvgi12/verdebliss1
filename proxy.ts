@@ -81,6 +81,28 @@ export function requiresScriptNonce(pathname: string): boolean {
   )
 }
 
+// Canonical host. Every canonical URL, metadataBase, OG URL, and sitemap entry
+// uses the www host (lib/seo.ts SITE_URL), so the bare apex must 308 → www or
+// crawlers see a duplicate host whose canonical points away from the served URL.
+const CANONICAL_HOST = 'www.verdebliss.com'
+const APEX_HOST = 'verdebliss.com'
+
+/**
+ * Returns the absolute www URL to 308-redirect to when a request hits the bare
+ * apex `verdebliss.com`, else null. Only the EXACT apex matches: the canonical
+ * www host (no redirect loop), `*.vercel.app` preview deploys, and localhost are
+ * all left untouched. Path and query are preserved; the host's port is ignored.
+ */
+export function canonicalHostRedirect(
+  host: string | null,
+  pathname: string,
+  search: string
+): string | null {
+  const hostname = host?.split(':')[0]?.toLowerCase()
+  if (hostname !== APEX_HOST) return null
+  return `https://${CANONICAL_HOST}${pathname}${search}`
+}
+
 export function isCloudflareOriginGateProtected(pathname: string): boolean {
   return pathname.startsWith('/api/') && !CF_ORIGIN_GATE_EXEMPT(pathname)
 }
@@ -117,6 +139,19 @@ export function checkCloudflareOriginGate(
 }
 
 export function proxy(request: NextRequest) {
+  // 0) Canonical host: 308 the bare apex → www so the served URL matches the
+  // canonical/metadataBase/sitemap host. Prefer x-forwarded-host (set by Vercel
+  // to the public host) over the raw Host header. Direct-to-origin abuse targets
+  // the Vercel deployment host, not the apex, so this never weakens the gate below.
+  const canonicalTarget = canonicalHostRedirect(
+    request.headers.get('x-forwarded-host') ?? request.headers.get('host'),
+    request.nextUrl.pathname,
+    request.nextUrl.search
+  )
+  if (canonicalTarget) {
+    return NextResponse.redirect(canonicalTarget, 308)
+  }
+
   // 1) Cloudflare origin gate runs before any other work so direct-to-origin
   // abuse pays the absolute minimum cost. CF_ORIGIN_GATE_REQUIRED=true makes
   // production fail closed if the secret is missing.
