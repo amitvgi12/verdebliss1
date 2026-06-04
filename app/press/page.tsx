@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Mail, Download, ArrowRight, ExternalLink } from 'lucide-react'
 import { BUSINESS_COMPLIANCE } from '@/constants/businessCompliance'
+import './press.css'
 
 export const metadata = {
   title: 'Press & Media',

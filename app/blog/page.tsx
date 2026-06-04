@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
 import FadeIn from '@/components/ui/FadeIn'
+import './blog.css'
 
 export const revalidate = 3600
 

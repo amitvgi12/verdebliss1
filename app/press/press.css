@@ -1,0 +1,101 @@
+/* Route-scoped styles for the Press (/press) page.
+   Split out of app/globals.css so these rules ship only on /press instead of
+   render-blocking every route. The `press-*` classes are used exclusively by
+   app/press/page.tsx. See F2. */
+.press-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.press-card {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: 22px;
+}
+
+.press-card__icon {
+  display: flex;
+  height: 42px;
+  width: 42px;
+  margin-bottom: 14px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.press-facts {
+  max-width: 760px;
+  margin-inline: auto;
+  overflow: hidden;
+}
+
+.press-facts > div {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) 1fr;
+  gap: 12px;
+  padding: 14px 18px;
+}
+
+.press-coverage-grid {
+  display: grid;
+  max-width: 1020px;
+  margin-inline: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.press-coverage-card {
+  min-height: 132px;
+}
+
+.press-coverage-card__banner {
+  display: grid;
+  min-height: 38px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 20px;
+}
+
+.press-coverage-card__outlet {
+  min-width: 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.press-coverage-card__date {
+  font-size: 0.64rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.press-coverage-card__body {
+  padding: 16px 20px 18px;
+}
+
+.press-hero {
+  padding-block: clamp(36px, 4.5vw, 58px);
+}
+
+@media (max-width: 800px) {
+  .press-contact-grid,
+  .press-coverage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .press-facts > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

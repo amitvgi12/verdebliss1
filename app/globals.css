@@ -3819,95 +3819,7 @@ video {
   white-space: nowrap;
 }
 
-/* ── Journal ─────────────────────────────────────────────────── */
-.journal-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(16px, 2vw, 22px);
-}
-
-.journal-card {
-  display: flex;
-  min-height: 100%;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.journal-card__media {
-  position: relative;
-  height: 184px;
-  overflow: hidden;
-}
-
-.journal-card__media img {
-  transition: transform 320ms ease;
-}
-
-.journal-card:hover .journal-card__media img {
-  transform: scale(1.05);
-}
-
-.journal-card__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 18px;
-  background: linear-gradient(180deg, rgba(18, 32, 23, 0.08), rgba(18, 32, 23, 0.72));
-}
-
-.journal-card__read-time {
-  width: fit-content;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  color: white;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  padding: 6px 10px;
-  text-transform: uppercase;
-  backdrop-filter: blur(10px);
-}
-
-.journal-card__category {
-  color: white;
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.3rem;
-  line-height: 1.1;
-}
-
-.journal-card__body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding: 18px;
-}
-
-.journal-card__date {
-  margin-bottom: 6px;
-  color: var(--color-terra);
-  font-size: 0.63rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.journal-card__title {
-  margin-bottom: 10px;
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.journal-card__excerpt {
-  margin-bottom: 16px;
-  color: var(--color-muted);
-  font-size: 0.82rem;
-  line-height: 1.7;
-}
+/* Journal (/blog) styles moved to app/blog/blog.css — route-scoped (F2). */
 
 /* ── Ingredients ────────────────────────────────────────────── */
 .ingredient-card {
@@ -3991,90 +3903,7 @@ video {
   background: rgba(246, 237, 232, 0.72);
 }
 
-/* ── Press ───────────────────────────────────────────────────── */
-.press-contact-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.press-card {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-  padding: 22px;
-}
-
-.press-card__icon {
-  display: flex;
-  height: 42px;
-  width: 42px;
-  margin-bottom: 14px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-}
-
-.press-facts {
-  max-width: 760px;
-  margin-inline: auto;
-  overflow: hidden;
-}
-
-.press-facts > div {
-  display: grid;
-  grid-template-columns: minmax(140px, 180px) 1fr;
-  gap: 12px;
-  padding: 14px 18px;
-}
-
-.press-coverage-grid {
-  display: grid;
-  max-width: 1020px;
-  margin-inline: auto;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.press-coverage-card {
-  min-height: 132px;
-}
-
-.press-coverage-card__banner {
-  display: grid;
-  min-height: 38px;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 24px;
-  padding: 10px 20px;
-}
-
-.press-coverage-card__outlet {
-  min-width: 0;
-  font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.press-coverage-card__date {
-  font-size: 0.64rem;
-  font-weight: 600;
-  line-height: 1;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.press-coverage-card__body {
-  padding: 16px 20px 18px;
-}
-
-.press-hero {
-  padding-block: clamp(36px, 4.5vw, 58px);
-}
+/* Press (/press) styles moved to app/press/press.css — route-scoped (F2). */
 
 /* ── Sustainability ─────────────────────────────────────────── */
 .sustainability-grid {
@@ -4179,9 +4008,7 @@ video {
 }
 
 @media (max-width: 800px) {
-  .journal-grid,
-  .press-contact-grid,
-  .press-coverage-grid,
+  /* .journal-grid → app/blog/blog.css; .press-*-grid → app/press/press.css (F2) */
   .commitment-grid,
   .contact-layout {
     grid-template-columns: 1fr;
@@ -4197,11 +4024,7 @@ video {
   .never-grid {
     grid-template-columns: 1fr;
   }
-
-  .press-facts > div {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
+  /* .press-facts > div → app/press/press.css (F2) */
 }
 
 /* ── Story ───────────────────────────────────────────────────── */
