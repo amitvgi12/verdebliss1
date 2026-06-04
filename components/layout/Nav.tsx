@@ -227,17 +227,18 @@ export default function Nav({ products }: { products: Product[] }) {
         aria-modal="true"
         aria-label="Navigation menu"
         data-testid="mobile-navigation-menu"
-        className="fixed inset-x-4 top-[68px] z-[99] m-0 max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] border border-[#d7c7b6] bg-[#fffaf4] p-3 shadow-[0_26px_80px_rgba(23,36,27,0.32)] backdrop-blur-xl md:hidden"
+        className="fixed left-auto right-4 top-[68px] z-[99] m-0 w-[86vw] max-w-[320px] max-h-[calc(100dvh-88px)] overflow-y-auto rounded-[26px] bg-transparent p-3 md:hidden"
       >
         {/* Padding/margins are set inline because the global `*{padding:0;margin:0}`
             reset is un-layered and overrides Tailwind's layered p-/m- utilities, so
             px-5/py-4/mb-3/mt-2 collapse to 0 and the eyebrow clips against the top. */}
         <div
           style={{ padding: '16px 20px', marginBottom: 12 }}
-          className="flex items-start justify-between rounded-[18px] bg-[#254f32] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
+          className="flex items-start justify-between rounded-[18px] bg-[#356b45] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
         >
           <div>
-            <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#d7b978]">
+            {/* Champagne (not the darker gold) keeps AA contrast on the lighter pill. */}
+            <p className="text-[10px] font-black uppercase leading-none tracking-[0.2em] text-[#f0e3c4]">
               Pages
             </p>
             <p
