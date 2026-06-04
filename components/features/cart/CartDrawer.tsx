@@ -409,7 +409,7 @@ export default function CartDrawer() {
                   </span>
                 </div>
                 <div style={{ fontSize: 11, color: C.muted, marginBottom: 16 }}>
-                  Taxes calculated at checkout
+                  Inclusive of all taxes
                 </div>
 
                 {/* Checkout button */}

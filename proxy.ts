@@ -9,7 +9,8 @@ import {
 /**
  * Per-request CSP nonce proxy + optional Cloudflare origin gate.
  *
- * - Generates a fresh nonce per request via Web Crypto (Edge runtime safe).
+ * - Generates a fresh nonce per request via the Web Crypto API (a global on the
+ *   Node runtime that Next 16 runs `proxy` on).
  * - Forwards the nonce to Server Components via the `x-nonce` request header
  *   for code that needs to emit nonce-bearing scripts.
  * - Forwards the CSP itself on the request. Next parses that request header to
@@ -187,7 +188,7 @@ function generateNonce(): string {
   crypto.getRandomValues(bytes)
   let str = ''
   for (const b of bytes) str += String.fromCharCode(b)
-  // btoa is available in Edge runtime.
+  // btoa is a global on the Node runtime (Next 16 runs `proxy` on Node).
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
@@ -225,7 +226,9 @@ export function buildContentSecurityPolicy(
     "style-src-elem 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob: https://*.supabase.co",
-    `connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://generativelanguage.googleapis.com https://challenges.cloudflare.com https://va.vercel-scripts.com https://vitals.vercel-insights.com${sentryConnectSrc}`,
+    // No generativelanguage.googleapis.com: the Gemini call is server-side only
+    // (app/api/chat/route.ts); the browser only posts to same-origin /api/chat.
+    `connect-src 'self' https://*.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://challenges.cloudflare.com https://va.vercel-scripts.com https://vitals.vercel-insights.com${sentryConnectSrc}`,
     'frame-src https://api.razorpay.com https://checkout.razorpay.com https://challenges.cloudflare.com',
     "frame-ancestors 'none'",
     "object-src 'none'",
