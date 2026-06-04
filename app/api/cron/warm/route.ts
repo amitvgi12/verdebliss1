@@ -6,9 +6,13 @@ export const maxDuration = 20
 // Keep the highest-traffic ISR routes (and one dynamic route) warm between
 // sparse visits. On a low-traffic site, ISR cache entries get evicted and
 // serverless functions scale to zero, so real visitors pay cold blocking
-// renders that show up as Poor TTFB in Speed Insights. Pinging these on a
-// schedule shifts the cold render onto the cron instead of a customer.
-// See docs/performance-follow-ups.md.
+// renders that show up as Poor TTFB in Speed Insights. Pinging these shifts the
+// cold render onto the warmer instead of a customer.
+//
+// The Vercel cron only runs this DAILY (Hobby plan limit). For effective
+// warming, point an external pinger (cron-job.org / UptimeRobot) at this
+// endpoint every ~10 min with `Authorization: Bearer <CRON_SECRET>`. On Pro,
+// bump the vercel.json schedule to `*/10 * * * *`. See docs/performance-follow-ups.md.
 const WARM_PATHS = ['/', '/products', '/products/bakuchiol-renewal-serum', '/faq']
 
 export async function GET(request: Request) {

@@ -15,11 +15,16 @@ Done:
 - **Region co-location** — `vercel.json` now pins functions to `bom1` (Mumbai) to
   match the Supabase region and the India audience, cutting cross-region DB
   latency and user distance on every render.
-- **Cache-warming cron** — `/api/cron/warm` (every 10 min) pings `/`, `/products`,
-  a PDP, and `/faq` so a stale/evicted ISR entry re-renders on the cron instead
-  of for the next real visitor. Requires a Pro plan (sub-daily crons) and
-  `CRON_SECRET` set; on Hobby, point an external pinger (e.g. cron-job.org) at
-  the same endpoint instead.
+- **Cache-warming cron** — `/api/cron/warm` pings `/`, `/products`, a PDP, and
+  `/faq` so a stale/evicted ISR entry re-renders on the warmer instead of for the
+  next real visitor. Needs `CRON_SECRET` set.
+  - The Vercel cron runs it **daily** (`0 2 * * *`) — the Hobby plan only allows
+    once-a-day crons, which is too infrequent to actually keep the cache warm.
+  - **Effective warming on Hobby:** point a free external pinger (cron-job.org /
+    UptimeRobot) at `/api/cron/warm` every ~10 min with header
+    `Authorization: Bearer <CRON_SECRET>`.
+  - On **Pro**, bump the `vercel.json` schedule to `*/10 * * * *` and drop the
+    external pinger.
 
 Still worth doing:
 
