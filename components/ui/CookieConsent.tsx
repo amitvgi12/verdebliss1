@@ -189,35 +189,37 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                 className="pointer-events-auto flex max-h-[min(88vh,680px)] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-[#E2D6C8] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] focus:outline-none"
               >
                 {/* Header */}
-                <div className="relative flex-shrink-0 border-b border-[#EDE5DA] px-6 pb-4 pt-5">
+                <div className="relative flex flex-shrink-0 items-start gap-3 border-b border-[#EDE5DA] px-6 pb-4 pt-5">
                   <div className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl bg-[linear-gradient(90deg,#C8A464,#7D9B76,#2D4A32)]" />
                   <button
                     type="button"
                     onClick={decline}
                     aria-label="Reject optional and close"
-                    className="absolute right-4 top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-transparent bg-[#F5F0EA] text-[#888] transition hover:border-[#D8CDBF] hover:bg-[#EDE5DA] hover:text-[#333]"
+                    className="order-2 -mr-1 mt-0.5 flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-transparent bg-[#F5F0EA] text-[#888] transition hover:border-[#D8CDBF] hover:bg-[#EDE5DA] hover:text-[#333]"
                   >
                     <X size={15} />
                   </button>
-                  <h2
-                    id="cookie-preferences-title"
-                    className="font-serif text-[22px] font-semibold text-[#1C1C1C]"
-                  >
-                    Privacy Overview
-                  </h2>
-                  <p
-                    id="cookie-preferences-description"
-                    className="mt-1.5 pr-8 text-[13px] leading-[1.6] text-[#666]"
-                  >
-                    This site uses cookies and similar technologies to improve your experience.{' '}
-                    <button
-                      type="button"
-                      onClick={() => setModal('cookie')}
-                      className="border-none bg-transparent p-0 text-[#2D4A32] underline decoration-[#2D4A32]/30 underline-offset-2 transition hover:decoration-[#2D4A32]"
+                  <div className="order-1 min-w-0 flex-1">
+                    <h2
+                      id="cookie-preferences-title"
+                      className="font-serif text-[22px] font-semibold leading-tight text-[#1C1C1C]"
                     >
-                      Cookie policy
-                    </button>
-                  </p>
+                      Privacy Overview
+                    </h2>
+                    <p
+                      id="cookie-preferences-description"
+                      className="mt-1.5 text-[13px] leading-[1.6] text-[#666]"
+                    >
+                      This site uses cookies and similar technologies to improve your experience.{' '}
+                      <button
+                        type="button"
+                        onClick={() => setModal('cookie')}
+                        className="border-none bg-transparent p-0 text-[#2D4A32] underline decoration-[#2D4A32]/30 underline-offset-2 transition hover:decoration-[#2D4A32]"
+                      >
+                        Cookie policy
+                      </button>
+                    </p>
+                  </div>
                 </div>
 
                 {/* Category list */}
