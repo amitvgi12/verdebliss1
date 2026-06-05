@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, ArrowRight } from 'lucide-react'
 import { C } from '@/constants/theme'
+import { hasProductPrice } from '@/lib/pricing'
 import { productPath } from '@/lib/seo'
 import type { Product } from '@/types'
 
@@ -260,7 +261,8 @@ export default function SearchBar({ products }: { products: Product[] }) {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{p.name}</div>
                       <div style={{ fontSize: 11, color: C.muted }}>
-                        {p.category} · ₹{p.price?.toLocaleString()}
+                        {p.category}
+                        {hasProductPrice(p) ? ` · ₹${p.price.toLocaleString()}` : ''}
                       </div>
                     </div>
                     <ArrowRight size={12} color={C.muted} />

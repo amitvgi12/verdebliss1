@@ -3,7 +3,7 @@ import { getProductsServer } from '@/lib/products-server'
 import { CATEGORIES, SKIN_TYPES, SORT_OPTIONS } from '@/constants/products'
 import type { Product } from '@/types'
 
-export const revalidate = 300
+export const revalidate = 3600
 
 export const metadata = {
   title: 'Shop Botanical Skincare',

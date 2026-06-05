@@ -24,7 +24,7 @@
  *
  * A CDN cache purge alone does NOT fix stale ISR HTML; this endpoint is required.
  */
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { PUBLIC_STATIC_ROUTES } from '@/constants/publicRoutes'
 import { getProductsServer } from '@/lib/products-server'
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
   }
 
   // --- Public sitemap routes ---
+  revalidateTag('products', 'max')
   for (const path of PUBLIC_STATIC_ROUTES) {
     revalidatePath(path, 'page')
   }
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
   const failedPaths: string[] = []
   for (const slug of productSlugs) {
     try {
+      revalidateTag(`product-${slug}`, 'max')
       revalidatePath(`/products/${slug}`, 'page')
     } catch {
       failedPaths.push(`/products/${slug}`)

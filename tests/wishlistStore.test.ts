@@ -2,11 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const supabaseMocks = vi.hoisted(() => ({
   from: vi.fn(),
+  getSession: vi.fn(),
 }))
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: supabaseMocks.from,
+    auth: {
+      getSession: supabaseMocks.getSession,
+    },
   },
 }))
 
@@ -15,6 +19,7 @@ import { useWishlistStore } from '@/store/wishlistStore'
 describe('wishlistStore', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    supabaseMocks.getSession.mockResolvedValue({ data: { session: null }, error: null })
     useWishlistStore.setState({ ids: [] })
   })
 
@@ -40,6 +45,22 @@ describe('wishlistStore', () => {
     expect(supabaseMocks.from).toHaveBeenCalledWith('wishlist')
     expect(builder.insert).toHaveBeenCalledWith({
       user_id: 'user-1',
+      product_id: 'serum-1',
+    })
+  })
+
+  it('resolves the current session when toggling without an explicit user id', async () => {
+    const builder = makeInsertBuilder()
+    supabaseMocks.from.mockReturnValue(builder)
+    supabaseMocks.getSession.mockResolvedValue({
+      data: { session: { user: { id: 'session-user-1' } } },
+      error: null,
+    })
+
+    await useWishlistStore.getState().toggle('serum-1')
+
+    expect(builder.insert).toHaveBeenCalledWith({
+      user_id: 'session-user-1',
       product_id: 'serum-1',
     })
   })

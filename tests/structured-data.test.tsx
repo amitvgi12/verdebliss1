@@ -13,7 +13,9 @@ import { PRODUCTS } from '@/constants/products'
 describe('InlineStructuredData — crawler-parseable JSON-LD delivery (F1)', () => {
   it('emits an inline application/ld+json block with no external src', () => {
     const { container } = render(
-      <InlineStructuredData data={{ '@context': 'https://schema.org', '@type': 'Thing', name: 'X' }} />
+      <InlineStructuredData
+        data={{ '@context': 'https://schema.org', '@type': 'Thing', name: 'X' }}
+      />
     )
     const script = container.querySelector('script[type="application/ld+json"]')
     expect(script).not.toBeNull()
@@ -28,7 +30,9 @@ describe('InlineStructuredData — crawler-parseable JSON-LD delivery (F1)', () 
         data={[organizationJsonLd(), websiteJsonLd(), featuredItemListJsonLd(featured)]}
       />
     )
-    const parsed = JSON.parse(container.querySelector('script[type="application/ld+json"]')!.textContent!)
+    const parsed = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!
+    )
     expect(Array.isArray(parsed)).toBe(true)
     expect(parsed[0]).toMatchObject({ '@type': 'Organization' })
     expect(parsed[1]).toMatchObject({ '@type': 'WebSite' })
@@ -55,7 +59,9 @@ describe('InlineStructuredData — crawler-parseable JSON-LD delivery (F1)', () 
         ]}
       />
     )
-    const parsed = JSON.parse(container.querySelector('script[type="application/ld+json"]')!.textContent!)
+    const parsed = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!
+    )
     expect(parsed[0]).toMatchObject({
       '@type': 'Product',
       offers: expect.objectContaining({ price: 1495, priceCurrency: 'INR' }),

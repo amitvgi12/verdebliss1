@@ -20,7 +20,6 @@ import {
 } from 'lucide-react'
 import SearchBar from '@/components/features/search/SearchBar'
 import { useCartStore, selectItemCount } from '@/store/cartStore'
-import { useAuthStore } from '@/store/authStore'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import type { Product } from '@/types'
 
@@ -37,7 +36,6 @@ export default function Nav({ products }: { products: Product[] }) {
   const pathname = usePathname()
   const openCart = useCartStore((s) => s.openCart)
   const itemCount = useCartStore(selectItemCount)
-  const user = useAuthStore((s) => s.user)
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -152,7 +150,7 @@ export default function Nav({ products }: { products: Product[] }) {
               onClick={closeMenus}
               className="flex h-9 w-9 items-center justify-center rounded-xl"
             >
-              <User size={18} className={user ? 'text-forest' : 'text-text'} />
+              <User size={18} className="text-text" />
             </Link>
             <button
               type="button"

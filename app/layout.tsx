@@ -4,7 +4,7 @@ import CompareBar from '@/components/features/compare/CompareBar'
 import CompareModal from '@/components/features/compare/CompareModal'
 import CartDrawerLoader from '@/components/ui/CartDrawerLoader'
 import CookieConsent from '@/components/ui/CookieConsent'
-import AuthInitializer from '@/components/ui/AuthInitializer'
+import AuthInitializerLoader from '@/components/ui/AuthInitializerLoader'
 import MotionProvider from '@/components/ui/MotionProvider'
 import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import VercelInsightsLoader from '@/components/ui/VercelInsightsLoader'
@@ -16,7 +16,7 @@ import {
   BUSINESS_COMPLIANCE,
   assertProductionBusinessCompliance,
 } from '@/constants/businessCompliance'
-import { getProductsServer } from '@/lib/products-server'
+import { PRODUCTS } from '@/constants/products'
 
 assertProductionBusinessCompliance()
 
@@ -93,9 +93,7 @@ export const metadata = {
   alternates: { canonical: 'https://www.verdebliss.com' },
 }
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  const navProducts = await getProductsServer()
-
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`} data-scroll-behavior="smooth">
       <head>
@@ -112,9 +110,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           Skip to main content
         </a>
         {/* Initialize auth on client */}
-        <AuthInitializer />
+        <AuthInitializerLoader />
         <MotionProvider>
-          <Nav products={navProducts} />
+          <Nav products={PRODUCTS} />
           <main id="main-content">{children}</main>
           <Footer />
           <CartDrawerLoader />

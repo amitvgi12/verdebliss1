@@ -1,4 +1,4 @@
-export const revalidate = 300
+export const revalidate = 3600
 
 import { notFound, permanentRedirect } from 'next/navigation'
 import {
@@ -36,7 +36,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params
   const p = await getProductServer(id)
   const e2eMode = Boolean(process.env.E2E_STATIC_CATALOGUE)
-  if (!isPublishedProduct(p, { hasCatalogue: hasSupabaseAdminEnv(), isProduction: isProductionRuntime() && !e2eMode })) {
+  if (
+    !isPublishedProduct(p, {
+      hasCatalogue: hasSupabaseAdminEnv(),
+      isProduction: isProductionRuntime() && !e2eMode,
+    })
+  ) {
     return {
       title: 'Product Not Found',
       robots: { index: false, follow: false },

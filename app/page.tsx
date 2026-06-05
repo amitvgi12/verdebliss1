@@ -12,7 +12,7 @@ import { organizationJsonLd, websiteJsonLd } from '@/lib/site-schema'
 import { featuredItemListJsonLd } from '@/lib/seo'
 import type { Metadata } from 'next'
 
-export const revalidate = 300
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: { absolute: 'VerdeBliss — Botanical Skincare India' },

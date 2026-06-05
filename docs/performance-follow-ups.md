@@ -25,12 +25,15 @@ Done:
     `Authorization: Bearer <CRON_SECRET>`.
   - On **Pro**, bump the `vercel.json` schedule to `*/10 * * * *` and drop the
     external pinger.
+- **Root layout catalogue fetch removed** — the nav search now uses the static
+  product shell, so every route no longer waits on `getProductsServer()` before
+  sending the first byte.
+- **Catalogue ISR/data cache extended to 1 hour** — product HTML/data misses are
+  less frequent on low-traffic windows; on-demand product revalidation still
+  purges the `products` tag when catalogue data changes.
 
 Still worth doing:
 
-- Lighten the root layout's per-request `getProductsServer()` (Nav) so dynamic
-  routes don't block on Supabase; cache it longer or source nav from the static
-  shell.
 - `/faq` and `/blog/[slug]` render dynamically because `<StructuredData>` calls
   `headers()`; switch them to the headers-free `InlineStructuredData` so they
   become ISR again (lower TTFB).
@@ -61,7 +64,7 @@ Still worth doing:
    root layout) — these must stay in `app/globals.css`.
 3. Watch the **grouped responsive blocks** near the end of `globals.css`: some
    `@media` queries comma-group selectors across pages (e.g. `.journal-grid,
-   .press-*-grid, .commitment-grid, .contact-layout`). When extracting one page,
+.press-*-grid, .commitment-grid, .contact-layout`). When extracting one page,
    pull only its selectors out of the shared group and leave the rest intact.
 4. Create `app/<route>/<route>.css`, move the rules (keeping their original
    relative order so the cascade is unchanged), and `import './<route>.css'` in

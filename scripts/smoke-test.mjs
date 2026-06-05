@@ -152,7 +152,9 @@ if (pdpPricingFailures.length === 0) {
 // it). Guards audit F1.
 const structuredDataFailures = await checkInlineStructuredData(baseUrl)
 if (structuredDataFailures.length === 0) {
-  console.log('PASS  inline JSON-LD delivery (homepage Organization + PDP Product, no external src)')
+  console.log(
+    'PASS  inline JSON-LD delivery (homepage Organization + PDP Product, no external src)'
+  )
   passed++
 } else {
   for (const failure of structuredDataFailures) console.error(`FAIL  ${failure}`)
@@ -219,7 +221,9 @@ async function checkProductPdpPricing(baseUrl) {
 
   // ProductCard media link: <a aria-label="View <name>, ₹<price>" href="/products/<slug>">
   const cards = [
-    ...listingHtml.matchAll(/aria-label="View [^"]*?, (₹[\d,]+)"\s+href="\/products\/([a-z0-9-]+)"/g),
+    ...listingHtml.matchAll(
+      /aria-label="View [^"]*?, (₹[\d,]+)"\s+href="\/products\/([a-z0-9-]+)"/g
+    ),
   ].map((m) => ({ price: m[1], slug: m[2] }))
 
   if (cards.length === 0) return ['/products — no priced product cards found in listing HTML']
@@ -292,7 +296,11 @@ async function checkInlineStructuredData(baseUrl) {
 
   const targets = [{ path: '/', needle: '"@type":"Organization"', label: 'homepage Organization' }]
   if (firstSlug) {
-    targets.push({ path: `/products/${firstSlug}`, needle: '"@type":"Product"', label: 'PDP Product' })
+    targets.push({
+      path: `/products/${firstSlug}`,
+      needle: '"@type":"Product"',
+      label: 'PDP Product',
+    })
   } else {
     failures.push('/products — could not resolve a product slug for the inline JSON-LD check')
   }
@@ -306,7 +314,9 @@ async function checkInlineStructuredData(baseUrl) {
       }
       const html = (await res.text()).replaceAll('<!-- -->', '')
       if (externalSrc.test(html)) {
-        failures.push(`${path} — JSON-LD served via external src (data-block src is ignored by crawlers)`)
+        failures.push(
+          `${path} — JSON-LD served via external src (data-block src is ignored by crawlers)`
+        )
       }
       if (!html.includes(needle)) {
         failures.push(`${path} — no inline ${label} JSON-LD (${needle} absent from served HTML)`)

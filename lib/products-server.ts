@@ -96,12 +96,14 @@ export function applyApprovedReviewMetrics(
   })
 }
 
-// unstable_cache: cross-request persistence, 5-min revalidation.
+// unstable_cache: cross-request persistence, 1-hour revalidation.
 // cache(): intra-render deduplication — multiple callers in the same render
 // (homepage, sitemap, chat route) share one resolved promise.
+export const PRODUCT_CATALOGUE_REVALIDATE_SECONDS = 3600
+
 export const getProductsServer = cache(
   unstable_cache(async (): Promise<Product[]> => fetchProductsFromDb(), ['products-catalogue-v1'], {
-    revalidate: 300,
+    revalidate: PRODUCT_CATALOGUE_REVALIDATE_SECONDS,
     tags: ['products'],
   })
 )
@@ -141,7 +143,7 @@ async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
 
 export function getProductServer(idOrSlug: string): Promise<Product | null> {
   return unstable_cache(() => fetchProductFromDb(idOrSlug), [`product-v1-${idOrSlug}`], {
-    revalidate: 300,
+    revalidate: PRODUCT_CATALOGUE_REVALIDATE_SECONDS,
     tags: ['products', `product-${idOrSlug}`],
   })()
 }

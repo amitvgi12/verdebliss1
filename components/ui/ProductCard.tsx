@@ -7,7 +7,6 @@ import ProductImage from '@/components/ui/ProductImage'
 import Stars from '@/components/ui/Stars'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
-import { useAuthStore } from '@/store/authStore'
 import { useCompareStore, MAX_COMPARE_PRODUCTS } from '@/store/compareStore'
 import { PRICE_UNAVAILABLE_COPY, getVerifiablePriceOffer, hasProductPrice } from '@/lib/pricing'
 import { formatApprovedReviewCount } from '@/lib/review-copy'
@@ -26,7 +25,6 @@ export default function ProductCard({
   const updateQty = useCartStore((s) => s.updateQty)
   const cartItem = useCartStore((s) => s.items.find((item) => item.id === p.id))
   const { toggle, has } = useWishlistStore()
-  const user = useAuthStore((s) => s.user)
   const { toggle: compareToggle, products: compareProducts } = useCompareStore()
   const inCompare = compareProducts.some((cp) => cp.id === p.id)
   const compareDisabled = !inCompare && compareProducts.length >= MAX_COMPARE_PRODUCTS
@@ -72,7 +70,7 @@ export default function ProductCard({
         <button
           type="button"
           aria-label={inWishlist ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
-          onClick={() => toggle(p.id, user?.id)}
+          onClick={() => toggle(p.id)}
           className="vb-product-card__wishlist"
         >
           <Heart

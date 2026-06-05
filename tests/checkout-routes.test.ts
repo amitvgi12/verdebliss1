@@ -118,7 +118,9 @@ describe('checkout bot protection', () => {
     // Simulate a raw internal failure (e.g. a Supabase/DB error naming columns
     // or an env/config identifier). The customer must see a generic message.
     mocks.completeRazorpayCheckout.mockRejectedValue(
-      new Error('insert into "orders" violates row-level security policy for SUPABASE_SERVICE_ROLE_KEY')
+      new Error(
+        'insert into "orders" violates row-level security policy for SUPABASE_SERVICE_ROLE_KEY'
+      )
     )
 
     const response = await verifyRazorpay(makeVerifyRequest())

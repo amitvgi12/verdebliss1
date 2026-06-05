@@ -76,7 +76,8 @@ export async function POST(request: Request) {
     // an expired checkout session) echo their message. Config errors map to a
     // generic 503; payment-integrity/tamper details stay generic on purpose so
     // a probing client learns nothing about which check failed.
-    let responseError = 'We could not verify your payment. Please contact support if you were charged.'
+    let responseError =
+      'We could not verify your payment. Please contact support if you were charged.'
     let code = 'PAYMENT_VERIFY_FAILED'
     let status = 400
 

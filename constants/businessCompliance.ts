@@ -269,7 +269,9 @@ export function validateBusinessCompliance(
       if (!envSource[key]) errors.push(`${key} is required`)
     }
     if (envSource[LEGAL_DATA_VERIFIED_ENV_KEY] !== 'true') {
-      errors.push(`${LEGAL_DATA_VERIFIED_ENV_KEY}=true is required after documentary legal verification`)
+      errors.push(
+        `${LEGAL_DATA_VERIFIED_ENV_KEY}=true is required after documentary legal verification`
+      )
     }
     const configuredGrievanceName =
       envSource.NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME?.trim() ?? ''

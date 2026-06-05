@@ -75,8 +75,11 @@ function createStatefulSupabase() {
   let capturedRpcParams: Record<string, unknown> | null = null
 
   function builder(table: string) {
-    const op: { type: string | null; payload: Record<string, unknown> | null; filters: Record<string, string> } =
-      { type: null, payload: null, filters: {} }
+    const op: {
+      type: string | null
+      payload: Record<string, unknown> | null
+      filters: Record<string, string>
+    } = { type: null, payload: null, filters: {} }
 
     function apply() {
       if (table === 'products') return { data: [PRODUCT], error: null }
@@ -179,7 +182,9 @@ beforeEach(() => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (_url: string, init?: { body?: string }) => {
-      const body = init?.body ? (JSON.parse(init.body) as { amount: number; receipt: string }) : null
+      const body = init?.body
+        ? (JSON.parse(init.body) as { amount: number; receipt: string })
+        : null
       capturedRazorpayAmount = body?.amount ?? null
       return {
         ok: true,
