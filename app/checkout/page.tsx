@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import CheckoutClient from './CheckoutClient'
+import './checkout.css'
 
 export const metadata = {
   title: 'Checkout',

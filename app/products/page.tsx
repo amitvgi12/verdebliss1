@@ -2,6 +2,7 @@ import ProductsClient from './ProductsClient'
 import { getProductsServer } from '@/lib/products-server'
 import { CATEGORIES, SKIN_TYPES, SORT_OPTIONS } from '@/constants/products'
 import type { Product } from '@/types'
+import './products.css'
 
 export const revalidate = 3600
 

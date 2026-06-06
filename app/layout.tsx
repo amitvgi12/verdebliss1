@@ -1,14 +1,13 @@
 import Nav from '@/components/layout/Nav'
 import Footer from '@/components/layout/Footer'
-import CompareBar from '@/components/features/compare/CompareBar'
-import CompareModal from '@/components/features/compare/CompareModal'
 import CartDrawerLoader from '@/components/ui/CartDrawerLoader'
 import CookieConsent from '@/components/ui/CookieConsent'
 import AuthInitializerLoader from '@/components/ui/AuthInitializerLoader'
 import MotionProvider from '@/components/ui/MotionProvider'
 import ChatBotLoader from '@/components/ui/ChatBotLoader'
 import VercelInsightsLoader from '@/components/ui/VercelInsightsLoader'
-import { Toaster } from '@/components/ui/Toast'
+import CompareLoader from '@/components/ui/CompareLoader'
+import ToastLoader from '@/components/ui/ToastLoader'
 import './globals.css'
 import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
@@ -118,10 +117,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <CartDrawerLoader />
           <ChatBotLoader />
           <VercelInsightsLoader />
-          <Toaster />
+          <ToastLoader />
           <CookieConsent />
-          <CompareBar />
-          <CompareModal />
+          <CompareLoader />
         </MotionProvider>
       </body>
     </html>

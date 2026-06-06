@@ -11,6 +11,7 @@ import { InlineStructuredData } from '@/lib/structured-data'
 import { organizationJsonLd, websiteJsonLd } from '@/lib/site-schema'
 import { featuredItemListJsonLd } from '@/lib/seo'
 import type { Metadata } from 'next'
+import './home.css'
 
 export const revalidate = 3600
 
@@ -143,6 +144,7 @@ export default async function Home() {
                 width={599}
                 height={900}
                 priority
+                unoptimized
                 sizes="(max-width: 768px) 90vw, 480px"
                 className="h-full w-full object-cover"
               />

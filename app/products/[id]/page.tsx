@@ -8,6 +8,7 @@ import {
   getReviewAggregatesServer,
 } from '@/lib/products-server'
 import ProductDetailClient from './ProductDetailClient'
+import './product-detail.css'
 import {
   absoluteUrl,
   breadcrumbJsonLd,

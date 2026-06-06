@@ -88,6 +88,7 @@ export default function Nav({ products }: { products: Product[] }) {
                 width={52}
                 height={42}
                 priority
+                unoptimized
                 className="h-9 w-auto object-contain"
               />
             </span>
