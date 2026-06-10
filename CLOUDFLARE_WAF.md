@@ -206,40 +206,39 @@ The June 2026 production audit found the Cloudflare dashboard overriding or
 contradicting the app's own configuration. These are **dashboard actions** —
 the repo is already correct; do not "fix" them in code.
 
-### 8.1 Remove security-header overrides (Transform Rules → Modify Response Header)
+### 8.1 Security-header overrides — ✅ fixed (June 2026)
 
-Live responses currently serve headers that contradict `next.config.ts`:
+Root cause: **Managed Transforms → "Add security headers"** was enabled, injecting
+`x-frame-options: SAMEORIGIN`, `referrer-policy: same-origin`, and
+`x-xss-protection: 1; mode=block` over the origin's correct values.
 
-| Header              | Live (Cloudflare)        | App config (correct)              | Action |
-| ------------------- | ------------------------ | --------------------------------- | ------ |
-| `X-XSS-Protection`  | `1; mode=block`          | intentionally absent (deprecated; can introduce vulns in old browsers) | delete the transform rule |
-| `Referrer-Policy`   | `same-origin`            | `strict-origin-when-cross-origin` | delete the transform rule |
-| `X-Frame-Options`   | `SAMEORIGIN`             | `DENY` (+ CSP `frame-ancestors 'none'`) | delete the transform rule |
+Fix applied:
+- Turned OFF "Add security headers" in Managed Transforms.
+- Deleted the "remove headers" custom rule (was a band-aid removing `x-xss-protection`
+  that the same managed transform was injecting).
+- Added all security headers directly to `proxy.ts` so the app owns them
+  independently of any CDN configuration.
 
-The origin already sends a complete, audited header set. Any header shaping in
-two places will drift again — Cloudflare should add **no** security headers.
+Verified live (`curl -sI https://www.verdebliss.com/`):
+- `x-frame-options: DENY` ✅
+- `referrer-policy: strict-origin-when-cross-origin` ✅
+- `x-content-type-options: nosniff` ✅
+- `permissions-policy: accelerometer=(), ...` ✅
+- `strict-transport-security: max-age=63072000; includeSubDomains; preload` ✅
+- `cross-origin-opener-policy: same-origin` ✅
+- `cross-origin-resource-policy: same-site` ✅
+- `x-xss-protection` — absent ✅
 
 ### 8.2 Apex redirect — ✅ fixed (308, June 2026)
 
 Updated to 308 (permanent) in Vercel. `proxy.ts` 308 remains as defence-in-depth.
 Crawlers will now consolidate link-equity to `www.verdebliss.com`.
 
-### 8.3 robots.txt managed content
+### 8.3 robots.txt managed content — left as-is (June 2026)
 
-Cloudflare's "managed robots.txt" prepends a block that:
-
-- emits `Content-Signal:` lines (non-standard; Lighthouse flags the file invalid),
-- creates a **duplicate `User-agent: *` group** ahead of ours — RFC 9309
-  parsers that take the first matching group see only `Allow: /` and ignore
-  our `Disallow: /checkout`, `/account`, `/api/` rules (Google merges groups,
-  others may not),
-- fully blocks GPTBot / ClaudeBot / CCBot / Amazonbot etc., which removes the
-  brand from AI answer engines — a real discovery channel for D2C skincare.
-
-Decision needed: if AI-assistant visibility is wanted, turn OFF
-**Settings → Bots → Managed robots.txt** (and optionally keep `ai-train=no`
-semantics via our own robots source). If blocking is intentional, leave it but
-accept the Lighthouse robots-txt failure and first-group parser caveat.
+No performance or security impact. The known trade-offs (Lighthouse robots-txt
+validation failure, duplicate `User-agent: *` group, AI bot blocking) are
+accepted for now. Revisit if AI-search visibility becomes a priority.
 
 ### 8.4 Known console noise (no action)
 
