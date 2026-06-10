@@ -219,13 +219,10 @@ Live responses currently serve headers that contradict `next.config.ts`:
 The origin already sends a complete, audited header set. Any header shaping in
 two places will drift again — Cloudflare should add **no** security headers.
 
-### 8.2 Apex redirect must be permanent (301/308, currently 307)
+### 8.2 Apex redirect — ✅ fixed (308, June 2026)
 
-`https://verdebliss.com/` answers **307** at the edge before `proxy.ts`'s 308
-ever runs. 307 is *temporary* — crawlers keep probing the apex and signal
-consolidation to `www` is weakened. Fix in Rules → Redirect Rules (or Bulk
-Redirects): apex → `https://www.verdebliss.com$1`, status **301**, preserve
-path + query. Keep the `proxy.ts` 308 as defence-in-depth.
+Updated to 308 (permanent) in Vercel. `proxy.ts` 308 remains as defence-in-depth.
+Crawlers will now consolidate link-equity to `www.verdebliss.com`.
 
 ### 8.3 robots.txt managed content
 

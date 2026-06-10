@@ -210,6 +210,38 @@ export function proxy(request: NextRequest) {
   // Prevents the browser from DNS-prefetching linked domains, which would leak
   // user browsing patterns to external DNS resolvers. Aligns with privacy-first brand.
   response.headers.set('X-DNS-Prefetch-Control', 'off')
+  // Security headers that next.config.ts defines but that the middleware intercept
+  // prevents from reaching the client (next.config.ts headers() only apply when no
+  // middleware rewrites the response pipeline). Kept in sync with next.config.ts.
+  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-site')
+  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+  response.headers.set(
+    'Permissions-Policy',
+    [
+      'accelerometer=()',
+      'autoplay=()',
+      'camera=()',
+      'display-capture=()',
+      'encrypted-media=()',
+      'fullscreen=(self)',
+      'geolocation=()',
+      'gyroscope=()',
+      'magnetometer=()',
+      'microphone=()',
+      'midi=()',
+      'payment=(self "https://checkout.razorpay.com")',
+      'picture-in-picture=()',
+      'publickey-credentials-get=()',
+      'sync-xhr=()',
+      'usb=()',
+      'xr-spatial-tracking=()',
+      'interest-cohort=()',
+    ].join(', ')
+  )
   // NOTE: Cross-Origin-Embedder-Policy is intentionally absent. Razorpay
   // Checkout runs in a cross-origin iframe and COEP can break payment embed
   // behavior. Track this in docs/security-follow-ups.md and re-evaluate once
