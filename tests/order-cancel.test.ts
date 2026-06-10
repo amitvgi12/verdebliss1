@@ -22,6 +22,14 @@ vi.mock('@/lib/csrf', () => ({
   requireSameOriginRequest: mocks.requireSameOriginRequest,
 }))
 
+vi.mock('@/lib/revalidate-products', () => ({
+  scheduleProductsRevalidation: vi.fn(),
+}))
+
+vi.mock('@/lib/observability', () => ({
+  reportError: vi.fn(),
+}))
+
 import { POST } from '@/app/api/orders/cancel/route'
 
 const baseOrder = {
@@ -81,6 +89,10 @@ describe('order cancellation API', () => {
       expect.objectContaining({ status: 'Cancelled', payment_status: 'cancelled' })
     )
     expect(supabase.insert).not.toHaveBeenCalled()
+    // Immediate cancellation must return stock via the idempotent restock RPC.
+    expect(supabase.rpc).toHaveBeenCalledWith('restock_order_inventory', {
+      p_order_id: 'order-1',
+    })
   })
 
   it('moves a prepaid order to cancellation review and queues a refund request', async () => {
@@ -108,6 +120,9 @@ describe('order cancellation API', () => {
         details: expect.objectContaining({ source: 'website_order_cancellation' }),
       })
     )
+    // Prepaid orders restock only when staff confirm the cancellation —
+    // dispatch may already be in progress.
+    expect(supabase.rpc).not.toHaveBeenCalled()
   })
 })
 
@@ -146,8 +161,10 @@ function createSupabaseMock({
   }
   const insert = vi.fn().mockResolvedValue({ error: null })
   const refundInsertBuilder = { insert }
+  const rpc = vi.fn().mockResolvedValue({ data: [{ restocked: true, lines: 1 }], error: null })
 
   const client = {
+    rpc,
     from: vi.fn((table: string) => {
       if (table === 'orders') {
         return {
@@ -167,5 +184,5 @@ function createSupabaseMock({
     }),
   }
 
-  return { client, update, insert }
+  return { client, update, insert, rpc }
 }

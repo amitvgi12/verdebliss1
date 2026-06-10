@@ -173,12 +173,13 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
               onClick={decline}
             />
 
-            {/* Modal */}
-            <div className="pointer-events-none fixed inset-0 z-[300] flex items-center justify-center px-4 py-6">
+            {/* Modal — bottom sheet on mobile so the hero / product imagery
+                stays visible behind it; centred card from sm: up. */}
+            <div className="pointer-events-none fixed inset-0 z-[300] flex items-end justify-center sm:items-center sm:px-4 sm:py-6">
               <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 24 }}
                 transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                 ref={dialogRef}
                 role="dialog"
@@ -186,7 +187,7 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
                 aria-labelledby="cookie-preferences-title"
                 aria-describedby="cookie-preferences-description"
                 tabIndex={-1}
-                className="pointer-events-auto flex max-h-[min(88vh,680px)] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-[#E2D6C8] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] focus:outline-none"
+                className="pointer-events-auto flex max-h-[min(62vh,680px)] w-full max-w-full flex-col overflow-hidden rounded-t-2xl border border-[#E2D6C8] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] focus:outline-none sm:max-h-[min(88vh,680px)] sm:max-w-[480px] sm:rounded-2xl"
               >
                 {/* Header */}
                 <div className="relative flex flex-shrink-0 items-start gap-3 border-b border-[#EDE5DA] px-6 pb-4 pt-5">
@@ -230,16 +231,18 @@ export default function CookieConsent({ initialOpen = false }: CookieConsentProp
 
                     return (
                       <div key={cat.id} className="border-b border-[#F0EAE0] last:border-b-0">
-                        <div className="flex w-full items-center gap-3 px-6 py-3.5 transition hover:bg-[#FAFAF8]">
+                        <div className="flex w-full items-center gap-3 px-6 transition hover:bg-[#FAFAF8]">
                           <span id={`cookie-category-${cat.id}-description`} className="sr-only">
                             {cat.description}
                           </span>
+                          {/* Row padding lives on the button so the expand
+                              control is a ≥44px touch target (WCAG 2.5.8). */}
                           <button
                             type="button"
                             onClick={() => setOpenCategory(isOpen ? null : cat.id)}
                             aria-expanded={isOpen}
                             aria-controls={`cookie-category-${cat.id}`}
-                            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 border-none bg-transparent p-0 text-left"
+                            className="flex min-h-[44px] min-w-0 flex-1 cursor-pointer items-center gap-3 border-none bg-transparent py-3.5 pl-0 pr-0 text-left"
                           >
                             <ChevronRight
                               size={15}

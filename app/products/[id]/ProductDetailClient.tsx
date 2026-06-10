@@ -483,6 +483,7 @@ export default function ProductDetailClient({
 
             <ProductPurchaseActions
               productName={p.name}
+              priceLabel={priceAvailable ? `₹${priceOffer.price.toLocaleString()}` : null}
               cartQty={cartItem?.qty ?? null}
               maxQty={maxQty}
               stockOut={stockOut}

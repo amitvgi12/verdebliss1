@@ -199,3 +199,60 @@ Cloudflare's "Pause Cloudflare on this site" is a single click. DNS still
 resolves to Vercel directly. The `CF_ORIGIN_SECRET` proxy check **must
 not** activate when Cloudflare is paused — keep `CF_ORIGIN_SECRET` unset and
 `CF_ORIGIN_GATE_REQUIRED` empty/false in the rollback environment.
+
+## Step 8 — Dashboard drift fixes (June 2026 audit)
+
+The June 2026 production audit found the Cloudflare dashboard overriding or
+contradicting the app's own configuration. These are **dashboard actions** —
+the repo is already correct; do not "fix" them in code.
+
+### 8.1 Remove security-header overrides (Transform Rules → Modify Response Header)
+
+Live responses currently serve headers that contradict `next.config.ts`:
+
+| Header              | Live (Cloudflare)        | App config (correct)              | Action |
+| ------------------- | ------------------------ | --------------------------------- | ------ |
+| `X-XSS-Protection`  | `1; mode=block`          | intentionally absent (deprecated; can introduce vulns in old browsers) | delete the transform rule |
+| `Referrer-Policy`   | `same-origin`            | `strict-origin-when-cross-origin` | delete the transform rule |
+| `X-Frame-Options`   | `SAMEORIGIN`             | `DENY` (+ CSP `frame-ancestors 'none'`) | delete the transform rule |
+
+The origin already sends a complete, audited header set. Any header shaping in
+two places will drift again — Cloudflare should add **no** security headers.
+
+### 8.2 Apex redirect must be permanent (301/308, currently 307)
+
+`https://verdebliss.com/` answers **307** at the edge before `proxy.ts`'s 308
+ever runs. 307 is *temporary* — crawlers keep probing the apex and signal
+consolidation to `www` is weakened. Fix in Rules → Redirect Rules (or Bulk
+Redirects): apex → `https://www.verdebliss.com$1`, status **301**, preserve
+path + query. Keep the `proxy.ts` 308 as defence-in-depth.
+
+### 8.3 robots.txt managed content
+
+Cloudflare's "managed robots.txt" prepends a block that:
+
+- emits `Content-Signal:` lines (non-standard; Lighthouse flags the file invalid),
+- creates a **duplicate `User-agent: *` group** ahead of ours — RFC 9309
+  parsers that take the first matching group see only `Allow: /` and ignore
+  our `Disallow: /checkout`, `/account`, `/api/` rules (Google merges groups,
+  others may not),
+- fully blocks GPTBot / ClaudeBot / CCBot / Amazonbot etc., which removes the
+  brand from AI answer engines — a real discovery channel for D2C skincare.
+
+Decision needed: if AI-assistant visibility is wanted, turn OFF
+**Settings → Bots → Managed robots.txt** (and optionally keep `ai-train=no`
+semantics via our own robots source). If blocking is intentional, leave it but
+accept the Lighthouse robots-txt failure and first-group parser caveat.
+
+### 8.4 Known console noise (no action)
+
+- `401` from `challenges.cloudflare.com/.../pat/...` — Cloudflare's Private
+  Access Token probe; 401 is the *designed* fallback path on browsers without
+  PAT support. Not an app error.
+- `Permissions policy violation: picture-in-picture` — the challenge-platform
+  script probes features our deliberately strict `Permissions-Policy` denies.
+  Keep the policy strict.
+- Scrape Shield's `email-decode.min.js` is injected by Cloudflare on every
+  page; disable under Scrape Shield → Email Address Obfuscation if the extra
+  third-party script is unwanted (emails on the site are already rendered from
+  env-driven constants).

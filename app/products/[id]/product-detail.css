@@ -373,3 +373,78 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Sticky mobile add-to-cart ─────────────────────────────────────────────
+   Shown only under 768px and only once the in-page action row has scrolled
+   above the viewport (class toggled by ProductPurchaseActions). Surface tone
+   matches the page canvas; the chat FAB lifts above the bar via :has(). */
+.pdp-sticky-atc {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .pdp-sticky-atc--visible {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(253, 250, 246, 0.96);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid #e6ddd1;
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.08);
+  }
+
+  .pdp-sticky-atc__meta {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .pdp-sticky-atc__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1c221e;
+  }
+
+  .pdp-sticky-atc__price {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2d4a32;
+  }
+
+  .pdp-sticky-atc__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+    height: 48px;
+    padding: 0 22px;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.25s;
+  }
+
+  .pdp-sticky-atc__button:disabled {
+    cursor: not-allowed;
+  }
+
+  body:has(.pdp-sticky-atc--visible) .chat-fab {
+    bottom: 88px;
+  }
+}

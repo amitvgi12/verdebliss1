@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isRateLimited } from '@/lib/rate-limit'
 import { requireSameOriginRequest } from '@/lib/csrf'
+import { CheckoutValidationError } from '@/lib/commerce'
 import {
   createSupabaseAdmin,
   getUserFromAuthorizationHeader,
@@ -29,9 +30,11 @@ export async function POST(request: Request) {
     const body = await request.json()
     const reason = String(body?.reason ?? '').trim()
     const orderId = String(body?.orderId ?? '').trim()
-    if (!orderId) throw new Error('Please select an order for the refund request')
+    if (!orderId) throw new CheckoutValidationError('Please select an order for the refund request')
     if (reason.length < 10 || reason.length > 2000) {
-      throw new Error('Please provide a refund reason between 10 and 2000 characters')
+      throw new CheckoutValidationError(
+        'Please provide a refund reason between 10 and 2000 characters'
+      )
     }
 
     const supabase = createSupabaseAdmin()
@@ -45,10 +48,11 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
       .maybeSingle()
 
+    // Raw DB errors stay internal; eligibility messages are customer-safe.
     if (orderError) throw new Error(orderError.message)
-    if (!order) throw new Error('Order not found for your account')
+    if (!order) throw new CheckoutValidationError('Order not found for your account')
     const ineligibilityReason = getRefundIneligibilityReason(order)
-    if (ineligibilityReason) throw new Error(ineligibilityReason)
+    if (ineligibilityReason) throw new CheckoutValidationError(ineligibilityReason)
 
     const { data: existing, error: existingError } = await supabase
       .from('refunds')
@@ -58,7 +62,8 @@ export async function POST(request: Request) {
       .maybeSingle()
 
     if (existingError) throw new Error(existingError.message)
-    if (existing) throw new Error('A refund request is already open for this order')
+    if (existing)
+      throw new CheckoutValidationError('A refund request is already open for this order')
 
     const { error } = await supabase.from('refunds').insert({
       user_id: user.id,
@@ -76,9 +81,13 @@ export async function POST(request: Request) {
     if (error) throw new Error(error.message)
     return NextResponse.json({ ok: true })
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unable to request refund' },
-      { status: 400 }
-    )
+    console.error('[refunds/request]', error)
+    // Echo only customer-safe validation messages; raw Supabase/Postgres
+    // errors map to a generic message so internals never reach the client.
+    const responseError =
+      error instanceof CheckoutValidationError
+        ? error.message
+        : 'Unable to request a refund right now. Please try again or contact support.'
+    return NextResponse.json({ error: responseError }, { status: 400 })
   }
 }

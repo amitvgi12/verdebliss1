@@ -138,14 +138,18 @@ export default async function Home() {
 
           <div className="premium-hero__visual" aria-label="Featured VerdeBliss product editorial">
             <div className="premium-hero__product">
+              {/* LCP element: optimized (AVIF/WebP, right-sized srcset) and
+                  fetchpriority=high so the preload wins bandwidth on mobile.
+                  Keep this the ONLY priority image in the initial viewport —
+                  a second image preload measurably delays LCP on 4G. */}
               <Image
                 src="/images/products/serum.webp"
                 alt="VerdeBliss Bakuchiol Renewal Serum — glass dropper bottle with plant-derived bakuchiol retinol alternative"
                 width={599}
                 height={900}
                 priority
-                unoptimized
-                sizes="(max-width: 768px) 90vw, 480px"
+                fetchPriority="high"
+                sizes="(max-width: 768px) 80vw, 480px"
                 className="h-full w-full object-cover"
               />
             </div>
@@ -169,9 +173,11 @@ export default async function Home() {
           <p>{TRUST_METRICS.collectionCopy}</p>
         </div>
         <FadeIn delay={0.1}>
+          {/* No priority on collection cards: the grid sits below the fold on
+              mobile, and its preload was competing with the hero LCP image. */}
           <div className="product-grid product-grid-compact">
-            {featured.map((p, i) => (
-              <ProductCard key={p.id} product={p} priority={i === 0} />
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </FadeIn>

@@ -100,8 +100,9 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true, tracking_url: tracking_url ?? null })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Internal error'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    // Log the detail server-side; never echo raw DB/internal errors.
+    console.error('[admin/orders/track] PATCH', err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
 
@@ -133,7 +134,7 @@ export async function GET(request: Request) {
       couriers: [...Object.keys(COURIER_TRACKING_BASE), ...NO_URL_COURIERS],
     })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Internal error'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    console.error('[admin/orders/track] GET', err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }

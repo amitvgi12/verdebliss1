@@ -25,7 +25,7 @@ import { retryPendingReconciliations } from '@/lib/commerce'
  * given result at the terminal call (.single / .limit / direct await). */
 function queryChain(terminal: () => Promise<unknown>) {
   const chain: Record<string, unknown> = {}
-  const methods = ['select', 'eq', 'in', 'order', 'neq', 'not', 'is', 'single']
+  const methods = ['select', 'eq', 'lt', 'in', 'order', 'neq', 'not', 'is', 'single']
   for (const m of methods) chain[m] = vi.fn(() => chain)
   chain['limit'] = vi.fn(terminal)
   chain['update'] = vi.fn(() => chain)
@@ -100,6 +100,7 @@ describe('retryPendingReconciliations', () => {
             return {
               select: vi.fn().mockReturnThis(),
               eq: vi.fn().mockReturnThis(),
+              lt: vi.fn().mockReturnThis(),
               in: vi.fn().mockReturnThis(),
               order: vi.fn().mockReturnThis(),
               limit: vi.fn().mockResolvedValue({ data: [pendingRow], error: null }),

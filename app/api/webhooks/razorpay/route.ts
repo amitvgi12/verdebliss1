@@ -73,7 +73,6 @@ export async function POST(request: Request) {
   })
 
   let reconciliation: 'not_applicable' | 'completed' | 'pending' = 'not_applicable'
-  let reconciliationError: string | undefined
 
   // Razorpay retries webhooks. Once the signature is valid and the event is
   // recorded, downstream business reconciliation should not create a 400 retry
@@ -102,7 +101,8 @@ export async function POST(request: Request) {
       reconciliation = 'completed'
     } catch (error) {
       reconciliation = 'pending'
-      reconciliationError = error instanceof Error ? error.message : 'Webhook reconciliation failed'
+      const reconciliationError =
+        error instanceof Error ? error.message : 'Webhook reconciliation failed'
 
       // Persist to DLQ so an admin / cron can retry without racing Razorpay.
       await recordReconciliationFailure({
@@ -123,5 +123,7 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, eventType, reconciliation, reconciliationError })
+  // The raw failure reason stays in the DLQ/logs — it can contain internal
+  // DB/Razorpay detail and does not belong in the HTTP response.
+  return NextResponse.json({ ok: true, eventType, reconciliation })
 }

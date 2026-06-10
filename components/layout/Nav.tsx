@@ -75,9 +75,11 @@ export default function Nav({ products }: { products: Product[] }) {
       <nav className="sticky top-0 z-[100] border-b border-border bg-bg/95 px-4 backdrop-blur-md">
         <div className="site-container flex h-[52px] items-center gap-2 sm:gap-3">
           {/* Logo */}
+          {/* Accessible name must contain the visible label text (WCAG 2.5.3
+              Label in Name) — voice-control users say what they see. */}
           <Link
             href="/"
-            aria-label="VerdeBliss home"
+            aria-label="VerdeBliss Cosmetics — home"
             onClick={closeMenus}
             className="group flex h-full flex-shrink-0 items-center gap-2.5 text-text transition hover:text-forest"
           >
@@ -184,7 +186,7 @@ export default function Nav({ products }: { products: Product[] }) {
               type="button"
               onClick={() => setSearchOpen(false)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={menuOpen ? 'true' : 'false'}
+              aria-expanded={menuOpen}
               aria-haspopup="dialog"
               popoverTarget="mobile-navigation-menu"
               popoverTargetAction="toggle"

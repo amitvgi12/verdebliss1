@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { requireSameOriginRequest } from '@/lib/csrf'
 import { isRateLimited } from '@/lib/rate-limit'
+import { CheckoutValidationError } from '@/lib/commerce'
+import { reportError } from '@/lib/observability'
+import { scheduleProductsRevalidation } from '@/lib/revalidate-products'
 import {
   createSupabaseAdmin,
   getUserFromAuthorizationHeader,
@@ -36,7 +39,7 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const orderId = String(body?.orderId ?? '').trim()
-    if (!orderId) throw new Error('Please select an order to cancel')
+    if (!orderId) throw new CheckoutValidationError('Please select an order to cancel')
 
     const supabase = createSupabaseAdmin()
     const { data: order, error: orderError } = await supabase
@@ -46,18 +49,23 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
       .maybeSingle()
 
+    // Raw DB errors stay internal; the customer-facing message is generic.
     if (orderError) throw new Error(orderError.message)
-    if (!order) throw new Error('Order not found for your account')
+    if (!order) throw new CheckoutValidationError('Order not found for your account')
 
     const status = normaliseStatus((order as OrderRow).status)
     if (status.includes('delivered')) {
-      throw new Error('Delivered orders cannot be cancelled. Please use the refund request flow.')
+      throw new CheckoutValidationError(
+        'Delivered orders cannot be cancelled. Please use the refund request flow.'
+      )
     }
     if (status.includes('cancel')) {
-      throw new Error('This order is already cancelled or cancellation is in progress.')
+      throw new CheckoutValidationError(
+        'This order is already cancelled or cancellation is in progress.'
+      )
     }
     if (status.includes('refunded')) {
-      throw new Error('This order has already been refunded.')
+      throw new CheckoutValidationError('This order has already been refunded.')
     }
 
     const typedOrder = order as OrderRow
@@ -81,6 +89,25 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
 
     if (updateError) throw new Error(updateError.message)
+
+    // Immediately-cancelled (unpaid/COD) orders return their stock now.
+    // Prepaid orders restock when staff confirm the 'Cancellation Requested'
+    // state (dispatch may already be in progress) — see the
+    // restock_order_inventory migration notes. Best-effort: a restock failure
+    // must not undo the customer's cancellation, so it is reported, not thrown.
+    if (!isPrepaid) {
+      const { error: restockError } = await supabase.rpc('restock_order_inventory', {
+        p_order_id: typedOrder.id,
+      })
+      if (restockError) {
+        reportError('order_cancellation_restock_failed', {
+          orderId: typedOrder.id,
+          reason: restockError.message,
+        })
+      } else {
+        scheduleProductsRevalidation()
+      }
+    }
 
     let refundQueued = false
     if (isPrepaid) {
@@ -121,10 +148,15 @@ export async function POST(request: Request) {
         : 'Order cancelled. No payment will be collected for this order.',
     })
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unable to cancel order' },
-      { status: 400 }
-    )
+    console.error('[orders/cancel]', error)
+    // Echo only customer-safe validation messages; anything else (raw
+    // Supabase/Postgres errors, config issues) maps to a generic message so
+    // internal details never reach customer-facing output.
+    const responseError =
+      error instanceof CheckoutValidationError
+        ? error.message
+        : 'Unable to cancel this order right now. Please try again or contact support.'
+    return NextResponse.json({ error: responseError }, { status: 400 })
   }
 }
 

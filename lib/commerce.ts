@@ -597,9 +597,13 @@ export async function completeRazorpayCheckout(input: {
     }
   }
 
-  if (session.expires_at && new Date(session.expires_at).getTime() < Date.now()) {
-    throw new CheckoutValidationError('Checkout session expired. Please start checkout again.')
-  }
+  // Session expiry is deliberately NOT enforced here. Expiry exists to stop
+  // *new* payments from starting against a stale cart (checked at order
+  // creation); a payment that already exists for this session is verified
+  // below against the session's own amount/currency/order id, so finalising it
+  // is always safer than orphaning captured money. Enforcing expiry here used
+  // to deadlock reconciliation: customer pays at minute 29, webhook lands at
+  // minute 31 → order can never be created, DLQ retries fail forever.
   assertOrderItemsHavePrices(session.cart_snapshot)
 
   const payment = input.payment ?? (await fetchRazorpayPayment(input.razorpayPaymentId))
@@ -745,6 +749,11 @@ export async function retryPendingReconciliations(): Promise<void> {
   if (!hasSupabaseAdminEnv()) return
 
   const MAX_RETRY_ROWS = 5
+  // Rows that keep failing are left for the daily reconciliation cron /
+  // manual review. Without this cap, a handful of permanently-failing rows
+  // (oldest-first ordering) would occupy every retry slot and starve newer,
+  // recoverable failures.
+  const MAX_RETRY_COUNT = 10
 
   try {
     const supabase = createSupabaseAdmin()
@@ -752,6 +761,7 @@ export async function retryPendingReconciliations(): Promise<void> {
       .from('payment_reconciliation_failures')
       .select('id, event_type, provider_order_id, provider_payment_id, payload, retry_count')
       .eq('resolved', false)
+      .lt('retry_count', MAX_RETRY_COUNT)
       .in('event_type', ['payment.captured', 'payment.authorized'])
       .order('created_at', { ascending: true })
       .limit(MAX_RETRY_ROWS)

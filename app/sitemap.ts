@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { PUBLIC_STATIC_ROUTES } from '@/constants/publicRoutes'
 import { getProductsServer } from '@/lib/products-server'
 import { productPath } from '@/lib/seo'
+import { ARTICLES } from './blog/articles'
 import routeModified from './route-modified.json'
 
 const BASE_URL = 'https://www.verdebliss.com'
@@ -42,5 +43,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  return [...routes, ...productRoutes]
+  // Journal articles share the ARTICLES source with /blog/[slug], so a new
+  // post can never ship without a sitemap entry.
+  const blogRoutes: MetadataRoute.Sitemap = Object.entries(ARTICLES).map(([slug, article]) => ({
+    url: `${BASE_URL}/blog/${slug}`,
+    lastModified: new Date(article.published),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [...routes, ...productRoutes, ...blogRoutes]
 }

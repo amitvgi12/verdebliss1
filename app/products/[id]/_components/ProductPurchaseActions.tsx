@@ -1,11 +1,13 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, Heart, Minus, Plus, Share2, ShoppingBag, Truck } from 'lucide-react'
 import { C } from '@/constants/theme'
 
 interface ProductPurchaseActionsProps {
   productName: string
+  priceLabel?: string | null
   cartQty: number | null
   maxQty: number
   stockOut: boolean
@@ -21,6 +23,7 @@ interface ProductPurchaseActionsProps {
 
 export default function ProductPurchaseActions({
   productName,
+  priceLabel = null,
   cartQty,
   maxQty,
   stockOut,
@@ -37,9 +40,30 @@ export default function ProductPurchaseActions({
   const inCart = showCartQty
   const primaryDisabled = stockOut || !priceAvailable
 
+  // Sticky mobile bar: appears once the main action row scrolls above the
+  // viewport so Add to Cart is always one tap away on long PDPs. Rendering is
+  // mobile-only via .pdp-sticky-atc CSS (product-detail.css).
+  const actionRowRef = useRef<HTMLDivElement | null>(null)
+  const [showSticky, setShowSticky] = useState(false)
+
+  useEffect(() => {
+    const row = actionRowRef.current
+    if (!row || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return
+        setShowSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0)
+      },
+      { threshold: 0 }
+    )
+    observer.observe(row)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <>
       <div
+        ref={actionRowRef}
         style={{
           display: 'flex',
           gap: 8,
@@ -242,6 +266,47 @@ export default function ProductPurchaseActions({
         <Truck size={13} />
         Free shipping on orders above ₹499 · Ships in 2–3 business days
       </div>
+
+      {/* Mobile-only sticky bar (display gated in product-detail.css).
+          Mounted on demand so the duplicate CTA never exists in the
+          accessibility tree while the in-page action row is visible. */}
+      {showSticky && (
+        <div className="pdp-sticky-atc pdp-sticky-atc--visible">
+          <div className="pdp-sticky-atc__meta">
+            <span className="pdp-sticky-atc__name">{productName}</span>
+            {priceLabel && <span className="pdp-sticky-atc__price">{priceLabel}</span>}
+          </div>
+          <button
+            type="button"
+            onClick={inCart ? onGoToCart : onAdd}
+            disabled={primaryDisabled}
+            aria-label={
+              stockOut
+                ? `${productName} is sold out`
+                : !priceAvailable
+                  ? `${productName} price temporarily unavailable`
+                  : inCart
+                    ? `View cart — ${productName} is in your cart`
+                    : `Add ${productName} to cart`
+            }
+            className="pdp-sticky-atc__button"
+            style={{
+              background: primaryDisabled ? C.light : inCart ? C.sage : C.forest,
+            }}
+          >
+            <ShoppingBag size={15} aria-hidden />
+            {stockOut
+              ? 'Sold out'
+              : !priceAvailable
+                ? 'Price unavailable'
+                : inCart
+                  ? 'View Cart'
+                  : added
+                    ? 'Added!'
+                    : 'Add to Cart'}
+          </button>
+        </div>
+      )}
     </>
   )
 }

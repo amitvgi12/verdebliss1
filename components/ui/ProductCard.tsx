@@ -60,10 +60,13 @@ export default function ProductCard({
               : `View ${p.name}, ${PRICE_UNAVAILABLE_COPY.toLowerCase()}`
           }
         >
+          {/* Grid is 2-col on mobile (~45vw per card incl. gaps) and capped at
+              ~280px columns on desktop — keep this hint tight so the optimizer
+              serves the smallest sufficient srcset candidate. */}
           <ProductImage
             product={p}
             priority={priority}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 280px"
           />
         </Link>
 
@@ -196,7 +199,7 @@ export default function ProductCard({
           type="button"
           onClick={() => compareToggle(p)}
           disabled={compareDisabled}
-          aria-pressed={inCompare ? true : false}
+          aria-pressed={inCompare}
           aria-label={
             inCompare
               ? `Remove ${p.name} from comparison`

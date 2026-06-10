@@ -33,8 +33,21 @@ export async function generateStaticParams() {
   return products.filter((p) => hasProductPrice(p)).map((p) => ({ id: p.slug ?? p.id }))
 }
 
+// Cheap pre-filter for scanner noise: every legitimate route param is a
+// kebab-case slug, a numeric static id, or a UUID. Anything else (".php",
+// encoded traversal, query junk) 404s without paying for a DB round-trip or
+// a cold serverless render — observed garbage-slug requests cost ~4s each.
+const ROUTE_PARAM_RE = /^[a-z0-9][a-z0-9-]{0,79}$/i
+
+function isPlausibleProductParam(id: string): boolean {
+  return ROUTE_PARAM_RE.test(id)
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  if (!isPlausibleProductParam(id)) {
+    return { title: 'Product Not Found', robots: { index: false, follow: false } }
+  }
   const p = await getProductServer(id)
   const e2eMode = Boolean(process.env.E2E_STATIC_CATALOGUE)
   if (
@@ -79,6 +92,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  if (!isPlausibleProductParam(id)) notFound()
   const product = await getProductServer(id)
   const e2eMode = Boolean(process.env.E2E_STATIC_CATALOGUE)
 
