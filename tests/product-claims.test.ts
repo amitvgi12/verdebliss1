@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   auditProductDescription,
+  getProductBadgeKey,
+  getProductBadgeKeys,
   normalizeProductBadgeLabel,
   normalizeProductBadges,
 } from '@/lib/product-claims'
@@ -166,5 +168,42 @@ describe('product claim normalization', () => {
       'Organic botanicals · evidence review',
       'No animal testing · audit underway',
     ])
+  })
+})
+
+describe('stable badge keys — matching independent of display copy', () => {
+  it('resolves raw DB vocabulary to a stable key', () => {
+    expect(getProductBadgeKey('Cruelty-Free')).toBe('no-animal-testing')
+    expect(getProductBadgeKey('cruelty-free*')).toBe('no-animal-testing')
+    expect(getProductBadgeKey('Vegan-Friendly')).toBe('vegan')
+    expect(getProductBadgeKey('Certified Organic')).toBe('organic')
+  })
+
+  it('resolves normalized display labels to the same key (so PDP matching survives normalization)', () => {
+    expect(getProductBadgeKey('No animal testing · audit underway')).toBe('no-animal-testing')
+    expect(getProductBadgeKey('Vegan-friendly · evidence review')).toBe('vegan')
+    expect(getProductBadgeKey('Organic botanicals · evidence review')).toBe('organic')
+  })
+
+  it('returns null for unknown or empty labels', () => {
+    expect(getProductBadgeKey('Some Marketing Phrase')).toBeNull()
+    expect(getProductBadgeKey('  ')).toBeNull()
+  })
+
+  it('collects the set of stable keys present on a product (raw or normalized)', () => {
+    const keys = getProductBadgeKeys([
+      'No animal testing · audit underway',
+      'Vegan',
+      'Unrecognized',
+    ])
+    expect(keys.has('no-animal-testing')).toBe(true)
+    expect(keys.has('vegan')).toBe(true)
+    expect(keys.has('organic')).toBe(false)
+    expect(keys.size).toBe(2)
+  })
+
+  it('tolerates null/undefined badge lists', () => {
+    expect(getProductBadgeKeys(null).size).toBe(0)
+    expect(getProductBadgeKeys(undefined).size).toBe(0)
   })
 })

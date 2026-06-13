@@ -93,25 +93,62 @@ export { FORBIDDEN_CLAIM_PATTERNS }
 
 // ---------------------------------------------------------------------------
 
-const BADGE_NORMALISATION: Record<string, string> = {
-  vegan: 'Vegan-friendly · evidence review',
-  'vegan-friendly': 'Vegan-friendly · evidence review',
-  'organic certified': 'Organic botanicals · evidence review',
-  'certified organic': 'Organic botanicals · evidence review',
-  'organic botanicals': 'Organic botanicals · evidence review',
-  'cruelty-free': 'No animal testing · audit underway',
-  'cruelty free': 'No animal testing · audit underway',
-  'cruelty-free*': 'No animal testing · audit underway',
+// Single source of truth for product claim badges. Every claim is one entry
+// carrying its stable `key`, the customer-facing `display` label, its
+// `disclosure`, and the raw DB `aliases` that normalize into it. The lookup maps
+// below are DERIVED from this list, so display copy lives in exactly one place
+// and downstream matching keys on the stable `key` (see getProductBadgeKey) —
+// never on display substrings, which a copy edit could silently break.
+export type ProductBadgeKey = 'vegan' | 'organic' | 'no-animal-testing'
+
+interface BadgeClaim {
+  key: ProductBadgeKey
+  display: string
+  disclosure: string
+  /** Raw DB vocabulary (lowercased) that normalizes into this claim. */
+  aliases: string[]
 }
 
-const BADGE_DISCLOSURES: Record<string, string> = {
-  'Vegan-friendly · evidence review':
-    'Vegan-friendly where formulation permits. Evidence status is published in the Trust Centre.',
-  'Organic botanicals · evidence review':
-    'Organic botanical ingredient positioning. Evidence file is in review.',
-  'No animal testing · audit underway':
-    'No animal testing is conducted or commissioned. Third-party audit status is published in the Trust Centre.',
-}
+const BADGE_CLAIMS: BadgeClaim[] = [
+  {
+    key: 'vegan',
+    display: 'Vegan-friendly · evidence review',
+    disclosure:
+      'Vegan-friendly where formulation permits. Evidence status is published in the Trust Centre.',
+    aliases: ['vegan', 'vegan-friendly'],
+  },
+  {
+    key: 'organic',
+    display: 'Organic botanicals · evidence review',
+    disclosure: 'Organic botanical ingredient positioning. Evidence file is in review.',
+    aliases: ['organic certified', 'certified organic', 'organic botanicals'],
+  },
+  {
+    key: 'no-animal-testing',
+    display: 'No animal testing · audit underway',
+    disclosure:
+      'No animal testing is conducted or commissioned. Third-party audit status is published in the Trust Centre.',
+    aliases: ['cruelty-free', 'cruelty free', 'cruelty-free*'],
+  },
+]
+
+// raw alias (lowercased) -> normalized display label
+const BADGE_NORMALISATION: Record<string, string> = Object.fromEntries(
+  BADGE_CLAIMS.flatMap((claim) => claim.aliases.map((alias) => [alias, claim.display]))
+)
+
+// normalized display label -> disclosure copy
+const BADGE_DISCLOSURES: Record<string, string> = Object.fromEntries(
+  BADGE_CLAIMS.map((claim) => [claim.display, claim.disclosure])
+)
+
+// any recognized form — raw alias OR normalized display label (lowercased) -> stable key
+const BADGE_KEY_BY_LABEL: Record<string, ProductBadgeKey> = Object.fromEntries(
+  BADGE_CLAIMS.flatMap((claim) => [
+    ...claim.aliases.map((alias) => [alias, claim.key] as const),
+    [claim.display.toLowerCase(), claim.key] as const,
+  ])
+)
 
 export function normalizeProductBadgeLabel(label: string): string | null {
   const key = label.trim().toLowerCase()
@@ -135,6 +172,26 @@ export function normalizeProductBadges(badges: string[] | null | undefined): str
 
 export function getProductBadgeDisclosure(label: string): string | undefined {
   return BADGE_DISCLOSURES[normalizeProductBadgeLabel(label) ?? label]
+}
+
+/**
+ * Resolve any badge string — raw DB vocabulary ('Cruelty-free*') or a normalized
+ * display label ('No animal testing · audit underway') — to its stable key, or
+ * null if it is not a recognized claim. Match on this key, never on display copy,
+ * so a label edit cannot silently break which products show which claim.
+ */
+export function getProductBadgeKey(label: string): ProductBadgeKey | null {
+  return BADGE_KEY_BY_LABEL[label.trim().toLowerCase()] ?? null
+}
+
+/** The set of stable claim keys present on a product's badges. */
+export function getProductBadgeKeys(badges: string[] | null | undefined): Set<ProductBadgeKey> {
+  const keys = new Set<ProductBadgeKey>()
+  for (const badge of badges ?? []) {
+    const key = getProductBadgeKey(badge)
+    if (key) keys.add(key)
+  }
+  return keys
 }
 
 export function normalizeProductClaims<T extends Product>(product: T): T {

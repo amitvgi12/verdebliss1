@@ -32,6 +32,7 @@ import {
   hasProductPrice,
 } from '@/lib/pricing'
 import { formatApprovedReviewCount } from '@/lib/review-copy'
+import { getProductBadgeKeys, type ProductBadgeKey } from '@/lib/product-claims'
 import type { ApprovedReview, ReviewAggregate } from '@/lib/products-server'
 import type { Product } from '@/types'
 
@@ -43,16 +44,26 @@ import RelatedProducts from './_components/RelatedProducts'
 import RoutineRecommendations from './_components/RoutineRecommendations'
 
 /* ── Positioning labels — not third-party certification claims ── */
-const CERTIFICATIONS = [
+interface Certification {
+  label: string
+  emoji: string
+  url: string
+  org: string
+  status: string
+  /** Stable claim keys (from lib/product-claims) that activate this row. */
+  matchKeys: ProductBadgeKey[]
+  /** Positioning rows shown on every PDP regardless of the product's claims. */
+  alwaysShow?: boolean
+}
+
+const CERTIFICATIONS: Certification[] = [
   {
     label: 'No animal testing stance',
     emoji: '🐰',
     url: '/certifications',
     org: 'No animal testing is conducted or commissioned; third-party audit status is published in the Trust Centre',
     status: 'Audit underway',
-    // Matches both the raw badge vocabulary ('Cruelty-free*') and the
-    // normalized customer label ('No animal testing · audit underway').
-    matches: ['cruelty', 'animal testing'],
+    matchKeys: ['no-animal-testing'],
   },
   {
     label: 'Vegan-friendly formula',
@@ -60,7 +71,7 @@ const CERTIFICATIONS = [
     url: '/certifications',
     org: 'Formula scope varies by SKU; evidence status is published in the Trust Centre',
     status: 'Evidence review',
-    matches: ['vegan'],
+    matchKeys: ['vegan'],
   },
   {
     label: 'Skin compatibility notes',
@@ -68,7 +79,8 @@ const CERTIFICATIONS = [
     url: '/certifications',
     org: 'Internal skin-compatibility assessment is complete; independent evidence file is in review',
     status: 'Evidence file',
-    matches: [],
+    matchKeys: [],
+    alwaysShow: true,
   },
   {
     label: 'Packaging documentation',
@@ -76,7 +88,8 @@ const CERTIFICATIONS = [
     url: '/certifications',
     org: 'Packaging material evidence and supplier documentation are being prepared for review',
     status: 'Evidence file',
-    matches: [],
+    matchKeys: [],
+    alwaysShow: true,
   },
 ]
 
@@ -227,14 +240,12 @@ export default function ProductDetailClient({
     ? { display: 'flex', flexDirection: 'column', gap: 0 }
     : { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'start' }
 
-  /* Applicable claim-status badges link to the Trust Centre without making certificate claims. */
-  const prodCerts = CERTIFICATIONS.filter((c) => {
-    if (c.label === 'Skin compatibility notes') return true
-    if (c.label === 'Packaging documentation') return true
-    return (p.badges ?? []).some((b: string) =>
-      c.matches.some((match) => b.toLowerCase().includes(match))
-    )
-  })
+  /* Applicable claim-status badges link to the Trust Centre without making certificate claims.
+   * Match on stable claim keys (not display substrings) so a badge copy edit can't drop a row. */
+  const badgeKeys = getProductBadgeKeys(p.badges)
+  const prodCerts = CERTIFICATIONS.filter(
+    (c) => c.alwaysShow || c.matchKeys.some((key) => badgeKeys.has(key))
+  )
 
   return (
     <div className="min-h-screen bg-bg" data-testid="pdp-shell">

@@ -30,8 +30,11 @@ Package manager: npm. Production truth: `main` branch.
   Order finalize is one atomic RPC; idempotency is triple-guarded. Don't trust client totals.
 - **GST is tax-INCLUSIVE.** Customer-facing copy must say "Inclusive of all taxes" /
   "MRP inclusive of all taxes" — never add a separate tax line at checkout.
-- **Badge matching is brittle** (substring on display strings). Prefer a stable
-  badge key/enum over matching display text.
+- **Badge matching keys off a stable enum, not display copy.** `lib/product-claims.ts`
+  holds one `BADGE_CLAIMS` source of truth (key + display + disclosure + raw aliases);
+  consumers match via `getProductBadgeKey`/`getProductBadgeKeys` (`ProductBadgeKey`).
+  Never re-introduce substring matching on display strings — a copy edit would
+  silently drop rows.
 - **Don't serialize the raw PRODUCTS array to the client.** Nav search uses the
   trimmed `PRODUCT_SEARCH_INDEX`; raw claim vocabulary must not reach the client.
 
@@ -42,7 +45,7 @@ Package manager: npm. Production truth: `main` branch.
   challenged. Verify live state via the **Vercel deployment URL**, not www.
 - Lenses: Solution Architect · UI/UX · Lead QA · Security · Performance ·
   SEO/Accessibility · D2C Commerce.
-- Prior full audit: `docs/audit/VerdeBliss_Production_Audit_2026.md`
+- Prior full audit: `docs/VerdeBliss_Production_Audit_2026.md`
 
 ## Launch gates (NOT in repo — manual/business actions)
 - [ ] Search Console: URL Inspection live test + submit sitemap.xml
