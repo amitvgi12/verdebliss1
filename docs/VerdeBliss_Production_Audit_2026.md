@@ -204,3 +204,54 @@ Language/conversion copy review delivered separately; headline: trust language i
 **Engineering note for the closing fix:** keyword-substring matching on badge *display strings* remains brittle by design — a future copy edit ("audit underway" → "audit complete") can silently re-break row matching. Recommended hardening: store a stable badge key/enum alongside display text and match on the key.
 
 Audit complete. Platform is launch-ready pending the business gates above.
+
+---
+
+## 13. v5 Refresh — post-fix re-audit (2026-06-13, `main` @ `d2c8b8a`)
+
+**Method:** code-verified this session (typecheck/lint/vitest + direct source review). Live facts (prod headers, GSTIN, Razorpay mode) carried from v3/v4 — not re-rendered this session. Build not run locally (fail-closed without legal env; verified via the gate trio).
+
+### Gates on merged `main`
+`tsc --noEmit` ✅ 0 · `eslint .` ✅ 0 · `vitest` ✅ **392/392** (51 files).
+
+### Delta since the last audited build (`8bd8794`) — all verified clean
+| Commit | Change | Status |
+|---|---|---|
+| `c4e960a` | Trim raw badge vocabulary out of the client RSC payload (`PRODUCT_SEARCH_INDEX`); fix latent PDP cert-row drop | ✅ complete |
+| `59ca6a3` / `a237dc9` | Declare Supabase base-role table grants to clear `db diff` drift | ✅ verified SAFE |
+| `d2c8b8a` | Badge matching now keys off a stable enum, not display copy | ✅ verified sound |
+
+### Base-role grants migration — scrutinized, SAFE
+`20260613000000_base_role_grants.sql` grants `select/insert/update/delete` to `anon`/`authenticated` on all tables. Neutralized by RLS: enabled on all 18 tables; sensitive tables are owner/staff-scoped or policy-less (default-deny); `products` is `for select` only; `profiles` UPDATE stays column-scoped (only `service_role` gets table UPDATE). schema.sql mirror matches the migration exactly.
+**Informational (defense-in-depth):** grants are broader than strictly needed and rely entirely on RLS default-deny — add a comment-guard so future *permissive* policies on currently policy-less tables are reviewed against the anon grant.
+
+### Architecture debt RETIRED — stable badge keys (closes the v12 note)
+`lib/product-claims.ts` now holds one `BADGE_CLAIMS` source of truth (stable `key` + display + disclosure + raw aliases); `BADGE_NORMALISATION`/`BADGE_DISCLOSURES` derive from it. `getProductBadgeKey`/`getProductBadgeKeys` resolve raw or normalized labels to the same `ProductBadgeKey`; the PDP `CERTIFICATIONS` filter matches on keys + an explicit `alwaysShow` flag (no more substring matching). Invalid match keys are now a compile error. +5 tests; CLAUDE.md invariant updated. The v12 recommendation ("store a stable badge key/enum and match on the key") is implemented.
+
+### Open-items ledger (updated)
+| Item | Status |
+|---|---|
+| Badge-match brittleness | ✅ **CLOSED** (v5) |
+| Customer copy pass — reframe compliance dialect (`· evidence review` / `· audit underway`) + per-product sensory/outcome line | 🟡 **OPEN** — the one remaining engineering/copy follow-up (see §14) |
+| `globals.css` split (F2) | 🟡 In progress (48K; `premium-*` blocked on visual-regression harness) |
+| Launch gates (live Razorpay keys + real txn/webhook, GSTIN portal verify, support line, Search Console) | ⏳ Business actions |
+
+**Posture:** Security A · Commerce A · Architecture A (debt retired) · QA A- · UI/UX A- · Performance B+ · SEO A- · Accessibility A-. No new defects.
+
+---
+
+## 14. Remediation plan — customer copy pass (#1, OPEN)
+
+Two sub-tasks. The badge reframe is **code** (uniform across products); the sensory line is **DB content** (production catalogue lives in Supabase, not `constants/products.ts`, which is a price-0 dev/E2E shell). Treated as a *plan, not an applied change*, because customer-facing **claims** are legally sensitive: the hedged wording is intentional honesty-architecture under India CDSCO / Consumer Protection rules, and `lib/product-claims.ts` already encodes `FORBIDDEN_CLAIM_PATTERNS`. Softening a claim past what is substantiated would create a non-compliant cosmetic claim — so final wording needs business/legal sign-off.
+
+**(A) Reframe the compliance-dialect badges** — keep the honesty hedge, drop the internal/process register:
+- `lib/product-claims.ts` → `BADGE_CLAIMS[].display` (+ matching `disclosure`):
+  - `Vegan-friendly · evidence review` → e.g. **`Vegan-friendly formula`** (disclosure retains "Evidence status published in our Trust Centre").
+  - `Organic botanicals · evidence review` → e.g. **`Made with organic botanicals`**.
+  - `No animal testing · audit underway` → e.g. **`We don't test on animals`** (keep "Independent audit status in our Trust Centre" in the disclosure). Do **not** shorten to "Cruelty-free" — that implies a certification not yet held.
+- `app/products/[id]/ProductDetailClient.tsx` → `CERTIFICATIONS[].status` (`'Audit underway'`, `'Evidence review'`, `'Evidence file'`) → customer-facing equivalents (e.g. `Verified in our Trust Centre`).
+- Stable keys are unaffected (matching is key-based); update the three badge display assertions in `tests/components.test.tsx` and `tests/product-claims.test.ts` to the new copy.
+
+**(B) Add one sensory/outcome line per product** — production content in Supabase `products.description` (mirror in `constants/products.ts` shells for dev/E2E). Either enrich `description` or add a dedicated `tagline` column + render it on the PDP hero and product card. Each line MUST pass `auditProductDescription()` (no "treats/cures/heals/anti-inflammatory/pregnancy-safe/reef-safe" patterns). Example for the Bakuchiol serum: *"Wake to skin that feels smoother and looks more even — a calmer morning in the mirror."*
+
+**Suggested sequence:** agree final badge wording → apply (A) + test updates in one commit → add/populate the per-product field (B) via a content migration, validated by the existing claim auditor.
