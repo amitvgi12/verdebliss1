@@ -50,7 +50,9 @@ const CERTIFICATIONS = [
     url: '/certifications',
     org: 'No animal testing is conducted or commissioned; third-party audit status is published in the Trust Centre',
     status: 'Audit underway',
-    matches: ['cruelty'],
+    // Matches both the raw badge vocabulary ('Cruelty-free*') and the
+    // normalized customer label ('No animal testing · audit underway').
+    matches: ['cruelty', 'animal testing'],
   },
   {
     label: 'Vegan-friendly formula',

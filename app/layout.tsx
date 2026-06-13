@@ -15,7 +15,7 @@ import {
   BUSINESS_COMPLIANCE,
   assertProductionBusinessCompliance,
 } from '@/constants/businessCompliance'
-import { PRODUCTS } from '@/constants/products'
+import { PRODUCT_SEARCH_INDEX } from '@/constants/products'
 
 assertProductionBusinessCompliance()
 
@@ -111,7 +111,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Initialize auth on client */}
         <AuthInitializerLoader />
         <MotionProvider>
-          <Nav products={PRODUCTS} />
+          <Nav products={PRODUCT_SEARCH_INDEX} />
           <main id="main-content">{children}</main>
           <Footer />
           <CartDrawerLoader />

@@ -207,7 +207,11 @@ test.describe('live smoke checks', () => {
     expect(html).toContain('/images/products/toner.webp')
     expect(html).toContain('sizes="(max-width: 1024px) 90vw, 560px"')
     expect(html).toContain('/og/products/green-tea-clarity-toner.jpg')
-    expect(html).toContain('Cruelty-free*')
+    // Raw badge vocabulary must never reach the client: the nav search index is
+    // trimmed (PRODUCT_SEARCH_INDEX) and product surfaces render only the
+    // normalized labels from lib/product-claims.ts.
+    expect(html).not.toContain('Cruelty-free*')
+    expect(html).not.toContain('Vegan-Friendly')
     expect(html).toContain('Certifications')
     expect(html).toContain('aria-controls="accordion-ingredients"')
     expect(html).toContain('aria-expanded="true"')

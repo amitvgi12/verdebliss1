@@ -1,4 +1,4 @@
-import type { Product } from '@/types'
+import type { Product, ProductSearchEntry } from '@/types'
 import { TIER_THRESHOLDS } from '@/lib/loyalty'
 
 // Static product shells for routes, tests, and non-price metadata.
@@ -135,6 +135,22 @@ export const PRODUCTS = [
     emoji: '🌙',
   },
 ] satisfies Product[]
+
+// Index for the nav search palette, shipped in every page's payload. Trimmed to
+// the fields the palette renders so the raw badge vocabulary above and the long
+// descriptions never reach the client (see ProductSearchEntry).
+export const PRODUCT_SEARCH_INDEX: ProductSearchEntry[] = PRODUCTS.map(
+  ({ id, slug, name, category, price, ingredient, bg_color, emoji }) => ({
+    id,
+    slug,
+    name,
+    category,
+    price,
+    ingredient,
+    bg_color,
+    emoji,
+  })
+)
 
 export const CATEGORIES = [
   'All',

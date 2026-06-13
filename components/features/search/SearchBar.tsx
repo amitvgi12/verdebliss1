@@ -6,11 +6,11 @@ import { Search, X, ArrowRight } from 'lucide-react'
 import { C } from '@/constants/theme'
 import { hasProductPrice } from '@/lib/pricing'
 import { productPath } from '@/lib/seo'
-import type { Product } from '@/types'
+import type { ProductSearchEntry } from '@/types'
 
 const STORAGE_KEY = 'verdebliss-recent-searches'
 
-export default function SearchBar({ products }: { products: Product[] }) {
+export default function SearchBar({ products }: { products: ProductSearchEntry[] }) {
   const router = useRouter()
   const [q, setQ] = useState('')
   const [focused, setFocused] = useState(false)
@@ -43,7 +43,7 @@ export default function SearchBar({ products }: { products: Product[] }) {
     return pi === p.length ? score / p.length : 0
   }
 
-  const results: Product[] =
+  const results: ProductSearchEntry[] =
     q.length > 1
       ? products
           .filter((p) => fuzzy(`${p.name}${p.category ?? ''}${p.ingredient ?? ''}`, q) > 0.4)
@@ -62,7 +62,7 @@ export default function SearchBar({ products }: { products: Product[] }) {
     }
   }
 
-  const go = (product: Product) => {
+  const go = (product: ProductSearchEntry) => {
     saveRecent(product.name)
     setQ('')
     setFocused(false)

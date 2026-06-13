@@ -27,6 +27,15 @@ export interface Product {
   updated_at?: string
 }
 
+// Trimmed product shape for the nav search palette. It is serialized into every
+// page's RSC payload, so it carries only what the palette renders — no badges
+// (raw claim vocabulary; customer surfaces use the normalized labels from
+// lib/product-claims.ts) and no descriptions.
+export type ProductSearchEntry = Pick<
+  Product,
+  'id' | 'slug' | 'name' | 'category' | 'price' | 'ingredient' | 'bg_color' | 'emoji'
+>
+
 export interface CartItem extends Product {
   qty: number
 }

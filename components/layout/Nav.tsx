@@ -21,7 +21,7 @@ import {
 import SearchBar from '@/components/features/search/SearchBar'
 import { useCartStore, selectItemCount } from '@/store/cartStore'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
-import type { Product } from '@/types'
+import type { ProductSearchEntry } from '@/types'
 
 const LINKS = [
   { path: '/', label: 'Home', icon: Home },
@@ -32,7 +32,7 @@ const LINKS = [
   { path: '/account', label: 'Account', icon: UserRound },
 ]
 
-export default function Nav({ products }: { products: Product[] }) {
+export default function Nav({ products }: { products: ProductSearchEntry[] }) {
   const pathname = usePathname()
   const openCart = useCartStore((s) => s.openCart)
   const itemCount = useCartStore(selectItemCount)

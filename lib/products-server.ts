@@ -42,8 +42,12 @@ export function getStaticProductShell(idOrSlug: string): Product | null {
 async function fetchProductsFromDb(): Promise<Product[]> {
   // No live catalogue: serve static shells in dev/E2E only. Production never lists
   // price-0 shells — fail closed to an empty catalogue. See getStaticProductShell.
+  // Shells are claim-normalized like DB rows so dev/E2E payloads carry the same
+  // badge vocabulary as production.
   if (!hasSupabaseAdminEnv())
-    return isProductionRuntime() && !process.env.E2E_STATIC_CATALOGUE ? [] : PRODUCTS
+    return isProductionRuntime() && !process.env.E2E_STATIC_CATALOGUE
+      ? []
+      : normalizeProductClaimList(PRODUCTS)
   try {
     const supabase = createSupabaseAdmin()
     const { data, error } = await supabase.from('products').select('*').eq('active', true)
@@ -109,7 +113,10 @@ export const getProductsServer = cache(
 )
 
 async function fetchProductFromDb(idOrSlug: string): Promise<Product | null> {
-  if (!hasSupabaseAdminEnv()) return getStaticProductShell(idOrSlug)
+  if (!hasSupabaseAdminEnv()) {
+    const shell = getStaticProductShell(idOrSlug)
+    return shell ? normalizeProductClaims(shell) : null
+  }
 
   try {
     const supabase = createSupabaseAdmin()
