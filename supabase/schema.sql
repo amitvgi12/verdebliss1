@@ -984,6 +984,48 @@ create policy "Staff can update refund workflow" on public.refunds
 
 -- Contact and consent tables are service-role managed by API routes.
 
+-- ── Base table privileges (Supabase default roles) ──────────────────
+-- These are the standard table-level grants the Supabase platform applies to
+-- its base roles (anon, authenticated, service_role). They are declared here so
+-- `supabase db diff` matches the linked project; they do NOT widen access.
+--
+-- Security is enforced by Row Level Security (enabled on every table above) plus
+-- the policies above — NOT by withholding these grants. PostgREST requires the
+-- base role to hold the table grant before RLS is even evaluated; without it the
+-- API can't run the query at all. With it, RLS still decides which rows are
+-- visible:
+--   * Owner-scoped tables (orders, addresses, loyalty_ledger, invoices, …): every
+--     policy keys on auth.uid(); anon has no auth.uid() and matches zero rows.
+--   * Service-role-only tables (payment_events, checkout_sessions,
+--     inventory_movements, contact_tickets, customer_consents, api_rate_limits,
+--     payment_reconciliation_failures, seller_config): no permissive policy
+--     exists, so anon/authenticated reach nothing; service_role bypasses RLS.
+-- Privileges are listed explicitly (select/insert/update/delete) rather than
+-- `grant all`, which would also grant truncate/references/trigger (new drift) and
+-- re-grant the profiles UPDATE that is intentionally column-scoped below.
+grant select, insert, update, delete on public.products to anon, authenticated, service_role;
+grant select, insert, update, delete on public.orders to anon, authenticated, service_role;
+grant select, insert, update, delete on public.order_items to anon, authenticated, service_role;
+grant select, insert, update, delete on public.checkout_sessions to anon, authenticated, service_role;
+grant select, insert, update, delete on public.payment_events to anon, authenticated, service_role;
+grant select, insert, update, delete on public.payment_reconciliation_failures to anon, authenticated, service_role;
+grant select, insert, update, delete on public.loyalty_ledger to anon, authenticated, service_role;
+grant select, insert, update, delete on public.inventory_movements to anon, authenticated, service_role;
+grant select, insert, update, delete on public.invoices to anon, authenticated, service_role;
+grant select, insert, update, delete on public.wishlist to anon, authenticated, service_role;
+grant select, insert, update, delete on public.addresses to anon, authenticated, service_role;
+grant select, insert, update, delete on public.reviews to anon, authenticated, service_role;
+grant select, insert, update, delete on public.refunds to anon, authenticated, service_role;
+grant select, insert, update, delete on public.contact_tickets to anon, authenticated, service_role;
+grant select, insert, update, delete on public.customer_consents to anon, authenticated, service_role;
+grant select, insert, update, delete on public.api_rate_limits to anon, authenticated, service_role;
+grant select, insert, update, delete on public.seller_config to anon, authenticated, service_role;
+-- profiles: anon/authenticated get NO table-level UPDATE — that stays column-scoped
+-- via the revoke + grant update(...) above (line ~949). Only service_role gets
+-- table UPDATE here. This matches the live project exactly.
+grant select, insert, delete on public.profiles to anon, authenticated, service_role;
+grant update on public.profiles to service_role;
+
 -- ── Seed: only for fresh/text-ID product tables ─────────────────────
 -- Existing projects with uuid product IDs are intentionally not overwritten.
 do $$
