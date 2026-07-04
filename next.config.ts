@@ -12,8 +12,9 @@ const sentryTurbopackStub = './lib/sentry-stub.ts'
  * routes, 'unsafe-inline' on static/ISR routes whose cached HTML cannot embed a
  * per-request nonce — see `requiresScriptNonce`). Static headers stay here.
  *
- * JSON-LD is served from same-origin schema endpoints so it is covered by
- * `script-src 'self'`. Razorpay's iframe checkout runs at checkout.razorpay.com
+ * JSON-LD is emitted INLINE via <StructuredData> (escaped with safeJsonLd), so
+ * it is covered by the route-aware script policy — never an external ld+json
+ * src, which crawlers ignore. Razorpay's iframe checkout runs at checkout.razorpay.com
  * — its own scripts don't need our CSP nonce because they execute in their own
  * iframe origin.
  */

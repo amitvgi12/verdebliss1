@@ -61,6 +61,25 @@ export async function PATCH(request: Request) {
       )
     }
 
+    // Free-text tracking fields are staff-supplied but still bounded so a typo or
+    // a malformed value can't be written straight to the order row.
+    if (tracking_id !== undefined && (typeof tracking_id !== 'string' || tracking_id.length > 64)) {
+      return NextResponse.json({ error: 'Invalid tracking_id' }, { status: 400 })
+    }
+    if (
+      courier_partner !== undefined &&
+      (typeof courier_partner !== 'string' || courier_partner.length > 64)
+    ) {
+      return NextResponse.json({ error: 'Invalid courier_partner' }, { status: 400 })
+    }
+    if (
+      estimated_delivery !== undefined &&
+      estimated_delivery !== null &&
+      (typeof estimated_delivery !== 'string' || Number.isNaN(Date.parse(estimated_delivery)))
+    ) {
+      return NextResponse.json({ error: 'Invalid estimated_delivery' }, { status: 400 })
+    }
+
     const { data: order, error: fetchErr } = await admin
       .from('orders')
       .select('id, status')

@@ -77,11 +77,14 @@ export async function POST(request: Request) {
   // Razorpay retries webhooks. Once the signature is valid and the event is
   // recorded, downstream business reconciliation should not create a 400 retry
   // loop for duplicate/already-completed checkout sessions.
-  if (
-    providerOrderId &&
-    providerPaymentId &&
-    ['payment.captured', 'payment.authorized'].includes(eventType)
-  ) {
+  //
+  // Finalise only on `payment.captured`: with payment_capture:true the capture
+  // is automatic and near-immediate, so an `authorized` webhook (funds held but
+  // not settled, and reversible) must not create a paid order or award loyalty
+  // points that a later auth reversal would strand. The event is still recorded
+  // above for reconciliation; the synchronous browser verify path keeps its own
+  // `authorized` tolerance where the buyer is actively completing checkout.
+  if (providerOrderId && providerPaymentId && eventType === 'payment.captured') {
     try {
       const webhookOrder = await completeRazorpayCheckout({
         razorpayOrderId: providerOrderId,
