@@ -108,6 +108,44 @@ describe('COD assessment merge', () => {
   })
 })
 
+// vercel.json is validated against a strict schema at deploy time: any unknown
+// top-level property fails the whole production deploy with "should NOT have
+// additional property". That includes `_`-prefixed keys, which look like a safe
+// place for a comment and are not. Caught only in CI, after a green local gate.
+describe('vercel.json has no unknown top-level keys', () => {
+  const ALLOWED = new Set([
+    'framework',
+    'buildCommand',
+    'installCommand',
+    'devCommand',
+    'ignoreCommand',
+    'outputDirectory',
+    'public',
+    'regions',
+    'build',
+    'crons',
+    'headers',
+    'redirects',
+    'rewrites',
+    'cleanUrls',
+    'trailingSlash',
+    'functions',
+    'images',
+    'git',
+    'github',
+    'installationId',
+    'projectSettings',
+    'redirectsCleanUrls',
+    '$schema',
+  ])
+
+  it('only declares properties Vercel accepts', () => {
+    const config = JSON.parse(readRepoFile('vercel.json')) as Record<string, unknown>
+    const unknown = Object.keys(config).filter((key) => !ALLOWED.has(key))
+    expect(unknown).toEqual([])
+  })
+})
+
 // VB-04 — refunds must have no client INSERT path. The API route writes with
 // the service role after checking order ownership; a policy that only checks
 // `auth.uid() = user_id` lets a customer open a refund on someone else's order.

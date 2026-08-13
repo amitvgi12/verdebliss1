@@ -37,6 +37,14 @@ Package manager: npm. Production truth: `main` branch.
   silently drop rows.
 - **Don't serialize the raw PRODUCTS array to the client.** Nav search uses the
   trimmed `PRODUCT_SEARCH_INDEX`; raw claim vocabulary must not reach the client.
+- **Cron lives in GitHub Actions, not Vercel.** `.github/workflows/scheduled-tasks.yml`
+  drives `/api/cron/*` (Hobby caps Vercel crons at 2 jobs, daily only). Auth is
+  unchanged: `Authorization: Bearer $CRON_SECRET`, which must be set BOTH in
+  Vercel (the route reads it) and as a GitHub repo secret (the caller sends it).
+  Requests must target the `www` host so Cloudflare adds the origin-gate header.
+- **`vercel.json` is schema-validated — no extra keys.** Unknown top-level
+  properties (even `_`-prefixed "comment" keys) fail the deploy with
+  `should NOT have additional property`. Notes go in CLAUDE.md or the workflow.
 
 ## Audit method (when asked to "audit")
 - Evidence tiers: code-verified > live-rendered > inferred. Never assert a live
