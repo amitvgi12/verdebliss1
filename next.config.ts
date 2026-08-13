@@ -41,6 +41,20 @@ const nextConfig: NextConfig = {
     return config
   },
 
+  async redirects() {
+    return [
+      {
+        // The product is "Botanical Mineral Sun Shield" and its copy states
+        // that independent SPF evidence is still in review — but the old slug
+        // asserted "SPF 50" in the URL, the sitemap, and every shared link.
+        // Permanent so the indexed claim is replaced rather than duplicated.
+        source: '/products/botanical-spf-50-shield',
+        destination: '/products/botanical-mineral-sun-shield',
+        permanent: true,
+      },
+    ]
+  },
+
   async headers() {
     return [
       {

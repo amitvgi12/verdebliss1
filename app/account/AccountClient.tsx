@@ -86,7 +86,9 @@ function AuthForm({
           >
             <Leaf size={24} color={C.forest} />
           </div>
-          <h2
+          {/* h1, not h2: this is the top-level heading for signed-out
+              visitors, who would otherwise get a page with no h1 at all. */}
+          <h1
             style={{
               fontFamily: FONT.serif,
               fontSize: 34,
@@ -96,7 +98,7 @@ function AuthForm({
             }}
           >
             {mode === 'login' ? 'Welcome back' : 'Join VerdeBliss'}
-          </h2>
+          </h1>
           <p style={{ fontSize: 14, color: C.muted, marginTop: 6 }}>
             {mode === 'login'
               ? 'Sign in to access your account & points'

@@ -5,7 +5,7 @@ import FadeIn from '@/components/ui/FadeIn'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Our Story — Founded in Pune, 2019',
+  title: 'Our Story — From a Pune Idea to a Dehradun Lab',
   description:
     'How VerdeBliss grew from a Pune formulation idea into an INCI-first botanical skincare catalogue.',
   alternates: { canonical: 'https://www.verdebliss.com/our-story' },
@@ -82,7 +82,13 @@ export default function OurStoryPage() {
       <section className="editorial-hero story-hero">
         <div className="editorial-hero__inner">
           <FadeIn>
-            <p className="editorial-hero__kicker">FOUNDED IN PUNE — 2019</p>
+            {/* The brand idea began in Pune in 2019; VERDEBLISS COSMETICS
+                PRIVATE LIMITED was incorporated in 2026 (see CIN in the
+                footer). Stating both keeps the narrative from reading as a
+                claim that the company is older than it is. */}
+            <p className="editorial-hero__kicker">
+              AN IDEA FROM PUNE, 2019 — INCORPORATED IN UTTARAKHAND, 2026
+            </p>
             <h1 className="editorial-hero__title">Our Story</h1>
             <p className="editorial-hero__copy max-w-[600px]">
               VerdeBliss exists because skincare can be honest, beautiful, and free of greenwashing

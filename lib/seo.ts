@@ -120,9 +120,13 @@ export function productJsonLd(
         shippingDetails: {
           '@type': 'OfferShippingDetails',
           shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
+          // A single-unit order at this price already clears the free-shipping
+          // threshold, so advertising the flat rate would overstate the
+          // delivery cost Google shows against the product.
           shippingRate: {
             '@type': 'MonetaryAmount',
-            value: STANDARD_SHIPPING_COST,
+            value:
+              priceOffer.price >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST,
             currency: 'INR',
           },
           deliveryTime: {

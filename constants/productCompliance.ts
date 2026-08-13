@@ -80,7 +80,10 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     pao: 12,
     inci: 'Aqua (Water), Camellia Sinensis (Green Tea) Leaf Extract, Salicylic Acid (0.5%), Hamamelis Virginiana (Witch Hazel) Water, Aloe Barbadensis Leaf Juice, Glycerin, Panthenol, Sodium PCA, Phenoxyethanol, Ethylhexylglycerin.',
     allergens:
-      'Contains Salicylic Acid — avoid if allergic to aspirin. Avoid during pregnancy. Free from: Alcohol Denat, Parabens, Sulphates.',
+      // Kept consistent with the age-guidance line below and the FAQ, which
+      // both say "consult"; the previous absolute "Avoid during pregnancy"
+      // contradicted them on the same page.
+      'Contains Salicylic Acid — avoid if allergic to aspirin. Consult your healthcare provider before use during pregnancy or breastfeeding. Free from: Alcohol Denat, Parabens, Sulphates.',
     patchTest: true,
     agingNote:
       'Contains Salicylic Acid (BHA). Recommended for ages 12+. Consult your healthcare provider before use during pregnancy.',

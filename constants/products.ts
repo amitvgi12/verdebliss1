@@ -70,7 +70,9 @@ export const PRODUCTS = [
   },
   {
     id: '5',
-    slug: 'botanical-spf-50-shield',
+    // Slug deliberately carries no SPF number: the product copy states that
+    // independent SPF evidence is still in review, and a slug is a public claim.
+    slug: 'botanical-mineral-sun-shield',
     image_url: '/images/products/spf.webp',
     name: 'Botanical Mineral Sun Shield',
     category: 'SPF',
@@ -139,13 +141,15 @@ export const PRODUCTS = [
 // Index for the nav search palette, shipped in every page's payload. Trimmed to
 // the fields the palette renders so the raw badge vocabulary above and the long
 // descriptions never reach the client (see ProductSearchEntry).
+// `price` is deliberately NOT included: these static shells always carry price 0
+// (real prices are authoritative in Supabase), the nav palette never renders a
+// price, and shipping the field put a misleading 0 in every page's payload.
 export const PRODUCT_SEARCH_INDEX: ProductSearchEntry[] = PRODUCTS.map(
-  ({ id, slug, name, category, price, ingredient, bg_color, emoji }) => ({
+  ({ id, slug, name, category, ingredient, bg_color, emoji }) => ({
     id,
     slug,
     name,
     category,
-    price,
     ingredient,
     bg_color,
     emoji,

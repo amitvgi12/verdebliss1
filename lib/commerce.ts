@@ -111,7 +111,6 @@ const RAZORPAY_METHOD_LABELS: Record<string, string> = {
 const EMAIL_RE = /\S+@\S+\.\S+/
 const PHONE_RE = /^\d{10}$/
 const PIN_RE = /^\d{6}$/
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 export const PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE =
   'Product catalogue unavailable. Please try again shortly.'
 
@@ -208,36 +207,14 @@ async function fetchProductsByIds(ids: string[]): Promise<Product[]> {
     throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE)
   }
 
-  const dbProducts: Product[] = []
-  const found = new Set<string>()
-
   try {
-    // Support both production UUID rows and static text IDs without sending
-    // invalid text values to legacy UUID product tables.
-    const uuidIds = ids.filter((id) => UUID_RE.test(id))
-    const textIds = ids.filter((id) => !UUID_RE.test(id))
-
-    if (uuidIds.length) {
-      const products = await queryProductsByIds(uuidIds)
-      for (const product of products) {
-        dbProducts.push(product)
-        found.add(product.id)
-      }
-    }
-
-    const unresolvedTextIds = textIds.filter((id) => !found.has(id))
-    if (unresolvedTextIds.length) {
-      const products = await queryProductsByIds(unresolvedTextIds)
-      for (const product of products) {
-        dbProducts.push(product)
-        found.add(product.id)
-      }
-    }
+    // One query covers both production UUID rows and static text IDs — the
+    // previous uuid/text split ran the identical `.in('id', …)` query on both
+    // branches, so it added a code path without changing behaviour.
+    return await queryProductsByIds(ids)
   } catch (error) {
     throw new Error(PRODUCT_CATALOGUE_UNAVAILABLE_MESSAGE, { cause: error })
   }
-
-  return dbProducts
 }
 
 export async function normalizeCart(rawItems: unknown) {

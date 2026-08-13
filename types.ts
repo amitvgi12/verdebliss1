@@ -31,9 +31,11 @@ export interface Product {
 // page's RSC payload, so it carries only what the palette renders — no badges
 // (raw claim vocabulary; customer surfaces use the normalized labels from
 // lib/product-claims.ts) and no descriptions.
+// No `price`: static shells carry price 0 and the nav palette renders no price,
+// so including it shipped a misleading value in every page payload.
 export type ProductSearchEntry = Pick<
   Product,
-  'id' | 'slug' | 'name' | 'category' | 'price' | 'ingredient' | 'bg_color' | 'emoji'
+  'id' | 'slug' | 'name' | 'category' | 'ingredient' | 'bg_color' | 'emoji'
 >
 
 export interface CartItem extends Product {

@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, ArrowRight } from 'lucide-react'
 import { C } from '@/constants/theme'
-import { hasProductPrice } from '@/lib/pricing'
 import { productPath } from '@/lib/seo'
 import type { ProductSearchEntry } from '@/types'
 
@@ -260,10 +259,11 @@ export default function SearchBar({ products }: { products: ProductSearchEntry[]
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{p.name}</div>
-                      <div style={{ fontSize: 11, color: C.muted }}>
-                        {p.category}
-                        {hasProductPrice(p) ? ` · ₹${p.price.toLocaleString()}` : ''}
-                      </div>
+                      {/* No price here: the nav index ships static shells whose
+                          price is always 0 (real prices live in Supabase), so
+                          the old `hasProductPrice(p)` branch could never be
+                          true. Showing a real price would need a live lookup. */}
+                      <div style={{ fontSize: 11, color: C.muted }}>{p.category}</div>
                     </div>
                     <ArrowRight size={12} color={C.muted} />
                   </button>
