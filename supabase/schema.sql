@@ -756,6 +756,7 @@ declare
   v_provider text;
   v_points int := greatest(coalesce(p_points_to_earn, 0), 0);
   v_stock_rows int;
+  v_ledger_rows int;
 begin
   if coalesce(trim(p_payment_id), '') = '' then
     raise exception 'Payment id is required';
@@ -854,13 +855,20 @@ begin
     values (p_user_id, v_order_id, 'order_payment_verified', v_points, 'Verified payment ' || p_payment_id)
     on conflict do nothing;
 
-    update public.profiles
-    set points = points + v_points,
-        tier = public.tier_for_points(points + v_points),
-        updated_at = now()
-    where id = p_user_id;
+    -- Credit the balance ONLY when the ledger row was actually written. The
+    -- insert above suppresses conflicts; incrementing points regardless let
+    -- profiles.points drift above the sum of the ledger with no way to
+    -- reconcile the difference.
+    get diagnostics v_ledger_rows = row_count;
+    if v_ledger_rows > 0 then
+      update public.profiles
+      set points = points + v_points,
+          tier = public.tier_for_points(points + v_points),
+          updated_at = now()
+      where id = p_user_id;
 
-    points_awarded := true;
+      points_awarded := true;
+    end if;
   end if;
 
   order_id := v_order_id;
@@ -871,6 +879,61 @@ $$;
 
 revoke all on function public.finalize_commerce_order(uuid, text, text, text, text, text, jsonb, jsonb, numeric, numeric, numeric, int, boolean, jsonb) from public, anon, authenticated;
 grant execute on function public.finalize_commerce_order(uuid, text, text, text, text, text, jsonb, jsonb, numeric, numeric, numeric, int, boolean, jsonb) to service_role;
+
+-- ── COD velocity (RTO abuse control) ────────────────────────────────
+-- assessCodRisk() in lib/cod-risk.ts is pure and stateless, so it cannot see
+-- order history. This is the DB half: recent COD count, still-open COD count,
+-- and prior failed/returned deliveries for a phone or email. The API routes
+-- repeat and previously-failed buyers to manual verification instead of
+-- auto-accepting every COD order.
+create index if not exists orders_cod_phone_created_idx
+  on public.orders ((address->>'phone'), created_at desc)
+  where payment_method = 'Cash on Delivery';
+
+create index if not exists orders_cod_email_created_idx
+  on public.orders ((address->>'email'), created_at desc)
+  where payment_method = 'Cash on Delivery';
+
+create or replace function public.check_cod_velocity(
+  p_phone text,
+  p_email text,
+  p_window_days int default 30
+) returns table(
+  recent_orders int,
+  open_orders int,
+  failed_orders int
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with scoped as (
+    select status
+    from public.orders
+    where payment_method = 'Cash on Delivery'
+      and created_at > now() - make_interval(days => greatest(coalesce(p_window_days, 30), 1))
+      and (
+        (nullif(trim(coalesce(p_phone, '')), '') is not null
+          and address->>'phone' = trim(p_phone))
+        or
+        (nullif(trim(coalesce(p_email, '')), '') is not null
+          and lower(address->>'email') = lower(trim(p_email)))
+      )
+  )
+  select
+    count(*)::int as recent_orders,
+    count(*) filter (
+      where lower(coalesce(status, '')) not in ('delivered', 'cancelled', 'returned')
+    )::int as open_orders,
+    count(*) filter (
+      where lower(coalesce(status, '')) in ('returned', 'rto', 'delivery failed', 'cancelled')
+    )::int as failed_orders
+  from scoped;
+$$;
+
+revoke all on function public.check_cod_velocity(text, text, int) from public, anon, authenticated;
+grant execute on function public.check_cod_velocity(text, text, int) to service_role;
 
 -- Removed unsafe legacy RPCs and trigger helpers from prior versions.
 drop function if exists public.increment_points(uuid, int);
@@ -974,11 +1037,18 @@ create policy "Anyone can read approved reviews" on public.reviews
 create policy "Staff can moderate reviews" on public.reviews
   for update using (public.is_staff()) with check (public.is_staff());
 
--- Refunds: customers insert/read own requests; only staff/service can update statuses.
+-- Refunds: customers read their own requests. There is deliberately NO client
+-- INSERT policy — refund creation goes through /api/refunds/request, which
+-- verifies order ownership and eligibility with the service role.
+--
+-- The previous policy (`auth.uid() = user_id and status = 'requested'`) checked
+-- the requester but never that order_id belonged to them, so a signed-in
+-- customer could open a refund against an arbitrary order straight from
+-- PostgREST — skipping ownership, eligibility, rate limiting and CSRF, and
+-- (via refunds_one_open_request_per_order_idx) locking the real owner out of
+-- refunding their own order. Mirrors how `reviews` is handled.
 create policy "Owner can read refunds" on public.refunds
   for select using (auth.uid() = user_id or public.is_staff());
-create policy "Owner can insert refund requests" on public.refunds
-  for insert with check (auth.uid() = user_id and status = 'requested');
 create policy "Staff can update refund workflow" on public.refunds
   for update using (public.is_staff()) with check (public.is_staff());
 
@@ -1015,7 +1085,10 @@ grant select, insert, update, delete on public.invoices to anon, authenticated, 
 grant select, insert, update, delete on public.wishlist to anon, authenticated, service_role;
 grant select, insert, update, delete on public.addresses to anon, authenticated, service_role;
 grant select, insert, update, delete on public.reviews to anon, authenticated, service_role;
-grant select, insert, update, delete on public.refunds to anon, authenticated, service_role;
+-- refunds: anon/authenticated get NO INSERT — refund creation is service-role
+-- only, via /api/refunds/request, which checks order ownership first.
+grant select, update, delete on public.refunds to anon, authenticated;
+grant select, insert, update, delete on public.refunds to service_role;
 grant select, insert, update, delete on public.contact_tickets to anon, authenticated, service_role;
 grant select, insert, update, delete on public.customer_consents to anon, authenticated, service_role;
 grant select, insert, update, delete on public.api_rate_limits to anon, authenticated, service_role;
@@ -1044,7 +1117,7 @@ begin
     ('2', 'rose-hip-glow-moisturiser', 'Rose Hip Glow Moisturiser', 'Rich cloud-like hydration with rosehip oil and ceramides for lasting softness.', 1095, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Cruelty-free*','Vegan-Friendly'], 'Rose Hip', '🌹', '#F6EDE8', '/images/products/moisturiser.webp', null, 0, 100, array[]::text[]),
     ('3', 'green-tea-clarity-toner', 'Green Tea Clarity Toner', 'Helps oily and combination skin feel balanced with green tea extract and 0.5% salicylic acid (BHA). Recommended for ages 12+.', 795, null, null, 'Toner', array['Oily','Combination'], array['Vegan-Friendly','Organic Botanicals'], 'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null, 0, 100, array['contains_bha','age_restricted_12plus','pregnancy_caution']),
     ('4', 'turmeric-brightening-cleanser', 'Turmeric Brightening Cleanser', 'Gentle foam cleanser with turmeric and neem for a fresh-looking complexion.', 695, null, null, 'Cleanser', array['All Types'], array['Cruelty-free*','Organic Botanicals'], 'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null, 0, 100, array[]::text[]),
-    ('5', 'botanical-spf-50-shield', 'Botanical Mineral Sun Shield', 'Mineral daily sun-care shield with zinc oxide and soothing aloe vera. SPF-rating evidence is in review.', 795, null, null, 'SPF', array['All Types'], array['Vegan-Friendly','Cruelty-free*'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null, 0, 100, array[]::text[]),
+    ('5', 'botanical-mineral-sun-shield', 'Botanical Mineral Sun Shield', 'Mineral daily sun-care shield with zinc oxide and soothing aloe vera. SPF-rating evidence is in review.', 795, null, null, 'SPF', array['All Types'], array['Vegan-Friendly','Cruelty-free*'], 'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null, 0, 100, array[]::text[]),
     ('6', 'wild-berry-lip-elixir', 'Wild Berry Lip Elixir', 'Nourishing lip treatment with berry extract and shea for soft-feeling lips.', 595, null, null, 'Lip Care', array['All Types'], array['Organic Botanicals'], 'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null, 0, 100, array[]::text[]),
     ('7', 'niacinamide-pore-serum', 'Niacinamide Pore Serum', 'Refines the look of pores and helps skin feel balanced with niacinamide.', 895, null, null, 'Serum', array['Oily','Combination'], array['Vegan-Friendly','Cruelty-free*'], 'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null, 0, 100, array[]::text[]),
     ('8', 'shea-butter-night-cream', 'Shea Butter Night Cream', 'Cushiony overnight cream with shea butter and vitamin E for a rested-looking glow.', 1595, null, null, 'Moisturiser', array['Dry','Sensitive'], array['Organic Botanicals','Cruelty-free*'], 'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null, 0, 100, array[]::text[])

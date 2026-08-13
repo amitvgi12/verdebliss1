@@ -36,6 +36,67 @@ export function assessCodPincode(pincode: string): CodRiskDecision {
   return 'allow'
 }
 
+export interface CodVelocityCounts {
+  recent_orders: number
+  open_orders: number
+  failed_orders: number
+}
+
+/**
+ * History-aware half of the COD decision. `assessCodRisk` is pure and can only
+ * judge a single order in isolation; RTO abuse looks normal one order at a
+ * time and only becomes visible across a buyer's history.
+ *
+ * Thresholds are env-tunable so ops can tighten them without a deploy.
+ */
+export function assessCodVelocity(counts: CodVelocityCounts): CodRiskAssessment {
+  const flags: string[] = []
+  const maxOpen = numericEnv('COD_MAX_OPEN_ORDERS', 3)
+  const maxRecent = numericEnv('COD_MAX_RECENT_ORDERS', 6)
+  const maxFailed = numericEnv('COD_MAX_FAILED_ORDERS', 2)
+
+  // A history of refused/returned deliveries is the strongest RTO signal there
+  // is — block rather than merely review.
+  if (counts.failed_orders >= maxFailed) {
+    return {
+      decision: 'block',
+      allowed: false,
+      reason:
+        'Cash on Delivery is unavailable for this contact due to previous undelivered orders. Please use online payment.',
+      flags: ['cod_prior_failed_deliveries'],
+    }
+  }
+
+  if (counts.open_orders >= maxOpen) flags.push('cod_open_order_limit')
+  if (counts.recent_orders >= maxRecent) flags.push('cod_high_recent_volume')
+
+  return flags.length
+    ? { decision: 'manual_review', allowed: true, flags }
+    : { decision: 'allow', allowed: true, flags }
+}
+
+function numericEnv(name: string, fallback: number): number {
+  const parsed = Number(process.env[name])
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+/** Merge the stateless and history-aware assessments, taking the strictest. */
+export function mergeCodAssessments(
+  base: CodRiskAssessment,
+  velocity: CodRiskAssessment
+): CodRiskAssessment {
+  if (!base.allowed) return base
+  if (!velocity.allowed) return velocity
+
+  const flags = [...new Set([...base.flags, ...velocity.flags])]
+  const decision: CodRiskDecision =
+    base.decision === 'manual_review' || velocity.decision === 'manual_review'
+      ? 'manual_review'
+      : 'allow'
+
+  return { decision, allowed: true, flags }
+}
+
 export function assessCodRisk(
   address: CheckoutAddress,
   totals: CartTotals,

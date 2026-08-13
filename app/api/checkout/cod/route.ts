@@ -9,9 +9,19 @@ import {
   validateAddress,
   type NormalizedCartItem,
 } from '@/lib/commerce'
-import { getUserFromAuthorizationHeader } from '@/lib/supabase-admin'
+import {
+  createSupabaseAdmin,
+  getUserFromAuthorizationHeader,
+  hasSupabaseAdminEnv,
+} from '@/lib/supabase-admin'
 import { requireSameOriginRequest } from '@/lib/csrf'
-import { assessCodRisk } from '@/lib/cod-risk'
+import {
+  assessCodRisk,
+  assessCodVelocity,
+  mergeCodAssessments,
+  type CodRiskAssessment,
+  type CodVelocityCounts,
+} from '@/lib/cod-risk'
 import { turnstileFailureMessage, verifyTurnstileFromRequest } from '@/lib/turnstile'
 import { scheduleProductsRevalidation } from '@/lib/revalidate-products'
 import { sendOrderConfirmationEmail } from '@/lib/order-email'
@@ -41,6 +51,44 @@ function codIdempotencyRef(email: string, items: NormalizedCartItem[], total: nu
   return `COD-${bucket.toString(36).toUpperCase()}-${digest}`
 }
 
+/**
+ * History-aware COD check. Deliberately fail-OPEN on infrastructure trouble: a
+ * Supabase blip must not block every COD order. It fails CLOSED on genuine risk
+ * (that decision lives in assessCodVelocity), which is the pairing we want —
+ * unavailable history is not evidence of fraud.
+ */
+async function loadCodVelocity(phone: string, email: string): Promise<CodRiskAssessment | null> {
+  try {
+    // Inside the try on purpose: this guard must fail open like everything else
+    // in here. A throw from the env check would otherwise escape to the route's
+    // outer catch and turn a history lookup into a failed checkout.
+    if (!hasSupabaseAdminEnv()) return null
+    const supabase = createSupabaseAdmin()
+    const { data, error } = await supabase.rpc('check_cod_velocity', {
+      p_phone: phone,
+      p_email: email,
+      p_window_days: 30,
+    })
+    if (error) {
+      console.warn('[checkout/cod] velocity check unavailable:', error.message)
+      return null
+    }
+    const counts = (Array.isArray(data) ? data[0] : data) as CodVelocityCounts | undefined
+    if (!counts) return null
+    return assessCodVelocity({
+      recent_orders: Number(counts.recent_orders) || 0,
+      open_orders: Number(counts.open_orders) || 0,
+      failed_orders: Number(counts.failed_orders) || 0,
+    })
+  } catch (error) {
+    console.warn(
+      '[checkout/cod] velocity check threw:',
+      error instanceof Error ? error.message : String(error)
+    )
+    return null
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const csrfFailure = requireSameOriginRequest(request)
@@ -66,7 +114,14 @@ export async function POST(request: Request) {
     const address = validateAddress(body?.address)
     const { items, totals } = await normalizeCart(body?.items)
 
-    const codRisk = assessCodRisk(address, totals, items)
+    const baseRisk = assessCodRisk(address, totals, items)
+    // Skip the history lookup when the order is already refused — no point
+    // paying for a query whose answer cannot change the outcome.
+    const velocityRisk = baseRisk.allowed
+      ? await loadCodVelocity(address.phone, address.email)
+      : null
+    const codRisk = velocityRisk ? mergeCodAssessments(baseRisk, velocityRisk) : baseRisk
+
     if (!codRisk.allowed) {
       return NextResponse.json(
         { error: codRisk.reason ?? 'Cash on Delivery is not available for this order.' },

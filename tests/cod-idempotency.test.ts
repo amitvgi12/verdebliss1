@@ -36,8 +36,18 @@ vi.mock('@/lib/commerce', () => {
 })
 vi.mock('@/lib/supabase-admin', () => ({
   getUserFromAuthorizationHeader: mocks.getUserFromAuthorizationHeader,
+  // The COD route consults order history for velocity/RTO checks. These tests
+  // cover idempotency, so report "no admin env" and let the route fail open —
+  // the velocity path has its own coverage in tests/cod-risk.test.ts.
+  hasSupabaseAdminEnv: () => false,
+  createSupabaseAdmin: () => {
+    throw new Error('createSupabaseAdmin should not be reached without admin env')
+  },
 }))
-vi.mock('@/lib/cod-risk', () => ({ assessCodRisk: mocks.assessCodRisk }))
+vi.mock('@/lib/cod-risk', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/cod-risk')>()),
+  assessCodRisk: mocks.assessCodRisk,
+}))
 vi.mock('@/lib/order-email', () => ({ sendOrderConfirmationEmail: mocks.sendOrderConfirmationEmail }))
 vi.mock('@/lib/revalidate-products', () => ({
   scheduleProductsRevalidation: mocks.scheduleProductsRevalidation,
