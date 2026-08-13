@@ -101,8 +101,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # Same explicit guard as the reconciliation job. Previously this was
+      # `if: env.CRON_SECRET != ''` on the curl step, which SKIPPED the step and
+      # reported the job green when the secret was missing — a silent success
+      # that looks identical to a working schedule. Fail loudly instead.
+      - name: Require CRON_SECRET
+        if: env.CRON_SECRET == ''
+        run: |
+          echo "::error::CRON_SECRET is not set. Add it under Settings → Secrets and variables → Actions, matching Vercel production."
+          exit 1
+
       - name: Warm ISR routes
-        if: env.CRON_SECRET != ''
         run: |
           set -euo pipefail
           curl --fail-with-body -sS -m 60 \
