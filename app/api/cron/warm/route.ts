@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   // routes); allow the bypass in dev so it can be hit from curl.
   if (!cronSecret) {
     if (process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 })
+      return NextResponse.json({ error: 'Scheduled task is not available.' }, { status: 503 })
     }
   } else if (request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

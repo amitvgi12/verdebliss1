@@ -10,14 +10,5 @@
       "TURBO_FORCE": "true"
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/reconciliation-alert",
-      "schedule": "0 1 * * *"
-    },
-    {
-      "path": "/api/cron/warm",
-      "schedule": "0 2 * * *"
-    }
-  ]
+  "_crons_note": "Scheduled tasks moved to .github/workflows/scheduled-tasks.yml — Vercel Hobby caps crons at 2 jobs with daily granularity, which is too coarse for hourly reconciliation and 15-minute ISR warming. Both routes still authenticate with Authorization: Bearer $CRON_SECRET, so re-adding a `crons` block here would work but would double-fire (harmless — both endpoints are idempotent)."
 }

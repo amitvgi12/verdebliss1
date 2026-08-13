@@ -1,0 +1,131 @@
+name: Scheduled tasks
+
+# Replaces the Vercel `crons` block in vercel.json.
+#
+# Why move off Vercel Cron:
+#   - Hobby plans allow 2 cron jobs at DAILY granularity only. The warm job
+#     wants ~15-minute intervals to keep ISR routes hot; the reconciliation
+#     alert wants to be hourly, not daily.
+#   - Scheduling is version-controlled, has visible logs, and can be re-run on
+#     demand via workflow_dispatch.
+#   - It is decoupled from deployment: a failed deploy no longer silently takes
+#     the payment reconciliation backstop with it.
+#
+# How auth works — unchanged from Vercel Cron:
+#   Both routes accept `Authorization: Bearer $CRON_SECRET`. Requests go to the
+#   public www host, so they pass through Cloudflare, which injects the
+#   origin-gate header proxy.ts requires on /api/*. Cron routes are NOT in
+#   CF_ORIGIN_GATE_EXEMPT, so hitting the Vercel deployment URL directly would
+#   be rejected — always use the www host.
+#
+# Required repository secret:
+#   CRON_SECRET  — must match CRON_SECRET in the Vercel production environment.
+# Optional repository variable:
+#   SITE_URL     — defaults to https://www.verdebliss.com
+#
+# CAVEAT: GitHub disables scheduled workflows after 60 days without repository
+# activity, and schedule events can be delayed by minutes under load. Acceptable
+# for a reconciliation backstop; it must not be the only alerting path for money
+# (see Sentry, VB-06). The keepalive job re-arms the schedule weekly.
+
+on:
+  schedule:
+    - cron: '17 * * * *' # reconciliation alert — hourly
+    - cron: '*/15 * * * *' # ISR cache warm — every 15 minutes
+    - cron: '23 3 * * 1' # keepalive — Mondays, re-arms the schedule
+  workflow_dispatch:
+    inputs:
+      task:
+        description: Which task to run
+        required: true
+        default: all
+        type: choice
+        options: [all, reconciliation, warm]
+
+concurrency:
+  group: scheduled-tasks-${{ github.event.schedule || github.event.inputs.task }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  SITE_URL: ${{ vars.SITE_URL || 'https://www.verdebliss.com' }}
+  # The `secrets` context is not available in `if:` conditions, so map it to env
+  # here — that is what lets the guard steps below check whether it is set.
+  CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+jobs:
+  reconciliation-alert:
+    if: >-
+      github.event.schedule == '17 * * * *' ||
+      github.event.inputs.task == 'all' ||
+      github.event.inputs.task == 'reconciliation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require CRON_SECRET
+        if: env.CRON_SECRET == ''
+        run: |
+          echo "::error::CRON_SECRET is not set. Add it under Settings → Secrets and variables → Actions, matching Vercel production."
+          exit 1
+
+      - name: Trigger payment reconciliation alert
+        run: |
+          set -euo pipefail
+          # --fail-with-body so a non-2xx prints the server's message before the
+          # step fails; without it the log shows only an exit code.
+          curl --fail-with-body -sS -m 60 \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL}/api/cron/reconciliation-alert" \
+            -o response.json -w 'HTTP %{http_code} in %{time_total}s\n'
+          cat response.json
+
+      - name: Surface pending reconciliation failures
+        run: |
+          set -euo pipefail
+          # Make a non-empty backlog loud in the Actions UI rather than
+          # something you only see by opening the log.
+          PENDING=$(jq -r '[.pending, .count, 0] | map(select(. != null)) | first' response.json 2>/dev/null || echo 0)
+          echo "Pending reconciliation failures: ${PENDING}"
+          echo "### Pending reconciliation failures: ${PENDING}" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${PENDING}" != "0" ]; then
+            echo "::warning::${PENDING} payment reconciliation failure(s) awaiting action."
+          fi
+
+  warm:
+    if: >-
+      github.event.schedule == '*/15 * * * *' ||
+      github.event.inputs.task == 'all' ||
+      github.event.inputs.task == 'warm'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Warm ISR routes
+        if: env.CRON_SECRET != ''
+        run: |
+          set -euo pipefail
+          curl --fail-with-body -sS -m 60 \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL}/api/cron/warm" \
+            -w '\nHTTP %{http_code} in %{time_total}s\n'
+
+  keepalive:
+    # GitHub silently disables cron schedules after 60 days without repository
+    # activity — the failure mode that would take the reconciliation backstop
+    # offline with no signal at all. Re-arm weekly.
+    if: github.event.schedule == '23 3 * * 1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Re-arm workflow schedule
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api -X PUT \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/scheduled-tasks.yml/enable" \
+            && echo "Schedule re-armed." \
+            || echo "Workflow already enabled."
