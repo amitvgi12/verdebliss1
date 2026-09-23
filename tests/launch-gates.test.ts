@@ -90,7 +90,11 @@ async function fetchAllRows<T>(
   }
 }
 
-describe('pre-launch gates', () => {
+// Every gate below queries the live production database over the network. The
+// 5s unit-test default made a single slow round-trip from the CI runner fail
+// the predeploy gate even when the data passed; 30s bounds real hangs without
+// flaking on latency.
+describe('pre-launch gates', { timeout: 30_000 }, () => {
   it('blocks launch mode when compliance placeholders remain', () => {
     if (process.env.LAUNCH_MODE !== 'true') return
 
