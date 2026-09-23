@@ -8,6 +8,40 @@ Evidence tags used throughout: **[LIVE]** observed on production · **[CODE]** r
 
 ---
 
+## 00. RE-AUDIT AFTER DEPLOY (23 Sep 2026, live `x-build-sha: eb1fc7a` = `main`)
+
+**Score: 69 → 78 / 100. Readiness: still NOT READY**, only because of the two deferred P0s, both re-confirmed live: GSTIN `05MODEE5678F1Z5` (footer, PDPs, Org JSON-LD) and `rzp_test_SZ3dNBE8k7p1N3` in the checkout bundle.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Deployed revision | ✅ | `x-build-sha eb1fc7a…` = `origin/main` |
+| `/api/version` truthful | ✅ | `schemaVersion 2026-09-23-order-lifecycle-net-quantity`, `compliance.ok:false`, `warningCount:2`, `warningFields:[NEXT_PUBLIC_VERDEBLISS_GSTIN]` |
+| Migration 1 (net qty + descriptions) | ✅ applied | anon `products` select returns `net_quantity` (all null) and the 8 canonical descriptions |
+| Migration 2 (lifecycle trigger + guard) | ✅ applied (owner-run SQL) | `trg_orders_lifecycle` present; `protect_profile_privileged_fields` reads `request.jwt.claims`; `payment_reconciliation_failures` is empty, so the suspected guard bug never caused a recorded failure |
+| Removed claims (9 phrases) | ✅ 0 occurrences | without irritation/harshness, 30ml, Vegan Lip Gloss, organic blog titles, Organic Commitment, 12 co-ops, FAQ tier perks, seed descriptions |
+| New copy (14 strings) | ✅ all present | canonical descriptions, toner BHA/12+ note, sun-shield qualifier, blog titles, FAQ loyalty, privacy (Resend, couriers, chat, 23 Sep date) |
+| Loyalty UI (client bundle) | ✅ | "redeemable value", "Free express shipping", "Birthday bonus", "First Purchase", "Per Review" absent; new copy present |
+| PDP LCP image | ✅ | hero no longer `loading="lazy"`; `<link rel="preload" as="image">` emitted |
+| Product JSON-LD | ✅ | reviewed description, no `size` (data null), no `aggregateRating` (0 reviews) |
+| Security headers | ✅ unchanged | CSP, HSTS preload, XFO DENY, nosniff, Referrer-Policy, Permissions-Policy |
+| API gates (12 probes) | ✅ | new `/api/cron/expire-cod-holds` 401; cancel/admin/refunds 401; CSRF 403; Turnstile 400; webhook sig 400; chat consent 403; revalidate 401 |
+| RLS (anon) | ✅ | orders, loyalty_ledger, profiles, checkout_sessions, refunds → `[]` |
+| Performance | ✅ slight gain | brotli JS home 270→258 KB, PDP 344→332, checkout 336→324; TTFB home 0.59–0.83 s, PDP 0.57–0.70 s, `/products` 0.86–0.96 s (was 1.0–1.9) |
+| Dependencies | ✅ | `npm audit --omit=dev`: 0 |
+
+**Still open:** P0 GSTIN + Razorpay live keys · `net_quantity` data entry · Sun Shield SPF decision · dial `0135 2000 000` · retention periods · Gemini paid tier · confirm `OPS_ALERT_WEBHOOK_URL` is set (without it the alert reporter is inert) · P3 list (F-14/15/16/18/21/22, `/shop` still 404).
+
+**Migration 2 verification (run 23 Sep 2026: all passed):**
+```sql
+select tgname from pg_trigger where tgname = 'trg_orders_lifecycle';                         -- expect 1 row
+select prosrc like '%request.jwt.claims%' from pg_proc where proname = 'protect_profile_privileged_fields'; -- expect true
+select failure_reason, count(*) from payment_reconciliation_failures group by 1;             -- look for "Direct updates to profile points"
+```
+
+**Revised scores:** Architecture 9 (+1) · Security 17 (+2) · Payment 11 (+1) · E-commerce 8 (+2) · SEO 8 · Performance 8 (+1) · Accessibility 4 · UX/CRO 6 · Privacy/Compliance 3 (+1) · Observability 4 (+1) = **78**.
+
+---
+
 ## 0. REMEDIATION LOG: P1 + P2 (23 Sep 2026, uncommitted working tree; P0s intentionally deferred)
 
 | Finding | Status | Change |

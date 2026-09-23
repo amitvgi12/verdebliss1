@@ -70,11 +70,19 @@ async function sendOpsAlert(failures: ReconciliationFailure[]) {
   const webhookUrl = process.env.OPS_ALERT_WEBHOOK_URL
   if (!webhookUrl) return { sent: false, reason: 'webhook_not_configured' }
 
+  const summary = `🚨 ${failures.length} Razorpay payment(s) captured but not turned into orders for over an hour (oldest ${
+    failures[0]?.created_at ?? 'unknown'
+  }). Check payment_reconciliation_failures in Supabase.`
+
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
+        // Slack incoming webhooks require `text` and Discord requires `content`;
+        // without them both reject the post (400) and the alert is lost.
+        text: summary,
+        content: summary,
         event: 'payment_reconciliation_failures_pending',
         pending: failures.length,
         oldestCreatedAt: failures[0]?.created_at ?? null,

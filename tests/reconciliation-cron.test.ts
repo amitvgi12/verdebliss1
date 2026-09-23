@@ -92,5 +92,10 @@ describe('reconciliation alert cron', () => {
       })
     )
     expect(query.lt).toHaveBeenCalledWith('created_at', '2026-05-20T11:00:00.000Z')
+
+    // Slack needs `text`, Discord needs `content` — otherwise both reject the post.
+    const sent = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(sent.text).toMatch(/1 Razorpay payment\(s\) captured but not turned into orders/)
+    expect(sent.content).toBe(sent.text)
   })
 })
