@@ -106,6 +106,16 @@ function createStatefulSupabase() {
       }
 
       if (table === 'orders') {
+        if (op.type === 'update') {
+          // Conditional update: every eq() filter must match the stored row.
+          for (const row of ordersByPaymentId.values()) {
+            const matches = Object.entries(op.filters).every(
+              ([col, val]) => String(row[col]) === String(val)
+            )
+            if (matches) Object.assign(row, op.payload ?? {})
+          }
+          return { data: null, error: null }
+        }
         return { data: ordersByPaymentId.get(op.filters.payment_id) ?? null, error: null }
       }
 
@@ -153,6 +163,7 @@ function createStatefulSupabase() {
       const orderId = `order_db_${++orderSeq}`
       ordersByPaymentId.set(String(params.p_payment_id), {
         id: orderId,
+        payment_status: params.p_payment_status,
         points_earned: params.p_award_points ? params.p_points_to_earn : 0,
         subtotal: params.p_subtotal,
         shipping: params.p_shipping,
@@ -166,7 +177,11 @@ function createStatefulSupabase() {
     },
   }
 
-  return { client, getRpcParams: () => capturedRpcParams }
+  return {
+    client,
+    getRpcParams: () => capturedRpcParams,
+    getOrder: (paymentId: string) => ordersByPaymentId.get(paymentId),
+  }
 }
 
 let capturedRazorpayAmount: number | null = null
@@ -201,7 +216,7 @@ beforeEach(() => {
 })
 
 /** Runs cart → Razorpay order → checkout session, returning the chain context. */
-async function buildSession(qty = 2) {
+async function buildSession(qty = 2, userId: string | null = null) {
   const supabase = createStatefulSupabase()
   vi.mocked(createSupabaseAdmin).mockReturnValue(supabase.client as never)
 
@@ -214,7 +229,7 @@ async function buildSession(qty = 2) {
   })
 
   const session = await createCheckoutSession({
-    userId: null,
+    userId,
     address: ADDRESS,
     items,
     totals,
@@ -309,5 +324,59 @@ describe('checkout money-chain consistency (payment sandbox smoke)', () => {
     ).rejects.toThrow('Payment does not belong to this checkout session')
 
     expect(supabase.getRpcParams()).toBeNull()
+  })
+
+  it('records an authorized-only payment as authorized, with no points, then promotes it on capture', async () => {
+    const { supabase, razorpayOrder, session } = await buildSession(1, 'user-1')
+    const payment = {
+      id: 'pay_auth_first',
+      amount: session.amount_paise,
+      currency: 'INR',
+      order_id: razorpayOrder.id,
+      status: 'authorized',
+      method: 'card',
+    }
+
+    // Browser verify lands while the payment is only authorized.
+    const first = await completeRazorpayCheckout({
+      razorpayOrderId: razorpayOrder.id,
+      razorpayPaymentId: payment.id,
+      payment,
+    })
+    const rpc = supabase.getRpcParams()
+    expect(rpc?.p_payment_status).toBe('authorized')
+    expect(rpc?.p_award_points).toBe(false)
+    expect(first.pointsAwarded).toBe(false)
+    expect(supabase.getOrder(payment.id)?.payment_status).toBe('authorized')
+
+    // payment.captured webhook: session already completed → promote to paid.
+    // (Points are then credited by the apply_order_lifecycle DB trigger.)
+    await completeRazorpayCheckout({
+      razorpayOrderId: razorpayOrder.id,
+      razorpayPaymentId: payment.id,
+      payment: { ...payment, status: 'captured' },
+    })
+    expect(supabase.getOrder(payment.id)?.payment_status).toBe('paid')
+  })
+
+  it('finalises a captured payment as paid and awards points for a signed-in buyer', async () => {
+    const { supabase, razorpayOrder, session } = await buildSession(1, 'user-1')
+
+    await completeRazorpayCheckout({
+      razorpayOrderId: razorpayOrder.id,
+      razorpayPaymentId: 'pay_captured',
+      payment: {
+        id: 'pay_captured',
+        amount: session.amount_paise,
+        currency: 'INR',
+        order_id: razorpayOrder.id,
+        status: 'captured',
+        method: 'upi',
+      },
+    })
+
+    const rpc = supabase.getRpcParams()
+    expect(rpc?.p_payment_status).toBe('paid')
+    expect(rpc?.p_award_points).toBe(true)
   })
 })

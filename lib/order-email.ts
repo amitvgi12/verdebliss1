@@ -326,3 +326,52 @@ function buildHtml(d: TemplateData): string {
 </body>
 </html>`
 }
+
+// ─── Cancellation notice ─────────────────────────────────────────────────────
+
+export interface OrderCancelledEmailData {
+  orderId: string
+  email: string
+  name: string
+  reason: string
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
+ * Plain notice for a system-initiated cancellation (e.g. an unverified COD
+ * order expiring), so the customer is never left waiting for a parcel that
+ * will not ship. Best-effort like the confirmation email: never throws.
+ */
+export async function sendOrderCancelledEmail(data: OrderCancelledEmailData): Promise<void> {
+  const resend = getResend()
+  if (!resend || !data.email) return
+
+  const shortId = data.orderId.slice(0, 8).toUpperCase()
+  const firstName = escapeHtml(data.name.split(' ')[0] || 'there')
+  const sans = `-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Helvetica Neue',Arial,sans-serif`
+
+  try {
+    await resend.emails.send({
+      from: process.env.ORDER_FROM_EMAIL ?? `VerdeBliss <${BUSINESS_COMPLIANCE.emails.orders}>`,
+      to: data.email,
+      subject: `Order #${shortId} cancelled — VerdeBliss`,
+      html: `<div style="font-family:${sans};color:#2d3a2e;font-size:14px;line-height:1.6;max-width:560px">
+<p>Hi ${firstName},</p>
+<p>Your Cash on Delivery order <strong>#${shortId}</strong> has been cancelled. ${escapeHtml(data.reason)}</p>
+<p>No payment was collected. You are welcome to place the order again, or reply to
+<a href="mailto:${BUSINESS_COMPLIANCE.emails.support}">${BUSINESS_COMPLIANCE.emails.support}</a> if you have any questions.</p>
+<p>— VerdeBliss</p>
+</div>`,
+    })
+  } catch {
+    console.warn('[order-email] Failed to send order cancellation email')
+  }
+}

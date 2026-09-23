@@ -47,7 +47,8 @@ export default function ProductMedia({
         }}
       >
         <div style={{ position: 'absolute', inset: 0 }}>
-          <ProductImage product={product} sizes="(max-width: 1024px) 90vw, 560px" />
+          {/* LCP element on every PDP: must not be lazy-loaded. */}
+          <ProductImage product={product} priority sizes="(max-width: 1024px) 90vw, 560px" />
         </div>
       </div>
 

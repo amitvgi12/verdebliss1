@@ -37,6 +37,7 @@ create table if not exists public.products (
   created_at       timestamptz default now(),
   updated_at       timestamptz default now(),
   compliance_flags text[] default '{}',
+  net_quantity     text,
   constraint products_mrp_gt_price_check check (mrp is null or mrp > price)
 );
 
@@ -60,6 +61,9 @@ alter table public.products add column if not exists active boolean default true
 alter table public.products add column if not exists created_at timestamptz default now();
 alter table public.products add column if not exists updated_at timestamptz default now();
 alter table public.products add column if not exists compliance_flags text[] default '{}';
+-- Declared net content (Legal Metrology). Null until catalogue data is entered;
+-- the PDP and Product JSON-LD omit the size rather than guess.
+alter table public.products add column if not exists net_quantity text;
 
 -- Existing projects may have had ad hoc MRP values added before the schema
 -- owned the column. Keep invalid reference prices from blocking constraint
@@ -630,17 +634,27 @@ grant execute on function public.apply_loyalty_points(uuid, int) to service_role
 
 
 -- Keep customer-editable profile fields separate from loyalty/staff fields.
+-- Recognise the service role via the legacy GUC *or* the request.jwt.claims JSON
+-- (PostgREST v10+ sets only the JSON). Direct DB sessions (dashboard/SQL editor)
+-- are trusted. See migrations/20260923001000_order_lifecycle_loyalty.sql.
 create or replace function public.protect_profile_privileged_fields()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_request_role text := coalesce(
+    nullif(current_setting('request.jwt.claim.role', true), ''),
+    nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role',
+    ''
+  );
 begin
   if (old.points is distinct from new.points)
      or (old.tier is distinct from new.tier)
      or (old.is_staff is distinct from new.is_staff) then
-    if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
+    if session_user not in ('postgres', 'supabase_admin')
+       and v_request_role <> 'service_role'
        and not public.is_staff() then
       raise exception 'Direct updates to profile points, tier, or staff status are not allowed';
     end if;
@@ -934,6 +948,145 @@ $$;
 
 revoke all on function public.check_cod_velocity(text, text, int) from public, anon, authenticated;
 grant execute on function public.check_cod_velocity(text, text, int) to service_role;
+
+-- ── Restock on cancellation (mirrors migrations/20260610000000) ─────────────
+create or replace function public.restock_order_inventory(p_order_id uuid)
+returns table(restocked boolean, lines int)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_item record;
+  v_lines int := 0;
+begin
+  if p_order_id is null then
+    raise exception 'Order id is required';
+  end if;
+
+  -- Already restocked → no-op (idempotent under webhook/route retries).
+  if exists (
+    select 1 from public.inventory_movements
+    where order_id = p_order_id and movement = 'restock'
+  ) then
+    return query select false, 0;
+    return;
+  end if;
+
+  for v_item in
+    select product_id, quantity
+    from public.order_items
+    where order_id = p_order_id
+  loop
+    update public.products
+    set stock = stock + v_item.quantity,
+        updated_at = now()
+    where id::text = v_item.product_id;
+
+    insert into public.inventory_movements (order_id, product_id, quantity, movement, reason)
+    values (p_order_id, v_item.product_id, v_item.quantity, 'restock', 'order_cancelled');
+
+    v_lines := v_lines + 1;
+  end loop;
+
+  return query select v_lines > 0, v_lines;
+end;
+$$;
+
+revoke all on function public.restock_order_inventory(uuid) from public, anon, authenticated;
+grant execute on function public.restock_order_inventory(uuid) to service_role;
+
+-- ── Order lifecycle ──────────────────────────────────────────────────────────
+create or replace function public.apply_order_lifecycle()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_points int;
+  v_ledger_rows int;
+  v_balance int;
+begin
+  -- 1) Delivery.
+  if new.status is distinct from old.status and new.status = 'Delivered' then
+    new.delivered_at := coalesce(new.delivered_at, now());
+    if new.payment_method = 'Cash on Delivery'
+       and new.payment_status in ('cod_pending', 'cod_review') then
+      new.payment_status := 'paid';
+    end if;
+  end if;
+
+  -- 2) Award points when payment is confirmed after placement.
+  if new.payment_status = 'paid'
+     and old.payment_status is distinct from 'paid'
+     and new.user_id is not null
+     and coalesce(new.points_earned, 0) = 0
+     and coalesce(new.status, '') not in ('Cancelled', 'Refunded') then
+    v_points := greatest(floor(coalesce(new.subtotal, 0) / 20)::int, 0);
+    if v_points > 0 then
+      insert into public.loyalty_ledger (user_id, order_id, event_type, points_delta, reason)
+      values (
+        new.user_id,
+        new.id,
+        'order_payment_verified',
+        v_points,
+        'Payment confirmed after ' || coalesce(old.payment_status, 'placement')
+      )
+      on conflict do nothing;
+
+      -- Credit only when the ledger row was written (mirrors VB-11).
+      get diagnostics v_ledger_rows = row_count;
+      if v_ledger_rows > 0 then
+        update public.profiles
+        set points = points + v_points,
+            tier = public.tier_for_points(points + v_points),
+            updated_at = now()
+        where id = new.user_id;
+        new.points_earned := v_points;
+      end if;
+    end if;
+  end if;
+
+  -- 3) Reverse credited points on cancellation / refund.
+  if new.status is distinct from old.status
+     and new.status in ('Cancelled', 'Refunded')
+     and new.user_id is not null
+     and coalesce(new.points_earned, 0) > 0 then
+    insert into public.loyalty_ledger (user_id, order_id, event_type, points_delta, reason)
+    values (
+      new.user_id,
+      new.id,
+      'order_points_reversed',
+      -new.points_earned,
+      'Order ' || lower(new.status)
+    )
+    on conflict do nothing;
+
+    get diagnostics v_ledger_rows = row_count;
+    if v_ledger_rows > 0 then
+      select greatest(points - new.points_earned, 0) into v_balance
+      from public.profiles
+      where id = new.user_id;
+
+      update public.profiles
+      set points = coalesce(v_balance, 0),
+          tier = public.tier_for_points(coalesce(v_balance, 0)),
+          updated_at = now()
+      where id = new.user_id;
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+revoke all on function public.apply_order_lifecycle() from public, anon, authenticated;
+
+drop trigger if exists trg_orders_lifecycle on public.orders;
+create trigger trg_orders_lifecycle
+  before update of status, payment_status on public.orders
+  for each row execute procedure public.apply_order_lifecycle();
 
 -- Removed unsafe legacy RPCs and trigger helpers from prior versions.
 drop function if exists public.increment_points(uuid, int);

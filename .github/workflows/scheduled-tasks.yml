@@ -40,7 +40,7 @@ on:
         required: true
         default: all
         type: choice
-        options: [all, reconciliation, warm]
+        options: [all, reconciliation, warm, cod-holds, uptime]
 
 concurrency:
   group: scheduled-tasks-${{ github.event.schedule || github.event.inputs.task }}
@@ -91,6 +91,67 @@ jobs:
           echo "### Pending reconciliation failures: ${PENDING}" >> "$GITHUB_STEP_SUMMARY"
           if [ "${PENDING}" != "0" ]; then
             echo "::warning::${PENDING} payment reconciliation failure(s) awaiting action."
+          fi
+
+  cod-hold-expiry:
+    # Unverified 'COD Verification Required' orders hold stock; release them
+    # after COD_REVIEW_HOLD_HOURS (default 48) and notify the buyer.
+    if: >-
+      github.event.schedule == '17 * * * *' ||
+      github.event.inputs.task == 'all' ||
+      github.event.inputs.task == 'cod-holds'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require CRON_SECRET
+        if: env.CRON_SECRET == ''
+        run: |
+          echo "::error::CRON_SECRET is not set. Add it under Settings → Secrets and variables → Actions, matching Vercel production."
+          exit 1
+
+      - name: Expire unverified COD holds
+        run: |
+          set -euo pipefail
+          curl --fail-with-body -sS -m 60 \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL}/api/cron/expire-cod-holds" \
+            -o response.json -w 'HTTP %{http_code} in %{time_total}s\n'
+          cat response.json
+          EXPIRED=$(jq -r '.expired // 0' response.json)
+          echo "### Expired COD holds: ${EXPIRED}" >> "$GITHUB_STEP_SUMMARY"
+
+  uptime:
+    # External availability check — the only signal that fires when the site
+    # (not just one function) is down. A failed run emails the repo watchers.
+    # No secret needed: these are public URLs.
+    if: >-
+      github.event.schedule == '*/15 * * * *' ||
+      github.event.inputs.task == 'all' ||
+      github.event.inputs.task == 'uptime'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check storefront, PDP, checkout and API
+        run: |
+          set -uo pipefail
+          FAILED=0
+          for path in / /products /products/bakuchiol-renewal-serum /checkout /api/version; do
+            CODE=$(curl -sS -o /dev/null -m 30 -w '%{http_code}' "${SITE_URL}${path}" || echo 000)
+            echo "${path} → ${CODE}"
+            if [ "${CODE}" != "200" ]; then
+              echo "::error::${SITE_URL}${path} returned ${CODE}"
+              FAILED=1
+            fi
+          done
+          exit ${FAILED}
+
+      - name: Surface compliance warnings
+        run: |
+          set -euo pipefail
+          curl -sS -m 30 "${SITE_URL}/api/version" -o version.json
+          OK=$(jq -r '.compliance.ok' version.json)
+          if [ "${OK}" != "true" ]; then
+            echo "::warning::/api/version compliance.ok=${OK}: $(jq -c '.compliance' version.json)"
           fi
 
   warm:

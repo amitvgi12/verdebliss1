@@ -27,7 +27,7 @@ const POSTS = [
   },
   {
     slug: 'skincare-routine-dry-skin',
-    title: 'The Complete Skincare Routine for Dry Skin (Organic Edition)',
+    title: 'A Complete Botanical Routine for Dry Skin',
     excerpt:
       'A 6-step botanical routine for dry-feeling skin — layering order, ingredient roles, and product picks.',
     category: 'Routines',
@@ -38,7 +38,7 @@ const POSTS = [
   },
   {
     slug: 'organic-skincare-india',
-    title: 'Why Organic Skincare Is the Smartest Choice for Indian Skin',
+    title: 'How to Choose Botanical Skincare for Indian Skin',
     excerpt:
       'Indian skin faces UV, humidity, and pollution stressors. How to assess botanical formulas without relying on vague clean-beauty claims.',
     category: 'Education',

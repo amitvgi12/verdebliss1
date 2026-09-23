@@ -456,7 +456,7 @@ async function getExistingOrderByPaymentId(paymentId: string) {
   const supabase = createSupabaseAdmin()
   const { data, error } = await supabase
     .from('orders')
-    .select('id, points_earned, subtotal, shipping, total, payment_method')
+    .select('id, points_earned, subtotal, shipping, total, payment_method, payment_status')
     .eq('payment_id', paymentId)
     .maybeSingle()
   if (error) return null
@@ -467,7 +467,25 @@ async function getExistingOrderByPaymentId(paymentId: string) {
     shipping?: number
     total?: number
     payment_method?: string | null
+    payment_status?: string | null
   } | null
+}
+
+/**
+ * Promote an order finalised while its Razorpay payment was only 'authorized'
+ * once the capture is confirmed. Conditional on the current status, so it is a
+ * no-op for orders that are already 'paid' (idempotent under webhook retries).
+ * Loyalty points are credited by the `apply_order_lifecycle` trigger when
+ * payment_status enters 'paid'.
+ */
+async function promoteAuthorizedOrder(orderId: string): Promise<void> {
+  const supabase = requireSupabaseAdmin()
+  const { error } = await supabase
+    .from('orders')
+    .update({ payment_status: 'paid', updated_at: new Date().toISOString() })
+    .eq('id', orderId)
+    .eq('payment_status', 'authorized')
+  if (error) throw new Error(error.message)
 }
 
 export async function persistOrder(input: {
@@ -560,6 +578,16 @@ export async function completeRazorpayCheckout(input: {
 
   if (session.completed_order_id) {
     const existing = await getExistingOrderByPaymentId(input.razorpayPaymentId)
+    if (existing?.payment_status === 'authorized') {
+      const payment = input.payment ?? (await fetchRazorpayPayment(input.razorpayPaymentId))
+      if (
+        payment.status === 'captured' &&
+        payment.order_id === input.razorpayOrderId &&
+        payment.amount === session.amount_paise
+      ) {
+        await promoteAuthorizedOrder(existing.id)
+      }
+    }
     return {
       orderId: session.completed_order_id,
       pointsAwarded: false,
@@ -601,20 +629,28 @@ export async function completeRazorpayCheckout(input: {
     pointsToEarn: pointsForSubtotal(session.subtotal),
   }
   const paymentMethod = formatRazorpayPaymentMethod(payment.method)
+  // 'authorized' funds are held, not settled, and can still be reversed. Such
+  // an order is recorded as 'authorized' — not dispatchable, no points — and
+  // the payment.captured webhook promotes it to 'paid'.
+  const captured = payment.status === 'captured'
 
   const order = await persistOrder({
     userId: session.user_id,
     status: 'Processing',
-    paymentStatus: 'paid',
+    paymentStatus: captured ? 'paid' : 'authorized',
     paymentMethod,
     paymentId: input.razorpayPaymentId,
     paymentOrderId: input.razorpayOrderId,
     address: session.address,
     items: session.cart_snapshot,
     totals,
-    awardPoints: Boolean(session.user_id),
+    awardPoints: captured && Boolean(session.user_id),
     rawPaymentPayload: { ...(input.rawPaymentPayload ?? {}), payment },
   })
+
+  // A concurrent browser verify may have finalised this order as 'authorized'
+  // first; the idempotent RPC then returns that row. Promote it now.
+  if (captured && order.idempotent) await promoteAuthorizedOrder(order.id)
 
   const supabase = requireSupabaseAdmin()
   await supabase

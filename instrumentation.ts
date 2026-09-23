@@ -15,7 +15,19 @@ export async function register() {
   validateStartupEnv()
 
   const dsn = process.env.SENTRY_DSN
-  if (!dsn) return
+  if (!dsn) {
+    // No Sentry (the SDK is intentionally not installed): forward alerts and
+    // unhandled request errors to the ops webhook so failures reach a human.
+    const alertWebhookUrl = process.env.OPS_ALERT_WEBHOOK_URL
+    if (alertWebhookUrl && process.env.NEXT_RUNTIME !== 'edge') {
+      const [{ setErrorReporter }, { createWebhookReporter }] = await Promise.all([
+        import('@/lib/observability'),
+        import('@/lib/alert-webhook'),
+      ])
+      setErrorReporter(createWebhookReporter(alertWebhookUrl))
+    }
+    return
+  }
 
   try {
     const [Sentry, { setErrorReporter }] = await Promise.all([

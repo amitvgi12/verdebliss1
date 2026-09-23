@@ -13,7 +13,7 @@ export async function GET() {
 
   return NextResponse.json({
     name: pkg.name,
-    schemaVersion: '2026-05-27-retail-prices-review-disclosures-invoice-trigger',
+    schemaVersion: '2026-09-23-order-lifecycle-net-quantity',
     gitSha: getPublicRevision(isProduction),
     environment,
     builtAt: process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
@@ -21,9 +21,14 @@ export async function GET() {
       process.env.VERCEL_DEPLOYMENT_CREATED_AT ?? process.env.NEXT_PUBLIC_BUILD_TIME ?? 'unknown',
     capabilities: getEnvironmentCapabilities(),
     compliance: {
-      ok: compliance.ok,
+      // Warnings don't block the deploy, but they must not read as "ok" to
+      // anyone checking this endpoint — ok:true on a checksum-invalid GSTIN
+      // was exactly the false assurance this endpoint exists to prevent.
+      ok: compliance.ok && compliance.warnings.length === 0,
       errorCount: compliance.errors.length,
       failingFields: compliance.errors.map(toPublicComplianceField),
+      warningCount: compliance.warnings.length,
+      warningFields: [...new Set(compliance.warnings.map(toPublicComplianceField))],
     },
   })
 }

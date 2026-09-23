@@ -319,7 +319,10 @@ export default function ProductDetailClient({
                 marginBottom: 10,
               }}
             >
-              {catLabel} · 30ml
+              {/* Net quantity comes from the catalogue row — never a default. A
+                  wrong declared quantity is a Legal Metrology mis-declaration. */}
+              {catLabel}
+              {p.net_quantity ? ` · ${p.net_quantity}` : ''}
             </div>
 
             <h1

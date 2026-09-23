@@ -48,7 +48,7 @@ export default function LoyaltyPanel({ profile }: LoyaltyPanelProps) {
             {points.toLocaleString()}
           </div>
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
-            = ₹{Math.floor(points / 100) * 50} redeemable value
+            Redemption is not live yet — your balance is saved
           </div>
         </div>
         <div
@@ -112,10 +112,12 @@ export default function LoyaltyPanel({ profile }: LoyaltyPanelProps) {
             textAlign: 'center',
           }}
         >
+          {/* Only rules the server actually applies (lib/loyalty.ts + the
+              finalize/lifecycle RPCs). Never list a bonus that isn't credited. */}
           {[
-            ['50 pts', 'First Purchase'],
-            ['20 pts', 'Per Review'],
-            ['1 pt', 'Per ₹20 Spent'],
+            ['1 pt', 'Per ₹20 of products'],
+            ['Prepaid', 'Credited on payment'],
+            ['COD', 'Credited on delivery'],
           ].map(([v, l]) => (
             <div key={l}>
               <div style={{ fontSize: 14, fontWeight: 700, color: C.gold }}>{v}</div>

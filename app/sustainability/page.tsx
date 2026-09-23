@@ -45,9 +45,11 @@ const PILLARS = [
   {
     Icon: Sprout,
     title: 'Sourcing',
-    target: '12',
+    // No partner count until supplier documentation is verified — the Trust
+    // Centre lists sourcing as "third-party audit in progress".
+    target: 'In audit',
     label: 'FARMER COOPERATIVES',
-    desc: 'Direct partnerships with co-ops across Karnataka, Kerala, and Sikkim.',
+    desc: 'Co-operative sourcing partners are being documented and verified before we publish a count.',
     iconBg: '#EDF5E8',
     iconColor: '#3a5e2e',
     accentBar: '#3a5e2e',

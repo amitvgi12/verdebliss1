@@ -43,7 +43,7 @@ export const metadata: Metadata = {
 const INGREDIENTS = [
   {
     name: 'Bakuchiol',
-    desc: 'Plant-based retinol alternative for night renewal without harshness.',
+    desc: 'Plant-based retinol alternative for a gentle-feeling night renewal ritual.',
   },
   { name: 'Rose Hip', desc: 'A vitamin-rich oil profile for barrier comfort and visible glow.' },
   { name: 'Green Tea', desc: 'Polyphenol-rich antioxidant support for oily and combination skin.' },

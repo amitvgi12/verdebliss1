@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useState, useEffect, type FormEvent, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { LogOut, Heart, Leaf, Check } from 'lucide-react'
+import { LogOut, Heart, Leaf } from 'lucide-react'
 import LoyaltyPanel from '@/components/features/loyalty/LoyaltyPanel'
 import ProductImage from '@/components/ui/ProductImage'
 import { useAuthStore } from '@/store/authStore'
@@ -12,6 +12,7 @@ import { apiPost } from '@/lib/api-client'
 import { productPath } from '@/lib/seo'
 import { useProducts } from '@/hooks/useProducts'
 import { C, FONT } from '@/constants/theme'
+import { canCustomerCancel } from '@/lib/order-state'
 
 // ── Login / Register ───────────────────────────────────
 function AuthForm({
@@ -549,16 +550,6 @@ function orderStatusChip(status?: string) {
   return ORDER_STATUS_CHIP[status ?? ''] ?? { bg: '#FFF5E4', color: '#664A08' }
 }
 
-function canCancelOrder(status?: string | null) {
-  const normalised = String(status ?? '').toLowerCase()
-  return (
-    Boolean(normalised) &&
-    !normalised.includes('delivered') &&
-    !normalised.includes('cancel') &&
-    !normalised.includes('refunded')
-  )
-}
-
 function Dashboard({
   user,
   profile,
@@ -761,27 +752,13 @@ function Dashboard({
             >
               {profile?.tier?.toUpperCase() ?? 'GREEN LEAF'} BENEFITS
             </div>
-            {[
-              ['🎁', 'Birthday bonus — double points'],
-              ['🚀', 'Free express shipping'],
-              ['💎', 'Early access to new launches'],
-              ['🌿', 'Personalised routine review'],
-            ].map(([e, b]) => (
-              <div
-                key={b}
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'center',
-                  padding: '7px 0',
-                  borderBottom: `1px solid ${C.border}`,
-                }}
-              >
-                <span style={{ fontSize: 15 }}>{e}</span>
-                <span style={{ fontSize: 12, color: C.muted, flex: 1 }}>{b}</span>
-                <Check size={12} color={C.sage} />
-              </div>
-            ))}
+            {/* No tier benefit is implemented yet (checkout charges the same
+                shipping for every tier). Listing perks here with checkmarks
+                promised things the customer would not receive. */}
+            <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, margin: 0 }}>
+              Tier benefits are not live yet. We will publish exactly what each tier includes before
+              they launch — your points and tier are already being tracked.
+            </p>
           </div>
         </div>
 
@@ -971,7 +948,7 @@ function Dashboard({
                         Track Order →
                       </a>
                     )}
-                    {canCancelOrder(o.status) && (
+                    {canCustomerCancel(o) && (
                       <button
                         type="button"
                         onClick={() => void cancelOrder(o.id)}
