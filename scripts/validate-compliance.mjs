@@ -113,6 +113,14 @@ if (
   errors.push('ORDER_FROM_EMAIL must not use a demo sender in production')
 }
 
+// Non-blocking identity warnings — mirrors gstinIdentityProblems() in
+// constants/businessCompliance.ts. Printed on every production build so a
+// sample-data GSTIN is visible in the deploy log without failing the deploy.
+const legalName = process.env.NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME?.trim() ?? ''
+for (const warning of gstinIdentityProblems(gstinValue, legalName)) {
+  console.warn(`::warning::Compliance: ${warning}`)
+}
+
 if (errors.length) {
   console.error(
     `Production compliance validation failed${
@@ -121,6 +129,32 @@ if (errors.length) {
   )
   for (const error of errors) console.error(`- ${error}`)
   process.exit(1)
+}
+
+function gstinIdentityProblems(value, name) {
+  const gst = value.toUpperCase()
+  if (!gstin.test(gst)) return []
+  const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let sum = 0
+  for (let i = 0; i < 14; i += 1) {
+    const product = charset.indexOf(gst[i]) * (i % 2 === 0 ? 1 : 2)
+    sum += Math.floor(product / 36) + (product % 36)
+  }
+  const problems = []
+  if (charset[(36 - (sum % 36)) % 36] !== gst[14]) {
+    problems.push('GSTIN check digit is invalid — verify the number on the GST portal')
+  }
+  const expected = /\bLLP\b|limited liability partnership/i.test(name)
+    ? 'E'
+    : /\b(private limited|pvt\.? ltd\.?|limited|ltd\.?)\b/i.test(name)
+      ? 'C'
+      : null
+  if (expected && gst[5] !== expected) {
+    problems.push(
+      `GSTIN PAN entity type "${gst[5]}" does not match the legal name (expected "${expected}")`
+    )
+  }
+  return problems
 }
 
 function extractLast10Digits(digits) {

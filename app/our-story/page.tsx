@@ -24,7 +24,7 @@ const TIMELINE = [
   },
   {
     year: '2021',
-    title: 'Organic Commitment',
+    title: 'Sourcing Standards',
     body: 'VerdeBliss formalised its organic ingredient sourcing standards and began the process of pursuing third-party certification. Certification scope and issuers are published at /certifications as each is confirmed.',
   },
   {

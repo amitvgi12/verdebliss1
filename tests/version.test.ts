@@ -38,7 +38,7 @@ describe('version API', () => {
     expect(JSON.stringify(body)).not.toContain('rzp_server')
     expect(body.gitSha).toBe('redacted')
     expect(body.deployedAt).toBe('2026-05-20T08:00:00.000Z')
-    expect(body.schemaVersion).toBe('2026-05-27-retail-prices-review-disclosures-invoice-trigger')
+    expect(body.schemaVersion).toBe('2026-09-23-order-lifecycle-net-quantity')
     expect(body).not.toHaveProperty('version')
     expect(JSON.stringify(body)).not.toContain('1234567890abcdef')
   })
@@ -70,11 +70,33 @@ describe('version API', () => {
   })
 })
 
+describe('version API identity warnings', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('does not report ok for a checksum-invalid GSTIN, without counting it as a blocking error', async () => {
+    vi.resetModules()
+    stubValidProductionComplianceEnv()
+    vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GSTIN', '05MODEE5678F1Z5')
+
+    const { GET: getVersion } = await import('@/app/api/version/route')
+    const body = await (await getVersion()).json()
+
+    expect(body.compliance).toMatchObject({
+      ok: false,
+      errorCount: 0,
+      warningCount: 2,
+      warningFields: ['NEXT_PUBLIC_VERDEBLISS_GSTIN'],
+    })
+  })
+})
+
 function stubValidProductionComplianceEnv() {
   vi.stubEnv('VERCEL_ENV', 'production')
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_LEGAL_NAME', 'VerdeBliss Cosmetics Private Limited')
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_CIN', 'U24246MH2020PTC123456')
-  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GSTIN', '27AAACV1234F1Z5')
+  vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GSTIN', '27AAACV1234F1ZP')
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_LINE1', '12 Botanical Park Road')
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_CITY', 'Mumbai')
   vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_REGISTERED_OFFICE_STATE', 'Maharashtra')

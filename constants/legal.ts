@@ -25,7 +25,7 @@ export const LEGAL_DOCUMENTS = {
     title: 'Privacy Policy',
     description:
       'How VerdeBliss collects, uses, protects, and retains customer information for orders, accounts, loyalty, support, AI-assisted help, and optional marketing.',
-    updated: '18 May 2026',
+    updated: '23 September 2026',
     sections: [
       {
         heading: 'Information we collect',
@@ -37,7 +37,7 @@ export const LEGAL_DOCUMENTS = {
       },
       {
         heading: 'Sharing and processors',
-        body: "We share the minimum data needed with named operational processors: Razorpay for payment processing (https://razorpay.com/privacy/), Supabase for database, authentication, and storage infrastructure (https://supabase.com/privacy), Vercel for hosting and deployment infrastructure (https://vercel.com/legal/privacy-policy), Cloudflare for edge security, CDN, and Turnstile verification (https://www.cloudflare.com/privacypolicy/), and Upstash/Vercel KV where configured for rate-limiting infrastructure (https://upstash.com/legal/privacy). Verde uses Google Gemini as an AI sub-processor only when the customer explicitly enables AI support. With that consent, Gemini may receive chat messages and, for signed-in order-related questions, limited account and order context needed to answer the request: name, email, skin type, loyalty tier, points balance, recent order IDs, order status, payment status, totals, dates, and item names. The lawful basis for this AI processing is consent. Google's data-use terms for the Gemini API apply: https://ai.google.dev/gemini-api/terms. We do not sell customer data or share it with third parties for their own advertising databases.",
+        body: "We share the minimum data needed with named operational processors: Razorpay for payment processing (https://razorpay.com/privacy/), Supabase for database, authentication, and storage infrastructure (https://supabase.com/privacy), Vercel for hosting and deployment infrastructure (https://vercel.com/legal/privacy-policy), Cloudflare for edge security, CDN, and Turnstile verification (https://www.cloudflare.com/privacypolicy/), Upstash/Vercel KV where configured for rate-limiting infrastructure (https://upstash.com/legal/privacy), Resend for sending order confirmation and order-status emails (name, email, delivery address, and order contents; https://resend.com/legal/privacy-policy), and our courier and logistics partners, who receive the name, phone number, and delivery address needed to deliver and track each shipment. Operational error alerts sent to our internal tools carry order and payment references with email addresses and phone numbers removed. Verde uses Google Gemini as an AI sub-processor only when the customer explicitly enables AI support. With that consent, Gemini may receive chat messages and, for signed-in order-related questions, limited account and order context needed to answer the request: name, email, skin type, loyalty tier, points balance, recent order IDs, order status, payment status, totals, dates, and item names. The lawful basis for this AI processing is consent. Google's data-use terms for the Gemini API apply: https://ai.google.dev/gemini-api/terms. VerdeBliss does not store chat transcripts. We do not sell customer data or share it with third parties for their own advertising databases.",
       },
       {
         heading: 'Retention and rights',

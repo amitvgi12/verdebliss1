@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { validateBusinessCompliance } from '@/constants/businessCompliance'
+import {
+  gstinCheckChar,
+  gstinIdentityProblems,
+  validateBusinessCompliance,
+} from '@/constants/businessCompliance'
 import type { BusinessCompliance } from '@/constants/businessCompliance'
 
 const BASE: BusinessCompliance = {
   brandName: 'VerdeBliss',
   legalName: 'VerdeBliss Cosmetics Private Limited',
   cin: 'U47722UT2026PTC021460',
-  gstin: '05MODEE5678F1Z5',
+  gstin: '05AAACV1234F1ZV',
   registeredOffice: {
     streetAddress: 'Nilaya Heights, 12 Rajpur Road',
     addressLocality: 'Dehradun',
@@ -159,5 +163,39 @@ describe('P1-2 — address data quality', () => {
     const { errors } = validateBusinessCompliance(BASE, { strict: false })
     const addrErrors = errors.filter((e) => /locality and region are identical/i.test(e))
     expect(addrErrors).toHaveLength(0)
+  })
+})
+
+describe('GSTIN identity checks', () => {
+  it('computes the GSTN mod-36 check character', () => {
+    // Publicly listed, checksum-valid GSTINs.
+    expect(gstinCheckChar('27AAPFU0939F1ZV')).toBe('V')
+    expect(gstinCheckChar('29AAGCB7383J1Z4')).toBe('4')
+  })
+
+  it('flags the format-valid sample GSTIN that the regex alone accepted', () => {
+    const problems = gstinIdentityProblems(
+      '05MODEE5678F1Z5',
+      'VERDEBLISS COSMETICS PRIVATE LIMITED'
+    )
+    expect(problems).toHaveLength(2)
+    expect(problems[0]).toMatch(/check digit/i)
+    expect(problems[1]).toMatch(/entity type "E".*expected "C"/)
+  })
+
+  it('accepts a checksum-valid company GSTIN and expects E for an LLP', () => {
+    expect(
+      gstinIdentityProblems('05AAACV1234F1ZV', 'VerdeBliss Cosmetics Private Limited')
+    ).toEqual([])
+    expect(gstinIdentityProblems('05AAACV1234F1ZV', 'VerdeBliss LLP')[0]).toMatch(/expected "E"/)
+  })
+
+  it('reports identity problems as non-blocking warnings, not errors', () => {
+    const result = validateBusinessCompliance(
+      { ...BASE, gstin: '05MODEE5678F1Z5' },
+      { strict: false }
+    )
+    expect(result.ok).toBe(true)
+    expect(result.warnings).toHaveLength(2)
   })
 })

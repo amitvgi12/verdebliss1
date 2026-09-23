@@ -125,7 +125,7 @@ begin
         '1', '1d40699e-80f0-4779-b3d9-577c2f75fb84',
         'bakuchiol-renewal-serum',
         'Bakuchiol Renewal Serum',
-        'Plant-based retinol alternative for visible cell renewal without irritation.',
+        'Plant-based retinol alternative for a smoother-looking night ritual.',
         1495.00::numeric, null::numeric, null::timestamptz, 'Serum',
         array['Dry','Combination']::text[], array['Vegan-Friendly','Organic Botanicals']::text[],
         'Bakuchiol', '🌿', '#EBF0E9', '/images/products/serum.webp', null::numeric, 0, 100
@@ -143,7 +143,7 @@ begin
         '3', '3d40699e-80f0-4779-b3d9-577c2f75fb84',
         'green-tea-clarity-toner',
         'Green Tea Clarity Toner',
-        'Balance oil and refine pores with antioxidant-rich green tea extract.',
+        'Helps oily and combination skin feel balanced with green tea extract and 0.5% salicylic acid (BHA). Recommended for ages 12+.',
         795.00::numeric, null::numeric, null::timestamptz, 'Toner',
         array['Oily','Combination']::text[], array['Vegan-Friendly','Organic Botanicals']::text[],
         'Green Tea', '🍃', '#E8F2EA', '/images/products/toner.webp', null::numeric, 0, 100
@@ -152,7 +152,7 @@ begin
         '4', '4d40699e-80f0-4779-b3d9-577c2f75fb84',
         'turmeric-brightening-cleanser',
         'Turmeric Brightening Cleanser',
-        'Gentle foam cleanser with turmeric and neem for a luminous complexion.',
+        'Gentle foam cleanser with turmeric and neem for a fresh-looking complexion.',
         695.00::numeric, null::numeric, null::timestamptz, 'Cleanser',
         array['All Types']::text[], array['Cruelty-free*','Organic Botanicals']::text[],
         'Turmeric', '✨', '#F5F0E4', '/images/products/cleanser.webp', null::numeric, 0, 100
@@ -161,7 +161,7 @@ begin
         '5', '5d40699e-80f0-4779-b3d9-577c2f75fb84',
         'botanical-spf-50-shield',
         'Botanical Mineral Sun Shield',
-        'Featherlight mineral sunscreen with zinc oxide and soothing aloe vera.',
+        'Mineral daily sun-care shield with zinc oxide and soothing aloe vera. SPF-rating evidence is in review.',
         795.00::numeric, null::numeric, null::timestamptz, 'SPF',
         array['All Types']::text[], array['Vegan-Friendly','Cruelty-free*']::text[],
         'Zinc Oxide', '☀️', '#FFF8E8', '/images/products/spf.webp', null::numeric, 0, 100
@@ -170,7 +170,7 @@ begin
         '6', '6d40699e-80f0-4779-b3d9-577c2f75fb84',
         'wild-berry-lip-elixir',
         'Wild Berry Lip Elixir',
-        'Nourishing lip treatment with acai berry and shea for pillowy softness.',
+        'Nourishing lip treatment with berry extract and shea for soft-feeling lips.',
         595.00::numeric, null::numeric, null::timestamptz, 'Lip Care',
         array['All Types']::text[], array['Organic Botanicals']::text[],
         'Acai Berry', '🫐', '#F0E8F5', '/images/products/lip-elixir.webp', null::numeric, 0, 100
@@ -179,7 +179,7 @@ begin
         '7', '7d40699e-80f0-4779-b3d9-577c2f75fb84',
         'niacinamide-pore-serum',
         'Niacinamide Pore Serum',
-        'Minimise pores and control sebum with a 10% niacinamide complex.',
+        'Refines the look of pores and helps skin feel balanced with niacinamide.',
         895.00::numeric, null::numeric, null::timestamptz, 'Serum',
         array['Oily','Combination']::text[], array['Vegan-Friendly','Cruelty-free*']::text[],
         'Niacinamide', '💧', '#E8EFF5', '/images/products/niacinamide-serum.webp', null::numeric, 0, 100
@@ -188,7 +188,7 @@ begin
         '8', '8d40699e-80f0-4779-b3d9-577c2f75fb84',
         'shea-butter-night-cream',
         'Shea Butter Night Cream',
-        'Intensive overnight repair with shea butter and vitamin E for morning glow.',
+        'Cushiony overnight cream with shea butter and vitamin E for a rested-looking glow.',
         1595.00::numeric, null::numeric, null::timestamptz, 'Moisturiser',
         array['Dry','Sensitive']::text[], array['Organic Botanicals','Cruelty-free*']::text[],
         'Shea Butter', '🌙', '#F5EBF0', '/images/products/night-cream.webp', null::numeric, 0, 100

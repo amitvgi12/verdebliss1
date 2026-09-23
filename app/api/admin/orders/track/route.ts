@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireSameOriginRequest } from '@/lib/csrf'
+import { decideStaffStatusChange } from '@/lib/order-state'
 import {
   createSupabaseAdmin,
   getUserFromAuthorizationHeader,
@@ -82,12 +83,19 @@ export async function PATCH(request: Request) {
 
     const { data: order, error: fetchErr } = await admin
       .from('orders')
-      .select('id, status')
+      .select('id, status, payment_status')
       .eq('id', orderId)
       .single()
 
     if (fetchErr || !order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    }
+
+    // Transition map + payment gate (lib/order-state.ts): no Cancelled →
+    // Delivered, no dispatch before the payment is captured / COD is cleared.
+    const change = status ? decideStaffStatusChange(order, status) : { allowed: true as const }
+    if (!change.allowed) {
+      return NextResponse.json({ error: change.reason }, { status: 409 })
     }
 
     const now = new Date().toISOString()
@@ -103,6 +111,9 @@ export async function PATCH(request: Request) {
     const updates: Record<string, unknown> = { updated_at: now }
 
     if (status) updates.status = status
+    if ('paymentStatus' in change && change.paymentStatus) {
+      updates.payment_status = change.paymentStatus
+    }
     if (tracking_id !== undefined) updates.tracking_id = tracking_id
     if (courier_partner !== undefined) updates.courier_partner = courier_partner
     if (tracking_url !== undefined) updates.tracking_url = tracking_url
@@ -113,9 +124,22 @@ export async function PATCH(request: Request) {
       updates.out_for_delivery_at = now
     if (status === 'Delivered' && order.status !== 'Delivered') updates.delivered_at = now
 
-    const { error: updateErr } = await admin.from('orders').update(updates).eq('id', orderId)
+    // Compare-and-set on the status the decision was made against, so a
+    // concurrent customer cancellation is not silently overwritten.
+    const { data: updatedRows, error: updateErr } = await admin
+      .from('orders')
+      .update(updates)
+      .eq('id', orderId)
+      .eq('status', order.status ?? '')
+      .select('id')
 
     if (updateErr) throw updateErr
+    if (!updatedRows?.length) {
+      return NextResponse.json(
+        { error: 'Order changed since it was loaded. Refresh and try again.' },
+        { status: 409 }
+      )
+    }
 
     return NextResponse.json({ success: true, tracking_url: tracking_url ?? null })
   } catch (err) {

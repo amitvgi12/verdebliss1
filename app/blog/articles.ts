@@ -51,7 +51,7 @@ export const ARTICLES: Record<string, Article> = {
     ],
   },
   'skincare-routine-dry-skin': {
-    title: 'The Complete Skincare Routine for Dry Skin (Organic Edition)',
+    title: 'A Complete Botanical Routine for Dry Skin',
     description:
       'A 6-step botanical skincare routine for dry-feeling skin — right layering order, ingredient roles, and product picks.',
     category: 'Routines',
@@ -86,7 +86,7 @@ export const ARTICLES: Record<string, Article> = {
     ],
   },
   'organic-skincare-india': {
-    title: 'Why Organic Skincare Is the Smartest Choice for Indian Skin',
+    title: 'How to Choose Botanical Skincare for Indian Skin',
     description:
       'Indian skin faces UV, humidity and pollution stressors. Learn how to evaluate botanical skincare claims with evidence-first habits.',
     category: 'Education',

@@ -24,7 +24,7 @@ const VALID_COMPLIANCE: BusinessCompliance = {
   brandName: 'VerdeBliss',
   legalName: 'VerdeBliss Cosmetics Private Limited',
   cin: 'U24246MH2020PTC123456',
-  gstin: '27AAACV1234F1Z5',
+  gstin: '27AAACV1234F1ZP',
   registeredOffice: {
     streetAddress: '12 Botanical Park Road',
     addressLocality: 'Mumbai',
@@ -134,13 +134,13 @@ describe('business compliance source of truth', () => {
     expect(configured.helpline.href).toBe('+912245678901')
   })
 
-  it('uses one clean grievance officer fallback when the deployed env contains known fake names', async () => {
+  it('falls back to a neutral label, never an invented person, when the env name is fake', async () => {
     vi.resetModules()
     vi.stubEnv('NEXT_PUBLIC_VERDEBLISS_GRIEVANCE_OFFICER_NAME', 'Demon Sharma')
 
     const { BUSINESS_COMPLIANCE: configured } = await import('@/constants/businessCompliance')
 
-    expect(configured.grievanceOfficer.name).toBe('Ananya Rao')
+    expect(configured.grievanceOfficer.name).toBe('Grievance Officer')
   })
 
   it('blocks known fake grievance officer env values in strict validation', () => {

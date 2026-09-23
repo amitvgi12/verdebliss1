@@ -42,6 +42,13 @@ export interface BusinessCompliance {
 export interface BusinessComplianceValidationResult {
   ok: boolean
   errors: string[]
+  /**
+   * Identifier problems that are certain (bad check digit, wrong PAN entity
+   * type) but deliberately non-blocking: they surface on /api/version and in
+   * the build log without failing the deploy. Promote to `errors` once the
+   * registry-verified identifiers are configured.
+   */
+  warnings: string[]
 }
 
 const REQUIRED_ENV_KEYS = [
@@ -61,13 +68,16 @@ const REQUIRED_ENV_KEYS = [
 const LEGAL_DATA_VERIFIED_ENV_KEY = 'LEGAL_DATA_VERIFIED'
 const PLACEHOLDER_PATTERN =
   /\b(DEMO|placeholder|example\.com|Demo House|Lorem|dummy|sample|fake|to be configured|configure me|pending verification|pending appointment|test value)\b/i
-const DEFAULT_GRIEVANCE_OFFICER_NAME = 'Ananya Rao'
+// Neutral label, not an invented person: a named statutory officer must come
+// from configuration. Strict validation already fails when the env is absent.
+const DEFAULT_GRIEVANCE_OFFICER_NAME = 'Grievance Officer'
 const KNOWN_FAKE_GRIEVANCE_OFFICER_NAMES = /^(Action Sharma|Demon Sharma)$/i
 const KNOWN_FAKE_CIN = /U20231PN2026PTC000001/i
 const KNOWN_FAKE_GSTIN = /27ABCDE1234F1Z5/i
 const CIN_RE = /^[UL]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/
 const GSTIN_RE = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const GSTIN_CHARSET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 const SUPPORT_PHONE_RE = /^\+?[0-9][0-9\s-]{7,18}$/
 
 function readSupportPhoneDisplay(): string {
@@ -213,6 +223,52 @@ export function hasVerifiedGstin(value = BUSINESS_COMPLIANCE.gstin): boolean {
   return GSTIN_RE.test(value) && !isPlaceholderLike(value)
 }
 
+/**
+ * GSTIN check character (15th char) per the GSTN mod-36 scheme: weights
+ * alternate 1,2 over the first 14 chars; each product contributes
+ * floor(p/36) + p%36.
+ */
+export function gstinCheckChar(gstin: string): string | null {
+  const body = gstin.trim().toUpperCase().slice(0, 14)
+  if (body.length !== 14) return null
+  let sum = 0
+  for (let i = 0; i < body.length; i += 1) {
+    const value = GSTIN_CHARSET.indexOf(body[i])
+    if (value < 0) return null
+    const product = value * (i % 2 === 0 ? 1 : 2)
+    sum += Math.floor(product / 36) + (product % 36)
+  }
+  return GSTIN_CHARSET[(36 - (sum % 36)) % 36]
+}
+
+/** PAN 4th character for the legal entity type named in `legalName`, if known. */
+function expectedPanEntityChar(legalName: string): string | null {
+  if (/\bLLP\b|limited liability partnership/i.test(legalName)) return 'E'
+  if (/\b(private limited|pvt\.? ltd\.?|limited|ltd\.?)\b/i.test(legalName)) return 'C'
+  return null
+}
+
+/**
+ * Structural problems with a format-valid GSTIN. The regex alone accepted
+ * values like 05MODEE5678F1Z5 (bad check digit; PAN type E = LLP for a
+ * "Private Limited" seller), so these checks are what catch sample data.
+ */
+export function gstinIdentityProblems(gstin: string, legalName: string): string[] {
+  const value = gstin.trim().toUpperCase()
+  if (!GSTIN_RE.test(value)) return []
+  const problems: string[] = []
+  if (gstinCheckChar(value) !== value[14]) {
+    problems.push('GSTIN check digit is invalid — verify the number on the GST portal')
+  }
+  const expected = expectedPanEntityChar(legalName)
+  if (expected && value[5] !== expected) {
+    problems.push(
+      `GSTIN PAN entity type "${value[5]}" does not match the legal name (expected "${expected}")`
+    )
+  }
+  return problems
+}
+
 export function hasVerifiedPhone(value = BUSINESS_COMPLIANCE.helpline.display): boolean {
   return SUPPORT_PHONE_RE.test(value) && !isPlaceholderLike(value) && !isPlaceholderPhone(value)
 }
@@ -253,6 +309,7 @@ export function validateBusinessCompliance(
 ): BusinessComplianceValidationResult {
   const strict = options.strict ?? shouldEnforceProductionCompliance(options.env)
   const errors: string[] = []
+  const warnings = gstinIdentityProblems(compliance.gstin, compliance.legalName)
   const values = flattenComplianceValues(compliance)
 
   for (const [path, value] of values) {
@@ -331,7 +388,7 @@ export function validateBusinessCompliance(
     )
   }
 
-  return { ok: errors.length === 0, errors }
+  return { ok: errors.length === 0, errors, warnings }
 }
 
 /**

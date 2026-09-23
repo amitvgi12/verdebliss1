@@ -284,6 +284,64 @@ describe('admin order tracking API', () => {
     expect(callArg.delivered_at).toBeUndefined()
   })
 
+  // ── Transition guards ─────────────────────────────────────────────────
+
+  it('rejects an illegal transition such as Cancelled → Delivered with 409', async () => {
+    const { client, update } = createAdminMock({
+      profile: { is_staff: true },
+      order: baseOrder('Cancelled', 'cancelled'),
+    })
+    mocks.createSupabaseAdmin.mockReturnValue(client)
+
+    const res = await PATCH(makeRequest('PATCH', { orderId: 'order-1', status: 'Delivered' }))
+
+    expect(res.status).toBe(409)
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('refuses to dispatch an order whose Razorpay payment is only authorized', async () => {
+    const { client, update } = createAdminMock({
+      profile: { is_staff: true },
+      order: baseOrder('Processing', 'authorized'),
+    })
+    mocks.createSupabaseAdmin.mockReturnValue(client)
+
+    const res = await PATCH(makeRequest('PATCH', { orderId: 'order-1', status: 'Shipped' }))
+
+    expect(res.status).toBe(409)
+    expect((await res.json()).error).toMatch(/not cleared for dispatch/)
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('clears a flagged COD order for dispatch when staff verify it', async () => {
+    const { client, update } = createAdminMock({
+      profile: { is_staff: true },
+      order: baseOrder('COD Verification Required', 'cod_review'),
+    })
+    mocks.createSupabaseAdmin.mockReturnValue(client)
+
+    const res = await PATCH(makeRequest('PATCH', { orderId: 'order-1', status: 'COD Pending' }))
+
+    expect(res.status).toBe(200)
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'COD Pending', payment_status: 'cod_pending' })
+    )
+  })
+
+  it('compares-and-sets on the loaded status and returns 409 when the order changed', async () => {
+    const { client, updateStatusEq } = createAdminMock({
+      profile: { is_staff: true },
+      order: baseOrder('Processing'),
+      updatedRows: [],
+    })
+    mocks.createSupabaseAdmin.mockReturnValue(client)
+
+    const res = await PATCH(makeRequest('PATCH', { orderId: 'order-1', status: 'Shipped' }))
+
+    expect(updateStatusEq).toHaveBeenCalledWith('status', 'Processing')
+    expect(res.status).toBe(409)
+  })
+
   // ── GET couriers list ─────────────────────────────────────────────────
 
   it('returns the supported couriers list for staff', async () => {
@@ -305,8 +363,8 @@ describe('admin order tracking API', () => {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-function baseOrder(status = 'Processing') {
-  return { id: 'order-1', status }
+function baseOrder(status = 'Processing', payment_status = 'paid') {
+  return { id: 'order-1', status, payment_status }
 }
 
 function makeRequest(method: string, body: Record<string, unknown>) {
@@ -324,9 +382,11 @@ function makeRequest(method: string, body: Record<string, unknown>) {
 function createAdminMock({
   profile,
   order,
+  updatedRows = [{ id: 'order-1' }],
 }: {
   profile: { is_staff: boolean } | null
-  order: { id: string; status: string } | null
+  order: { id: string; status: string; payment_status?: string } | null
+  updatedRows?: Array<{ id: string }>
 }) {
   const profileBuilder = {
     select: vi.fn().mockReturnThis(),
@@ -334,8 +394,11 @@ function createAdminMock({
     single: vi.fn().mockResolvedValue({ data: profile, error: null }),
   }
 
+  // update(...).eq('id').eq('status' — compare-and-set).select('id')
+  const updateSelect = vi.fn().mockResolvedValue({ data: updatedRows, error: null })
+  const updateStatusEq = vi.fn().mockReturnValue({ select: updateSelect })
   const update = vi.fn().mockReturnValue({
-    eq: vi.fn().mockResolvedValue({ error: null }),
+    eq: vi.fn().mockReturnValue({ eq: updateStatusEq }),
   })
 
   const ordersBuilder = {
@@ -355,5 +418,5 @@ function createAdminMock({
     }),
   }
 
-  return { client, update }
+  return { client, update, updateStatusEq }
 }

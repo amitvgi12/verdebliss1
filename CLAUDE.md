@@ -42,6 +42,14 @@ Package manager: npm. Production truth: `main` branch.
   unchanged: `Authorization: Bearer $CRON_SECRET`, which must be set BOTH in
   Vercel (the route reads it) and as a GitHub repo secret (the caller sends it).
   Requests must target the `www` host so Cloudflare adds the origin-gate header.
+- **Order transitions have one home.** Allowed status moves live in
+  `lib/order-state.ts` (cancel route, staff route, account UI). Side-effects every
+  writer must get — COD `paid` on delivery, loyalty credit on entering `paid`,
+  reversal on Cancelled/Refunded — live in the `apply_order_lifecycle` DB trigger.
+  Don't re-implement points logic in routes; it would double-credit.
+- **No Sentry SDK.** `@sentry/nextjs` destabilised build tracing and was removed
+  on purpose. Alerts reach humans via `OPS_ALERT_WEBHOOK_URL`
+  (`lib/alert-webhook.ts`) plus the `uptime` job in `scheduled-tasks.yml`.
 - **`vercel.json` is schema-validated — no extra keys.** Unknown top-level
   properties (even `_`-prefixed "comment" keys) fail the deploy with
   `should NOT have additional property`. Notes go in CLAUDE.md or the workflow.
@@ -62,3 +70,13 @@ Package manager: npm. Production truth: `main` branch.
 - [ ] DNS: grey-cloud `email.verdebliss.com → mailgun.org` (DNS only)
 - [ ] Copy pass: evict engineering jargon from customer surfaces; add one
       sensory/outcome line per product
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

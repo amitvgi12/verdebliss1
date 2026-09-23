@@ -23,6 +23,7 @@ vi.mock('@/lib/csrf', () => ({
 }))
 
 import { POST } from '@/app/api/refunds/request/route'
+import { getRefundIneligibilityReason } from '@/lib/refunds'
 
 const DAY = 24 * 60 * 60 * 1000
 const recentOrder = {
@@ -120,8 +121,57 @@ describe('refund request API', () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: 'Refund window expired. Requests are accepted within 14 days.',
+      error: 'Refund window expired. Requests are accepted within 14 days of delivery.',
     })
+  })
+
+  it('starts the refund window at delivery, not at order placement', async () => {
+    // Ordered 20 days ago, delivered 5 days ago: inside the 14-day window.
+    const supabase = createSupabaseMock({
+      order: {
+        ...recentOrder,
+        created_at: new Date(Date.now() - 20 * DAY).toISOString(),
+        delivered_at: new Date(Date.now() - 5 * DAY).toISOString(),
+      },
+    })
+    mocks.createSupabaseAdmin.mockReturnValue(supabase.client)
+
+    const response = await POST(makeRequest({ orderId: 'order-1', reason: validReason }))
+
+    expect(response.status).toBe(200)
+    expect(supabase.insert).toHaveBeenCalled()
+  })
+})
+
+describe('refund window basis', () => {
+  const now = Date.parse('2026-09-23T00:00:00Z')
+  const daysAgo = (n: number) => new Date(now - n * DAY).toISOString()
+
+  it('does not expire an order that has not been delivered yet', () => {
+    expect(
+      getRefundIneligibilityReason(
+        { status: 'Shipped', payment_status: 'paid', created_at: daysAgo(30) },
+        now
+      )
+    ).toBeNull()
+  })
+
+  it('falls back to the order date for legacy Delivered orders without a timestamp', () => {
+    expect(
+      getRefundIneligibilityReason(
+        { status: 'Delivered', payment_status: 'paid', created_at: daysAgo(15) },
+        now
+      )
+    ).toMatch(/expired/)
+  })
+
+  it('treats an order already in cancellation review as ineligible', () => {
+    expect(
+      getRefundIneligibilityReason(
+        { status: 'Cancellation Requested', payment_status: 'cod_pending', created_at: daysAgo(1) },
+        now
+      )
+    ).toMatch(/not eligible/)
   })
 })
 
@@ -143,7 +193,7 @@ function createSupabaseMock({
   order,
   existingRefund = null,
 }: {
-  order: typeof recentOrder | null
+  order: (typeof recentOrder & { delivered_at?: string }) | null
   existingRefund?: { id: string; status: string } | null
 }) {
   const orderBuilder = {

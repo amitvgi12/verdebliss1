@@ -10,6 +10,7 @@ import {
   hasSupabaseAdminEnv,
 } from '@/lib/supabase-admin'
 import { OPEN_REFUND_STATUSES } from '@/lib/refunds'
+import { decideCustomerCancellation } from '@/lib/order-state'
 
 interface OrderRow {
   id: string
@@ -53,24 +54,12 @@ export async function POST(request: Request) {
     if (orderError) throw new Error(orderError.message)
     if (!order) throw new CheckoutValidationError('Order not found for your account')
 
-    const status = normaliseStatus((order as OrderRow).status)
-    if (status.includes('delivered')) {
-      throw new CheckoutValidationError(
-        'Delivered orders cannot be cancelled. Please use the refund request flow.'
-      )
-    }
-    if (status.includes('cancel')) {
-      throw new CheckoutValidationError(
-        'This order is already cancelled or cancellation is in progress.'
-      )
-    }
-    if (status.includes('refunded')) {
-      throw new CheckoutValidationError('This order has already been refunded.')
-    }
-
     const typedOrder = order as OrderRow
-    const isPrepaid = normaliseStatus(typedOrder.payment_status) === 'paid'
-    const nextStatus = isPrepaid ? 'Cancellation Requested' : 'Cancelled'
+    // Transition rules live in lib/order-state.ts (shared with the account UI).
+    const decision = decideCustomerCancellation(typedOrder)
+    if (!decision.allowed) throw new CheckoutValidationError(decision.reason)
+
+    const nextStatus = decision.nextStatus
     const now = new Date().toISOString()
 
     const updatePayload: Record<string, string> = {
@@ -78,24 +67,34 @@ export async function POST(request: Request) {
       updated_at: now,
     }
 
-    if (!isPrepaid) {
+    if (decision.cancelPayment) {
       updatePayload.payment_status = 'cancelled'
     }
 
-    const { error: updateError } = await supabase
+    // Compare-and-set on the status we just read: if staff dispatched the order
+    // in between, this matches no row and the customer is asked to refresh
+    // instead of cancelling (and restocking) a parcel that has already left.
+    const { data: updatedRows, error: updateError } = await supabase
       .from('orders')
       .update(updatePayload)
       .eq('id', typedOrder.id)
       .eq('user_id', user.id)
+      .eq('status', typedOrder.status ?? '')
+      .select('id')
 
     if (updateError) throw new Error(updateError.message)
+    if (!updatedRows?.length) {
+      throw new CheckoutValidationError(
+        'This order was just updated. Please refresh your orders and try again.'
+      )
+    }
 
-    // Immediately-cancelled (unpaid/COD) orders return their stock now.
-    // Prepaid orders restock when staff confirm the 'Cancellation Requested'
-    // state (dispatch may already be in progress) — see the
-    // restock_order_inventory migration notes. Best-effort: a restock failure
-    // must not undo the customer's cancellation, so it is reported, not thrown.
-    if (!isPrepaid) {
+    // Only pre-dispatch COD orders return their stock now. Prepaid and
+    // already-dispatched orders restock when staff confirm the 'Cancellation
+    // Requested' state — see the restock_order_inventory migration notes.
+    // Best-effort: a restock failure must not undo the customer's
+    // cancellation, so it is reported, not thrown.
+    if (decision.restock) {
       const { error: restockError } = await supabase.rpc('restock_order_inventory', {
         p_order_id: typedOrder.id,
       })
@@ -110,7 +109,7 @@ export async function POST(request: Request) {
     }
 
     let refundQueued = false
-    if (isPrepaid) {
+    if (decision.queueRefund) {
       const { data: existingRefund, error: existingRefundError } = await supabase
         .from('refunds')
         .select('id, status')
@@ -143,9 +142,7 @@ export async function POST(request: Request) {
       ok: true,
       status: nextStatus,
       refundQueued,
-      message: isPrepaid
-        ? 'Cancellation request received. We will stop dispatch where possible and process the eligible refund.'
-        : 'Order cancelled. No payment will be collected for this order.',
+      message: cancellationMessage(decision),
     })
   } catch (error) {
     console.error('[orders/cancel]', error)
@@ -160,8 +157,12 @@ export async function POST(request: Request) {
   }
 }
 
-function normaliseStatus(status: string | null | undefined) {
-  return String(status ?? '')
-    .trim()
-    .toLowerCase()
+function cancellationMessage(decision: { queueRefund: boolean; nextStatus: string }) {
+  if (decision.queueRefund) {
+    return 'Cancellation request received. We will stop dispatch where possible and process the eligible refund.'
+  }
+  if (decision.nextStatus === 'Cancelled') {
+    return 'Order cancelled. No payment will be collected for this order.'
+  }
+  return 'Your order has already been dispatched, so we have logged a cancellation request. You can also decline the parcel at delivery — no payment is collected for a declined Cash on Delivery order.'
 }

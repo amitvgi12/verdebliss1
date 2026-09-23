@@ -124,6 +124,54 @@ describe('order cancellation API', () => {
     // dispatch may already be in progress.
     expect(supabase.rpc).not.toHaveBeenCalled()
   })
+
+  it('does not cancel-and-restock a COD order that has already shipped', async () => {
+    const supabase = createSupabaseMock({ order: { ...baseOrder, status: 'Shipped' } })
+    mocks.createSupabaseAdmin.mockReturnValue(supabase.client)
+
+    const response = await POST(makeRequest({ orderId: 'order-1' }))
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'Cancellation Requested',
+      refundQueued: false,
+    })
+    const payload = supabase.update.mock.calls[0][0] as Record<string, unknown>
+    expect(payload.status).toBe('Cancellation Requested')
+    expect(payload.payment_status).toBeUndefined()
+    // Stock is physically in transit — returning it now would oversell.
+    expect(supabase.rpc).not.toHaveBeenCalled()
+    expect(supabase.insert).not.toHaveBeenCalled()
+  })
+
+  it('treats an authorized (not yet captured) payment as prepaid', async () => {
+    const supabase = createSupabaseMock({
+      order: { ...baseOrder, payment_status: 'authorized' },
+    })
+    mocks.createSupabaseAdmin.mockReturnValue(supabase.client)
+
+    const response = await POST(makeRequest({ orderId: 'order-1' }))
+
+    await expect(response.json()).resolves.toMatchObject({
+      status: 'Cancellation Requested',
+      refundQueued: true,
+    })
+    expect(supabase.rpc).not.toHaveBeenCalled()
+  })
+
+  it('compares-and-sets on the loaded status and asks the customer to refresh on a race', async () => {
+    const supabase = createSupabaseMock({ order: baseOrder, updatedRows: [] })
+    mocks.createSupabaseAdmin.mockReturnValue(supabase.client)
+
+    const response = await POST(makeRequest({ orderId: 'order-1' }))
+
+    expect(supabase.updateEq).toHaveBeenCalledWith('status', 'Processing')
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: 'This order was just updated. Please refresh your orders and try again.',
+    })
+    expect(supabase.rpc).not.toHaveBeenCalled()
+  })
 })
 
 function makeRequest(body: Record<string, unknown>) {
@@ -141,18 +189,24 @@ function makeRequest(body: Record<string, unknown>) {
 function createSupabaseMock({
   order,
   existingRefund = null,
+  updatedRows = [{ id: 'order-1' }],
 }: {
   order: typeof baseOrder | null
   existingRefund?: { id: string; status: string } | null
+  updatedRows?: Array<{ id: string }>
 }) {
   const orderSelectBuilder = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn().mockResolvedValue({ data: order, error: null }),
   }
-  const update = vi.fn().mockReturnValue({
-    eq: vi.fn().mockReturnThis(),
-  })
+  // update(...).eq('id').eq('user_id').eq('status' — compare-and-set).select('id')
+  const updateEq = vi.fn()
+  const updateChain = {
+    eq: updateEq.mockReturnThis(),
+    select: vi.fn().mockResolvedValue({ data: updatedRows, error: null }),
+  }
+  const update = vi.fn().mockReturnValue(updateChain)
   const refundSelectBuilder = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
@@ -184,5 +238,5 @@ function createSupabaseMock({
     }),
   }
 
-  return { client, update, insert, rpc }
+  return { client, update, updateEq, insert, rpc }
 }

@@ -22,6 +22,8 @@ export interface Product {
   emoji?: string
   image_url?: string | null
   stock?: number | null
+  /** Declared net content as printed on pack, e.g. "30 ml" or "4.5 g". */
+  net_quantity?: string | null
   active?: boolean
   created_at?: string
   updated_at?: string

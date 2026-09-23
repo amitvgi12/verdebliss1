@@ -11,6 +11,7 @@ interface RefundOrderRow {
   status?: string | null
   payment_status?: string | null
   created_at?: string | null
+  delivered_at?: string | null
   total?: number | null
   items?: unknown
 }
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
       await Promise.all([
         supabase
           .from('orders')
-          .select('id, status, payment_status, created_at, total, items')
+          .select('id, status, payment_status, created_at, delivered_at, total, items')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false }),
         supabase

@@ -130,7 +130,7 @@ export const PRODUCT_COMPLIANCE: Record<string, ProductCompliance> = {
     pao: 18,
     inci: 'Caprylic/Capric Triglyceride, Butyrospermum Parkii (Shea) Butter, Vaccinium Myrtillus (Bilberry) Fruit Extract, Tocopherol (Vitamin E), Cocos Nucifera (Coconut) Oil, Flavor (Natural Berry), Ricinus Communis (Castor) Seed Oil, Beeswax (Cera Alba).',
     allergens:
-      'Contains Beeswax (not suitable for strict vegans — use Vegan Lip Gloss alternative). Contains Natural Berry Flavour. Free from: Parabens, Synthetic Fragrance, Mineral Oil.',
+      'Contains Beeswax (not suitable for strict vegans). Contains Natural Berry Flavour. Free from: Parabens, Synthetic Fragrance, Mineral Oil.',
     patchTest: false,
     agingNote: null,
     freeFrom: ['Parabens', 'Synthetic Fragrance', 'Mineral Oil'],

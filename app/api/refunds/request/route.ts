@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     // with the service role so customers cannot request refunds for arbitrary IDs.
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, user_id, status, payment_status, created_at, total')
+      .select('id, user_id, status, payment_status, created_at, delivered_at, total')
       .eq('id', orderId)
       .eq('user_id', user.id)
       .maybeSingle()

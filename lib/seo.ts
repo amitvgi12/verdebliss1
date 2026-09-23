@@ -169,6 +169,7 @@ export function productJsonLd(
     ],
   }
 
+  if (product.net_quantity) data.size = product.net_quantity
   if (offer) data.offers = offer
 
   if (aggregate && aggregate.count > 0) {
